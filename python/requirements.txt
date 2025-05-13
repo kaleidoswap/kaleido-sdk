@@ -1,0 +1,8 @@
+protobuf
+grpcio
+grpcio-tools
+httpx
+websockets
+pytest
+fastapi
+uvicorn 

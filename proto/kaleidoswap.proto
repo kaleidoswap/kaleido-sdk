@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package kaleidoswap_sdk;
+
+import "google/protobuf/timestamp.proto"; // For timestamps
+
+// ======= Enums (derived from app/models/api.py) =======
+enum AssetIface {
+  ASSET_IFACE_UNSPECIFIED = 0;
+  RGB20 = 1;
+  RGB21 = 2;
+  RGB25 = 3;
+}
+
+enum AssetSchema {
+  ASSET_SCHEMA_UNSPECIFIED = 0;
+  Nia = 1;
+  Uda = 2;
+  Cfa = 3;
+}
+
+// ======= Asset Models (derived from app/models/asset.py & app/models/api.py) =======
+message Media {
+  optional string file_path = 1;
+  optional string mime = 2;
+}
+
+message AssetBalance {
+  optional int64 settled = 1;
+  optional int64 future = 2;
+  optional int64 spendable = 3;
+  optional int64 offchain_outbound = 4;
+  optional int64 offchain_inbound = 5;
+}
+
+message ClientAsset {
+  optional string asset_id = 1;
+  optional AssetIface asset_iface = 2;
+  optional string ticker = 3;
+  optional string name = 4;
+  optional int32 precision = 5;
+  optional int64 issued_supply = 6;
+  optional Media media = 7;
+  bool is_active = 8;
+  optional int64 timestamp_added = 9; // Corresponds to AssetNIA's added_at / ClientAsset's timestamp
+  optional AssetSchema asset_schema = 10;
+  optional string details = 11;
+  optional AssetBalance balance = 12;
+}
+
+message AssetsResponse {
+  repeated ClientAsset assets = 1;
+  string network = 2;
+  optional int64 response_timestamp = 3; // Unix timestamp of when this response was generated
+}
+
+// ======= Pair Models (derived from app/models/pair.py) =======
+message Pair {
+  string id = 1;
+  string base_asset_ticker = 2;    // e.g. "BTC"
+  string base_asset_id = 3;      // e.g. "BTC" or RGB asset ID
+  string quote_asset_ticker = 4;   // e.g. "USDT"
+  string quote_asset_id = 5;     // e.g. RGB asset ID
+  bool is_active = 6;
+  double min_order_size = 7;     // In units of base_asset
+  double max_order_size = 8;     // In units of base_asset
+  int32 price_precision = 9;    // Decimal places for price
+  int32 quantity_precision = 10; // Decimal places for quantity of base_asset
+}
+
+message PairsResponse {
+  repeated Pair pairs = 1;
+}
+
+// ======= Quote Models (derived from app/models/swaps.py) =======
+message PairQuoteRequest {
+  string pair_id = 1;         // e.g. "BTC_USDT" or UUID of the pair
+  string from_asset_id = 2; // Asset ID (e.g. "BTC" or RGB ID) being sold
+  int64 from_amount = 3;    // Atomic units of from_asset
+  string to_asset_id = 4;   // Asset ID (e.g. "USDT" or RGB ID) being bought
+}
+
+message PairQuoteResponse {
+  string rfq_id = 1;            // Request for Quote ID
+  string pair_id = 2;
+  string from_asset_id = 3;
+  string to_asset_id = 4;
+  int64 from_amount = 5;        // Atomic units
+  int64 to_amount = 6;          // Atomic units
+  double price = 7;             // Human-readable price (quote_asset / base_asset)
+  int64 fee = 8;                // Fee in atomic units of the `to_asset` or a designated fee asset
+  double fee_rate = 9;          // e.g., 0.001 for 0.1%
+  int32 price_precision = 10;   // Precision used in the `price` field
+  int64 timestamp = 11;         // Unix timestamp (seconds) when quote was generated
+  int64 expires_at = 12;        // Unix timestamp (seconds) when quote expires
+}
+
+// ======= WebSocket Models (derived from app/models/websocket.py) =======
+
+// Client -> Server (WebSocket)
+message WebSocketRequest {
+  string client_id = 1; // Could be part of the WS URL path too
+  oneof action {
+    Subscribe subscribe = 2;
+    Unsubscribe unsubscribe = 3;
+    Ping ping = 4;
+    // SyncSubscriptions sync_subscriptions = 5; // If needed
+  }
+}
+
+message Subscribe {
+  string pair_id = 1; // e.g., "BTC_USDT" (should match Pair.id format)
+}
+
+message Unsubscribe {
+  string pair_id = 1;
+}
+
+message Ping {
+  int64 client_timestamp_ms = 1;
+}
+
+// Server -> Client (WebSocket)
+message WebSocketResponse {
+  oneof event {
+    PriceUpdate price_update = 1;
+    SubscriptionConfirmation sub_confirm = 2;
+    UnsubscriptionConfirmation unsub_confirm = 3;
+    Pong pong = 4;
+    Error error = 5;
+    // SyncResult sync_result = 6;
+  }
+}
+
+message PriceFeedData { // Corresponds to PriceData in swaps.py and used by PriceUpdate in websocket.py
+  string rfq_id = 1; // More like a price_id or tick_id for streams
+  double price = 2; // Human-readable price
+  int32 price_precision = 3;
+  // pair_id is part of the wrapping PriceUpdate
+  int64 size = 4; // Last trade size or available liquidity at this price, in atomic units of base asset
+  google.protobuf.Timestamp timestamp = 5; // Precise timestamp of the price point
+  optional int64 expires_at = 6; // If the price data is a temporary quote for streaming
+}
+
+message PriceUpdate {
+  string pair_id = 1;
+  PriceFeedData data = 2;
+  google.protobuf.Timestamp server_timestamp = 3;
+}
+
+message SubscriptionConfirmation {
+  string pair_id = 1;
+  bool success = 2;
+  optional string message = 3;
+}
+
+message UnsubscriptionConfirmation {
+  string pair_id = 1;
+  bool success = 2;
+  optional string message = 3;
+}
+
+message Pong {
+  int64 client_timestamp_ms = 1; // Echoed back
+  google.protobuf.Timestamp server_timestamp = 2;
+}
+
+message Error {
+  string message = 1;
+  optional string pair_id = 2;
+  optional int32 code = 3; // Optional error code
+}
+
+// ======= gRPC Service Definition =======
+service MarketService {
+  // REST-like unary calls
+  rpc ListAssets (ListAssetsRequest) returns (AssetsResponse);
+  rpc ListPairs (ListPairsRequest) returns (PairsResponse);
+  rpc GetQuote (PairQuoteRequest) returns (PairQuoteResponse);
+
+  // WebSocket-like streaming call for price updates
+  // Client sends one WebSocketRequest (with Subscribe action)
+  // Server streams back WebSocketResponse (with PriceUpdate events)
+  rpc StreamPriceUpdates (stream WebSocketRequest) returns (stream WebSocketResponse);
+}
+
+// Empty messages for requests that don't need parameters for gRPC
+message ListAssetsRequest {}
+message ListPairsRequest {} 
