@@ -79,7 +79,7 @@ class KaleidoClient:
         Returns:
             Dict containing node info including pubkey
         """
-        return await self.node_client.get("/nodeinfo")
+        return await self.node_client.get("/api/v1/lsps1/get_info")
 
     async def get_node_pubkey(self) -> str:
         """Get node public key.
@@ -99,7 +99,7 @@ class KaleidoClient:
         Returns:
             Dict containing list of assets
         """
-        return await self.api_client.get("/assets")
+        return await self.api_client.get("api/v1/market/assets")
 
     async def get_asset_metadata(self, asset_id: str) -> Dict[str, Any]:
         """Get metadata for a specific asset.
@@ -120,7 +120,7 @@ class KaleidoClient:
         Returns:
             Dict containing list of trading pairs
         """
-        return await self.api_client.get("/pairs")
+        return await self.api_client.get("api/v1/market/pairs")
 
     async def get_pair_by_assets(self, base_asset: str, quote_asset: str) -> Optional[Dict[str, Any]]:
         """Get trading pair by base and quote assets.
@@ -155,12 +155,21 @@ class KaleidoClient:
         Returns:
             Quote information
         """
-        return await self.api_client.post("/quote", {
+        return await self.api_client.post("api/v1/market/quote", {
             "from_asset": from_asset,
-            "to_asset": to_asset,
-            "from_amount": from_amount
+            "from_amount": from_amount,
+            "to_asset": to_asset
         })
 
+    # async def get_quote_websocket(
+    #     self,
+    #     from_asset: str,
+    #     to_asset: str,
+    #     from_amount: int  # in millisats
+    # ) -> Dict[str, Any]:
+    #     """Get a quote for swapping assets using websocket."""
+    #     return await self.ws_client.get_quote(from_asset, to_asset, from_amount)
+    
     async def init_maker_swap(
         self,
         from_asset: str,

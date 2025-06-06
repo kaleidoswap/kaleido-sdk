@@ -54,7 +54,7 @@ class HttpClient:
             headers['Authorization'] = f'Bearer {self.api_key}'
         return headers
 
-    @with_retry
+    @with_retry(config=None)  # Will use default config from instance
     async def _request(
         self,
         method: str,

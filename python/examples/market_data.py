@@ -9,7 +9,7 @@ This script shows how to:
 
 import asyncio
 import logging
-from kaleidoswap_sdk.client import KaleidoSDK
+from kaleidoswap_sdk.client import KaleidoClient
 from kaleidoswap_sdk.generated.kaleidoswap_pb2 import PriceUpdate
 
 # Configure logging
@@ -20,8 +20,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration
-HTTP_BASE_URL = "http://localhost:8000"  # Replace with actual API URL
-WS_BASE_URL = "ws://localhost:8001"      # Replace with actual WebSocket URL
+API_URL = "http://localhost:8000"  # Replace with actual API URL
+NODE_URL = "http://localhost:8000"  # Replace with actual Node URL
 
 async def handle_price_update(update: PriceUpdate):
     """Handle incoming price updates."""
@@ -33,9 +33,9 @@ async def handle_price_update(update: PriceUpdate):
 async def main():
     """Main function demonstrating SDK usage."""
     # Initialize SDK client
-    async with KaleidoSDK(
-        http_base_url=HTTP_BASE_URL,
-        ws_base_url=WS_BASE_URL
+    async with KaleidoClient(
+        api_url=API_URL,
+        node_url=NODE_URL
     ) as sdk:
         # List available assets
         logger.info("Fetching available assets...")
@@ -46,34 +46,32 @@ async def main():
         logger.info("\nFetching available trading pairs...")
         pairs = await sdk.list_pairs()
         logger.info(f"Available pairs: {pairs['pairs']}")
-        
+
+        #Get node info
+        logger.info("\nGetting node info...")
+        node_info = await sdk.get_node_info()
+        logger.info(f"Node info: {node_info}")
+
         # Get a price quote
         logger.info("\nGetting price quote for BTC/USDT...")
+        from_asset = assets['assets'][0]['asset_id']
+        to_asset = assets['assets'][1]['asset_id']
         quote = await sdk.get_quote(
-            pair_id="BTC_USDT",
-            from_asset_id="BTC",
+            from_asset=from_asset,
+            to_asset=to_asset,
             from_amount=100000000,  # 1 BTC in satoshis
-            to_asset_id="rgb:unique_rgb_id_usdt"
         )
         logger.info(f"Quote: {quote}")
-        
-        # Subscribe to real-time price updates
-        logger.info("\nSubscribing to BTC/USDT price updates...")
-        
-        # Register callbacks
-        sdk.on_price_update(handle_price_update)
-        
-        # Subscribe to pair
-        await sdk.subscribe("BTC/USDT")
-        
-        # Keep the script running to receive updates
-        logger.info("Waiting for price updates (press Ctrl+C to exit)...")
-        try:
-            while True:
-                await asyncio.sleep(1)
-        except KeyboardInterrupt:
-            logger.info("Exiting...")
-            await sdk.unsubscribe("BTC/USDT")
+
+        #TODO: Implement websocket Getting quote
+        # Get a quote using websocket
+        # logger.info("\nGetting price quote for BTC/USDT using websocket...")
+        # quote = await sdk.get_quote_websocket(
+        #     from_asset="BTC",
+        #     to_asset="USDT",
+        #     from_amount=100000000,  # 1 BTC in satoshis
+        # )
+        # logger.info(f"Quote: {quote}")
 
 if __name__ == "__main__":
     asyncio.run(main()) 

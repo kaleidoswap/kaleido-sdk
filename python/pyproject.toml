@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "kaleidoswap-sdk"
+version = "0.1.0"
+description = "SDK for interacting with Kaleidoswap"
+authors = ["Your Name <your.email@example.com>"]
+packages = [{include = "kaleidoswap_sdk"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+protobuf = "*"
+grpcio = "*"
+grpcio-tools = "*"
+httpx = "*"
+websockets = "*"
+fastapi = "*"
+uvicorn = "*"
+aiohttp = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api" 
