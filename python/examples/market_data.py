@@ -10,7 +10,6 @@ This script shows how to:
 import asyncio
 import logging
 from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.generated.kaleidoswap_pb2 import PriceUpdate
 
 # Configure logging
 logging.basicConfig(
@@ -20,15 +19,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration
-API_URL = "http://localhost:8000"  # Replace with actual API URL
-NODE_URL = "http://localhost:8000"  # Replace with actual Node URL
+API_URL = "http://localhost:8000/api/v1"  # Replace with actual API URL
+NODE_URL = "http://localhost:8000/api/v1"  # Replace with actual Node URL
 
-async def handle_price_update(update: PriceUpdate):
-    """Handle incoming price updates."""
-    logger.info(f"Price update for {update.pair_id}:")
-    logger.info(f"  Price: {update.data['price']}")
-    logger.info(f"  Timestamp: {update.data['timestamp']}")
-    logger.info(f"  Expires at: {update.data['expires_at']}")
 
 async def main():
     """Main function demonstrating SDK usage."""

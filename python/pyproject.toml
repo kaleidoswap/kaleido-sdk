@@ -1,9 +1,19 @@
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+addopts = "-v --tb=short"
+
 [tool.poetry]
 name = "kaleidoswap-sdk"
 version = "0.1.0"
 description = "SDK for interacting with Kaleidoswap"
 authors = ["Your Name <your.email@example.com>"]
 packages = [{include = "kaleidoswap_sdk"}]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -15,9 +25,12 @@ websockets = "*"
 fastapi = "*"
 uvicorn = "*"
 aiohttp = "*"
+pytest = "^8.0.0"
+pytest-asyncio = "^0.24.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
+pytest-asyncio = "*"
 
 [build-system]
 requires = ["poetry-core"]

@@ -12,6 +12,7 @@ from .generated.kaleidoswap_pb2 import (
     Error
 )
 from datetime import datetime
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class KaleidoClient:
         Returns:
             Dict containing node info including pubkey
         """
-        return await self.node_client.get("/api/v1/lsps1/get_info")
+        return await self.node_client.get("/lsps1/get_info")
 
     async def get_node_pubkey(self) -> str:
         """Get node public key.
@@ -99,7 +100,7 @@ class KaleidoClient:
         Returns:
             Dict containing list of assets
         """
-        return await self.api_client.get("api/v1/market/assets")
+        return await self.api_client.get("/market/assets")
 
     async def get_asset_metadata(self, asset_id: str) -> Dict[str, Any]:
         """Get metadata for a specific asset.
@@ -120,7 +121,7 @@ class KaleidoClient:
         Returns:
             Dict containing list of trading pairs
         """
-        return await self.api_client.get("api/v1/market/pairs")
+        return await self.api_client.get("/market/pairs")
 
     async def get_pair_by_assets(self, base_asset: str, quote_asset: str) -> Optional[Dict[str, Any]]:
         """Get trading pair by base and quote assets.
@@ -155,21 +156,71 @@ class KaleidoClient:
         Returns:
             Quote information
         """
-        return await self.api_client.post("api/v1/market/quote", {
+        return await self.api_client.post("/market/quote", {
             "from_asset": from_asset,
             "from_amount": from_amount,
             "to_asset": to_asset
         })
 
-    # async def get_quote_websocket(
-    #     self,
-    #     from_asset: str,
-    #     to_asset: str,
-    #     from_amount: int  # in millisats
-    # ) -> Dict[str, Any]:
-    #     """Get a quote for swapping assets using websocket."""
-    #     return await self.ws_client.get_quote(from_asset, to_asset, from_amount)
-    
+    async def get_quote_websocket(
+        self,
+        from_asset: str,
+        to_asset: str,
+        from_amount: int  # in millisats
+    ) -> Dict[str, Any]:
+        """Get a quote for swapping assets using websocket.
+        
+        Args:
+            from_asset: Source asset ID
+            to_asset: Destination asset ID
+            from_amount: Amount in millisats
+            
+        Returns:
+            Quote information
+            
+        Raises:
+            Exception: If there is an error in the quote response
+            RuntimeError: If WebSocket is not connected
+        """
+        # Ensure WebSocket is connected
+        if not self.ws_client._ws:
+            await self.connect()
+            
+        # Create a future to wait for the response
+        response_future = asyncio.Future()
+        
+        # Create the quote message
+        quote_message = {
+            "action": "quote_request",
+            "from_asset": from_asset,
+            "to_asset": to_asset,
+            "from_amount": from_amount,
+            "timestamp": int(time.time())
+        }
+        
+        # Register a one-time handler for the quote response
+        async def quote_handler(response: Dict[str, Any]) -> None:
+            if not response_future.done():
+                if "error" in response and response["error"]:
+                    response_future.set_exception(Exception(f"WebSocket quote error: {response['error']}"))
+                else:
+                    response_future.set_result(response.get("data", {}))
+        
+        # Register the handler
+        self.ws_client.on("quote_response", quote_handler)
+        
+        try:
+            # Send the quote request
+            await self.ws_client.send(quote_message)
+            
+            # Wait for the response with a timeout
+            quote_data = await asyncio.wait_for(response_future, timeout=30)
+            return quote_data
+            
+        finally:
+            # Clean up the handler
+            self.ws_client.off("quote_response", quote_handler)
+
     async def init_maker_swap(
         self,
         from_asset: str,

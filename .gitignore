@@ -73,3 +73,9 @@ docs/_build/
 
 # pyenv
 .python-version 
+
+# Log files
+*.log
+*.log.*
+logs/
+log/ 
