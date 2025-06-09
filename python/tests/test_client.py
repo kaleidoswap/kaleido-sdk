@@ -1,6 +1,7 @@
 import asyncio
 import pytest
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -84,163 +85,107 @@ async def test_get_quote_websocket(client):
     assert "fee" in quote
     assert "timestamp" in quote
     assert "expires_at" in quote
+    return quote
 
 @pytest.mark.asyncio
-async def test_maker_swap_flow(client):
-    """Test the complete maker swap flow."""
-    # List assets to get valid asset IDs
+async def test_get_pair_by_assets(client):
+    """Test getting a pair by assets."""
     assets = await client.list_assets()
-    if not assets.get("nia"):
-        logger.warning("No assets available for testing maker swap flow")
-        pytest.skip("No assets available for testing")
+    assert assets is not None
+
+    first_asset = assets["assets"][0]["asset_id"]
+    second_asset = assets["assets"][1]["asset_id"]
+    logger.info("First asset: %s", first_asset)
+    logger.info("Second asset: %s", second_asset)
     
-    # Get two different assets
-    asset1 = assets["nia"][0]["asset_id"]
-    asset2 = assets["nia"][1]["asset_id"] if len(assets["nia"]) > 1 else asset1
-    
-    # Get quote
-    from_amount = 1000000  # 1 BTC in millisats
-    quote = await client.get_quote(asset1, asset2, from_amount)
-    logger.info("Retrieved quote: %s", quote)
-    assert "to_amount" in quote
-    
-    # Initialize maker swap
+    pair = await client.get_pair_by_assets(first_asset, second_asset)
+    logger.info("Retrieved pair: %s", pair)
+    assert pair is not None
+
+@pytest.mark.asyncio
+async def test_init_maker_swap(client):
+    logger.info("Getting quote for maker swap")
+    quote = await test_get_quote_websocket(client)
+    logger.info("Quote: %s", quote)
+    logger.info("Initiating maker swap")
     init_result = await client.init_maker_swap(
-        from_asset=asset1,
-        to_asset=asset2,
-        from_amount=from_amount,
+        rfq_id=quote["rfq_id"],
+        from_asset=quote["from_asset"],
+        to_asset=quote["to_asset"],
+        from_amount=quote["from_amount"],
         to_amount=quote["to_amount"],
-        timeout_sec=3600
     )
     logger.info("Initialized maker swap: %s", init_result)
     assert "payment_hash" in init_result
-    assert "payment_secret" in init_result
     assert "swapstring" in init_result
-    
-    # Get swap status
-    status = await client.get_swap_status(init_result["payment_hash"])
-    logger.info("Swap status: %s", status)
-    assert "status" in status
+    return init_result
 
 @pytest.mark.asyncio
-async def test_taker_swap_flow(client):
-    """Test the complete taker swap flow."""
-    # List assets to get valid asset IDs
-    assets = await client.list_assets()
-    if not assets.get("nia"):
-        logger.warning("No assets available for testing taker swap flow")
-        pytest.skip("No assets available for testing")
-    
-    # Get two different assets
-    asset1 = assets["nia"][0]["asset_id"]
-    asset2 = assets["nia"][1]["asset_id"] if len(assets["nia"]) > 1 else asset1
-    
-    # Get quote
-    from_amount = 1000000  # 1 BTC in millisats
-    quote = await client.get_quote(asset1, asset2, from_amount)
-    logger.info("Retrieved quote for taker swap: %s", quote)
-    assert "to_amount" in quote
-    
-    # Initialize maker swap (simulating another node)
-    init_result = await client.init_maker_swap(
-        from_asset=asset1,
-        to_asset=asset2,
-        from_amount=from_amount,
-        to_amount=quote["to_amount"],
-        timeout_sec=3600
-    )
-    logger.info("Initialized maker swap for taker test: %s", init_result)
-    
-    # Whitelist trade
+async def test_whitelist_trade(client):
+    logger.info("Whitelisting trade")
+    init_result = await test_init_maker_swap(client)
+    logger.info("Init result: %s", init_result)
     whitelist_result = await client.whitelist_trade(init_result["swapstring"])
     logger.info("Whitelisted trade: %s", whitelist_result)
-    assert "payment_hash" in whitelist_result
-    assert "payment_secret" in whitelist_result
-    
-    # Confirm swap
-    confirm_result = await client.confirm_swap(
-        swapstring=init_result["swapstring"],
-        payment_hash=whitelist_result["payment_hash"],
-        payment_secret=whitelist_result["payment_secret"]
-    )
-    logger.info("Confirmed swap: %s", confirm_result)
-    assert "status" in confirm_result
+    assert whitelist_result is not None
+    return init_result
 
 @pytest.mark.asyncio
-async def test_websocket_events(client):
-    """Test WebSocket event handling."""
-    events_received = []
-    
-    async def on_swap_update(data):
-        logger.info("Received swap update event: %s", data)
-        events_received.append(("swap_update", data))
-    
-    async def on_error(data):
-        logger.error("Received error event: %s", data)
-        events_received.append(("error", data))
-    
-    # Register event handlers
-    client.on("swap_update", on_swap_update)
-    client.on("error", on_error)
-    
-    # Subscribe to a pair
-    pairs = await client.list_pairs()
-    if pairs["pairs"]:
-        pair = pairs["pairs"][0]
-        logger.info("Subscribing to pair: %s/%s", pair['base_asset'], pair['quote_asset'])
-        await client.ws_client.subscribe(f"{pair['base_asset']}/{pair['quote_asset']}")
-        
-        # Wait for some events
-        await asyncio.sleep(5)
-        
-        # Unsubscribe
-        logger.info("Unsubscribing from pair: %s/%s", pair['base_asset'], pair['quote_asset'])
-        await client.ws_client.unsubscribe(f"{pair['base_asset']}/{pair['quote_asset']}")
-    
-    # Clean up handlers
-    client.ws_client.off("swap_update", on_swap_update)
-    client.ws_client.off("error", on_error)
-
-@pytest.mark.asyncio
-async def test_complete_maker_swap(client):
-    """Test the complete_maker_swap convenience method."""
+async def test_complete_swap(client):
+    """Test the complete maker swap flow."""
     # List assets to get valid asset IDs
-    assets = await client.list_assets()
-    if not assets.get("nia"):
-        logger.warning("No assets available for testing complete maker swap")
-        pytest.skip("No assets available for testing")
-    
-    # Get two different assets
-    asset1 = assets["nia"][0]["asset_id"]
-    asset2 = assets["nia"][1]["asset_id"] if len(assets["nia"]) > 1 else asset1
-    
-    # Get quote
-    from_amount = 1000000  # 1 BTC in millisats
-    quote = await client.get_quote(asset1, asset2, from_amount)
-    logger.info("Retrieved quote for complete maker swap: %s", quote)
-    
-    try:
-        # Attempt complete maker swap
-        result = await client.complete_maker_swap(
-            from_asset=asset1,
-            to_asset=asset2,
-            from_amount=from_amount,
-            to_amount=quote["to_amount"],
-            timeout_sec=10  # Short timeout for testing
-        )
-        logger.info("Completed maker swap: %s", result)
-        assert "status" in result
-    except Exception as e:
-        # Expected to timeout in test environment
-        logger.warning("Expected timeout in test environment: %s", str(e))
-        assert "timeout" in str(e).lower()
+    logger.info("Starting maker swap flow test")
+    init_result = await test_whitelist_trade(client)
 
-if __name__ == "__main__":
-    # Run tests
-    asyncio.run(test_node_operations())
-    asyncio.run(test_asset_operations())
-    asyncio.run(test_pair_operations())
-    asyncio.run(test_maker_swap_flow())
-    asyncio.run(test_taker_swap_flow())
-    asyncio.run(test_websocket_events())
-    asyncio.run(test_complete_maker_swap()) 
+    #Getting taker pubkey
+    taker_pubkey = await client.get_node_pubkey()
+    assert taker_pubkey is not None
+    logger.info("Taker pubkey: %s", taker_pubkey)
+
+    logger.info("Executing maker swap")
+    execute_result = await client.execute_maker_swap(
+        swapstring=init_result["swapstring"],
+        payment_hash=init_result["payment_hash"],
+        taker_pubkey=taker_pubkey
+    )
+    logger.info("Executed maker swap: %s", execute_result)
+    assert "status" in execute_result
+    assert execute_result["status"] == 200
+
+    # Wait for swap to complete
+    status = await client.wait_for_swap_completion(init_result["payment_hash"])
+    logger.info("Swap status: %s", status)
+    assert status is not None
+    assert status["status"] == "Succeeded"
+    
+    # Confirm swap status
+    start_time = time.time()
+    while time.time() - start_time < 180:
+        status = await client.get_swap_status(init_result["payment_hash"])
+        logger.info("Swap status: %s", status)
+        if status["swap"]["status"] == "Succeeded":
+            break
+        await asyncio.sleep(1)
+    assert "swap" in status
+    assert status["swap"]["status"] == "Succeeded"
+    assert status["swap"]["completed_at"] is not None
+
+@pytest.mark.asyncio
+async def test_complete_swap_in_one_call(client):
+    """Test the complete maker swap flow in one call."""
+    logger.info("Starting maker swap flow test")
+    logger.info("Getting quote for maker swap")
+    quote = await test_get_quote_websocket(client)
+    logger.info("Quote: %s", quote)
+    logger.info("Testing complete maker swap in one call")
+    swap_result = await client.complete_maker_swap(
+        from_asset=quote["from_asset"],
+        to_asset=quote["to_asset"],
+        from_amount=quote["from_amount"],
+        to_amount=quote["to_amount"],
+        rfq_id=quote["rfq_id"],
+    )
+    logger.info("Complete maker swap in one call: %s", swap_result)
+    assert "status" in swap_result
+    assert swap_result["status"] == "Succeeded"
+    assert swap_result["completed_at"] is not None

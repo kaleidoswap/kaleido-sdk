@@ -7,7 +7,7 @@ from kaleidoswap_sdk.client import KaleidoClient
 
 # Test configuration
 API_URL = "http://localhost:8000/api/v1"
-NODE_URL = "http://localhost:8000/api/v1"
+NODE_URL = "http://localhost:3001/"
 API_KEY = "test_api_key"
 
 # Create logs directory if it doesn't exist
