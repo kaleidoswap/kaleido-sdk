@@ -7,7 +7,6 @@ from typing import Any, Callable, Dict, List, Optional, Set, Union
 from datetime import datetime
 
 import websockets
-from websockets.client import WebSocketClientProtocol
 from websockets.exceptions import WebSocketException, ConnectionClosed
 
 from .http_client import HttpClient
@@ -52,9 +51,8 @@ class WebSocketClient:
         self.compression = compression
         self.client_id = client_id or str(uuid.uuid4())
         
-        self._ws: Optional[WebSocketClientProtocol] = None
+        self._ws: Optional[websockets.protocol.WebSocketCommonProtocol] = None
         self._running = False
-        self._ping_task: Optional[asyncio.Task] = None
         self._handlers: Dict[str, Set[Callable]] = {}
         self._response_futures: Dict[str, asyncio.Future] = {}
         self._message_queue: asyncio.Queue = asyncio.Queue(maxsize=max_queue)
@@ -68,24 +66,27 @@ class WebSocketClient:
             return
 
         try:
-            self._ws = await asyncio.get_event_loop().create_connection(
-                lambda: WebSocketClientProtocol(
-                    max_size=self.max_size,
-                    max_queue=self.max_queue,
-                    compression=self.compression
-                ),
-                self.base_url.replace('ws://', '').replace('wss://', ''),
-                ssl=self.base_url.startswith('wss://')
+            # Construct the full WebSocket URL with client ID
+            ws_url = f"{self.base_url}/market/ws/{self.client_id}"
+            
+            # Connect using the websockets library
+            self._ws = await websockets.connect(
+                ws_url,
+                max_size=self.max_size,
+                max_queue=self.max_queue,
+                compression=self.compression,
+                ping_interval=self.ping_interval,
+                ping_timeout=self.ping_timeout,
+                close_timeout=self.close_timeout
             )
             self._running = True
             self._last_ping = datetime.now()
             self._last_pong = datetime.now()
             
             # Start background tasks
-            self._ping_task = asyncio.create_task(self._ping_loop())
             self._message_task = asyncio.create_task(self._message_loop())
             
-            logger.info(f"WebSocket connected with client ID: {self.client_id}")
+            logger.info(f"WebSocket connected to {ws_url}")
             
         except Exception as e:
             logger.error(f"WebSocket connection failed: {e}")
@@ -94,34 +95,30 @@ class WebSocketClient:
     async def disconnect(self) -> None:
         """Disconnect from WebSocket server."""
         self._running = False
-        if self._ping_task:
-            self._ping_task.cancel()
+        
+        # Cancel message task
+        if self._message_task:
+            self._message_task.cancel()
             try:
-                await self._ping_task
+                await self._message_task
             except asyncio.CancelledError:
                 pass
             
+        # Close WebSocket connection
         if self._ws:
             await self._ws.close()
             self._ws = None
             logger.info("WebSocket disconnected")
             
-    async def _ping_loop(self) -> None:
-        """Send periodic pings to keep connection alive."""
-        while self._running:
-            try:
-                await self.send({"action": "ping"})
-                await asyncio.sleep(self.ping_interval)
-            except Exception as e:
-                logger.error(f"Error in ping loop: {e}")
-                break
-
     async def _message_loop(self) -> None:
         """Process incoming WebSocket messages."""
         while self._running and self._ws:
             try:
                 message = await self._ws.recv()
                 await self._handle_message(json.loads(message))
+            except ConnectionClosed:
+                logger.info("WebSocket connection closed")
+                break
             except Exception as e:
                 logger.error(f"Error in message loop: {e}")
                 break
@@ -132,8 +129,18 @@ class WebSocketClient:
         Args:
             data: Message data
         """
+        logger.debug(f"Received WebSocket message: {data}")
+        
         action = data.get("action")
         if not action:
+            logger.warning(f"Received message without action: {data}")
+            # Still try to handle it by calling all registered handlers
+            for handler_set in self._handlers.values():
+                for handler in handler_set:
+                    try:
+                        await handler(data)
+                    except Exception as e:
+                        logger.error(f"Error in message handler: {e}")
             return
             
         # Handle response futures

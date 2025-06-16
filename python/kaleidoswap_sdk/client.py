@@ -12,6 +12,7 @@ from .generated.kaleidoswap_pb2 import (
     Error
 )
 from datetime import datetime
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -99,8 +100,9 @@ class KaleidoClient:
         Returns:
             Dict containing list of assets
         """
-        return await self.api_client.get("/assets")
+        return await self.api_client.get("/market/assets")
 
+    # TODO: Must be checked
     async def get_asset_metadata(self, asset_id: str) -> Dict[str, Any]:
         """Get metadata for a specific asset.
         
@@ -120,7 +122,7 @@ class KaleidoClient:
         Returns:
             Dict containing list of trading pairs
         """
-        return await self.api_client.get("/pairs")
+        return await self.api_client.get("/market/pairs")
 
     async def get_pair_by_assets(self, base_asset: str, quote_asset: str) -> Optional[Dict[str, Any]]:
         """Get trading pair by base and quote assets.
@@ -136,6 +138,9 @@ class KaleidoClient:
         for pair in pairs.get("pairs", []):
             if (pair["base_asset_id"] == base_asset and 
                 pair["quote_asset_id"] == quote_asset):
+                return pair
+            if (pair["quote_asset_id"] == base_asset and 
+                pair["base_asset_id"] == quote_asset):
                 return pair
         return None
 
@@ -155,14 +160,74 @@ class KaleidoClient:
         Returns:
             Quote information
         """
-        return await self.api_client.post("/quote", {
+        return await self.api_client.post("/market/quote", {
+            "from_asset": from_asset,
+            "from_amount": from_amount,
+            "to_asset": to_asset
+        })
+
+    async def get_quote_websocket(
+        self,
+        from_asset: str,
+        to_asset: str,
+        from_amount: int  # in millisats
+    ) -> Dict[str, Any]:
+        """Get a quote for swapping assets using websocket.
+        
+        Args:
+            from_asset: Source asset ID
+            to_asset: Destination asset ID
+            from_amount: Amount in millisats
+            
+        Returns:
+            Quote information
+            
+        Raises:
+            Exception: If there is an error in the quote response
+            RuntimeError: If WebSocket is not connected
+        """
+        # Ensure WebSocket is connected
+        if not self.ws_client._ws:
+            await self.connect()
+            
+        # Create a future to wait for the response
+        response_future = asyncio.Future()
+        
+        # Create the quote message
+        quote_message = {
+            "action": "quote_request",
             "from_asset": from_asset,
             "to_asset": to_asset,
-            "from_amount": from_amount
-        })
+            "from_amount": from_amount,
+            "timestamp": int(time.time())
+        }
+        
+        # Register a one-time handler for the quote response
+        async def quote_handler(response: Dict[str, Any]) -> None:
+            if not response_future.done():
+                if "error" in response and response["error"]:
+                    response_future.set_exception(Exception(f"WebSocket quote error: {response['error']}"))
+                else:
+                    response_future.set_result(response.get("data", {}))
+        
+        # Register the handler
+        self.ws_client.on("quote_response", quote_handler)
+        
+        try:
+            # Send the quote request
+            await self.ws_client.send(quote_message)
+            
+            # Wait for the response with a timeout
+            quote_data = await asyncio.wait_for(response_future, timeout=30)
+            return quote_data
+            
+        finally:
+            # Clean up the handler
+            self.ws_client.off("quote_response", quote_handler)
 
     async def init_maker_swap(
         self,
+        rfq_id: str,
         from_asset: str,
         to_asset: str,
         from_amount: int,  # in millisats
@@ -181,18 +246,18 @@ class KaleidoClient:
         Returns:
             Dict containing swap initialization details
         """
-        return await self.node_client.post("/makerinit", {
+        return await self.api_client.post("/swaps/init", {
+            "rfq_id": rfq_id,
             "from_asset": from_asset,
             "to_asset": to_asset,
-            "qty_from": from_amount,
-            "qty_to": to_amount,
-            "timeout_sec": timeout_sec
+            "from_amount": from_amount,
+            "to_amount": to_amount,
         })
 
     async def execute_maker_swap(
         self,
         swapstring: str,
-        payment_secret: str,
+        payment_hash: str,
         taker_pubkey: str
     ) -> Dict[str, Any]:
         """Execute a maker swap.
@@ -205,9 +270,9 @@ class KaleidoClient:
         Returns:
             Dict containing execution status
         """
-        return await self.node_client.post("/makerexecute", {
+        return await self.api_client.post("/swaps/execute", {
             "swapstring": swapstring,
-            "payment_secret": payment_secret,
+            "payment_hash": payment_hash,
             "taker_pubkey": taker_pubkey
         })
 
@@ -223,31 +288,6 @@ class KaleidoClient:
         taker_pubkey = await self.get_node_pubkey()
         return await self.node_client.post("/taker", {
             "swapstring": swapstring,
-            "taker_pubkey": taker_pubkey
-        })
-
-    async def confirm_swap(
-        self,
-        swapstring: str,
-        payment_hash: str,
-        payment_secret: str
-    ) -> Dict[str, Any]:
-        """Confirm and execute a swap.
-        
-        Args:
-            swapstring: Swap string from maker
-            payment_hash: Payment hash from whitelist
-            payment_secret: Payment secret from whitelist
-            
-        Returns:
-            Dict containing execution status
-        """
-        taker_pubkey = await self.get_node_pubkey()
-        return await self.node_client.post("/taker/execute", {
-            "swapstring": swapstring,
-            "payment_hash": payment_hash,
-            "payment_secret": payment_secret,
-            "taker_pubkey": taker_pubkey
         })
 
     async def get_swap_status(self, payment_hash: str) -> Dict[str, Any]:
@@ -259,7 +299,7 @@ class KaleidoClient:
         Returns:
             Swap status information
         """
-        return await self.node_client.post("/status", {
+        return await self.api_client.post("/swaps/status", {
             "payment_hash": payment_hash
         })
         
@@ -284,9 +324,9 @@ class KaleidoClient:
         """
         start_time = datetime.now()
         while True:
-            status = await self.get_swap_status(payment_hash)
-            if status["status"] in ["Succeeded", "Failed", "Expired"]:
-                return status
+            swap_status = await self.get_swap_status(payment_hash)
+            if swap_status["swap"]["status"] in ["Succeeded", "Failed", "Expired"]:
+                return swap_status["swap"]
                 
             if (datetime.now() - start_time).total_seconds() > timeout:
                 raise TimeoutError(f"Swap did not complete within {timeout} seconds")
@@ -299,6 +339,7 @@ class KaleidoClient:
         to_asset: str,
         from_amount: int,  # in millisats
         to_amount: int,  # in millisats
+        rfq_id: str,
         timeout_sec: int = 3600
     ) -> Dict[str, Any]:
         """Complete a maker swap in one call.
@@ -308,28 +349,58 @@ class KaleidoClient:
             to_asset: Destination asset ID
             from_amount: Amount of source asset in millisats
             to_amount: Amount of destination asset in millisats
+            rfq_id: RFQ ID from quote
             timeout_sec: Swap timeout in seconds
             
         Returns:
             Final swap status
         """
-        # Initialize swap
-        init_result = await self.init_maker_swap(
-            from_asset=from_asset,
-            to_asset=to_asset,
-            from_amount=from_amount,
-            to_amount=to_amount,
-            timeout_sec=timeout_sec
-        )
-        
-        # Wait for taker
-        payment_hash = init_result["payment_hash"]
-        status = await self.wait_for_swap_completion(payment_hash, timeout=timeout_sec)
-        
-        if status["status"] == "Succeeded":
-            return status
-        else:
-            raise Exception(f"Swap failed with status: {status['status']}")
+        try:
+            try:
+            # Initialize swap
+                init_result = await self.init_maker_swap(
+                    rfq_id=rfq_id,
+                    from_asset=from_asset,
+                    to_asset=to_asset,
+                    from_amount=from_amount,
+                    to_amount=to_amount,
+                )
+            except Exception as e:
+                logger.error(f"Error initializing swap: {e}")
+                raise e
+            
+            # Whitelist trade from taker
+            try:
+                whitelist_result = await self.whitelist_trade(init_result["swapstring"])
+            except Exception as e:
+                logger.error(f"Error whitelisting trade: {e}")
+                raise e
+
+            # Execute swap from maker
+            taker_pubkey = await self.get_node_pubkey()
+            try:
+                execute_result = await self.execute_maker_swap(
+                    swapstring=init_result["swapstring"],
+                    payment_hash=init_result["payment_hash"],
+                    taker_pubkey=taker_pubkey
+                )
+            except Exception as e:
+                logger.error(f"Error executing swap: {e}")
+                raise e
+            
+            # Wait for swap to complete
+            try:
+                swap_status = await self.wait_for_swap_completion(init_result["payment_hash"], timeout=timeout_sec)
+                if swap_status["status"] == "Succeeded":
+                    return swap_status
+                else:
+                    raise Exception(f"Swap failed with status: {swap_status['status']}")
+            except Exception as e:
+                logger.error(f"Error waiting for swap completion: {e}")
+                raise e
+        except Exception as e:
+            logger.error(f"Error completing swap: {e}")
+            raise e
 
     async def close(self):
         """Closes any open connections (HTTP client sessions, WebSocket)."""
