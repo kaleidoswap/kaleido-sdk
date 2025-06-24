@@ -1,16 +1,8 @@
 import asyncio
 import logging
-from typing import Dict, List, Optional, Union, Any
+from typing import Dict, Optional, Any
 from .http import HttpClient
 from .websocket import WebSocketClient
-# from .generated.kaleidoswap_pb2 import PairQuoteRequest as PairQuoteRequestProto # For typing or direct proto use
-import uuid
-from .generated.kaleidoswap_pb2 import (
-    PriceUpdate,
-    SubscriptionConfirmation,
-    UnsubscriptionConfirmation,
-    Error
-)
 from datetime import datetime
 import time
 
