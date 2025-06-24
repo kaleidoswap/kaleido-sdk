@@ -1,4 +1,14 @@
-# Byte-compiled / optimized / DLL files
+# TypeScript
+typescript/node_modules/
+typescript/dist/
+typescript/coverage/
+
+typescript/*.js
+typescript/*.js.map
+typescript/*.d.ts
+!typescript/jest.config.js# Byte-compiled / optimized / DLL files
+
+# Python
 __pycache__/
 *.py[cod]
 *$py.class

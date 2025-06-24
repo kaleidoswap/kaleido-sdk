@@ -1,4 +1,5 @@
 import { WebSocketError } from '../types/exceptions';
+import WebSocket, { MessageEvent as WSMessageEvent } from 'ws';
 
 /**
  * Configuration for the WebSocket client
@@ -38,7 +39,7 @@ export type MessageHandler = (data: any) => void;
  */
 export class WebSocketClient {
   private readonly baseUrl: string;
-  private readonly apiKey?: string;
+  //private readonly apiKey?: string;
   private readonly pingInterval: number;
   private readonly pingTimeout: number;
   private readonly reconnectInterval: number;
@@ -57,7 +58,7 @@ export class WebSocketClient {
    */
   constructor(config: WebSocketConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, '').replace(/^http/, 'ws');
-    this.apiKey = config.apiKey;
+    //this.apiKey = config.apiKey;
     this.pingInterval = config.pingInterval || 30000;
     this.pingTimeout = config.pingTimeout || 5000;
     this.reconnectInterval = config.reconnectInterval || 5000;
@@ -68,13 +69,13 @@ export class WebSocketClient {
    * Gets the headers for WebSocket connection
    * @returns Object containing connection headers
    */
-  private getHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {};
-    if (this.apiKey) {
-      headers['Authorization'] = `Bearer ${this.apiKey}`;
-    }
-    return headers;
-  }
+  //private getHeaders(): Record<string, string> {
+  //  const headers: Record<string, string> = {};
+  //  if (this.apiKey) {
+  //    headers['Authorization'] = `Bearer ${this.apiKey}`;
+  //  }
+  //  return headers;
+  //}
 
   /**
    * Establishes a WebSocket connection
@@ -141,9 +142,11 @@ export class WebSocketClient {
    * Handles incoming WebSocket messages
    * @param event - Message event
    */
-  private handleMessage(event: MessageEvent): void {
+  private handleMessage(event: WSMessageEvent): void {
     try {
-      const message: WebSocketMessage = JSON.parse(event.data);
+      // Handle both string and Buffer data types
+      const data = typeof event.data === 'string' ? event.data : event.data.toString('utf8');
+      const message: WebSocketMessage = JSON.parse(data);
       const handlers = this.messageHandlers.get(message.action);
       
       if (handlers) {

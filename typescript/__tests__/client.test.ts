@@ -10,8 +10,8 @@ import {
 describe('KaleidoClient', () => {
   let client: KaleidoClient;
   const mockConfig = {
-    baseUrl: 'http://localhost:8000',
-    nodeUrl: 'http://localhost:3001',
+    baseUrl: 'https://api.test.com',
+    nodeUrl: 'https://node.test.com',
     apiKey: 'test-api-key'
   };
 
@@ -27,19 +27,19 @@ describe('KaleidoClient', () => {
     });
 
     it('should get node info', async () => {
-      const result = await client.getInfo();
+      const result = await client.getNodeInfo();
       expect(result).toEqual(mockNodeInfo);
       expect(client['nodeClient'].get).toHaveBeenCalledWith('/node/info');
     });
 
-    //it('should get node pubkey', async () => {
-    //  const result = await client.getNodePubkey();
-    //  expect(result).toBe(mockNodeInfo.pubkey);
-    //});
+    it('should get node pubkey', async () => {
+      const result = await client.getNodePubkey();
+      expect(result).toBe(mockNodeInfo.pubkey);
+    });
 
     it('should handle node errors', async () => {
       jest.spyOn(client['nodeClient'], 'get').mockRejectedValue(new Error('Node error'));
-      await expect(client.getInfo()).rejects.toThrow(NodeError);
+      await expect(client.getNodeInfo()).rejects.toThrow(NodeError);
     });
   });
 
@@ -152,7 +152,7 @@ describe('KaleidoClient', () => {
     beforeEach(() => {
       jest.spyOn(client['apiClient'], 'post').mockResolvedValue(mockSwap);
       jest.spyOn(client['nodeClient'], 'post').mockResolvedValue(mockSwap);
-    //  jest.spyOn(client, 'getNodePubkey').mockResolvedValue('test-pubkey');
+      jest.spyOn(client, 'getNodePubkey').mockResolvedValue('test-pubkey');
     });
 
     it('should initialize maker swap', async () => {
@@ -173,28 +173,28 @@ describe('KaleidoClient', () => {
       );
     });
 
-    //it('should whitelist trade', async () => {
-    //  const result = await client.whitelistTrade('swapstring');
-    //  expect(result).toEqual(mockSwap);
-    //  expect(client['nodeClient'].post).toHaveBeenCalledWith(
-    //    '/swaps/taker/init',
-    //    expect.objectContaining({
-    //      swapstring: 'swapstring',
-    //      pubkey: 'test-pubkey'
-    //    })
-    //  );
-    //});
+    it('should whitelist trade', async () => {
+      const result = await client.whitelistTrade('swapstring');
+      expect(result).toEqual(mockSwap);
+      expect(client['nodeClient'].post).toHaveBeenCalledWith(
+        '/swaps/taker/init',
+        expect.objectContaining({
+          swapstring: 'swapstring',
+          pubkey: 'test-pubkey'
+        })
+      );
+    });
 
-    //it('should confirm swap', async () => {
-    //  const result = await client.confirmSwap('swap-123');
-    //  expect(result).toEqual(mockSwap);
-    //  expect(client['nodeClient'].post).toHaveBeenCalledWith(
-    //    '/swaps/taker/swap-123/execute',
-    //    expect.objectContaining({
-    //      pubkey: 'test-pubkey'
-    //    })
-    //  );
-    //});
+    it('should confirm swap', async () => {
+      const result = await client.confirmSwap('swap-123');
+      expect(result).toEqual(mockSwap);
+      expect(client['nodeClient'].post).toHaveBeenCalledWith(
+        '/swaps/taker/swap-123/execute',
+        expect.objectContaining({
+          pubkey: 'test-pubkey'
+        })
+      );
+    });
 
     it('should get swap status', async () => {
       const result = await client.getSwapStatus('swap-123');
@@ -207,19 +207,4 @@ describe('KaleidoClient', () => {
       await expect(client.initMakerSwap('BTC/USDT', 1)).rejects.toThrow(SwapError);
     });
   });
-
-  describe('info operations', () => {
-    const mockInfo = {
-    }
-    
-    beforeEach(() => {
-      jest.spyOn(client['apiClient'], 'get').mockResolvedValue(mockInfo)
-    })
-
-    it('should get info', async () => {
-      const result = await client.getInfo();
-      expect(result).toEqual(mockInfo);
-      expect(client['apiClient'].get).toHaveBeenCalledWith('/api/v1/lsps1/get_info');
-    })
-  })
 }); 

@@ -9,12 +9,12 @@ export type {
 } from './client';
 
 // WebSocket
-export { WebSocketClient } from './websocket/client';
-export type {
-  WebSocketConfig,
-  WebSocketMessage,
-  MessageHandler
-} from './websocket/client';
+//export { WebSocketClient } from './websocket/client';
+//export type {
+//  WebSocketConfig,
+//  WebSocketMessage,
+//  MessageHandler
+//} from './websocket/client';
 
 // HTTP
 export { HttpClient } from './http/client';

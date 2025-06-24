@@ -1,4 +1,4 @@
-import { KaleidoError, NetworkError, RateLimitError } from '../types/exceptions';
+import { NetworkError, RateLimitError } from '../types/exceptions';
 
 export interface RetryConfig {
   maxRetries: number;

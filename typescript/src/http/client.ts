@@ -10,11 +10,8 @@ import { retry, RetryConfig } from '../utils/retry';
  * Configuration for the HTTP client
  */
 export interface HttpClientConfig {
-  /** Base URL for API requests */
   baseUrl: string;
-  /** Optional API key for authentication */
   apiKey?: string;
-  /** Optional retry configuration */
   retryConfig?: Partial<RetryConfig>;
 }
 
@@ -69,8 +66,8 @@ export class HttpClient {
     endpoint: string,
     data?: any
   ): Promise<T> {
-    return retry(
-      async () => {
+    return retry<T>(
+      async (): Promise<T> => {
         const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
         const headers = this.getHeaders();
 
@@ -116,7 +113,7 @@ export class HttpClient {
             );
           }
 
-          return await response.json();
+          return (await response.json()) as T;
         } catch (error) {
           if (error instanceof AuthenticationError ||
               error instanceof RateLimitError ||
