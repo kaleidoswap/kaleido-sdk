@@ -14,6 +14,7 @@ description = "SDK for interacting with Kaleidoswap"
 authors = ["Your Name <your.email@example.com>"]
 packages = [{include = "kaleidoswap_sdk"}]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.8"
