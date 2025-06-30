@@ -285,7 +285,6 @@ class KaleidoClient:
         Returns:
             Dict containing whitelist status
         """
-        taker_pubkey = await self.get_node_pubkey()
         return await self.node_client.post("/taker", {
             "swapstring": swapstring,
         })
