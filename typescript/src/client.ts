@@ -1,53 +1,50 @@
 import { HttpClient, HttpClientConfig } from './http/client';
+import { WebSocketClient } from './websocket/client';
+import WebSocket from 'ws';
+
 import {
   AssetError,
   NodeError,
   PairError,
   QuoteError,
-  SwapError
+  SwapError,
+  TimeoutError,
+  WebSocketError,
 } from './types/exceptions';
-import { components } from './types';
+
+import { 
+  AssetResponse,
+  TradingPair,
+  PairResponse,
+  PairQuoteResponse,
+  SwapRequest,
+  ConfirmSwapRequest,
+  ConfirmSwapResponse,
+  Swap,
+  Asset,
+ } from './types/index'
 
 export interface KaleidoConfig extends HttpClientConfig {
   nodeUrl: string;
+  wsUrl?: string;
 }
-
-export interface Asset {
-  id: string;
-  name: string;
-  symbol: string;
-  decimals: number;
-  type: string;
-}
-
-export type AssetResponse = components['schemas']['AssetsResponse']
-
-export type TradingPair = components['schemas']['Pair'];
-export type PairResponse = components['schemas']['PairResponse'];
-
-export type Quote = components['schemas']['PairQuoteRequest']
-export type PairQuoteResponse = components['schemas']['PairQuoteResponse']
-export type SwapRequest = components['schemas']['SwapRequest']
-export type Swap = components['schemas']['Swap']
-
-//export interface Quote {
-//  pairId: string;
-//  baseAmount: number;
-//  quoteAmount: number;
-//  fee: number;
-//  expiry: number;
-//}
 
 export class KaleidoClient {
   private readonly apiClient: HttpClient;
   private readonly nodeClient: HttpClient;
+  private readonly wsClient: WebSocketClient;
 
   constructor(config: KaleidoConfig) {
-    const { nodeUrl, ...apiConfig } = config;
+    const { nodeUrl, wsUrl, ...apiConfig } = config;
     this.apiClient = new HttpClient(apiConfig);
     this.nodeClient = new HttpClient({
       ...apiConfig,
       baseUrl: nodeUrl
+    });
+    const wsBaseUrl = wsUrl || apiConfig.baseUrl.replace('http', 'ws');
+    this.wsClient = new WebSocketClient({
+      ...apiConfig,
+      baseUrl: wsBaseUrl
     });
   }
 
@@ -140,6 +137,56 @@ export class KaleidoClient {
     }
   }
 
+  async getQuoteWS(
+    fromAsset: string,
+    toAsset: string,
+    fromAmount: number
+  ): Promise<PairQuoteResponse> {
+    if (this.wsClient.getConnectionState() !== WebSocket.OPEN) {
+      await this.wsClient.connect();
+    }
+
+    return new Promise<PairQuoteResponse>((resolve, reject) => {
+      const quoteId = `quote_${Date.now()}`;
+      let timeoutId: NodeJS.Timeout;
+
+      const quoteMessage = {
+        action: 'quote_request',
+        request_id: quoteId,
+        from_asset: fromAsset,
+        to_asset: toAsset,
+        from_amount: fromAmount,
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+
+      timeoutId = setTimeout(() => {
+        this.wsClient.off('quote_response', quoteHandler);
+        reject(new TimeoutError('Quote request timed out'));
+      }, 30000);
+
+      const quoteHandler = (response: any) => {
+        if (response.request_id === quoteId) {
+          clearTimeout(timeoutId);
+          this.wsClient.off('quote_response', quoteHandler);
+
+          if (response.error) {
+            reject(new QuoteError(response.error.message || 'Failed to get quote'));
+          } else {
+            resolve(response.data || {});
+          }
+        }
+      };
+
+      this.wsClient.on('quote_response', quoteHandler);
+
+      this.wsClient.send(quoteMessage).catch((error) => {
+        clearTimeout(timeoutId);
+        this.wsClient.off('quote_response', quoteHandler);
+        reject(new WebSocketError(`Failed to send quote request: ${error.message}`));
+      });
+    });
+  }
+
   async initMakerSwap(
     rfqId: string,
     fromAsset: string,
@@ -164,10 +211,24 @@ export class KaleidoClient {
     }
   }
 
-  async executeMakerSwap(swapId: string): Promise<Swap> {
+  async executeMakerSwap(request: ConfirmSwapRequest): Promise<ConfirmSwapResponse> {
     try {
-      return await this.apiClient.post<Swap>(`/swaps/maker/${swapId}/execute`, {});
+      console.log('Executing maker swap with request:', JSON.stringify({
+        swapstring: request.swapstring ? `${request.swapstring.substring(0, 20)}...` : 'undefined',
+        payment_hash: request.payment_hash,
+        taker_pubkey: request.taker_pubkey
+      }, null, 2));
+      
+      const response = await this.apiClient.post<ConfirmSwapResponse>('/swaps/execute', {
+        swapstring: request.swapstring,
+        payment_hash: request.payment_hash,
+        taker_pubkey: request.taker_pubkey
+      });
+      
+      console.log('Maker swap executed successfully:', response);
+      return response;
     } catch (error) {
+      console.error('Error executing maker swap:', error);
       throw new SwapError(
         `Failed to execute maker swap: ${error instanceof Error ? error.message : String(error)}`
       );
@@ -186,19 +247,6 @@ export class KaleidoClient {
     }
   }
   
-  async confirmSwap(swapId: string): Promise<Swap> {
-    try {
-      const pubkey = await this.getNodePubkey();
-      return await this.nodeClient.post<Swap>(`/swaps/taker/${swapId}/execute`, {
-        pubkey
-      });
-    } catch (error) {
-      throw new SwapError(
-        `Failed to confirm swap: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
   async getSwapStatus(paymentHash: string): Promise<Swap> {
     try {
       return await this.nodeClient.post<Swap>(`/swaps/status`, {
@@ -208,6 +256,45 @@ export class KaleidoClient {
       throw new SwapError(
         `Failed to get swap status: ${error instanceof Error ? error.message : String(error)}`
       );
+    }
+  }
+  
+
+  /**
+   * Waits for a swap to reach a terminal state (Succeeded, Failed, or Expired)
+   * @param paymentHash - The payment hash of the swap to monitor
+   * @param timeoutSeconds - Maximum time to wait in seconds (default: 300)
+   * @param pollIntervalSeconds - Time between status checks in seconds (default: 5)
+   * @returns Promise that resolves with the final swap status
+   * @throws {TimeoutError} If the swap doesn't complete within the timeout
+   * @throws {SwapError} If there's an error checking the swap status
+   */
+  async waitForSwapCompletion(
+    paymentHash: string,
+    timeoutSeconds = 300,
+    pollIntervalSeconds = 5
+  ): Promise<Swap> {
+    const startTime = Date.now();
+    const timeoutMs = timeoutSeconds * 1000;
+    const pollIntervalMs = pollIntervalSeconds * 1000;
+
+    while (true) {
+      const swap = await this.getSwapStatus(paymentHash);
+      
+      // Check if swap has reached a terminal state
+      if (swap.status && ['Succeeded', 'Failed', 'Expired'].includes(swap.status)) {
+        return swap;
+      }
+
+      // Check if we've exceeded the timeout
+      if (Date.now() - startTime >= timeoutMs) {
+        throw new TimeoutError(
+          `Swap ${paymentHash} did not complete within ${timeoutSeconds} seconds`
+        );
+      }
+
+      // Wait before polling again
+      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
     }
   }
 } 

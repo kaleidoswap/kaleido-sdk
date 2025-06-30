@@ -24,6 +24,25 @@ export class HttpClient {
   private readonly retryConfig: Partial<RetryConfig>;
 
   /**
+   * Makes a GET request
+   * @param endpoint - API endpoint
+   * @returns Promise resolving to the response data
+   */
+  public async get<T = any>(endpoint: string): Promise<T> {
+    return this.request<T>('GET', endpoint);
+  }
+
+  /**
+   * Makes a POST request
+   * @param endpoint - API endpoint
+   * @param data - Request data
+   * @returns Promise resolving to the response data
+   */
+  public async post<T = any>(endpoint: string, data: any): Promise<T> {
+    return this.request<T>('POST', endpoint, data);
+  }
+
+  /**
    * Creates a new HTTP client instance
    * @param config - Configuration for the client
    */
@@ -68,52 +87,73 @@ export class HttpClient {
   ): Promise<T> {
     return retry<T>(
       async (): Promise<T> => {
-        const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+        const url = `${this.baseUrl}${endpoint}`;
         const headers = this.getHeaders();
 
+        console.log(`Making ${method} request to: ${url}`);
+        console.log('Request headers:', headers);
+        if (data) {
+          console.log('Request body:', JSON.stringify(data, null, 2));
+        }
+
+        const options: RequestInit = {
+          method,
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+          },
+          body: data ? JSON.stringify(data) : undefined,
+        };
+
         try {
+          console.log('Sending request to:', url);
+          const startTime = Date.now();
           const response = await fetch(url, {
-            method,
-            headers,
-            body: data ? JSON.stringify(data) : undefined
+            ...options,
+            // Add a timeout to prevent hanging requests
+            signal: AbortSignal.timeout(10000) // 10 second timeout
           });
+          const endTime = Date.now();
+          console.log(`Request to ${url} completed in ${endTime - startTime}ms`);
+
+          const responseText = await response.text();
+          console.log('Response status:', response.status);
+          
+          // Convert headers to a plain object for logging
+          const headersObj: Record<string, string> = {};
+          response.headers.forEach((value, key) => {
+            headersObj[key] = value;
+          });
+          console.log('Response headers:', headersObj);
+          
+          console.log('Response body:', responseText);
 
           if (response.status === 401) {
             throw new AuthenticationError(
-              'Authentication failed',
-              response.status
+              `Authentication failed: ${response.statusText}`
             );
           }
 
           if (response.status === 429) {
             throw new RateLimitError(
-              'Rate limit exceeded',
-              response.status
+              `Rate limit exceeded: ${response.statusText}`
             );
           }
 
-          if (response.status === 400) {
-            throw new ValidationError(
-              'Invalid request',
-              response.status
-            );
+          if (response.status >= 400) {
+            throw new Error(`HTTP error! status: ${response.status}, body: ${responseText}`);
           }
 
-          if (response.status >= 500) {
-            throw new NetworkError(
-              'Server error',
-              response.status
-            );
+          if (!responseText) {
+            return {} as T;
           }
 
-          if (!response.ok) {
-            throw new NetworkError(
-              `Request failed: ${response.statusText}`,
-              response.status
-            );
+          try {
+            return JSON.parse(responseText) as T;
+          } catch (e) {
+            console.error('Failed to parse JSON response:', e);
+            throw new Error(`Invalid JSON response: ${responseText}`);
           }
-
-          return (await response.json()) as T;
         } catch (error) {
           if (error instanceof AuthenticationError ||
               error instanceof RateLimitError ||
@@ -129,24 +169,5 @@ export class HttpClient {
       },
       this.retryConfig
     );
-  }
-
-  /**
-   * Makes a GET request
-   * @param endpoint - API endpoint
-   * @returns Promise resolving to the response data
-   */
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>('GET', endpoint);
-  }
-
-  /**
-   * Makes a POST request
-   * @param endpoint - API endpoint
-   * @param data - Request data
-   * @returns Promise resolving to the response data
-   */
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    return this.request<T>('POST', endpoint, data);
   }
 } 

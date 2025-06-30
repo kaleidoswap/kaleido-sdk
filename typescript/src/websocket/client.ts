@@ -47,7 +47,7 @@ export class WebSocketClient {
 
   private ws: WebSocket | null = null;
   private pingTimer: number | null = null;
-  private reconnectTimer: number | null = null;
+  private reconnectTimer: NodeJS.Timeout | null = null;
   private reconnectAttempts = 0;
   private messageHandlers: Map<string, Set<MessageHandler>> = new Map();
   private isConnecting = false;
@@ -167,7 +167,7 @@ export class WebSocketClient {
     }
 
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectTimer = window.setTimeout(() => {
+      this.reconnectTimer = setTimeout(() => {
         this.reconnectAttempts++;
         this.connect();
       }, this.reconnectInterval);
@@ -250,5 +250,13 @@ export class WebSocketClient {
       action: 'unsubscribe',
       data: { pairId }
     });
+  }
+
+  /**
+   * Gets the current WebSocket connection state
+   * @returns The current WebSocket ready state or undefined if not connected
+   */
+  public getConnectionState(): number | undefined {
+    return this.ws?.readyState;
   }
 } 
