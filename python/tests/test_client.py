@@ -2,27 +2,65 @@ import asyncio
 import pytest
 import logging
 import time
+from kaleidoswap_sdk.models import CreateOrderRequest
 
 logger = logging.getLogger(__name__)
 
 @pytest.mark.asyncio
-async def test_node_info(client):
-    """Test node-related operations."""
-    # Get node info
-    node_info = await client.get_node_info()
-    logger.info("Retrieved node info: %s", node_info)
-    assert node_info is not None
+async def test_lsp_info(client):
+    """Test LSP information."""
+    lsp_info = await client.get_lsp_info()
+    logger.info("Retrieved LSP info: %s", lsp_info)
+    assert lsp_info is not None
+    assert "lsp_connection_url" in lsp_info
 
 @pytest.mark.asyncio
-async def test_node_pubkey(client):
-    """Test node-related operations."""
-    # Get node pubkey
-    node_pubkey = await client.get_node_pubkey()
-    logger.info("Retrieved node pubkey: %s", node_pubkey)
-    assert node_pubkey is not None
-    
+async def test_lsp_connection_url(client):
+    """Test LSP connection URL."""
+    lsp_connection_url = await client.get_lsp_connection_url()
+    logger.info("Retrieved LSP connection URL: %s", lsp_connection_url)
+    assert lsp_connection_url is not None
+
 @pytest.mark.asyncio
-async def test_asset_operations(client):
+async def test_lsp_network_info(client):
+    """Test LSP network information."""
+    lsp_network_info = await client.get_lsp_network_info()
+    logger.info("Retrieved LSP network info: %s", lsp_network_info)
+    assert lsp_network_info is not None
+    assert "network" in lsp_network_info
+
+@pytest.mark.asyncio
+async def test_create_order(client):
+    """Test creating an order."""
+    pubkey = await client.get_node_pubkey()
+    onchain_address = await client.get_onchain_address()
+    order = CreateOrderRequest(
+        client_pubkey=pubkey,
+        lsp_balance_sat=80000,
+        client_balance_sat=20000,
+        required_channel_confirmations=1,
+        funding_confirms_within_blocks=1,
+        channel_expiry_blocks=1000,
+        token="BTC",
+        refund_onchain_address=onchain_address["address"],
+        announce_channel=True
+        )
+    order_result = await client.create_order(order)
+    logger.info("Created order: %s", order_result)
+    assert order_result is not None
+    return order_result
+
+@pytest.mark.asyncio
+async def test_get_order(client):
+    """Test getting an order."""
+    order_result = await test_create_order(client)
+    order_id = order_result["order_id"]
+    order_result = await client.get_order(order_id)
+    logger.info("Retrieved order: %s", order_result)
+    assert order_result is not None
+
+@pytest.mark.asyncio
+async def test_list_assets(client):
     """Test asset-related operations."""
     # List assets
     assets = await client.list_assets()
@@ -30,7 +68,7 @@ async def test_asset_operations(client):
     assert assets is not None
 
 @pytest.mark.asyncio
-async def test_pair_operations(client):
+async def test_list_pairs(client):
     """Test trading pair operations."""
     # List pairs
     pairs = await client.list_pairs()
@@ -121,16 +159,6 @@ async def test_init_maker_swap(client):
     return init_result
 
 @pytest.mark.asyncio
-async def test_whitelist_trade(client):
-    logger.info("Whitelisting trade")
-    init_result = await test_init_maker_swap(client)
-    logger.info("Init result: %s", init_result)
-    whitelist_result = await client.whitelist_trade(init_result["swapstring"])
-    logger.info("Whitelisted trade: %s", whitelist_result)
-    assert whitelist_result is not None
-    return init_result
-
-@pytest.mark.asyncio
 async def test_complete_swap(client):
     """Test the complete maker swap flow."""
     # List assets to get valid asset IDs
@@ -189,3 +217,66 @@ async def test_complete_swap_in_one_call(client):
     assert "status" in swap_result
     assert swap_result["status"] == "Succeeded"
     assert swap_result["completed_at"] is not None
+
+@pytest.mark.asyncio
+async def test_node_info(client):
+    """Test node-related operations."""
+    # Get node info
+    node_info = await client.get_node_info()
+    logger.info("Retrieved node info: %s", node_info)
+    assert node_info is not None
+
+@pytest.mark.asyncio
+async def test_node_pubkey(client):
+    """Test node-related operations."""
+    # Get node pubkey
+    node_pubkey = await client.get_node_pubkey()
+    logger.info("Retrieved node pubkey: %s", node_pubkey)
+    assert node_pubkey is not None
+
+@pytest.mark.asyncio
+async def test_whitelist_trade(client):
+    logger.info("Whitelisting trade")
+    init_result = await test_init_maker_swap(client)
+    logger.info("Init result: %s", init_result)
+    whitelist_result = await client.whitelist_trade(init_result["swapstring"])
+    logger.info("Whitelisted trade: %s", whitelist_result)
+    assert whitelist_result is not None
+    return init_result
+
+@pytest.mark.asyncio
+async def test_connect_peer(client):
+    """Test connecting to a peer."""
+    connection_url = await client.get_lsp_connection_url()
+    logger.info("Connecting to peer: %s", connection_url)
+    connect_result = await client.connect_peer(connection_url)
+    logger.info("Connected to peer: %s", connect_result)
+    assert connect_result is not None
+    
+@pytest.mark.asyncio
+async def test_list_peers(client):
+    """Test listing peers."""
+    peers = await client.list_peers()
+    logger.info("Listed peers: %s", peers)
+    assert peers is not None
+    assert "peers" in peers
+    assert len(peers["peers"]) > 0
+
+@pytest.mark.asyncio
+async def test_get_onchain_address(client):
+    """Test getting onchain address."""
+    onchain_address = await client.get_onchain_address()
+    logger.info("Retrieved onchain address: %s", onchain_address)
+    assert onchain_address is not None
+    assert "address" in onchain_address
+
+@pytest.mark.asyncio
+async def test_get_asset_metadata(client):
+    """Test getting asset metadata."""
+    assets = await client.list_assets()
+    assert assets is not None
+    asset_id = assets["assets"][0]["asset_id"]
+    asset_metadata = await client.get_asset_metadata(asset_id)
+    logger.info("Retrieved asset metadata: %s", asset_metadata)
+    assert asset_metadata is not None
+    assert "name" in asset_metadata

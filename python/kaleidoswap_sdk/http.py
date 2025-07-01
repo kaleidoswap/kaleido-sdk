@@ -99,6 +99,11 @@ class HttpClient:
                         status_code=response.status
                     )
                 elif response.status == 400:
+                    try:
+                        error_detail = await response.text()
+                        logger.error(f"400 Error details: {error_detail}")
+                    except Exception:
+                        pass
                     raise ValidationError(
                         "Invalid request",
                         status_code=response.status
