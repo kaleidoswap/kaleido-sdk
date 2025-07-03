@@ -108,14 +108,16 @@ async def test_get_quote_websocket(client):
     # Get assets for testing
     assets = await client.list_assets()
     assert assets is not None
-    from_asset = assets["assets"][0]["asset_id"]
-    to_asset = assets["assets"][1]["asset_id"]
+    assets_list = assets["assets"]
+    for asset in assets_list:
+        if asset["ticker"] == "USDT":
+            to_asset = asset["asset_id"]
     
     # Get quote via WebSocket
     quote = await client.get_quote_websocket(
-        from_asset=from_asset,
+        from_asset="BTC",
         to_asset=to_asset,
-        from_amount=100000000,  # 1 BTC in satoshis
+        from_amount=10000000,  # 1 BTC in satoshis
     )
     logger.info("Retrieved WebSocket quote: %s", quote)
     assert "to_amount" in quote
