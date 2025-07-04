@@ -1,15 +1,14 @@
 import asyncio
 import json
 import logging
-import time
 import uuid
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, Optional, Set
 from datetime import datetime
 
 import websockets
-from websockets.exceptions import WebSocketException, ConnectionClosed
+from websockets.exceptions import ConnectionClosed
 
-from .http_client import HttpClient
+from .http import HttpClient
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class WebSocketClient:
         self.compression = compression
         self.client_id = client_id or str(uuid.uuid4())
         
-        self._ws: Optional[websockets.protocol.WebSocketCommonProtocol] = None
+        self._ws: Optional[websockets.WebSocketClientProtocol] = None
         self._running = False
         self._handlers: Dict[str, Set[Callable]] = {}
         self._response_futures: Dict[str, asyncio.Future] = {}
