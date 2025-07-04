@@ -3,7 +3,6 @@ import json
 import logging
 import uuid
 from typing import Any, Callable, Dict, Optional, Set
-from datetime import datetime
 
 import websockets
 from websockets.exceptions import ConnectionClosed
@@ -54,9 +53,6 @@ class WebSocketClient:
         self._running = False
         self._handlers: Dict[str, Set[Callable]] = {}
         self._response_futures: Dict[str, asyncio.Future] = {}
-        self._message_queue: asyncio.Queue = asyncio.Queue(maxsize=max_queue)
-        self._last_ping: Optional[datetime] = None
-        self._last_pong: Optional[datetime] = None
         self._message_task: Optional[asyncio.Task] = None
 
     async def connect(self) -> None:
@@ -79,8 +75,6 @@ class WebSocketClient:
                 close_timeout=self.close_timeout
             )
             self._running = True
-            self._last_ping = datetime.now()
-            self._last_pong = datetime.now()
             
             # Start background tasks
             self._message_task = asyncio.create_task(self._message_loop())
@@ -192,66 +186,4 @@ class WebSocketClient:
             
         except Exception as e:
             logger.error(f"Error sending message: {e}")
-            raise
-
-    async def subscribe(self, pair: str) -> None:
-        """Subscribe to updates for a trading pair.
-        
-        Args:
-            pair: Trading pair identifier (e.g., 'BTC/USDT')
-        """
-        if not self._running:
-            raise RuntimeError("WebSocket not connected")
-            
-        await self.send({
-            "action": "subscribe",
-            "pair": pair
-        })
-        logger.info(f"Subscribed to {pair}")
-        
-    async def unsubscribe(self, pair: str) -> None:
-        """Unsubscribe from updates for a trading pair.
-        
-        Args:
-            pair: Trading pair identifier (e.g., 'BTC/USDT')
-        """
-        if not self._running:
-            raise RuntimeError("WebSocket not connected")
-            
-        await self.send({
-            "action": "unsubscribe",
-            "pair": pair
-        })
-        logger.info(f"Unsubscribed from {pair}")
-        
-    def on_swap_update(self, callback: Callable[[Dict[str, Any]], None]) -> None:
-        """Register callback for swap updates.
-        
-        Args:
-            callback: Async function that takes a swap update message as argument.
-        """
-        self._handlers['swap_update'] = {callback}
-        
-    def on_error(self, callback: Callable[[Dict[str, Any]], None]) -> None:
-        """Register callback for error messages.
-        
-        Args:
-            callback: Async function that takes an error message as argument.
-        """
-        self._handlers['error'] = {callback}
-        
-    def on_connect(self, callback: Callable[[], None]) -> None:
-        """Register callback for connection events.
-        
-        Args:
-            callback: Async function that takes no arguments.
-        """
-        self._handlers['connect'] = {callback}
-        
-    def on_disconnect(self, callback: Callable[[], None]) -> None:
-        """Register callback for disconnection events.
-        
-        Args:
-            callback: Async function that takes no arguments.
-        """
-        self._handlers['disconnect'] = {callback} 
+            raise 
