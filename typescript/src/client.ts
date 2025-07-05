@@ -62,10 +62,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Get LSP information.
-   * @returns Promise resolving to LSP info (TODO: type)
-   */
   async getLspInfo(): Promise<any> { // TODO: type
     try {
       return await this.apiClient.get('/lsps1/get_info');
@@ -74,19 +70,11 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Get LSP connection URL.
-   * @returns Promise resolving to LSP connection URL (TODO: type)
-   */
   async getLspConnectionUrl(): Promise<any> { // TODO: type
     const lspInfo = await this.getLspInfo();
     return lspInfo?.lsp_connection_url;
   }
 
-  /**
-   * Get LSP network information.
-   * @returns Promise resolving to LSP network info (TODO: type)
-   */
   async getLspNetworkInfo(): Promise<any> { // TODO: type
     try {
       return await this.apiClient.get('/lsps1/network_info');
@@ -95,11 +83,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Create an order.
-   * @param order Order details (TODO: type)
-   * @returns Promise resolving to order creation response (TODO: type)
-   */
   async createOrder(order: any): Promise<any> { // TODO: type
     try {
       return await this.apiClient.post('/lsps1/create_order', order);
@@ -108,11 +91,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Get an order by ID.
-   * @param orderId Order ID
-   * @returns Promise resolving to order details (TODO: type)
-   */
   async getOrder(orderId: string): Promise<any> { // TODO: type
     try {
       return await this.apiClient.post('/lsps1/get_order', { order_id: orderId });
@@ -121,11 +99,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Connect to a peer.
-   * @param connectionUrl Peer connection URL
-   * @returns Promise resolving to connection result (TODO: type)
-   */
   async connectPeer(connectionUrl: string): Promise<any> { // TODO: type
     try {
       return await this.nodeClient.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
@@ -134,10 +107,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * List connected peers.
-   * @returns Promise resolving to list of peers (TODO: type)
-   */
   async listPeers(): Promise<any> { // TODO: type
     try {
       return await this.nodeClient.get('/listpeers');
@@ -146,10 +115,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Get onchain address.
-   * @returns Promise resolving to onchain address (TODO: type)
-   */
   async getOnchainAddress(): Promise<any> { // TODO: type
     try {
       return await this.nodeClient.post('/address', {});
@@ -158,11 +123,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Get asset metadata.
-   * @param assetId Asset ID
-   * @returns Promise resolving to asset metadata (TODO: type)
-   */
   async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
     try {
       return await this.nodeClient.post('/assetmetadata', { asset_id: assetId });
