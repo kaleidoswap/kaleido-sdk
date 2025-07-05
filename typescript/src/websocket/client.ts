@@ -1,6 +1,13 @@
 import { WebSocketError } from '../types/exceptions';
 import WebSocket, { MessageEvent as WSMessageEvent } from 'ws';
 
+// Debug logging helper
+const debug = (...args: any[]) => {
+  if (process.env.DEBUG_WS) {
+    console.log('[WebSocket]', ...args);
+  }
+};
+
 /**
  * Configuration for the WebSocket client
  */
@@ -46,23 +53,49 @@ export class WebSocketClient {
   private readonly maxReconnectAttempts: number;
 
   private ws: WebSocket | null = null;
-  private pingTimer: number | null = null;
+  private pingTimer: NodeJS.Timeout | null = null;
   private reconnectTimer: NodeJS.Timeout | null = null;
-  private reconnectAttempts = 0;
   private messageHandlers: Map<string, Set<MessageHandler>> = new Map();
+  private reconnectAttempts = 0;
   private isConnecting = false;
+  private readonly headers: Record<string, string>;
+
+  /**
+   * Checks if the WebSocket is connected
+   * @returns boolean indicating if the WebSocket is connected
+   */
+  public isConnected(): boolean {
+    return this.ws?.readyState === WebSocket.OPEN;
+  }
 
   /**
    * Creates a new WebSocket client instance
    * @param config - Configuration for the client
    */
   constructor(config: WebSocketConfig) {
-    this.baseUrl = config.baseUrl.replace(/\/$/, '').replace(/^http/, 'ws');
-    //this.apiKey = config.apiKey;
-    this.pingInterval = config.pingInterval || 30000;
-    this.pingTimeout = config.pingTimeout || 5000;
-    this.reconnectInterval = config.reconnectInterval || 5000;
+    this.baseUrl = config.baseUrl.replace(/^http/, 'ws');
+    this.pingInterval = config.pingInterval || 30000; // 30 seconds
+    this.pingTimeout = config.pingTimeout || 10000; // 10 seconds
+    this.reconnectInterval = config.reconnectInterval || 5000; // 5 seconds
     this.maxReconnectAttempts = config.maxReconnectAttempts || 5;
+    
+    // Set up headers
+    this.headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    
+    // Add API key if provided
+    if (config.apiKey) {
+      this.headers['Authorization'] = `Bearer ${config.apiKey}`;
+    }
+    
+    if (process.env.DEBUG_WS) {
+      debug(`Initializing WebSocket client for ${this.baseUrl}`);
+      if (config.apiKey) {
+        debug('Using API key authentication');
+      }
+    }
   }
 
   /**
@@ -77,51 +110,99 @@ export class WebSocketClient {
   //  return headers;
   //}
 
+  private logConnectionState(event: string) {
+    if (process.env.DEBUG_WS) {
+      const state = this.ws?.readyState;
+      let stateStr = 'UNKNOWN';
+      switch (state) {
+        case WebSocket.CONNECTING: stateStr = 'CONNECTING'; break;
+        case WebSocket.OPEN: stateStr = 'OPEN'; break;
+        case WebSocket.CLOSING: stateStr = 'CLOSING'; break;
+        case WebSocket.CLOSED: stateStr = 'CLOSED'; break;
+      }
+      debug(`${event} - State: ${stateStr}`);
+    }
+  }
+
   /**
    * Establishes a WebSocket connection
    * @throws {WebSocketError} If connection fails
    */
   async connect(): Promise<void> {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      return;
-    }
-
-    if (this.isConnecting) {
+    if (this.isConnected() || this.isConnecting) {
+      debug('Connection already in progress or established');
       return;
     }
 
     this.isConnecting = true;
+    
+    // For ws library, we need to handle headers differently
+    const wsOptions: WebSocket.ClientOptions = {};
+    
+    // Add headers if needed (some WebSocket servers support this)
+    if (Object.keys(this.headers).length > 0) {
+      wsOptions.headers = this.headers;
+    }
+    
+    // If using an API key, add it to the URL as a query parameter
+    // This is a common pattern when headers aren't supported
+    let wsUrl = this.baseUrl;
+    if (this.headers['Authorization']) {
+      const url = new URL(wsUrl);
+      url.searchParams.append('token', this.headers['Authorization'].replace('Bearer ', ''));
+      wsUrl = url.toString();
+    }
+    
+    debug(`Connecting to WebSocket: ${wsUrl}`);
+    if (process.env.DEBUG_WS) {
+      debug('Using options:', JSON.stringify(wsOptions, null, 2));
+    }
 
     try {
-      this.ws = new WebSocket(this.baseUrl);
+      this.ws = new WebSocket(wsUrl, wsOptions);
+      this.logConnectionState('After WebSocket creation');
 
       await new Promise<void>((resolve, reject) => {
         if (!this.ws) {
-          reject(new WebSocketError('WebSocket instance is null'));
+          const error = new WebSocketError('WebSocket instance is null');
+          debug(error.message);
+          reject(error);
           return;
         }
 
         const timeout = setTimeout(() => {
-          reject(new WebSocketError('Connection timeout'));
+          const error = new WebSocketError(`Connection timeout after ${this.pingTimeout}ms`);
+          debug(error.message);
+          reject(error);
         }, this.pingTimeout);
 
         this.ws.onopen = () => {
           clearTimeout(timeout);
           this.reconnectAttempts = 0;
+          this.logConnectionState('onopen');
           this.startPing();
           resolve();
         };
 
-        this.ws.onerror = (error) => {
+        this.ws.onerror = (event) => {
           clearTimeout(timeout);
-          reject(new WebSocketError(`Connection error: ${error}`));
+          const errorMessage = event.message || 'Unknown WebSocket error';
+          const error = new WebSocketError(`Connection error: ${errorMessage}`);
+          debug('WebSocket error:', error);
+          reject(error);
         };
 
         this.ws.onmessage = this.handleMessage.bind(this);
         this.ws.onclose = this.handleClose.bind(this);
       });
-    } finally {
+    } catch (error) {
       this.isConnecting = false;
+      debug('Connection failed:', error);
+      throw error;
+    } finally {
+      if (!this.isConnected()) {
+        this.isConnecting = false;
+      }
     }
   }
 
@@ -129,13 +210,18 @@ export class WebSocketClient {
    * Starts sending periodic ping messages
    */
   private startPing(): void {
-    if (this.pingTimer) {
-      clearInterval(this.pingTimer);
-    }
+    this.pingTimer = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.ping();
+      }
+    }, this.pingInterval) as unknown as NodeJS.Timeout;
+  }
 
-    this.pingTimer = window.setInterval(() => {
-      this.send({ action: 'ping' });
-    }, this.pingInterval);
+  private stopPing(): void {
+    if (this.pingTimer) {
+      clearInterval(this.pingTimer as NodeJS.Timeout);
+      this.pingTimer = null;
+    }
   }
 
   /**
@@ -144,54 +230,96 @@ export class WebSocketClient {
    */
   private handleMessage(event: WSMessageEvent): void {
     try {
-      // Handle both string and Buffer data types
-      const data = typeof event.data === 'string' ? event.data : event.data.toString('utf8');
-      const message: WebSocketMessage = JSON.parse(data);
-      const handlers = this.messageHandlers.get(message.action);
-      
-      if (handlers) {
-        handlers.forEach(handler => handler(message.data));
+      const data = event.data.toString();
+      if (process.env.DEBUG_WS) {
+        debug('Received message:', data);
       }
+      
+      const message = JSON.parse(data);
+      this.emit(message.action, message.data);
     } catch (error) {
-      console.error('Failed to handle message:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      debug('Error handling message:', errorMessage);
+      this.emit('error', { action: 'message_parse_error', error: errorMessage });
     }
   }
 
   /**
    * Handles WebSocket connection close
    */
-  private handleClose(): void {
-    if (this.pingTimer) {
-      clearInterval(this.pingTimer);
-      this.pingTimer = null;
+  private handleClose(event: { code: number; reason: string }): void {
+    this.logConnectionState('onclose');
+    debug(`Connection closed: ${event.code} ${event.reason || 'No reason provided'}`);
+    
+    this.stopPing();
+    
+    // Only attempt reconnect if this was an unexpected closure
+    if (event.code !== 1000) { // 1000 is normal closure
+      this.attemptReconnect();
+    } else {
+      debug('Normal WebSocket closure, not reconnecting');
+    }
+  }
+
+  private attemptReconnect(): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      const error = new WebSocketError(`Max reconnection attempts (${this.maxReconnectAttempts}) reached`);
+      debug(error.message);
+      this.emit('error', { action: 'max_reconnect_attempts', error: error.message });
+      return;
     }
 
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectTimer = setTimeout(() => {
-        this.reconnectAttempts++;
-        this.connect();
-      }, this.reconnectInterval);
-    }
+    const delay = Math.min(
+      this.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1),
+      30000 // Max 30 seconds between retries
+    );
+
+    debug(`Attempting to reconnect (${this.reconnectAttempts + 1}/${this.maxReconnectAttempts}) in ${delay}ms`);
+    
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectAttempts++;
+      this.connect().catch(error => {
+        debug('Reconnection attempt failed:', error);
+      });
+    }, delay);
   }
 
   /**
    * Closes the WebSocket connection
    */
-  async disconnect(): Promise<void> {
-    if (this.pingTimer) {
-      clearInterval(this.pingTimer);
-      this.pingTimer = null;
-    }
-
+  public async disconnect(code = 1000, reason?: string): Promise<void> {
+    debug(`Disconnecting${reason ? ` (${reason})` : ''}`);
+    
+    this.stopPing();
+    
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-
+    
     if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+      return new Promise((resolve) => {
+        if (this.ws) {
+          this.ws.once('close', () => {
+            debug('Disconnected successfully');
+            this.ws = null;
+            resolve();
+          });
+          
+          if (this.ws.readyState === WebSocket.OPEN) {
+            this.ws.close(code, reason);
+          } else {
+            this.ws.terminate();
+            this.ws = null;
+            resolve();
+          }
+        } else {
+          resolve();
+        }
+      });
     }
+    
+    return Promise.resolve();
   }
 
   /**
@@ -199,12 +327,29 @@ export class WebSocketClient {
    * @param message - Message to send
    * @throws {WebSocketError} If not connected
    */
-  async send(message: WebSocketMessage): Promise<void> {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      throw new WebSocketError('WebSocket is not connected');
+  public async send(message: WebSocketMessage): Promise<void> {
+    if (!this.isConnected()) {
+      debug('Not connected, attempting to connect...');
+      await this.connect();
     }
 
-    this.ws.send(JSON.stringify(message));
+    if (!this.ws) {
+      const error = new WebSocketError('WebSocket is not connected');
+      debug('Send failed:', error);
+      throw error;
+    }
+
+    try {
+      const messageStr = JSON.stringify(message);
+      if (process.env.DEBUG_WS) {
+        debug('Sending message:', messageStr);
+      }
+      this.ws.send(messageStr);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      debug('Error sending message:', errorMessage);
+      throw new WebSocketError(`Failed to send message: ${errorMessage}`);
+    }
   }
 
   /**
@@ -212,11 +357,20 @@ export class WebSocketClient {
    * @param action - Message action to handle
    * @param handler - Handler function
    */
-  on(action: string, handler: MessageHandler): void {
-    if (!this.messageHandlers.has(action)) {
-      this.messageHandlers.set(action, new Set());
+  public on(event: string, handler: MessageHandler): () => void {
+    if (!this.messageHandlers.has(event)) {
+      this.messageHandlers.set(event, new Set());
     }
-    this.messageHandlers.get(action)?.add(handler);
+    const handlers = this.messageHandlers.get(event)!;
+    handlers.add(handler);
+    
+    // Return unsubscribe function
+    return () => {
+      handlers.delete(handler);
+      if (handlers.size === 0) {
+        this.messageHandlers.delete(event);
+      }
+    };
   }
 
   /**
@@ -224,8 +378,21 @@ export class WebSocketClient {
    * @param action - Message action
    * @param handler - Handler function to remove
    */
-  off(action: string, handler: MessageHandler): void {
-    this.messageHandlers.get(action)?.delete(handler);
+  public off(event: string, handler: MessageHandler): void {
+    const handlers = this.messageHandlers.get(event);
+    if (handlers) {
+      handlers.delete(handler);
+      if (handlers.size === 0) {
+        this.messageHandlers.delete(event);
+      }
+    }
+  }
+
+  private emit(event: string, data: any): void {
+    const handlers = this.messageHandlers.get(event);
+    if (handlers) {
+      handlers.forEach(handler => handler(data));
+    }
   }
 
   /**

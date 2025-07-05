@@ -8,6 +8,9 @@ typescript/*.js.map
 typescript/*.d.ts
 !typescript/jest.config.js# Byte-compiled / optimized / DLL files
 
+./typescript/package-lock.json
+typescript/package-lock.json
+
 # Python
 __pycache__/
 *.py[cod]

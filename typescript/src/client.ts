@@ -21,7 +21,6 @@ import {
   ConfirmSwapRequest,
   ConfirmSwapResponse,
   Swap,
-  Asset,
  } from './types/index'
 
 export interface KaleidoConfig extends HttpClientConfig {
@@ -41,11 +40,135 @@ export class KaleidoClient {
       ...apiConfig,
       baseUrl: nodeUrl
     });
-    const wsBaseUrl = wsUrl || apiConfig.baseUrl.replace('http', 'ws');
+    
+    // Determine WebSocket URL
+    let wsBaseUrl: string;
+    if (wsUrl) {
+      wsBaseUrl = wsUrl;
+    } else {
+      // Convert http:// or https:// to ws:// or wss://
+      const url = new URL(apiConfig.baseUrl);
+      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsBaseUrl = url.toString();
+    }
+    
     this.wsClient = new WebSocketClient({
       ...apiConfig,
       baseUrl: wsBaseUrl
     });
+    
+    if (process.env.DEBUG_WS) {
+      console.log('Initialized WebSocket client with URL:', wsBaseUrl);
+    }
+  }
+
+  /**
+   * Get LSP information.
+   * @returns Promise resolving to LSP info (TODO: type)
+   */
+  async getLspInfo(): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.get('/lsps1/get_info');
+    } catch (error) {
+      throw new Error(`Failed to get LSP info: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Get LSP connection URL.
+   * @returns Promise resolving to LSP connection URL (TODO: type)
+   */
+  async getLspConnectionUrl(): Promise<any> { // TODO: type
+    const lspInfo = await this.getLspInfo();
+    return lspInfo?.lsp_connection_url;
+  }
+
+  /**
+   * Get LSP network information.
+   * @returns Promise resolving to LSP network info (TODO: type)
+   */
+  async getLspNetworkInfo(): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.get('/lsps1/network_info');
+    } catch (error) {
+      throw new Error(`Failed to get LSP network info: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Create an order.
+   * @param order Order details (TODO: type)
+   * @returns Promise resolving to order creation response (TODO: type)
+   */
+  async createOrder(order: any): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.post('/lsps1/create_order', order);
+    } catch (error) {
+      throw new Error(`Failed to create order: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Get an order by ID.
+   * @param orderId Order ID
+   * @returns Promise resolving to order details (TODO: type)
+   */
+  async getOrder(orderId: string): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.post('/lsps1/get_order', { order_id: orderId });
+    } catch (error) {
+      throw new Error(`Failed to get order: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Connect to a peer.
+   * @param connectionUrl Peer connection URL
+   * @returns Promise resolving to connection result (TODO: type)
+   */
+  async connectPeer(connectionUrl: string): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
+    } catch (error) {
+      throw new Error(`Failed to connect peer: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * List connected peers.
+   * @returns Promise resolving to list of peers (TODO: type)
+   */
+  async listPeers(): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.get('/listpeers');
+    } catch (error) {
+      throw new Error(`Failed to list peers: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Get onchain address.
+   * @returns Promise resolving to onchain address (TODO: type)
+   */
+  async getOnchainAddress(): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.post('/address', {});
+    } catch (error) {
+      throw new Error(`Failed to get onchain address: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Get asset metadata.
+   * @param assetId Asset ID
+   * @returns Promise resolving to asset metadata (TODO: type)
+   */
+  async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.post('/assetmetadata', { asset_id: assetId });
+    } catch (error) {
+      throw new Error(`Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async getNodeInfo(): Promise<{ pubkey: string }> {
@@ -71,16 +194,6 @@ export class KaleidoClient {
     } catch (error) {
       throw new AssetError(
         `Failed to list assets: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async getAssetMetadata(assetId: string): Promise<Asset> {
-    try {
-      return await this.apiClient.get<Asset>(`/market/assets/${assetId}`);
-    } catch (error) {
-      throw new AssetError(
-        `Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
@@ -147,17 +260,16 @@ export class KaleidoClient {
     }
 
     return new Promise<PairQuoteResponse>((resolve, reject) => {
-      const quoteId = `quote_${Date.now()}`;
       let timeoutId: NodeJS.Timeout;
 
       const quoteMessage = {
         action: 'quote_request',
-        request_id: quoteId,
         from_asset: fromAsset,
         to_asset: toAsset,
         from_amount: fromAmount,
         timestamp: Math.floor(Date.now() / 1000)
       };
+      console.log('Sending quote message:', quoteMessage);
 
       timeoutId = setTimeout(() => {
         this.wsClient.off('quote_response', quoteHandler);
@@ -165,15 +277,16 @@ export class KaleidoClient {
       }, 30000);
 
       const quoteHandler = (response: any) => {
-        if (response.request_id === quoteId) {
-          clearTimeout(timeoutId);
-          this.wsClient.off('quote_response', quoteHandler);
+        console.log('quoteHandler received:', response);
+        clearTimeout(timeoutId);
+        this.wsClient.off('quote_response', quoteHandler);
 
-          if (response.error) {
-            reject(new QuoteError(response.error.message || 'Failed to get quote'));
-          } else {
-            resolve(response.data || {});
-          }
+        if (response.error) {
+          reject(new QuoteError(response.error.message || 'Failed to get quote'));
+        } else if (response.data) {
+          resolve(response.data);
+        } else {
+          resolve(response);
         }
       };
 
@@ -258,7 +371,6 @@ export class KaleidoClient {
       );
     }
   }
-  
 
   /**
    * Waits for a swap to reach a terminal state (Succeeded, Failed, or Expired)
