@@ -1,118 +1,139 @@
 import { HttpClient, HttpClientConfig } from './http/client';
+import { WebSocketClient } from './websocket/client';
+import WebSocket from 'ws';
+
 import {
   AssetError,
   NodeError,
   PairError,
   QuoteError,
-  SwapError
+  SwapError,
+  TimeoutError,
+  WebSocketError,
 } from './types/exceptions';
 
-/**
- * Configuration for the KaleidoClient
- */
+import { 
+  AssetResponse,
+  TradingPair,
+  PairResponse,
+  PairQuoteResponse,
+  SwapRequest,
+  ConfirmSwapRequest,
+  ConfirmSwapResponse,
+  Swap,
+ } from './types/index'
+
 export interface KaleidoConfig extends HttpClientConfig {
-  /** URL of the Kaleido node */
   nodeUrl: string;
+  wsUrl?: string;
 }
 
-/**
- * Represents an asset in the KaleidoSwap system
- */
-export interface Asset {
-  /** Unique identifier of the asset */
-  id: string;
-  /** Display name of the asset */
-  name: string;
-  /** Trading symbol of the asset */
-  symbol: string;
-  /** Number of decimal places for the asset */
-  decimals: number;
-  /** Type of the asset (e.g., 'crypto', 'fiat') */
-  type: string;
-}
-
-/**
- * Represents a trading pair in the KaleidoSwap system
- */
-export interface TradingPair {
-  /** Unique identifier of the trading pair */
-  id: string;
-  /** Base asset identifier */
-  baseAsset: string;
-  /** Quote asset identifier */
-  quoteAsset: string;
-  /** Minimum trade amount */
-  minAmount: number;
-  /** Maximum trade amount */
-  maxAmount: number;
-  /** Trading fee as a decimal (e.g., 0.001 for 0.1%) */
-  fee: number;
-}
-
-/**
- * Represents a quote for a potential swap
- */
-export interface Quote {
-  /** Trading pair identifier */
-  pairId: string;
-  /** Amount of base asset */
-  baseAmount: number;
-  /** Amount of quote asset */
-  quoteAmount: number;
-  /** Fee amount */
-  fee: number;
-  /** Quote expiry timestamp */
-  expiry: number;
-}
-
-/**
- * Represents the status of a swap
- */
-export interface SwapStatus {
-  /** Unique identifier of the swap */
-  id: string;
-  /** Current status of the swap */
-  status: 'pending' | 'completed' | 'failed';
-  /** Amount of base asset */
-  baseAmount: number;
-  /** Amount of quote asset */
-  quoteAmount: number;
-  /** Fee amount */
-  fee: number;
-  /** Creation timestamp */
-  createdAt: number;
-  /** Last update timestamp */
-  updatedAt: number;
-}
-
-/**
- * Main client for interacting with the KaleidoSwap API
- */
 export class KaleidoClient {
   private readonly apiClient: HttpClient;
   private readonly nodeClient: HttpClient;
+  private readonly wsClient: WebSocketClient;
 
-  /**
-   * Creates a new KaleidoClient instance
-   * @param config - Configuration for the client
-   */
   constructor(config: KaleidoConfig) {
-    const { nodeUrl, ...apiConfig } = config;
+    const { nodeUrl, wsUrl, ...apiConfig } = config;
     this.apiClient = new HttpClient(apiConfig);
     this.nodeClient = new HttpClient({
       ...apiConfig,
       baseUrl: nodeUrl
     });
+    
+    // Determine WebSocket URL
+    let wsBaseUrl: string;
+    if (wsUrl) {
+      wsBaseUrl = wsUrl;
+    } else {
+      // Convert http:// or https:// to ws:// or wss://
+      const url = new URL(apiConfig.baseUrl);
+      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsBaseUrl = url.toString();
+    }
+    
+    this.wsClient = new WebSocketClient({
+      ...apiConfig,
+      baseUrl: wsBaseUrl
+    });
+    
+    if (process.env.DEBUG_WS) {
+      console.log('Initialized WebSocket client with URL:', wsBaseUrl);
+    }
   }
 
-  /**
-   * Gets information about the connected node
-   * @returns Promise resolving to node information
-   * @throws {NodeError} If the request fails
-   */
+  async getLspInfo(): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.get('/lsps1/get_info');
+    } catch (error) {
+      throw new Error(`Failed to get LSP info: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async getLspConnectionUrl(): Promise<any> { // TODO: type
+    const lspInfo = await this.getLspInfo();
+    return lspInfo?.lsp_connection_url;
+  }
+
+  async getLspNetworkInfo(): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.get('/lsps1/network_info');
+    } catch (error) {
+      throw new Error(`Failed to get LSP network info: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async createOrder(order: any): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.post('/lsps1/create_order', order);
+    } catch (error) {
+      throw new Error(`Failed to create order: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async getOrder(orderId: string): Promise<any> { // TODO: type
+    try {
+      return await this.apiClient.post('/lsps1/get_order', { order_id: orderId });
+    } catch (error) {
+      throw new Error(`Failed to get order: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async connectPeer(connectionUrl: string): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
+    } catch (error) {
+      throw new Error(`Failed to connect peer: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async listPeers(): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.get('/listpeers');
+    } catch (error) {
+      throw new Error(`Failed to list peers: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async getOnchainAddress(): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.post('/address', {});
+    } catch (error) {
+      throw new Error(`Failed to get onchain address: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
+    try {
+      return await this.nodeClient.post('/assetmetadata', { asset_id: assetId });
+    } catch (error) {
+      throw new Error(`Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   async getNodeInfo(): Promise<{ pubkey: string }> {
     try {
-      return await this.nodeClient.get<{ pubkey: string }>('/node/info');
+      return await this.nodeClient.get<{ pubkey: string }>('/nodeinfo');
     } catch (error) {
       throw new NodeError(
         `Failed to get node info: ${error instanceof Error ? error.message : String(error)}`
@@ -120,24 +141,16 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Gets the public key of the connected node
-   * @returns Promise resolving to the node's public key
-   * @throws {NodeError} If the request fails
-   */
   async getNodePubkey(): Promise<string> {
     const info = await this.getNodeInfo();
     return info.pubkey;
   }
 
-  /**
-   * Lists all available assets
-   * @returns Promise resolving to an array of assets
-   * @throws {AssetError} If the request fails
-   */
-  async listAssets(): Promise<Asset[]> {
+  async listAssets(): Promise<AssetResponse> {
     try {
-      return await this.apiClient.get<Asset[]>('/assets');
+      return await this.apiClient.get<AssetResponse>(
+        '/market/assets'
+      );
     } catch (error) {
       throw new AssetError(
         `Failed to list assets: ${error instanceof Error ? error.message : String(error)}`
@@ -145,30 +158,9 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Gets metadata for a specific asset
-   * @param assetId - Identifier of the asset
-   * @returns Promise resolving to asset metadata
-   * @throws {AssetError} If the request fails
-   */
-  async getAssetMetadata(assetId: string): Promise<Asset> {
+  async listPairs(): Promise<PairResponse> {
     try {
-      return await this.apiClient.get<Asset>(`/assets/${assetId}`);
-    } catch (error) {
-      throw new AssetError(
-        `Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  /**
-   * Lists all available trading pairs
-   * @returns Promise resolving to an array of trading pairs
-   * @throws {PairError} If the request fails
-   */
-  async listPairs(): Promise<TradingPair[]> {
-    try {
-      return await this.apiClient.get<TradingPair[]>('/pairs');
+      return await this.apiClient.get<PairResponse>('/market/pairs');
     } catch (error) {
       throw new PairError(
         `Failed to list pairs: ${error instanceof Error ? error.message : String(error)}`
@@ -176,41 +168,40 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Gets a trading pair by its base and quote assets
-   * @param baseAsset - Base asset identifier
-   * @param quoteAsset - Quote asset identifier
-   * @returns Promise resolving to the trading pair
-   * @throws {PairError} If the request fails
-   */
-  async getPairByAssets(baseAsset: string, quoteAsset: string): Promise<TradingPair> {
+  async getPairByAssets(baseAsset: string, quoteAsset: string): Promise<TradingPair | null> {
     try {
-      return await this.apiClient.get<TradingPair>(
-        `/pairs/${baseAsset}/${quoteAsset}`
-      );
+      const response = await this.listPairs();
+      const pairs = response.pairs;
+      
+      for (const pair of pairs) {
+        if (pair.base_asset_id === baseAsset && pair.quote_asset_id === quoteAsset) {
+          return pair;
+        }
+        if (pair.quote_asset_id === baseAsset && pair.base_asset_id === quoteAsset) {
+          return pair;
+        }
+      }
+      return null;
     } catch (error) {
       throw new PairError(
-        `Failed to get pair: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to get trading pair: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
 
-  /**
-   * Gets a quote for a potential swap
-   * @param pairId - Trading pair identifier
-   * @param amount - Amount to swap
-   * @param isBase - Whether the amount is in base asset (true) or quote asset (false)
-   * @returns Promise resolving to the quote
-   * @throws {QuoteError} If the request fails
-   */
   async getQuote(
-    pairId: string,
-    amount: number,
-    isBase: boolean = true
-  ): Promise<Quote> {
+    fromAsset: string,
+    toAsset: string,
+    fromAmount: number
+  ): Promise<PairQuoteResponse> {
     try {
-      return await this.apiClient.get<Quote>(
-        `/quotes/${pairId}?amount=${amount}&isBase=${isBase}`
+      return await this.apiClient.post<PairQuoteResponse>(
+        '/market/quote',
+        {
+          from_asset: fromAsset,
+          to_asset: toAsset,
+          from_amount: fromAmount
+        }
       );
     } catch (error) {
       throw new QuoteError(
@@ -219,26 +210,72 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Initializes a maker swap
-   * @param pairId - Trading pair identifier
-   * @param amount - Amount to swap
-   * @param isBase - Whether the amount is in base asset (true) or quote asset (false)
-   * @returns Promise resolving to the swap status
-   * @throws {SwapError} If the request fails
-   */
+  async getQuoteWS(
+    fromAsset: string,
+    toAsset: string,
+    fromAmount: number
+  ): Promise<PairQuoteResponse> {
+    if (this.wsClient.getConnectionState() !== WebSocket.OPEN) {
+      await this.wsClient.connect();
+    }
+
+    return new Promise<PairQuoteResponse>((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout;
+
+      const quoteMessage = {
+        action: 'quote_request',
+        from_asset: fromAsset,
+        to_asset: toAsset,
+        from_amount: fromAmount,
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+      console.log('Sending quote message:', quoteMessage);
+
+      timeoutId = setTimeout(() => {
+        this.wsClient.off('quote_response', quoteHandler);
+        reject(new TimeoutError('Quote request timed out'));
+      }, 30000);
+
+      const quoteHandler = (response: any) => {
+        console.log('quoteHandler received:', response);
+        clearTimeout(timeoutId);
+        this.wsClient.off('quote_response', quoteHandler);
+
+        if (response.error) {
+          reject(new QuoteError(response.error.message || 'Failed to get quote'));
+        } else if (response.data) {
+          resolve(response.data);
+        } else {
+          resolve(response);
+        }
+      };
+
+      this.wsClient.on('quote_response', quoteHandler);
+
+      this.wsClient.send(quoteMessage).catch((error) => {
+        clearTimeout(timeoutId);
+        this.wsClient.off('quote_response', quoteHandler);
+        reject(new WebSocketError(`Failed to send quote request: ${error.message}`));
+      });
+    });
+  }
+
   async initMakerSwap(
-    pairId: string,
-    amount: number,
-    isBase: boolean = true
-  ): Promise<SwapStatus> {
+    rfqId: string,
+    fromAsset: string,
+    toAsset: string,
+    fromAmount: number,
+    toAmount: number
+  ): Promise<SwapRequest> {
     try {
-      const quote = await this.getQuote(pairId, amount, isBase);
-      return await this.apiClient.post<SwapStatus>('/swaps/maker/init', {
-        pairId,
-        amount,
-        isBase,
-        quote
+      return await this.apiClient.post<SwapRequest>(
+        '/swaps/init',
+        {
+          rfq_id: rfqId,
+          from_asset: fromAsset,
+          to_asset: toAsset,
+          from_amount: fromAmount,
+          to_amount: toAmount,
       });
     } catch (error) {
       throw new SwapError(
@@ -247,34 +284,34 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Executes a maker swap
-   * @param swapId - Swap identifier
-   * @returns Promise resolving to the swap status
-   * @throws {SwapError} If the request fails
-   */
-  async executeMakerSwap(swapId: string): Promise<SwapStatus> {
+  async executeMakerSwap(request: ConfirmSwapRequest): Promise<ConfirmSwapResponse> {
     try {
-      return await this.apiClient.post<SwapStatus>(`/swaps/maker/${swapId}/execute`, {});
+      console.log('Executing maker swap with request:', JSON.stringify({
+        swapstring: request.swapstring ? `${request.swapstring.substring(0, 20)}...` : 'undefined',
+        payment_hash: request.payment_hash,
+        taker_pubkey: request.taker_pubkey
+      }, null, 2));
+      
+      const response = await this.apiClient.post<ConfirmSwapResponse>('/swaps/execute', {
+        swapstring: request.swapstring,
+        payment_hash: request.payment_hash,
+        taker_pubkey: request.taker_pubkey
+      });
+      
+      console.log('Maker swap executed successfully:', response);
+      return response;
     } catch (error) {
+      console.error('Error executing maker swap:', error);
       throw new SwapError(
         `Failed to execute maker swap: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
-
-  /**
-   * Whitelists a trade for a taker
-   * @param swapstring - Swap string to whitelist
-   * @returns Promise resolving to the swap status
-   * @throws {SwapError} If the request fails
-   */
-  async whitelistTrade(swapstring: string): Promise<SwapStatus> {
+  
+  async whitelistTrade(swapstring: string): Promise<Record<string, never>> {
     try {
-      const pubkey = await this.getNodePubkey();
-      return await this.nodeClient.post<SwapStatus>('/swaps/taker/init', {
+      return await this.nodeClient.post<Record<string, never>>('/taker', {
         swapstring,
-        pubkey
       });
     } catch (error) {
       throw new SwapError(
@@ -282,39 +319,54 @@ export class KaleidoClient {
       );
     }
   }
-
-  /**
-   * Confirms a swap as a taker
-   * @param swapId - Swap identifier
-   * @returns Promise resolving to the swap status
-   * @throws {SwapError} If the request fails
-   */
-  async confirmSwap(swapId: string): Promise<SwapStatus> {
+  
+  async getSwapStatus(paymentHash: string): Promise<Swap> {
     try {
-      const pubkey = await this.getNodePubkey();
-      return await this.nodeClient.post<SwapStatus>(`/swaps/taker/${swapId}/execute`, {
-        pubkey
+      return await this.nodeClient.post<Swap>(`/swaps/status`, {
+        payment_hash: paymentHash
       });
     } catch (error) {
       throw new SwapError(
-        `Failed to confirm swap: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to get swap status: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
 
   /**
-   * Gets the status of a swap
-   * @param swapId - Swap identifier
-   * @returns Promise resolving to the swap status
-   * @throws {SwapError} If the request fails
+   * Waits for a swap to reach a terminal state (Succeeded, Failed, or Expired)
+   * @param paymentHash - The payment hash of the swap to monitor
+   * @param timeoutSeconds - Maximum time to wait in seconds (default: 300)
+   * @param pollIntervalSeconds - Time between status checks in seconds (default: 5)
+   * @returns Promise that resolves with the final swap status
+   * @throws {TimeoutError} If the swap doesn't complete within the timeout
+   * @throws {SwapError} If there's an error checking the swap status
    */
-  async getSwapStatus(swapId: string): Promise<SwapStatus> {
-    try {
-      return await this.nodeClient.get<SwapStatus>(`/swaps/${swapId}`);
-    } catch (error) {
-      throw new SwapError(
-        `Failed to get swap status: ${error instanceof Error ? error.message : String(error)}`
-      );
+  async waitForSwapCompletion(
+    paymentHash: string,
+    timeoutSeconds = 300,
+    pollIntervalSeconds = 5
+  ): Promise<Swap> {
+    const startTime = Date.now();
+    const timeoutMs = timeoutSeconds * 1000;
+    const pollIntervalMs = pollIntervalSeconds * 1000;
+
+    while (true) {
+      const swap = await this.getSwapStatus(paymentHash);
+      
+      // Check if swap has reached a terminal state
+      if (swap.status && ['Succeeded', 'Failed', 'Expired'].includes(swap.status)) {
+        return swap;
+      }
+
+      // Check if we've exceeded the timeout
+      if (Date.now() - startTime >= timeoutMs) {
+        throw new TimeoutError(
+          `Swap ${paymentHash} did not complete within ${timeoutSeconds} seconds`
+        );
+      }
+
+      // Wait before polling again
+      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
     }
   }
 } 
