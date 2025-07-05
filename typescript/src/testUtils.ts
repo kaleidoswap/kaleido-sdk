@@ -16,18 +16,38 @@ interface AssetPairIds {
   quoteAssetId: string;
 }
 
-export const testConfig: TestConfig = {
+export const testConfig: TestConfig & { wsUrl?: string } = {
   nodeUrl: process.env.TEST_NODE_URL || 'http://localhost:3001',
-  baseUrl: process.env.TEST_BASE_URL || 'http://localhost:8000/api/v1',
-  apiKey: process.env.TEST_API_KEY || ''
+  baseUrl: process.env.TEST_BASE_URL || 'http://localhost:8000/api/v1/',
+  //baseUrl: process.env.TEST_BASE_URL || 'https://api.staging.kaleidoswap.com/api/v1/',
+  apiKey: process.env.TEST_API_KEY || '',
+  // Derive WebSocket URL from base URL if not explicitly set
+  get wsUrl(): string {
+    if (process.env.TEST_WS_URL) {
+      return process.env.TEST_WS_URL;
+    }
+    // Convert http:// or https:// to ws:// or wss://
+    const url = new URL(this.baseUrl);
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Set the correct WebSocket endpoint path
+    url.pathname = '/api/v1/market/ws/testclient';
+    return url.toString();
+  }
 };
 
 export const createTestClient = (): KaleidoClient => {
-  return new KaleidoClient({
+  const client = new KaleidoClient({
     nodeUrl: testConfig.nodeUrl,
     baseUrl: testConfig.baseUrl,
-    apiKey: testConfig.apiKey
+    apiKey: testConfig.apiKey,
+    wsUrl: testConfig.wsUrl
   });
+  
+  if (process.env.DEBUG_WS) {
+    console.log('Created test client with WebSocket URL:', testConfig.wsUrl);
+  }
+  
+  return client;
 };
 
 export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairIds> => {
@@ -44,19 +64,23 @@ export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairI
 }
 
 export const assetListResponse = async (client: KaleidoClient): Promise<{ fromAsset: string; toAsset: string; fromAmount: number; }> => {
-  try{
-  const assetsResponse = await client.listAssets();
-  const assets = assetsResponse.assets;
-  if (assets && assets.length > 0 && assets[0].asset_id) {
-    const fromAsset = assets[0].asset_id;
-    const toAsset = assets[1]?.asset_id || fromAsset;
+  try {
+    const assetsResponse = await client.listAssets();
+    const assetsList = assetsResponse.assets || [];
+
+    // Find USDT asset_id
+    const toAssetObj = assetsList.find(a => a.ticker === "USDT");
+    const toAsset = toAssetObj?.asset_id;
+
+    // Hardcode BTC as fromAsset (by ticker, not asset_id)
+    const fromAsset = "BTC";
+    const fromAmount = 10000000; // 0.1 BTC in satoshis
+
     if (!toAsset) {
-      throw new Error('No valid toAsset found');
+      throw new Error('Required asset (USDT) for testing not found');
     }
-    const fromAmount = 100000000; // 1 BTC in satoshis
+
     return { fromAsset, toAsset, fromAmount };
-  }
-  throw new Error("something")
   } catch (error) {
     console.error('Error in assetListResponse:', error);
     throw error;
@@ -90,7 +114,7 @@ export const testWhiteListTrade = async (
         quote.to_asset,
         quote.from_amount,
         quote.to_amount
-      ) as SwapRequest & SwapResponse;
+      ) as SwapRequest & SwapResponse; // the response type only has SwapResponse...
 
       if (!initResult.swapstring) {
         throw new Error('No swapstring returned from initMakerSwap');
@@ -123,3 +147,29 @@ export const testWhiteListTrade = async (
   
   return null;
 }
+
+export const withWebSocketTest = async (
+  testFn: (client: KaleidoClient) => Promise<void>,
+  timeout = 30000
+) => {
+  const client = createTestClient();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error('WebSocket test timed out'));
+      }, timeout);
+
+      testFn(client)
+        .then(() => {
+          clearTimeout(timer);
+          resolve();
+        })
+        .catch(reject);
+    });
+  } finally {
+    // Clean up WebSocket connection
+    if ((client as any).wsClient) {
+      await (client as any).wsClient.disconnect();
+    }
+  }
+};
