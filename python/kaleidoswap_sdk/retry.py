@@ -1,6 +1,6 @@
 import asyncio
 import random
-from typing import TypeVar, Callable, Any, Optional, Type, Union, List
+from typing import TypeVar, Callable, Any, Optional, Type, Union, List, Awaitable
 from functools import wraps
 from .exceptions import KaleidoError, NetworkError, RateLimitError
 
@@ -30,7 +30,7 @@ class RetryConfig:
 
 def with_retry(
     config: Optional[RetryConfig] = None
-) -> Callable[[Callable[..., T]], Callable[..., T]]:
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
     """Decorator to add retry behavior to async functions.
     
     Args:
@@ -42,7 +42,7 @@ def with_retry(
     if config is None:
         config = RetryConfig()
         
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+    def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
             last_exception: Optional[Exception] = None
@@ -79,60 +79,4 @@ def with_retry(
             raise last_exception or Exception("Unexpected error in retry logic")
             
         return wrapper
-    return decorator
-
-async def retry_async(
-    func: Callable[..., T],
-    *args: Any,
-    config: Optional[RetryConfig] = None,
-    **kwargs: Any
-) -> T:
-    """Execute an async function with retry behavior.
-    
-    Args:
-        func: Async function to execute
-        *args: Positional arguments for func
-        config: Optional retry configuration
-        **kwargs: Keyword arguments for func
-        
-    Returns:
-        Result from func
-        
-    Raises:
-        Exception: Last exception if all retries fail
-    """
-    if config is None:
-        config = RetryConfig()
-        
-    last_exception: Optional[Exception] = None
-    
-    for attempt in range(config.max_retries + 1):
-        try:
-            return await func(*args, **kwargs)
-        except Exception as e:
-            last_exception = e
-            
-            # Check if we should retry this exception
-            should_retry = any(
-                isinstance(e, exc_type)
-                for exc_type in config.retry_on_exceptions
-            )
-            
-            if not should_retry or attempt == config.max_retries:
-                raise
-            
-            # Calculate delay with exponential backoff
-            delay = min(
-                config.initial_delay * (config.exponential_base ** attempt),
-                config.max_delay
-            )
-            
-            # Add jitter if enabled
-            if config.jitter:
-                delay = delay * (0.5 + random.random())
-            
-            # Wait before retrying
-            await asyncio.sleep(delay)
-    
-    # This should never be reached due to the raise in the loop
-    raise last_exception or Exception("Unexpected error in retry logic") 
+    return decorator 
