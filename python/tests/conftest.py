@@ -1,8 +1,6 @@
-import asyncio
-import pytest
-import pytest_asyncio
 import logging
 import os
+import pytest_asyncio
 from kaleidoswap_sdk.client import KaleidoClient
 
 # Test configuration
@@ -11,21 +9,19 @@ NODE_URL = "http://localhost:3001/"
 API_KEY = "test_api_key"
 
 # Create logs directory if it doesn't exist
-os.makedirs('logs', exist_ok=True)
+os.makedirs("logs", exist_ok=True)
 
 # Configure logging
 def setup_logging():
     """Configure logging for tests."""
     # Create formatters
     file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    console_formatter = logging.Formatter(
-        '%(levelname)s: %(message)s'
-    )
+    console_formatter = logging.Formatter("%(levelname)s: %(message)s")
 
     # Create handlers
-    file_handler = logging.FileHandler('logs/test.log')
+    file_handler = logging.FileHandler("logs/test.log")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(file_formatter)
 
@@ -40,18 +36,20 @@ def setup_logging():
     root_logger.addHandler(console_handler)
 
     # Set specific logger levels
-    logging.getLogger('asyncio').setLevel(logging.WARNING)
-    logging.getLogger('websockets').setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+
 
 # Setup logging before any tests run
 setup_logging()
+
 
 @pytest_asyncio.fixture
 async def client():
     """
     Create a test client instance that can be used across all test files.
     This fixture will create a new client for each test function and properly clean up resources.
-    
+
     Usage:
         @pytest.mark.asyncio
         async def test_something(client):
@@ -60,12 +58,12 @@ async def client():
     """
     logger = logging.getLogger(__name__)
     logger.info("Creating new test client instance")
-    
+
     client = KaleidoClient(
         api_url=API_URL,
         node_url=NODE_URL,
     )
-    
+
     try:
         yield client
     except Exception as e:
@@ -78,6 +76,7 @@ async def client():
             await client.close()
         except Exception as e:
             logger.warning(f"Error closing client: {e}")
+
 
 # Configure pytest-asyncio
 def pytest_configure(config):

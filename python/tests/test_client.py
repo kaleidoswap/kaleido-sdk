@@ -1,10 +1,22 @@
 import asyncio
-import pytest
 import logging
 import time
-from kaleidoswap_sdk.models import CreateOrderRequest, GetOrderRequest, GetSwapStatusRequest, InitMakerSwapRequest, ExecuteMakerSwapRequest, QuoteRequest, WhitelistTradeRequest, GetAssetMetadataRequest, ConnectPeerRequest
+
+import pytest
+from kaleidoswap_sdk.models import (
+    ConnectPeerRequest,
+    CreateOrderRequest,
+    ExecuteMakerSwapRequest,
+    GetAssetMetadataRequest,
+    GetOrderRequest,
+    GetSwapStatusRequest,
+    InitMakerSwapRequest,
+    QuoteRequest,
+    WhitelistTradeRequest,
+)
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.mark.asyncio
 async def test_lsp_info(client):
@@ -12,7 +24,8 @@ async def test_lsp_info(client):
     lsp_info = await client.get_lsp_info()
     logger.info("Retrieved LSP info: %s", lsp_info)
     assert lsp_info is not None
-    assert hasattr(lsp_info, 'lsp_connection_url')
+    assert hasattr(lsp_info, "lsp_connection_url")
+
 
 @pytest.mark.asyncio
 async def test_lsp_connection_url(client):
@@ -22,13 +35,15 @@ async def test_lsp_connection_url(client):
     assert lsp_connection_url is not None
     return lsp_connection_url
 
+
 @pytest.mark.asyncio
 async def test_lsp_network_info(client):
     """Test LSP network information."""
     lsp_network_info = await client.get_lsp_network_info()
     logger.info("Retrieved LSP network info: %s", lsp_network_info)
     assert lsp_network_info is not None
-    assert hasattr(lsp_network_info, 'network')
+    assert hasattr(lsp_network_info, "network")
+
 
 @pytest.mark.asyncio
 async def test_create_order(client):
@@ -44,22 +59,24 @@ async def test_create_order(client):
         channel_expiry_blocks=1000,
         token="BTC",
         refund_onchain_address=onchain_address.address,
-        announce_channel=True
-        )
+        announce_channel=True,
+    )
     order_result = await client.create_order(order)
     logger.info("Created order: %s", order_result)
     assert order_result is not None
     return order_result
 
+
 @pytest.mark.asyncio
 async def test_get_order(client):
     """Test getting an order."""
     order_result = await test_create_order(client)
-    order_id = order_result.order_id  
+    order_id = order_result.order_id
     request = GetOrderRequest(order_id=order_id)
     order_result = await client.get_order(request)
     logger.info("Retrieved order: %s", order_result)
     assert order_result is not None
+
 
 @pytest.mark.asyncio
 async def test_list_assets(client):
@@ -69,13 +86,15 @@ async def test_list_assets(client):
     logger.info("Retrieved assets: %s", assets)
     assert assets is not None
 
+
 @pytest.mark.asyncio
 async def test_list_pairs(client):
     """Test trading pair operations."""
     # List pairs
     pairs = await client.list_pairs()
     logger.info("Retrieved pairs: %s", pairs)
-    assert hasattr(pairs, 'pairs')
+    assert hasattr(pairs, "pairs")
+
 
 @pytest.mark.asyncio
 async def test_get_quote(client):
@@ -89,11 +108,10 @@ async def test_get_quote(client):
         to_asset=to_asset,
         from_amount=100000000,
     )
-    quote = await client.get_quote(
-        request=quote_request
-    )
+    quote = await client.get_quote(request=quote_request)
     logger.info("Retrieved quote: %s", quote)
-    assert hasattr(quote, 'to_amount')
+    assert hasattr(quote, "to_amount")
+
 
 @pytest.mark.asyncio
 async def test_get_quote_websocket(client):
@@ -109,23 +127,22 @@ async def test_get_quote_websocket(client):
     else:
         # If no USDT asset found, use the first asset
         to_asset = assets_list[0].asset_id
-    
+
     # Get quote via WebSocket
     quote_request = QuoteRequest(
         from_asset="BTC",
         to_asset=to_asset,
         from_amount=10000000,
     )
-    quote = await client.get_quote_websocket(
-        request=quote_request 
-    )
+    quote = await client.get_quote_websocket(request=quote_request)
     logger.info("Retrieved WebSocket quote: %s", quote)
-    assert hasattr(quote, 'to_amount')
-    assert hasattr(quote, 'price')
-    assert hasattr(quote, 'fee')
-    assert hasattr(quote, 'timestamp')
-    assert hasattr(quote, 'expires_at')
+    assert hasattr(quote, "to_amount")
+    assert hasattr(quote, "price")
+    assert hasattr(quote, "fee")
+    assert hasattr(quote, "timestamp")
+    assert hasattr(quote, "expires_at")
     return quote
+
 
 @pytest.mark.asyncio
 async def test_get_pair_by_assets(client):
@@ -137,10 +154,11 @@ async def test_get_pair_by_assets(client):
     second_asset = assets.assets[1].asset_id
     logger.info("First asset: %s", first_asset)
     logger.info("Second asset: %s", second_asset)
-    
+
     pair = await client.get_pair_by_assets(first_asset, second_asset)
     logger.info("Retrieved pair: %s", pair)
     assert pair is not None
+
 
 @pytest.mark.asyncio
 async def test_init_maker_swap(client):
@@ -155,13 +173,12 @@ async def test_init_maker_swap(client):
         from_amount=quote.from_amount,
         to_amount=quote.to_amount,
     )
-    init_result = await client.init_maker_swap(
-        request=swap
-    )
+    init_result = await client.init_maker_swap(request=swap)
     logger.info("Initialized maker swap: %s", init_result)
-    assert hasattr(init_result, 'payment_hash')
-    assert hasattr(init_result, 'swapstring')
+    assert hasattr(init_result, "payment_hash")
+    assert hasattr(init_result, "swapstring")
     return init_result
+
 
 @pytest.mark.asyncio
 async def test_complete_swap(client):
@@ -169,7 +186,7 @@ async def test_complete_swap(client):
     logger.info("Starting maker swap flow test")
     init_result = await test_whitelist_trade(client)
 
-    #Getting taker pubkey
+    # Getting taker pubkey
     taker_pubkey = await client.get_node_pubkey()
     assert taker_pubkey is not None
     logger.info("Taker pubkey: %s", taker_pubkey)
@@ -180,18 +197,19 @@ async def test_complete_swap(client):
         request=ExecuteMakerSwapRequest(
             swapstring=init_result.swapstring,
             payment_hash=init_result.payment_hash,
-            taker_pubkey=taker_pubkey
+            taker_pubkey=taker_pubkey,
         )
     )
     logger.info("Executed maker swap: %s", execute_result)
     assert execute_result is not None
 
     # Wait for swap to complete
-    status = await client.wait_for_swap_completion(init_result.payment_hash)
+    request = GetSwapStatusRequest(payment_hash=init_result.payment_hash)
+    status = await client.wait_for_swap_completion(request)
     logger.info("Swap status: %s", status)
     assert status is not None
     assert status.status == "Succeeded"
-    
+
     # Confirm swap status
     start_time = time.time()
     while time.time() - start_time < 180:
@@ -201,8 +219,9 @@ async def test_complete_swap(client):
         if status_response.swap.status == "Succeeded":
             break
         await asyncio.sleep(1)
-    assert hasattr(status_response, 'swap')
+    assert hasattr(status_response, "swap")
     assert status_response.swap.status == "Succeeded"
+
 
 @pytest.mark.asyncio
 async def test_complete_swap_in_one_call(client):
@@ -211,7 +230,7 @@ async def test_complete_swap_in_one_call(client):
     logger.info("Getting quote for maker swap")
     quote = await test_get_quote_websocket(client)
     logger.info("Quote: %s", quote)
-    
+
     # Complete the swap using the same assets from the quote
     swap_request = InitMakerSwapRequest(
         rfq_id=quote.rfq_id,
@@ -220,12 +239,11 @@ async def test_complete_swap_in_one_call(client):
         from_amount=quote.from_amount,
         to_amount=quote.to_amount,
     )
-    swap_status = await client.complete_maker_swap(
-        request=swap_request
-    )
+    swap_status = await client.complete_maker_swap(request=swap_request)
     logger.info("Completed swap: %s", swap_status)
     assert swap_status is not None
     assert swap_status.status == "Succeeded"
+
 
 @pytest.mark.asyncio
 async def test_node_info(client):
@@ -233,7 +251,8 @@ async def test_node_info(client):
     node_info = await client.get_node_info()
     logger.info("Retrieved node info: %s", node_info)
     assert node_info is not None
-    assert hasattr(node_info, 'pubkey')
+    assert hasattr(node_info, "pubkey")
+
 
 @pytest.mark.asyncio
 async def test_node_pubkey(client):
@@ -241,6 +260,7 @@ async def test_node_pubkey(client):
     pubkey = await client.get_node_pubkey()
     logger.info("Retrieved node pubkey: %s", pubkey)
     assert pubkey is not None
+
 
 @pytest.mark.asyncio
 async def test_whitelist_trade(client):
@@ -253,6 +273,7 @@ async def test_whitelist_trade(client):
     assert whitelist_result is not None
     return init_result
 
+
 @pytest.mark.asyncio
 async def test_connect_peer(client):
     """Test connecting to a peer."""
@@ -262,19 +283,22 @@ async def test_connect_peer(client):
     logger.info("Connected to peer: %s", connect_result)
     assert connect_result is not None
 
+
 @pytest.mark.asyncio
 async def test_list_peers(client):
     """Test listing peers."""
     peers = await client.list_peers()
     logger.info("Listed peers: %s", peers)
-    assert hasattr(peers, 'peers')
+    assert hasattr(peers, "peers")
+
 
 @pytest.mark.asyncio
 async def test_get_onchain_address(client):
     """Test getting onchain address."""
     onchain_address = await client.get_onchain_address()
     logger.info("Retrieved onchain address: %s", onchain_address)
-    assert hasattr(onchain_address, 'address')
+    assert hasattr(onchain_address, "address")
+
 
 @pytest.mark.asyncio
 async def test_get_asset_metadata(client):
@@ -286,4 +310,4 @@ async def test_get_asset_metadata(client):
     metadata = await client.get_asset_metadata(metadata_request)
     logger.info("Retrieved asset metadata: %s", metadata)
     assert metadata is not None
-    assert hasattr(metadata, 'name')
+    assert hasattr(metadata, "name")
