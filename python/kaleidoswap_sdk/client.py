@@ -4,7 +4,7 @@ from typing import Dict, Optional, Any
 from .http import HttpClient
 from .websocket import WebSocketClient
 from .models import (
-    CreateOrderRequest, 
+    CreateOrderRequest,
     GetLspInfoResponse,
     ListAssetsResponse,
     ListPairsResponse,
@@ -27,16 +27,17 @@ from .models import (
     OrderResponse,
     NetworkInfoResponse,
     AddressResponse,
-    ListPeersResponse
+    ListPeersResponse,
 )
 from datetime import datetime
 import time
 
 logger = logging.getLogger(__name__)
 
+
 class KaleidoClient:
     """Main client for interacting with the Kaleidoswap API and node."""
-    
+
     def __init__(
         self,
         api_url: str,
@@ -47,10 +48,10 @@ class KaleidoClient:
         close_timeout: int = 10,
         max_size: int = 2**20,
         max_queue: int = 32,
-        compression: Optional[str] = None
+        compression: Optional[str] = None,
     ):
         """Initialize the Kaleido client.
-        
+
         Args:
             api_url: Base URL for the API proxy
             node_url: Base URL for the node
@@ -65,14 +66,14 @@ class KaleidoClient:
         self.api_client = HttpClient(api_url, api_key)
         self.node_client = HttpClient(node_url, api_key)
         self.ws_client = WebSocketClient(
-            api_url.replace('http', 'ws'),
+            api_url.replace("http", "ws"),
             self.api_client,
             ping_interval=ping_interval,
             ping_timeout=ping_timeout,
             close_timeout=close_timeout,
             max_size=max_size,
             max_queue=max_queue,
-            compression=compression
+            compression=compression,
         )
 
     async def connect(self) -> None:
@@ -85,7 +86,7 @@ class KaleidoClient:
 
     def on(self, action: str, handler: Any) -> None:
         """Register handler for WebSocket events.
-        
+
         Args:
             action: Action to handle
             handler: Async function to handle the action
@@ -100,10 +101,10 @@ class KaleidoClient:
         """
         response = await self.api_client.get("/lsps1/get_info")
         return GetLspInfoResponse.model_validate(response)
-    
+
     async def get_lsp_connection_url(self) -> str:
         """Get LSP connection URL.
-        
+
         Returns:
             LSP connection URL
         """
@@ -112,16 +113,16 @@ class KaleidoClient:
 
     async def get_lsp_network_info(self) -> NetworkInfoResponse:
         """Get LSP network information.
-        
+
         Returns:
             NetworkInfoResponse containing LSP network info
         """
         response = await self.api_client.get("/lsps1/network_info")
         return NetworkInfoResponse.model_validate(response)
-    
+
     async def create_order(self, request: CreateOrderRequest) -> OrderResponse:
         """Create an order.
-        
+
         Args:
             request: CreateOrderRequest containing order:
                 order_id: Order ID
@@ -130,20 +131,22 @@ class KaleidoClient:
                 order_amount: Order amount
                 order_price: Order price
                 order_currency: Order currency
-            
+
         Returns:
             OrderResponse containing order creation response
         """
-        response = await self.api_client.post("/lsps1/create_order", request.model_dump(exclude_none=True))
+        response = await self.api_client.post(
+            "/lsps1/create_order", request.model_dump(exclude_none=True)
+        )
         return OrderResponse.model_validate(response)
 
     async def get_order(self, request: GetOrderRequest) -> OrderResponse:
         """Get an order by ID.
-        
+
         Args:
             request: GetOrderRequest containing order:
                 order_id: Order ID
-            
+
         Returns:
             OrderResponse containing order details
         """
@@ -153,7 +156,7 @@ class KaleidoClient:
     # Swaps Operations
     async def get_lsp_node_info(self) -> NodeInfoResponse:
         """Get node information including pubkey.
-        
+
         Returns:
             NodeInfoResponse containing node info including pubkey
         """
@@ -165,7 +168,7 @@ class KaleidoClient:
         request: InitMakerSwapRequest,
     ) -> InitMakerSwapResponse:
         """Initialize a maker swap.
-        
+
         Args:
             request: InitMakerSwapRequest containing swap:
                 rfq_id: Request for Quote ID
@@ -173,7 +176,7 @@ class KaleidoClient:
                 to_asset: Destination asset ID
                 from_amount: Amount of source asset in millisats
                 to_amount: Amount of destination asset in millisats
-            
+
         Returns:
             InitMakerSwapResponse containing swap initialization details
         """
@@ -185,26 +188,28 @@ class KaleidoClient:
         request: ExecuteMakerSwapRequest,
     ) -> ExecuteMakerSwapResponse:
         """Execute a maker swap.
-        
+
         Args:
             request: ExecuteMakerSwapRequest containing swap:
                 swapstring: Swap string from initialization
                 payment_hash: Payment hash from initialization
                 taker_pubkey: Taker's public key
-            
+
         Returns:
             ExecuteMakerSwapResponse containing execution status
         """
         response = await self.api_client.post("/swaps/execute", request.model_dump())
         return ExecuteMakerSwapResponse.model_validate(response)
 
-    async def get_swap_status(self, request: GetSwapStatusRequest) -> GetSwapStatusResponse:
+    async def get_swap_status(
+        self, request: GetSwapStatusRequest
+    ) -> GetSwapStatusResponse:
         """Get the status of a swap.
-        
+
         Args:
             request: GetSwapStatusRequest containing swap:
                 payment_hash: Payment hash from whitelist
-            
+
         Returns:
             GetSwapStatusResponse containing swap status information
         """
@@ -214,7 +219,7 @@ class KaleidoClient:
     # Market Operations
     async def list_assets(self) -> ListAssetsResponse:
         """List available assets.
-        
+
         Returns:
             ListAssetsResponse containing list of assets
         """
@@ -223,7 +228,7 @@ class KaleidoClient:
 
     async def list_pairs(self) -> ListPairsResponse:
         """List available trading pairs.
-        
+
         Returns:
             ListPairsResponse containing list of trading pairs
         """
@@ -235,13 +240,13 @@ class KaleidoClient:
         request: QuoteRequest,
     ) -> QuoteResponse:
         """Get a quote for swapping assets.
-        
+
         Args:
             request: QuoteRequest containing quote:
                 from_asset: Source asset ID
                 to_asset: Destination asset ID
                 from_amount: Amount in millisats
-            
+
         Returns:
             QuoteResponse containing quote information
         """
@@ -249,23 +254,23 @@ class KaleidoClient:
         return QuoteResponse.model_validate(response)
 
     # Helper Methods and Complex Operations
-    async def get_pair_by_assets(self, base_asset: str, quote_asset: str) -> Optional[TradingPair]:
+    async def get_pair_by_assets(
+        self, base_asset: str, quote_asset: str
+    ) -> Optional[TradingPair]:
         """Get trading pair by base and quote assets.
-        
+
         Args:
             base_asset: Base asset ID
             quote_asset: Quote asset ID
-            
+
         Returns:
             TradingPair containing pair information or None if not found
         """
         pairs_response = await self.list_pairs()
         for pair in pairs_response.pairs:
-            if (pair.base_asset_id == base_asset and 
-                pair.quote_asset_id == quote_asset):
+            if pair.base_asset_id == base_asset and pair.quote_asset_id == quote_asset:
                 return pair
-            if (pair.quote_asset_id == base_asset and 
-                pair.base_asset_id == quote_asset):
+            if pair.quote_asset_id == base_asset and pair.base_asset_id == quote_asset:
                 return pair
         return None
 
@@ -274,16 +279,16 @@ class KaleidoClient:
         request: QuoteRequest,
     ) -> QuoteResponse:
         """Get a quote for swapping assets using websocket.
-        
+
         Args:
             request: QuoteRequest containing quote:
                 from_asset: Source asset ID
                 to_asset: Destination asset ID
                 from_amount: Amount in millisats
-            
+
         Returns:
             QuoteResponse containing quote information
-            
+
         Raises:
             Exception: If there is an error in the quote response
             RuntimeError: If WebSocket is not connected
@@ -291,57 +296,56 @@ class KaleidoClient:
         # Ensure WebSocket is connected
         if not self.ws_client._ws:
             await self.connect()
-            
+
         # Create a future to wait for the response
         response_future = asyncio.Future()
-        
+
         # Create the quote message
         quote_message = {
             "action": "quote_request",
             "from_asset": request.from_asset,
             "to_asset": request.to_asset,
             "from_amount": request.from_amount,
-            "timestamp": int(time.time())
+            "timestamp": int(time.time()),
         }
-        
+
         # Register a one-time handler for the quote response
         async def quote_handler(response: Dict[str, Any]) -> None:
             if not response_future.done():
                 if "error" in response and response["error"]:
-                    response_future.set_exception(Exception(f"WebSocket quote error: {response['error']}"))
+                    response_future.set_exception(
+                        Exception(f"WebSocket quote error: {response['error']}")
+                    )
                 else:
                     response_future.set_result(response.get("data", {}))
-        
+
         # Register the handler
         self.ws_client.on("quote_response", quote_handler)
-        
+
         try:
             # Send the quote request
             await self.ws_client.send(quote_message)
-            
+
             # Wait for the response with a timeout
             quote_data = await asyncio.wait_for(response_future, timeout=30)
             return QuoteResponse.model_validate(quote_data)
-            
+
         finally:
             # Clean up the handler
             self.ws_client.off("quote_response", quote_handler)
 
     async def wait_for_swap_completion(
-        self,
-        request: GetSwapStatusRequest,
-        timeout: int = 3600,
-        poll_interval: int = 5
+        self, request: GetSwapStatusRequest, timeout: int = 3600, poll_interval: int = 5
     ) -> SwapStatus:
         """Wait for a swap to complete.
-        
+
         Args:
             request: GetSwapStatusRequest containing swap:
                 payment_hash: Payment hash from whitelist
-            
+
         Returns:
             Final swap status
-            
+
         Raises:
             TimeoutError: If swap doesn't complete within timeout
         """
@@ -350,10 +354,10 @@ class KaleidoClient:
             swap_status_response = await self.get_swap_status(request)
             if swap_status_response.swap.status in ["Succeeded", "Failed", "Expired"]:
                 return swap_status_response.swap
-                
+
             if (datetime.now() - start_time).total_seconds() > timeout:
                 raise TimeoutError(f"Swap did not complete within {timeout} seconds")
-                
+
             await asyncio.sleep(poll_interval)
 
     async def complete_maker_swap(
@@ -362,7 +366,7 @@ class KaleidoClient:
         timeout: int = 3600,
     ) -> SwapStatus:
         """Complete a maker swap in one call.
-        
+
         Args:
             request: InitMakerSwapRequest containing swap:
                 from_asset: Source asset ID
@@ -371,7 +375,7 @@ class KaleidoClient:
                 to_amount: Amount of destination asset in millisats
                 rfq_id: RFQ ID from quote
             timeout: Swap timeout in seconds
-            
+
         Returns:
             Final swap status
         """
@@ -389,10 +393,12 @@ class KaleidoClient:
             except Exception as e:
                 logger.error(f"Error initializing swap: {e}")
                 raise e
-            
+
             # Whitelist trade from taker
             try:
-                whitelist_request = WhitelistTradeRequest(swapstring=init_result.swapstring)
+                whitelist_request = WhitelistTradeRequest(
+                    swapstring=init_result.swapstring
+                )
                 whitelist_result = await self.whitelist_trade(whitelist_request)
             except Exception as e:
                 logger.error(f"Error whitelisting trade: {e}")
@@ -401,21 +407,27 @@ class KaleidoClient:
             # Execute swap from maker
             taker_pubkey = await self.get_node_pubkey()
             try:
-                execute_result: ExecuteMakerSwapResponse = await self.execute_maker_swap(
-                    request=ExecuteMakerSwapRequest(
-                        swapstring=init_result.swapstring,
-                        payment_hash=init_result.payment_hash,
-                        taker_pubkey=taker_pubkey
+                execute_result: ExecuteMakerSwapResponse = (
+                    await self.execute_maker_swap(
+                        request=ExecuteMakerSwapRequest(
+                            swapstring=init_result.swapstring,
+                            payment_hash=init_result.payment_hash,
+                            taker_pubkey=taker_pubkey,
+                        )
                     )
                 )
             except Exception as e:
                 logger.error(f"Error executing swap: {e}")
                 raise e
-            
+
             # Wait for swap to complete
             try:
-                swap_status_request = GetSwapStatusRequest(payment_hash=init_result.payment_hash)
-                swap_status = await self.wait_for_swap_completion(swap_status_request, timeout=timeout)
+                swap_status_request = GetSwapStatusRequest(
+                    payment_hash=init_result.payment_hash
+                )
+                swap_status = await self.wait_for_swap_completion(
+                    swap_status_request, timeout=timeout
+                )
                 if swap_status.status == "Succeeded":
                     return swap_status
                 else:
@@ -426,23 +438,24 @@ class KaleidoClient:
         except Exception as e:
             logger.error(f"Error completing swap: {e}")
             raise e
+
     """
     Node operations
     """
+
     async def get_node_info(self) -> NodeInfoResponse:
         """Get node information including pubkey.
-        
+
         Returns:
             NodeInfoResponse containing node info including pubkey
         """
         response = await self.node_client.get("/nodeinfo")
         return NodeInfoResponse.model_validate(response)
 
-
     # Node Operations (Additional)
     async def get_node_pubkey(self) -> str:
         """Get node public key.
-        
+
         Returns:
             Node public key
         """
@@ -450,22 +463,22 @@ class KaleidoClient:
         if not node_info.pubkey:
             raise ValueError("Could not get node pubkey")
         return node_info.pubkey
-    
+
     async def whitelist_trade(self, request: WhitelistTradeRequest) -> Dict[str, Any]:
         """Whitelist a trade by swapstring.
-        
+
         Args:
             request: WhitelistTradeRequest containing trade:
                 swapstring: Swap string from maker
-            
+
         Returns:
             Dict containing whitelist status
         """
         return await self.node_client.post("/taker", request.model_dump())
-    
+
     async def connect_peer(self, request: ConnectPeerRequest) -> Dict[str, Any]:
         """Connect to a peer.
-        
+
         Args:
             request: ConnectPeerRequest containing peer:
                 peer_pubkey_and_addr: Peer public key and address
@@ -474,35 +487,37 @@ class KaleidoClient:
 
     async def list_peers(self) -> ListPeersResponse:
         """List connected peers.
-        
+
         Returns:
             ListPeersResponse containing list of connected peers
         """
         response = await self.node_client.get("/listpeers")
         return ListPeersResponse.model_validate(response)
-    
+
     async def get_onchain_address(self) -> AddressResponse:
         """Get onchain address.
-        
+
         Returns:
             AddressResponse containing onchain address
         """
         response = await self.node_client.post("/address", {})
         return AddressResponse.model_validate(response)
-    
-    async def get_asset_metadata(self, request: GetAssetMetadataRequest) -> AssetMetadataResponse:
+
+    async def get_asset_metadata(
+        self, request: GetAssetMetadataRequest
+    ) -> AssetMetadataResponse:
         """Get asset metadata.
-        
+
         Args:
             request: GetAssetMetadataRequest containing asset:
                 asset_id: Asset ID
-            
+
         Returns:
             AssetMetadataResponse containing asset metadata
         """
         response = await self.node_client.post("/assetmetadata", request.model_dump())
         return AssetMetadataResponse.model_validate(response)
-    
+
     async def close(self):
         """Closes any open connections (HTTP client sessions, WebSocket)."""
         await self.api_client.close()
@@ -514,4 +529,4 @@ class KaleidoClient:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        await self.close() 
+        await self.close()
