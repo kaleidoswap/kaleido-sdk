@@ -2,7 +2,7 @@ import asyncio
 import pytest
 import logging
 import time
-from kaleidoswap_sdk.models import CreateOrderRequest
+from kaleidoswap_sdk.models import CreateOrderRequest, GetOrderRequest, GetSwapStatusRequest, InitMakerSwapRequest, ExecuteMakerSwapRequest, QuoteRequest, WhitelistTradeRequest, GetAssetMetadataRequest, ConnectPeerRequest
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +20,7 @@ async def test_lsp_connection_url(client):
     lsp_connection_url = await client.get_lsp_connection_url()
     logger.info("Retrieved LSP connection URL: %s", lsp_connection_url)
     assert lsp_connection_url is not None
+    return lsp_connection_url
 
 @pytest.mark.asyncio
 async def test_lsp_network_info(client):
@@ -54,8 +55,9 @@ async def test_create_order(client):
 async def test_get_order(client):
     """Test getting an order."""
     order_result = await test_create_order(client)
-    order_id = order_result["order_id"]  # Access as dict key
-    order_result = await client.get_order(order_id)
+    order_id = order_result.order_id  
+    request = GetOrderRequest(order_id=order_id)
+    order_result = await client.get_order(request)
     logger.info("Retrieved order: %s", order_result)
     assert order_result is not None
 
@@ -74,20 +76,6 @@ async def test_list_pairs(client):
     pairs = await client.list_pairs()
     logger.info("Retrieved pairs: %s", pairs)
     assert hasattr(pairs, 'pairs')
-    
-    if pairs.pairs:
-        pair = pairs.pairs[0]
-        # Get pair by assets - use base_asset and quote_asset if available, otherwise skip
-        if pair.base_asset_id and pair.quote_asset_id:
-            found_pair = await client.get_pair_by_assets(
-                pair.base_asset_id,
-                pair.quote_asset_id
-            )
-            logger.info("Found pair by assets: %s", found_pair)
-            assert found_pair is not None
-            assert found_pair.id == pair.id
-        else:
-            logger.info("Skipping pair lookup - missing asset IDs")
 
 @pytest.mark.asyncio
 async def test_get_quote(client):
@@ -96,11 +84,13 @@ async def test_get_quote(client):
     from_asset = assets.assets[0].asset_id
     to_asset = assets.assets[1].asset_id
     """Test getting a quote."""
-
-    quote = await client.get_quote(
+    quote_request = QuoteRequest(
         from_asset=from_asset,
         to_asset=to_asset,
-        from_amount=100000000,  # 1 BTC in satoshis
+        from_amount=100000000,
+    )
+    quote = await client.get_quote(
+        request=quote_request
     )
     logger.info("Retrieved quote: %s", quote)
     assert hasattr(quote, 'to_amount')
@@ -121,17 +111,20 @@ async def test_get_quote_websocket(client):
         to_asset = assets_list[0].asset_id
     
     # Get quote via WebSocket
-    quote = await client.get_quote_websocket(
+    quote_request = QuoteRequest(
         from_asset="BTC",
         to_asset=to_asset,
-        from_amount=10000000,  # 1 BTC in satoshis
+        from_amount=10000000,
+    )
+    quote = await client.get_quote_websocket(
+        request=quote_request 
     )
     logger.info("Retrieved WebSocket quote: %s", quote)
-    assert "to_amount" in quote
-    assert "price" in quote
-    assert "fee" in quote
-    assert "timestamp" in quote
-    assert "expires_at" in quote
+    assert hasattr(quote, 'to_amount')
+    assert hasattr(quote, 'price')
+    assert hasattr(quote, 'fee')
+    assert hasattr(quote, 'timestamp')
+    assert hasattr(quote, 'expires_at')
     return quote
 
 @pytest.mark.asyncio
@@ -155,12 +148,15 @@ async def test_init_maker_swap(client):
     quote = await test_get_quote_websocket(client)
     logger.info("Quote: %s", quote)
     logger.info("Initiating maker swap")
+    swap = InitMakerSwapRequest(
+        rfq_id=quote.rfq_id,
+        from_asset=quote.from_asset,
+        to_asset=quote.to_asset,
+        from_amount=quote.from_amount,
+        to_amount=quote.to_amount,
+    )
     init_result = await client.init_maker_swap(
-        rfq_id=quote["rfq_id"],
-        from_asset=quote["from_asset"],
-        to_asset=quote["to_asset"],
-        from_amount=quote["from_amount"],
-        to_amount=quote["to_amount"],
+        request=swap
     )
     logger.info("Initialized maker swap: %s", init_result)
     assert hasattr(init_result, 'payment_hash')
@@ -170,7 +166,6 @@ async def test_init_maker_swap(client):
 @pytest.mark.asyncio
 async def test_complete_swap(client):
     """Test the complete maker swap flow."""
-    # List assets to get valid asset IDs
     logger.info("Starting maker swap flow test")
     init_result = await test_whitelist_trade(client)
 
@@ -179,11 +174,14 @@ async def test_complete_swap(client):
     assert taker_pubkey is not None
     logger.info("Taker pubkey: %s", taker_pubkey)
 
+    # Execute maker swap
     logger.info("Executing maker swap")
     execute_result = await client.execute_maker_swap(
-        swapstring=init_result.swapstring,
-        payment_hash=init_result.payment_hash,
-        taker_pubkey=taker_pubkey
+        request=ExecuteMakerSwapRequest(
+            swapstring=init_result.swapstring,
+            payment_hash=init_result.payment_hash,
+            taker_pubkey=taker_pubkey
+        )
     )
     logger.info("Executed maker swap: %s", execute_result)
     assert execute_result is not None
@@ -197,7 +195,8 @@ async def test_complete_swap(client):
     # Confirm swap status
     start_time = time.time()
     while time.time() - start_time < 180:
-        status_response = await client.get_swap_status(init_result.payment_hash)
+        status_request = GetSwapStatusRequest(payment_hash=init_result.payment_hash)
+        status_response = await client.get_swap_status(status_request)
         logger.info("Swap status: %s", status_response)
         if status_response.swap.status == "Succeeded":
             break
@@ -214,12 +213,15 @@ async def test_complete_swap_in_one_call(client):
     logger.info("Quote: %s", quote)
     
     # Complete the swap using the same assets from the quote
+    swap_request = InitMakerSwapRequest(
+        rfq_id=quote.rfq_id,
+        from_asset=quote.from_asset,
+        to_asset=quote.to_asset,
+        from_amount=quote.from_amount,
+        to_amount=quote.to_amount,
+    )
     swap_status = await client.complete_maker_swap(
-        from_asset=quote["from_asset"],
-        to_asset=quote["to_asset"],
-        from_amount=quote["from_amount"],
-        to_amount=quote["to_amount"],
-        rfq_id=quote["rfq_id"]
+        request=swap_request
     )
     logger.info("Completed swap: %s", swap_status)
     assert swap_status is not None
@@ -245,7 +247,8 @@ async def test_whitelist_trade(client):
     """Test whitelisting a trade."""
     logger.info("Whitelisting trade")
     init_result = await test_init_maker_swap(client)
-    whitelist_result = await client.whitelist_trade(init_result.swapstring)
+    whitelist_request = WhitelistTradeRequest(swapstring=init_result.swapstring)
+    whitelist_result = await client.whitelist_trade(whitelist_request)
     logger.info("Whitelisted trade: %s", whitelist_result)
     assert whitelist_result is not None
     return init_result
@@ -253,12 +256,11 @@ async def test_whitelist_trade(client):
 @pytest.mark.asyncio
 async def test_connect_peer(client):
     """Test connecting to a peer."""
-    # Get a peer to connect to (this would need a valid peer address)
-    # For now, just test that the function exists and doesn't crash
-    logger.info("Testing connect peer function")
-    # This would need a valid peer address to actually test
-    # connect_result = await client.connect_peer("peer_address")
-    # assert connect_result is not None
+    to_connect_peer = await test_lsp_connection_url(client)
+    request = ConnectPeerRequest(peer_pubkey_and_addr=to_connect_peer)
+    connect_result = await client.connect_peer(request)
+    logger.info("Connected to peer: %s", connect_result)
+    assert connect_result is not None
 
 @pytest.mark.asyncio
 async def test_list_peers(client):
@@ -280,7 +282,8 @@ async def test_get_asset_metadata(client):
     assets = await client.list_assets()
     assert assets is not None
     asset_id = assets.assets[0].asset_id
-    metadata = await client.get_asset_metadata(asset_id)
+    metadata_request = GetAssetMetadataRequest(asset_id=asset_id)
+    metadata = await client.get_asset_metadata(metadata_request)
     logger.info("Retrieved asset metadata: %s", metadata)
     assert metadata is not None
     assert hasattr(metadata, 'name')

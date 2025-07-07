@@ -1,5 +1,7 @@
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime, UTC
+from enum import Enum
 
 
 class OrderOptions(BaseModel):
@@ -337,29 +339,97 @@ class GetOrderRequest(BaseModel):
     
     order_id: str = Field(..., description="Order ID")
 
-class OrderResponse(BaseModel):
-    """Model for order response."""
+class OrderState(str, Enum):
+    """Order state enumeration."""
+    CREATED = "CREATED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+class PaymentState(str, Enum):
+    """Payment state enumeration."""
+    EXPECT_PAYMENT = "EXPECT_PAYMENT"
+    HOLD = "HOLD"
+    PAID = "PAID"
+    REFUNDED = "REFUNDED"
+
+class PaymentBolt11(BaseModel):
+    """Model for Bolt11 payment details."""
     
     model_config = ConfigDict(
         extra="forbid",
         validate_assignment=True 
     )
     
+    state: PaymentState = Field(..., description="Payment state")
+    expires_at: datetime = Field(..., description="Payment expiration time")
+    fee_total_sat: int = Field(..., description="Total fee in satoshis")
+    order_total_sat: int = Field(..., description="Order total in satoshis")
+    invoice: str = Field(..., description="Bolt11 invoice")
+
+class PaymentOnchain(BaseModel):
+    """Model for onchain payment details."""
+    
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True 
+    )
+    
+    state: PaymentState = Field(..., description="Payment state")
+    expires_at: datetime = Field(..., description="Payment expiration time")
+    fee_total_sat: int = Field(..., description="Total fee in satoshis")
+    order_total_sat: int = Field(..., description="Order total in satoshis")
+    address: str = Field(..., description="Payment address")
+    min_fee_for_0conf: int = Field(..., description="Minimum fee for 0-conf")
+    min_onchain_payment_confirmations: int = Field(..., description="Minimum onchain payment confirmations")
+    refund_onchain_address: Optional[str] = Field(default=None, description="Refund onchain address")
+
+class PaymentDetails(BaseModel):
+    """Model for payment details."""
+    
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True 
+    )
+    
+    bolt11: PaymentBolt11 = Field(..., description="Bolt11 payment details")
+    onchain: PaymentOnchain = Field(..., description="Onchain payment details")
+
+class ChannelDetails(BaseModel):
+    """Model for channel details."""
+    
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True 
+    )
+    
+    channel_id: Optional[str] = Field(default=None, description="Channel ID")
+    temporary_channel_id: Optional[str] = Field(default=None, description="Temporary channel ID")
+    funded_at: Optional[datetime] = Field(default=None, description="Funding timestamp")
+    funding_outpoint: Optional[str] = Field(default=None, description="Funding outpoint")
+    expires_at: Optional[datetime] = Field(default=None, description="Channel expiration time")
+
+class OrderResponse(BaseModel):
+    """Complete order response model with all details."""
+    
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        arbitrary_types_allowed=True
+    )
+    
     order_id: str = Field(..., description="Order ID")
-    status: Optional[str] = Field(default=None, description="Order status")
-    created_at: str = Field(..., description="Creation timestamp")
-    updated_at: Optional[str] = Field(default=None, description="Last update timestamp")
-    client_pubkey: Optional[str] = Field(default=None, description="Client public key")
-    lsp_balance_sat: Optional[int] = Field(default=None, description="LSP balance in satoshis")
-    client_balance_sat: Optional[int] = Field(default=None, description="Client balance in satoshis")
-    required_channel_confirmations: Optional[int] = Field(default=None, description="Required channel confirmations")
-    funding_confirms_within_blocks: Optional[int] = Field(default=None, description="Funding confirms within blocks")
-    channel_expiry_blocks: Optional[int] = Field(default=None, description="Channel expiry blocks")
-    token: Optional[str] = Field(default=None, description="Token")
-    announce_channel: Optional[bool] = Field(default=None, description="Whether to announce channel")
-    order_state: Optional[str] = Field(default=None, description="Order state")
-    payment: Optional[Dict[str, Any]] = Field(default=None, description="Payment information")
-    channel: Optional[Dict[str, Any]] = Field(default=None, description="Channel information")
+    client_pubkey: str = Field(..., description="Client public key")
+    lsp_balance_sat: int = Field(..., description="LSP balance in satoshis")
+    client_balance_sat: int = Field(..., description="Client balance in satoshis")
+    required_channel_confirmations: int = Field(..., description="Required channel confirmations")
+    funding_confirms_within_blocks: int = Field(..., description="Funding confirms within blocks")
+    channel_expiry_blocks: int = Field(..., description="Channel expiry blocks")
+    token: Optional[str] = Field(default="", description="Token")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Creation timestamp")
+    announce_channel: bool = Field(..., description="Whether to announce channel")
+    order_state: OrderState = Field(..., description="Order state")
+    payment: PaymentDetails = Field(..., description="Payment details")
+    channel: Optional[ChannelDetails] = Field(default=None, description="Channel details")
     asset_id: Optional[str] = Field(default=None, description="Asset ID")
     lsp_asset_amount: Optional[int] = Field(default=None, description="LSP asset amount")
     client_asset_amount: Optional[int] = Field(default=None, description="Client asset amount")
