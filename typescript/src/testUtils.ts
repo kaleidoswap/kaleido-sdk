@@ -1,4 +1,9 @@
 import { KaleidoClient } from './client';
+import type { 
+  OnchainAsset,
+  OnchainTradingPairResponse,
+  OrderResponse,
+} from './client';
 
 import {
   SwapRequest,
@@ -19,35 +24,72 @@ interface AssetPairIds {
 export const testConfig: TestConfig & { wsUrl?: string } = {
   nodeUrl: process.env.TEST_NODE_URL || 'http://localhost:3001',
   baseUrl: process.env.TEST_BASE_URL || 'http://localhost:8000/api/v1/',
-  //baseUrl: process.env.TEST_BASE_URL || 'https://api.staging.kaleidoswap.com/api/v1/',
   apiKey: process.env.TEST_API_KEY || '',
-  // Derive WebSocket URL from base URL if not explicitly set
   get wsUrl(): string {
     if (process.env.TEST_WS_URL) {
       return process.env.TEST_WS_URL;
     }
-    // Convert http:// or https:// to ws:// or wss://
     const url = new URL(this.baseUrl);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Set the correct WebSocket endpoint path
     url.pathname = '/api/v1/market/ws/testclient';
     return url.toString();
   }
 };
 
-export const createTestClient = (): KaleidoClient => {
+// Add onchain test config
+export const testOnchainConfig = {
+  ...testConfig,
+  // Override baseUrl for onchain API if needed
+  baseUrl: process.env.TEST_ONCHAIN_BASE_URL || 'http://localhost:8000/',
+};
+
+export const createTestClient = (isOnchain: boolean = false): KaleidoClient => {
+  const config = isOnchain ? testOnchainConfig : testConfig;
   const client = new KaleidoClient({
-    nodeUrl: testConfig.nodeUrl,
-    baseUrl: testConfig.baseUrl,
-    apiKey: testConfig.apiKey,
-    wsUrl: testConfig.wsUrl
+    nodeUrl: config.nodeUrl,
+    baseUrl: config.baseUrl,
+    apiKey: config.apiKey,
+    wsUrl: config.wsUrl
   });
   
   if (process.env.DEBUG_WS) {
-    console.log('Created test client with WebSocket URL:', testConfig.wsUrl);
+    console.log('Created test client with WebSocket URL:', config.wsUrl);
   }
   
   return client;
+};
+
+// Helper function to get test RGB asset
+export const getTestRgbAsset = async (client: KaleidoClient): Promise<OnchainAsset> => {
+  const assets = await client.onchainListAssets();
+  const rgbAsset = assets.find(a => a.asset_id && a.asset_id.startsWith('rgb'));
+  if (!rgbAsset) {
+    throw new Error('No RGB asset found for testing');
+  }
+  return rgbAsset;
+};
+
+// Helper function to get test BTC/RGB trading pair
+export const getTestTradingPair = async (client: KaleidoClient): Promise<OnchainTradingPairResponse> => {
+  const pairs = await client.onchainListTradingPairs();
+  const btcRgbPair = pairs.find(p => 
+    (p.base_asset === 'BTC' && p.quote_asset.startsWith('RGB')) ||
+    (p.quote_asset === 'BTC' && p.base_asset.startsWith('RGB'))
+  );
+  if (!btcRgbPair) {
+    throw new Error('No BTC/RGB trading pair found for testing');
+  }
+  return btcRgbPair;
+};
+
+// Helper function to create a test order
+export const createTestOrder = async (client: KaleidoClient): Promise<OrderResponse> => {
+  const order = {
+    from_asset_type: 'btc' as const,
+    from_amount: 0.001,
+    to_asset_type: 'rgb' as const
+  };
+  return await client.onchainCreateOrder(order);
 };
 
 export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairIds> => {
