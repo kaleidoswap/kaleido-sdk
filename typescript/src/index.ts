@@ -1,12 +1,24 @@
 // Client
 export { KaleidoClient } from './client';
 export type { KaleidoConfig } from './client';
+
+// General Types
 export type {
-  Asset,
-  TradingPair,
   Quote,
-  SwapStatus
+  ClientAsset,
+  AssetResponse,
+  Pair,
+  PairResponse,
+  PairQuoteResponse,
+  TradingPair,
+  Swap,
+  SwapRequest,
+  SwapResponse,
+  SwapStatus,
+  ConfirmSwapRequest,
+  ConfirmSwapResponse,
 } from './types/index';
+
 
 // WebSocket
 export { WebSocketClient } from './websocket/client';

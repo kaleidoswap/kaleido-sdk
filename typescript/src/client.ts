@@ -10,9 +10,6 @@ import {
   SwapError,
   TimeoutError,
   WebSocketError,
-} from './types/exceptions';
-
-import { 
   AssetResponse,
   TradingPair,
   PairResponse,
@@ -21,17 +18,9 @@ import {
   ConfirmSwapRequest,
   ConfirmSwapResponse,
   Swap,
- } from './types/index'
-
-// Add new types for onchain endpoints
-export interface OnchainAsset {
-  asset_id: string;
-  name: string;
-  ticker: string;
-  precision: number;
-  balance?: number;
-  metadata?: Record<string, any>;
-}
+  ClientAsset,
+  Pair
+} from './index';
 
 // Order types
 export type OrderStatusType = 'pending' | 'payment_pending' | 'payment_confirmed' | 'processing' | 'completed' | 'failed' | 'expired' | 'cancelled';
@@ -132,13 +121,7 @@ export interface FeeEstimate {
   total_fee: number;
 }
 
-export interface OnchainTradingPairResponse {
-  id: number;
-  pair_id: string;
-  base_asset: string;
-  quote_asset: string;
-  base_asset_id: string | null;
-  quote_asset_id: string | null;
+export interface OnchainTradingPairResponse extends Pair {
   is_active: boolean;
   min_trade_amount: number;
   max_trade_amount: number | null;
@@ -510,9 +493,9 @@ export class KaleidoClient {
   }
 
   // Onchain Asset Methods
-  async onchainListAssets(): Promise<OnchainAsset[]> {
+  async onchainListAssets(): Promise<ClientAsset[]> {
     try {
-      return await this.apiClient.get<OnchainAsset[]>('/api/v1/assets/list');
+      return await this.apiClient.get<ClientAsset[]>('/api/v1/assets/list');
     } catch (error) {
       throw new AssetError(
         `Failed to list onchain assets: ${error instanceof Error ? error.message : String(error)}`
@@ -520,9 +503,9 @@ export class KaleidoClient {
     }
   }
 
-  async onchainGetAsset(assetId: string): Promise<OnchainAsset> {
+  async onchainGetAsset(assetId: string): Promise<ClientAsset> {
     try {
-      return await this.apiClient.get<OnchainAsset>(`/api/v1/assets/${assetId}`);
+      return await this.apiClient.get<ClientAsset>(`/api/v1/assets/${assetId}`);
     } catch (error) {
       throw new AssetError(
         `Failed to get onchain asset: ${error instanceof Error ? error.message : String(error)}`
@@ -530,9 +513,9 @@ export class KaleidoClient {
     }
   }
 
-  async onchainListSupportedAssets(): Promise<OnchainAsset[]> {
+  async onchainListSupportedAssets(): Promise<ClientAsset[]> {
     try {
-      return await this.apiClient.get<OnchainAsset[]>('/api/v1/assets/supported/list');
+      return await this.apiClient.get<ClientAsset[]>('/api/v1/assets/supported/list');
     } catch (error) {
       throw new AssetError(
         `Failed to list supported onchain assets: ${error instanceof Error ? error.message : String(error)}`

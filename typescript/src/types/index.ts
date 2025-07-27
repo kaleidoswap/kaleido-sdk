@@ -11,11 +11,5 @@ export type ConfirmSwapRequest = components['schemas']['ConfirmSwapRequest']
 export type ConfirmSwapResponse = components['schemas']['ConfirmSwapResponse']
 export type Swap = components['schemas']['Swap']
 export type SwapStatus = components['schemas']['SwapStatus']
-
-export interface Asset {
-  id: string;
-  name: string;
-  symbol: string;
-  decimals: number;
-  type: string;
-}
+export type Pair = components['schemas']['Pair']
+export type ClientAsset = components['schemas']['ClientAsset']

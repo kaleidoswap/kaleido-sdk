@@ -1,6 +1,5 @@
 import { KaleidoClient } from './client';
 import type { 
-  OnchainAsset,
   OnchainTradingPairResponse,
   OrderResponse,
 } from './client';
@@ -8,7 +7,8 @@ import type {
 import {
   SwapRequest,
   SwapResponse,
-} from './types/index'
+  ClientAsset,
+} from './index'
 
 interface TestConfig {
   nodeUrl: string;
@@ -60,7 +60,7 @@ export const createTestClient = (isOnchain: boolean = false): KaleidoClient => {
 };
 
 // Helper function to get test RGB asset
-export const getTestRgbAsset = async (client: KaleidoClient): Promise<OnchainAsset> => {
+export const getTestRgbAsset = async (client: KaleidoClient): Promise<ClientAsset> => {
   const assets = await client.onchainListAssets();
   const rgbAsset = assets.find(a => a.asset_id && a.asset_id.startsWith('rgb'));
   if (!rgbAsset) {
