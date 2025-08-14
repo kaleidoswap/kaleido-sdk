@@ -597,20 +597,20 @@ export interface components {
             base_asset: string;
             /** Base Asset Id */
             base_asset_id: string;
+            /** Base Precision */
+            base_precision: number;
             /** Quote Asset */
             quote_asset: string;
             /** Quote Asset Id */
             quote_asset_id: string;
+            /** Quote Precision */
+            quote_precision: number;
             /** Is Active */
             is_active: boolean;
             /** Min Order Size */
             min_order_size: number;
             /** Max Order Size */
             max_order_size: number;
-            /** Price Precision */
-            price_precision: number;
-            /** Quantity Precision */
-            quantity_precision: number;
         };
         /** PairQuoteRequest */
         PairQuoteRequest: {

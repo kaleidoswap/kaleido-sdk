@@ -11,139 +11,14 @@ import {
   TimeoutError,
   WebSocketError,
   AssetResponse,
-  TradingPair,
   PairResponse,
   PairQuoteResponse,
   SwapRequest,
   ConfirmSwapRequest,
   ConfirmSwapResponse,
   Swap,
-  ClientAsset,
-  Pair
+  Pair,
 } from './index';
-
-// Order types
-export type OrderStatusType = 'pending' | 'payment_pending' | 'payment_confirmed' | 'processing' | 'completed' | 'failed' | 'expired' | 'cancelled';
-
-export interface OrderCreate {
-  from_asset_type: 'btc' | 'rgb';
-  from_asset_id?: string;
-  from_amount: number;
-  to_asset_type: 'btc' | 'rgb';
-  to_asset_id?: string;
-  session_id?: string;
-}
-
-export interface OrderResponse {
-  id: number;
-  order_id: string;
-  from_asset_type: 'btc' | 'rgb';
-  from_asset_id: string | null;
-  from_amount: number;
-  to_asset_type: 'btc' | 'rgb';
-  to_asset_id: string | null;
-  to_amount: number;
-  exchange_rate: number;
-  service_fee: number;
-  network_fee: number;
-  deposit_address: string | null;
-  deposit_rgb_invoice: string | null;
-  payout_address: string | null;
-  payout_rgb_invoice: string | null;
-  status: OrderStatusType;
-  payment_txid: string | null;
-  payout_txid: string | null;
-  created_at: string;
-  updated_at: string | null;
-  expires_at: string;
-  session_id: string | null;
-}
-
-export interface OrderPaymentUpdate {
-  payout_address?: string;
-  payout_rgb_invoice?: string;
-}
-
-export interface APIResponse {
-  success: boolean;
-  message: string;
-  data?: Record<string, any> | null;
-}
-
-// Wallet types
-export interface WalletStatus {
-  is_online: boolean;
-  btc_balance: number;
-  btc_spendable: number;
-  last_sync: string | null;
-  sync_height: number;
-  next_address_index: number;
-}
-
-export interface AssetBalance {
-  asset_id: string;
-  settled: number;
-  future: number;
-  spendable: number;
-}
-
-export interface WalletBalances {
-  btc_balance: number;
-  btc_spendable: number;
-  rgb_balances: AssetBalance[];
-}
-
-// Quote types
-export interface OrderQuote {
-  from_asset_type: 'btc' | 'rgb';
-  from_asset_id?: string | null;
-  from_amount: number;
-  to_asset_type: 'btc' | 'rgb';
-  to_asset_id?: string | null;
-  to_amount: number;
-  exchange_rate: number;
-  service_fee: number;
-  network_fee: number;
-  total_fee: number;
-  valid_for_seconds: number;
-}
-
-export interface MarketPrice {
-  pair: string;
-  price: number;
-  volume_24h?: number;
-  price_change_24h?: number;
-}
-
-export interface FeeEstimate {
-  service_fee: number;
-  network_fee: number;
-  total_fee: number;
-}
-
-export interface OnchainTradingPairResponse extends Pair {
-  is_active: boolean;
-  min_trade_amount: number;
-  max_trade_amount: number | null;
-  last_price: number | null;
-  volume_24h: number | null;
-  price_change_24h: number | null;
-  maker_fee: number | null;
-  taker_fee: number | null;
-  description: string | null;
-  created_at: string;
-  updated_at: string | null;
-}
-
-export interface OnchainTradingPairCreate {
-  base_asset: string;
-  quote_asset: string;
-  base_asset_id: string;
-  quote_asset_id: string;
-  is_active?: boolean;
-  min_trade_amount?: number;
-  max_trade_amount?: number | null;
-}
 
 export interface KaleidoConfig extends HttpClientConfig {
   nodeUrl: string;
@@ -237,13 +112,6 @@ export class KaleidoClient {
     }
   }
 
-  async getOnchainAddress(): Promise<any> { // TODO: type
-    try {
-      return await this.nodeClient.post('/address', {});
-    } catch (error) {
-      throw new Error(`Failed to get onchain address: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
 
   async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
     try {
@@ -290,7 +158,7 @@ export class KaleidoClient {
     }
   }
 
-  async getPairByAssets(baseAsset: string, quoteAsset: string): Promise<TradingPair | null> {
+  async getPairByAssets(baseAsset: string, quoteAsset: string): Promise<Pair | null> {
     try {
       const response = await this.listPairs();
       const pairs = response.pairs;
@@ -455,6 +323,7 @@ export class KaleidoClient {
   }
 
   /**
+   * TODO: Explain this function
    * Waits for a swap to reach a terminal state (Succeeded, Failed, or Expired)
    * @param paymentHash - The payment hash of the swap to monitor
    * @param timeoutSeconds - Maximum time to wait in seconds (default: 300)
@@ -492,104 +361,10 @@ export class KaleidoClient {
     }
   }
 
-  // Onchain Asset Methods
-  async onchainListAssets(): Promise<ClientAsset[]> {
+  /* Onchain Trading */
+  async createOrderOnchain(order: any): Promise<any> { // TODO: type
     try {
-      return await this.apiClient.get<ClientAsset[]>('/api/v1/assets/list');
-    } catch (error) {
-      throw new AssetError(
-        `Failed to list onchain assets: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetAsset(assetId: string): Promise<ClientAsset> {
-    try {
-      return await this.apiClient.get<ClientAsset>(`/api/v1/assets/${assetId}`);
-    } catch (error) {
-      throw new AssetError(
-        `Failed to get onchain asset: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainListSupportedAssets(): Promise<ClientAsset[]> {
-    try {
-      return await this.apiClient.get<ClientAsset[]>('/api/v1/assets/supported/list');
-    } catch (error) {
-      throw new AssetError(
-        `Failed to list supported onchain assets: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetAssetBalance(assetId: string): Promise<{ balance: number }> {
-    try {
-      return await this.apiClient.get<{ balance: number }>(`/api/v1/assets/balance/${assetId}`);
-    } catch (error) {
-      throw new AssetError(
-        `Failed to get onchain asset balance: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  // Onchain Trading Pair Methods
-  async onchainListTradingPairs(): Promise<OnchainTradingPairResponse[]> {
-    try {
-      return await this.apiClient.get<OnchainTradingPairResponse[]>('/api/v1/pairs/');
-    } catch (error) {
-      throw new PairError(
-        `Failed to list onchain trading pairs: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainCreateTradingPair(pair: OnchainTradingPairCreate): Promise<OnchainTradingPairResponse> {
-    try {
-      return await this.apiClient.post<OnchainTradingPairResponse>('/api/v1/pairs/', pair);
-    } catch (error) {
-      throw new PairError(
-        `Failed to create onchain trading pair: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetPairTickers(): Promise<string[]> {
-    try {
-      return await this.apiClient.get<string[]>('/api/v1/pairs/tickers');
-    } catch (error) {
-      throw new PairError(
-        `Failed to get onchain pair tickers: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetTradingPair(pairId: string): Promise<OnchainTradingPairResponse> {
-    try {
-      return await this.apiClient.get<OnchainTradingPairResponse>(`/api/v1/pairs/${pairId}`);
-    } catch (error) {
-      throw new PairError(
-        `Failed to get onchain trading pair: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetTradingPairByAssets(baseAsset: string, quoteAsset: string): Promise<OnchainTradingPairResponse> {
-    try {
-      return await this.apiClient.get<OnchainTradingPairResponse>(
-        `/api/v1/pairs/by-assets/${baseAsset}/${quoteAsset}`
-      );
-    } catch (error) {
-      throw new PairError(
-        `Failed to get onchain trading pair by assets: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  // Order Methods
-  async onchainCreateOrder(order: OrderCreate): Promise<OrderResponse> {
-    try {
-      return await this.apiClient.post<OrderResponse>('/api/v1/orders/create', order);
+      return await this.apiClient.post<any>('/api/v1/orders/create', order);
     } catch (error) {
       throw new SwapError(
         `Failed to create onchain order: ${error instanceof Error ? error.message : String(error)}`
@@ -597,231 +372,12 @@ export class KaleidoClient {
     }
   }
 
-  async onchainGetOrder(orderId: string): Promise<OrderResponse> {
+  async getOrderOnchain(orderId: string): Promise<any> { // TODO: type
     try {
-      return await this.apiClient.get<OrderResponse>(`/api/v1/orders/${orderId}`);
+      return await this.apiClient.get<any>(`/api/v1/orders/${orderId}`);
     } catch (error) {
       throw new SwapError(
         `Failed to get onchain order: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainUpdateOrderPayment(orderId: string, payment: OrderPaymentUpdate): Promise<OrderResponse> {
-    try {
-      return await this.apiClient.post<OrderResponse>(`/api/v1/orders/${orderId}/payment`, payment);
-    } catch (error) {
-      throw new SwapError(
-        `Failed to update onchain order payment: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainCancelOrder(orderId: string): Promise<APIResponse> {
-    try {
-      return await this.apiClient.post<APIResponse>(`/api/v1/orders/${orderId}/cancel`, {});
-    } catch (error) {
-      throw new SwapError(
-        `Failed to cancel onchain order: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetOrdersByStatus(status: OrderStatusType): Promise<OrderResponse[]> {
-    try {
-      return await this.apiClient.get<OrderResponse[]>(`/api/v1/orders/status/${status}`);
-    } catch (error) {
-      throw new SwapError(
-        `Failed to get onchain orders by status: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetExpiredOrders(): Promise<OrderResponse[]> {
-    try {
-      return await this.apiClient.get<OrderResponse[]>('/api/v1/orders/expired/list');
-    } catch (error) {
-      throw new SwapError(
-        `Failed to get expired onchain orders: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetOrderStatistics(): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.get<Record<string, any>>('/api/v1/orders/statistics/summary');
-    } catch (error) {
-      throw new SwapError(
-        `Failed to get onchain order statistics: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  // Wallet Methods
-  async onchainGetWalletStatus(): Promise<WalletStatus> {
-    try {
-      return await this.apiClient.get<WalletStatus>('/api/v1/wallet/status');
-    } catch (error) {
-      throw new Error(
-        `Failed to get wallet status: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetWalletBalances(): Promise<WalletBalances> {
-    try {
-      return await this.apiClient.get<WalletBalances>('/api/v1/wallet/balances');
-    } catch (error) {
-      throw new Error(
-        `Failed to get wallet balances: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainSyncWallet(): Promise<APIResponse> {
-    try {
-      return await this.apiClient.post<APIResponse>('/api/v1/wallet/sync', {});
-    } catch (error) {
-      throw new Error(
-        `Failed to sync wallet: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainCreateAllocations(numAllocations: number = 5): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.post<Record<string, any>>(`/api/v1/wallet/allocations/create?num_allocations=${numAllocations}`, {});
-    } catch (error) {
-      throw new Error(
-        `Failed to create allocations: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetNewAddress(): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.get<Record<string, any>>('/api/v1/wallet/address/new');
-    } catch (error) {
-      throw new Error(
-        `Failed to get new address: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGenerateRgbInvoice(assetId: string, amount?: number): Promise<Record<string, any>> {
-    try {
-      const queryParams = amount !== undefined ? `?asset_id=${assetId}&amount=${amount}` : `?asset_id=${assetId}`;
-      return await this.apiClient.post<Record<string, any>>(`/api/v1/wallet/invoice/rgb${queryParams}`, {});
-    } catch (error) {
-      throw new Error(
-        `Failed to generate RGB invoice: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetBtcTransactions(limit: number = 50): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.get<Record<string, any>>(`/api/v1/wallet/transactions/btc?limit=${limit}`);
-    } catch (error) {
-      throw new Error(
-        `Failed to get BTC transactions: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainValidateBitcoinAddress(address: string): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.post<Record<string, any>>(`/api/v1/wallet/validate/address?address=${address}`, {});
-    } catch (error) {
-      throw new Error(
-        `Failed to validate Bitcoin address: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainValidateRgbInvoice(invoice: string): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.post<Record<string, any>>(`/api/v1/wallet/validate/rgb-invoice?invoice=${invoice}`, {});
-    } catch (error) {
-      throw new Error(
-        `Failed to validate RGB invoice: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  // Quote Methods
-  async onchainGetQuote(
-    fromAssetType: 'btc' | 'rgb',
-    toAssetType: 'btc' | 'rgb',
-    fromAmount: number,
-    fromAssetId?: string,
-    toAssetId?: string
-  ): Promise<OrderQuote> {
-    try {
-      let queryParams = `?from_asset_type=${fromAssetType}&to_asset_type=${toAssetType}&from_amount=${fromAmount}`;
-      if (fromAssetId) queryParams += `&from_asset_id=${fromAssetId}`;
-      if (toAssetId) queryParams += `&to_asset_id=${toAssetId}`;
-      
-      return await this.apiClient.post<OrderQuote>(`/api/v1/quotes/get${queryParams}`, {});
-    } catch (error) {
-      throw new QuoteError(
-        `Failed to get quote: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetMarketPrices(): Promise<MarketPrice[]> {
-    try {
-      return await this.apiClient.get<MarketPrice[]>('/api/v1/quotes/prices');
-    } catch (error) {
-      throw new QuoteError(
-        `Failed to get market prices: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetPairPrice(pair: string): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.get<Record<string, any>>(`/api/v1/quotes/price/${pair}`);
-    } catch (error) {
-      throw new QuoteError(
-        `Failed to get pair price: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainEstimateFees(
-    fromAssetType: 'btc' | 'rgb',
-    toAssetType: 'btc' | 'rgb',
-    fromAmount: number
-  ): Promise<FeeEstimate> {
-    try {
-      return await this.apiClient.get<FeeEstimate>(
-        `/api/v1/quotes/fees/estimate?from_asset_type=${fromAssetType}&to_asset_type=${toAssetType}&from_amount=${fromAmount}`
-      );
-    } catch (error) {
-      throw new QuoteError(
-        `Failed to estimate fees: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainGetQuotesHealth(): Promise<Record<string, any>> {
-    try {
-      return await this.apiClient.get<Record<string, any>>('/api/v1/quotes/health');
-    } catch (error) {
-      throw new QuoteError(
-        `Failed to get quotes health: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async onchainRefreshPrices(): Promise<APIResponse> {
-    try {
-      return await this.apiClient.post<APIResponse>('/api/v1/quotes/refresh', {});
-    } catch (error) {
-      throw new QuoteError(
-        `Failed to refresh prices: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }

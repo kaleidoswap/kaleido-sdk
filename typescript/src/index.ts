@@ -4,33 +4,25 @@ export type { KaleidoConfig } from './client';
 
 // General Types
 export type {
-  Quote,
-  ClientAsset,
+  // Request Types
+  SwapRequest,
+  ConfirmSwapRequest,
+
+  // Response Types
+  ConfirmSwapResponse,
   AssetResponse,
-  Pair,
   PairResponse,
   PairQuoteResponse,
-  TradingPair,
+  PairQuoteRequest,
+  
+  // Other Types
+  Quote,
+  ClientAsset,
+  Pair,
   Swap,
-  SwapRequest,
   SwapResponse,
   SwapStatus,
-  ConfirmSwapRequest,
-  ConfirmSwapResponse,
 } from './types/index';
-
-
-// WebSocket
-export { WebSocketClient } from './websocket/client';
-export type {
-  WebSocketConfig,
-  WebSocketMessage,
-  MessageHandler
-} from './websocket/client';
-
-// HTTP
-export { HttpClient } from './http/client';
-export type { HttpClientConfig } from './http/client';
 
 // Exceptions
 export {
@@ -47,6 +39,18 @@ export {
   QuoteError,
   NodeError
 } from './types/exceptions';
+
+// WebSocket
+export { WebSocketClient } from './websocket/client';
+export type {
+  WebSocketConfig,
+  WebSocketMessage,
+  MessageHandler
+} from './websocket/client';
+
+// HTTP
+export { HttpClient } from './http/client';
+export type { HttpClientConfig } from './http/client';
 
 // Utils
 export { retry, withRetry } from './utils/retry';

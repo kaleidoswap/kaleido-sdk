@@ -22,11 +22,12 @@
     "skipLibCheck": true,
   },
   "include": [
-    "src/**/*",
-    "src/__tests__/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/__tests__/**/*",
+    "src/testUtils.ts"
   ]
 }

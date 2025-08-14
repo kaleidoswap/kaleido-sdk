@@ -1,13 +1,10 @@
 import { KaleidoClient } from './client';
 import type { 
-  OnchainTradingPairResponse,
-  OrderResponse,
 } from './client';
 
 import {
   SwapRequest,
   SwapResponse,
-  ClientAsset,
 } from './index'
 
 interface TestConfig {
@@ -59,37 +56,15 @@ export const createTestClient = (isOnchain: boolean = false): KaleidoClient => {
   return client;
 };
 
-// Helper function to get test RGB asset
-export const getTestRgbAsset = async (client: KaleidoClient): Promise<ClientAsset> => {
-  const assets = await client.onchainListAssets();
-  const rgbAsset = assets.find(a => a.asset_id && a.asset_id.startsWith('rgb'));
-  if (!rgbAsset) {
-    throw new Error('No RGB asset found for testing');
-  }
-  return rgbAsset;
-};
-
-// Helper function to get test BTC/RGB trading pair
-export const getTestTradingPair = async (client: KaleidoClient): Promise<OnchainTradingPairResponse> => {
-  const pairs = await client.onchainListTradingPairs();
-  const btcRgbPair = pairs.find(p => 
-    (p.base_asset === 'BTC' && p.quote_asset.startsWith('RGB')) ||
-    (p.quote_asset === 'BTC' && p.base_asset.startsWith('RGB'))
-  );
-  if (!btcRgbPair) {
-    throw new Error('No BTC/RGB trading pair found for testing');
-  }
-  return btcRgbPair;
-};
 
 // Helper function to create a test order
-export const createTestOrder = async (client: KaleidoClient): Promise<OrderResponse> => {
+export const createTestOrder = async (client: KaleidoClient): Promise<any> => { // TODO: type
   const order = {
     from_asset_type: 'btc' as const,
     from_amount: 0.001,
     to_asset_type: 'rgb' as const
   };
-  return await client.onchainCreateOrder(order);
+  return await client.createOrderOnchain(order);
 };
 
 export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairIds> => {

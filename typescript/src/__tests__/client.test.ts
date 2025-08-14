@@ -8,7 +8,6 @@ import {
   testWhiteListTrade,
 } from '../testUtils';
 
-jest.setTimeout(30000);
 
 describe('KaleidoClient', () => {
   const client = createTestClient();
@@ -26,14 +25,6 @@ describe('KaleidoClient', () => {
       expect(typeof pubkey).toBe('string');
       expect(pubkey.length).toBeGreaterThan(0);
       //console.log('Node pubkey:', pubkey);
-    });
-
-    it('should get onchain address', async () => {
-      const address = await client.getOnchainAddress();
-      expect(address).toBeDefined();
-      expect(address).toHaveProperty('address');
-      expect(typeof address.address).toBe('string');
-      expect(address.address.length).toBeGreaterThan(0);
     });
 
     it('should connect to peer', async () => {
@@ -88,7 +79,6 @@ describe('KaleidoClient', () => {
     it('should create order', async () => {
       try {
         const pubkey = await client.getNodePubkey();
-        const onchainAddress = await client.getOnchainAddress();
         
         const order = {
           client_pubkey: pubkey,
@@ -98,7 +88,6 @@ describe('KaleidoClient', () => {
           funding_confirms_within_blocks: 1,
           channel_expiry_blocks: 1000,
           token: "BTC",
-          refund_onchain_address: onchainAddress.address,
           announce_channel: true
         };
 
@@ -114,7 +103,6 @@ describe('KaleidoClient', () => {
       try {
         // First create an order
         const pubkey = await client.getNodePubkey();
-        const onchainAddress = await client.getOnchainAddress();
         
         const order = {
           client_pubkey: pubkey,
@@ -124,7 +112,6 @@ describe('KaleidoClient', () => {
           funding_confirms_within_blocks: 1,
           channel_expiry_blocks: 1000,
           token: "BTC",
-          refund_onchain_address: onchainAddress.address,
           announce_channel: true
         };
 
