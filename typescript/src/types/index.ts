@@ -1,4 +1,6 @@
-import { components } from "types";
+import { components } from "./schema";
+
+export { components };
 
 export type PairResponse = components['schemas']['PairResponse'];
 export type SwapRequest = components['schemas']['SwapRequest']
@@ -13,3 +15,5 @@ export type Pair = components['schemas']['Pair']
 export type Quote = components['schemas']['PairQuoteRequest']
 export type Swap = components['schemas']['Swap']
 export type SwapStatus = components['schemas']['SwapStatus']
+export type CreateOrderRequest = components['schemas']['CreateOrderRequest']
+export type PaymentState = components['schemas']['PaymentState']

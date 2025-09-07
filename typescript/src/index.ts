@@ -14,7 +14,10 @@ export type {
   PairResponse,
   PairQuoteResponse,
   PairQuoteRequest,
-  
+
+  // Order Types
+  CreateOrderRequest,
+  PaymentState,
   // Other Types
   Quote,
   ClientAsset,
@@ -55,3 +58,9 @@ export type { HttpClientConfig } from './http/client';
 // Utils
 export { retry, withRetry } from './utils/retry';
 export type { RetryConfig } from './utils/retry'; 
+
+// Orders
+export enum OrderSettlement {
+  LIGHTNING = "LIGHTNING",
+  ONCHAIN = "ONCHAIN"
+}
