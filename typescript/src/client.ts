@@ -22,22 +22,22 @@ import {
 } from './index';
 
 export interface KaleidoConfig extends HttpClientConfig {
-  nodeUrl: string;
+  nodeUrl?: string;
   wsUrl?: string;
 }
 
 export class KaleidoClient {
   private readonly apiClient: HttpClient;
-  private readonly nodeClient: HttpClient;
+  private readonly nodeClient: HttpClient | null;
   private readonly wsClient: WebSocketClient;
 
   constructor(config: KaleidoConfig) {
     const { nodeUrl, wsUrl, ...apiConfig } = config;
     this.apiClient = new HttpClient(apiConfig);
-    this.nodeClient = new HttpClient({
+    this.nodeClient = nodeUrl ? new HttpClient({
       ...apiConfig,
       baseUrl: nodeUrl
-    });
+    }) : null;
     
     // Determine WebSocket URL
     let wsBaseUrl: string;
@@ -82,6 +82,9 @@ export class KaleidoClient {
   }
 
   async connectPeer(connectionUrl: string): Promise<any> { // TODO: type
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for connecting peers');
+    }
     try {
       return await this.nodeClient.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
     } catch (error) {
@@ -90,6 +93,9 @@ export class KaleidoClient {
   }
 
   async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for getting asset metadata');
+    }
     try {
       return await this.nodeClient.post('/assetmetadata', { asset_id: assetId });
     } catch (error) {
@@ -98,6 +104,9 @@ export class KaleidoClient {
   }
 
   async getNodeInfo(): Promise<{ pubkey: string }> {
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for getting node info');
+    }
     try {
       return await this.nodeClient.get<{ pubkey: string }>('/nodeinfo');
     } catch (error) {
@@ -293,6 +302,9 @@ export class KaleidoClient {
   }
   
   async whitelistTrade(swapstring: string): Promise<Record<string, never>> {
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for whitelisting trades');
+    }
     try {
       return await this.nodeClient.post<Record<string, never>>('/taker', {
         swapstring,
@@ -304,10 +316,13 @@ export class KaleidoClient {
     }
   }
   
-  async getSwapStatus(paymentHash: string): Promise<Swap> {
+  async getSwapStatus(orderId: any): Promise<Swap> {
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for getting swap status');
+    }
     try {
-      return await this.nodeClient.post<Swap>(`/swaps/status`, {
-        payment_hash: paymentHash
+      return await this.nodeClient.post<Swap>(`/swaps/orders_status`, {
+        order_id: orderId
       });
     } catch (error) {
       throw new SwapError(
