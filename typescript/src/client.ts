@@ -21,7 +21,8 @@ import {
   CreateOrderRequest,
 } from './index';
 
-export interface KaleidoConfig extends HttpClientConfig {
+export interface KaleidoConfig extends Omit<HttpClientConfig, 'baseUrl'> {
+  baseUrl?: string;
   nodeUrl?: string;
   wsUrl?: string;
 }
@@ -32,8 +33,10 @@ export class KaleidoClient {
   private readonly wsClient: WebSocketClient;
 
   constructor(config: KaleidoConfig) {
-    const { nodeUrl, wsUrl, ...apiConfig } = config;
-    this.apiClient = new HttpClient(apiConfig);
+    const { nodeUrl, wsUrl, baseUrl, ...apiConfig } = config;
+    const finalBaseUrl = baseUrl || process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1';
+    
+    this.apiClient = new HttpClient({ ...apiConfig, baseUrl: finalBaseUrl });
     this.nodeClient = nodeUrl ? new HttpClient({
       ...apiConfig,
       baseUrl: nodeUrl
@@ -45,7 +48,7 @@ export class KaleidoClient {
       wsBaseUrl = wsUrl;
     } else {
       // Convert http:// or https:// to ws:// or wss://
-      const url = new URL(apiConfig.baseUrl);
+      const url = new URL(finalBaseUrl);
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       wsBaseUrl = url.toString();
     }
@@ -57,6 +60,12 @@ export class KaleidoClient {
     
     if (process.env.DEBUG_WS) {
       console.log('Initialized WebSocket client with URL:', wsBaseUrl);
+    }
+  }
+
+  private ensureNodeClient(): void {
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for this operation. Please provide nodeUrl in the client configuration.');
     }
   }
 
@@ -82,33 +91,27 @@ export class KaleidoClient {
   }
 
   async connectPeer(connectionUrl: string): Promise<any> { // TODO: type
-    if (!this.nodeClient) {
-      throw new NodeError('Node URL is required for connecting peers');
-    }
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
+      return await this.nodeClient!.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
     } catch (error) {
       throw new Error(`Failed to connect peer: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
-    if (!this.nodeClient) {
-      throw new NodeError('Node URL is required for getting asset metadata');
-    }
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.post('/assetmetadata', { asset_id: assetId });
+      return await this.nodeClient!.post('/assetmetadata', { asset_id: assetId });
     } catch (error) {
       throw new Error(`Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   async getNodeInfo(): Promise<{ pubkey: string }> {
-    if (!this.nodeClient) {
-      throw new NodeError('Node URL is required for getting node info');
-    }
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.get<{ pubkey: string }>('/nodeinfo');
+      return await this.nodeClient!.get<{ pubkey: string }>('/nodeinfo');
     } catch (error) {
       throw new NodeError(
         `Failed to get node info: ${error instanceof Error ? error.message : String(error)}`
@@ -302,11 +305,9 @@ export class KaleidoClient {
   }
   
   async whitelistTrade(swapstring: string): Promise<Record<string, never>> {
-    if (!this.nodeClient) {
-      throw new NodeError('Node URL is required for whitelisting trades');
-    }
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.post<Record<string, never>>('/taker', {
+      return await this.nodeClient!.post<Record<string, never>>('/taker', {
         swapstring,
       });
     } catch (error) {
@@ -317,11 +318,9 @@ export class KaleidoClient {
   }
   
   async getSwapStatus(orderId: any): Promise<Swap> {
-    if (!this.nodeClient) {
-      throw new NodeError('Node URL is required for getting swap status');
-    }
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.post<Swap>(`/swaps/orders_status`, {
+      return await this.nodeClient!.post<Swap>(`/swaps/orders_status`, {
         order_id: orderId
       });
     } catch (error) {
