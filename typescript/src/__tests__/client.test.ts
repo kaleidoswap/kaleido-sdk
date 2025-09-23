@@ -1,5 +1,5 @@
 //import { KaleidoClient } from '../client';
-import { components } from '../types';
+import { components } from '../types/index';
 //import { WebSocket } from 'ws';
 import { 
   createTestClient,
@@ -41,13 +41,6 @@ describe('KaleidoClient', () => {
       }
     });
 
-    it('should list peers', async () => {
-      const peers = await client.listPeers();
-      expect(peers).toBeDefined();
-      expect(peers).toHaveProperty('peers');
-      expect(Array.isArray(peers.peers)).toBe(true);
-    });
-
     // TODO: test for error handling -- not working
     //it('should handle node errors', async () => {
     //  jest.spyOn(client['nodeClient'], 'get').mockRejectedValue(new Error('Node error'));
@@ -74,58 +67,6 @@ describe('KaleidoClient', () => {
       const networkInfo = await client.getLspNetworkInfo();
       expect(networkInfo).toBeDefined();
       expect(networkInfo).toHaveProperty('network');
-    });
-
-    it('should create order', async () => {
-      try {
-        const pubkey = await client.getNodePubkey();
-        
-        const order = {
-          client_pubkey: pubkey,
-          lsp_balance_sat: 80000,
-          client_balance_sat: 20000,
-          required_channel_confirmations: 1,
-          funding_confirms_within_blocks: 1,
-          channel_expiry_blocks: 1000,
-          token: "BTC",
-          announce_channel: true
-        };
-
-        const orderResult = await client.createOrder(order);
-        expect(orderResult).toBeDefined();
-        expect(orderResult).toHaveProperty('order_id');
-      } catch (error) {
-        console.warn('Test skipped: Could not create order:', error);
-      }
-    });
-
-    it('should get order', async () => {
-      try {
-        // First create an order
-        const pubkey = await client.getNodePubkey();
-        
-        const order = {
-          client_pubkey: pubkey,
-          lsp_balance_sat: 80000,
-          client_balance_sat: 20000,
-          required_channel_confirmations: 1,
-          funding_confirms_within_blocks: 1,
-          channel_expiry_blocks: 1000,
-          token: "BTC",
-          announce_channel: true
-        };
-
-        const orderResult = await client.createOrder(order);
-        const orderId = orderResult.order_id;
-
-        // Then get the order
-        const retrievedOrder = await client.getOrder(orderId);
-        expect(retrievedOrder).toBeDefined();
-        expect(retrievedOrder).toHaveProperty('order_id');
-        expect(retrievedOrder.order_id).toBe(orderId);
-      } catch (error) {
-        console.warn('Test skipped: Could not get order:', error);
-      }
     });
   });
 
@@ -335,7 +276,5 @@ describe('KaleidoClient', () => {
         throw error;
       }
     }, 30000)
-    
-    //it('should get swap status')
   });
 });

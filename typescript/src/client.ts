@@ -13,7 +13,7 @@ import {
   AssetResponse,
   PairResponse,
   PairQuoteResponse,
-  SwapRequest,
+  SwapResponse,
   ConfirmSwapRequest,
   ConfirmSwapResponse,
   Swap,
@@ -262,9 +262,9 @@ export class KaleidoClient {
     toAsset: string,
     fromAmount: number,
     toAmount: number
-  ): Promise<SwapRequest> {
+  ): Promise<SwapResponse> {
     try {
-      return await this.apiClient.post<SwapRequest>(
+      return await this.apiClient.post<SwapResponse>(
         '/swaps/init',
         {
           rfq_id: rfqId,
