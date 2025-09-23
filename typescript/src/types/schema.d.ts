@@ -603,12 +603,18 @@ export interface components {
             quote_asset_id: string;
             /** Is Active */
             is_active: boolean;
-            /** Min Order Size */
-            min_order_size: number;
-            /** Max Order Size */
-            max_order_size: number;
-            /** Price Precision */
-            price_precision: number;
+            /** Min Base Order Size */
+            min_base_order_size: number;
+            /** Max Base Order Size */
+            max_base_order_size: number;
+            /** Min Quote Order Size */
+            min_quote_order_size: number;
+            /** Max Quote Order Size */
+            max_quote_order_size: number;
+            /** Base Precision */
+            base_precision: number;
+            /** Quote Precision */
+            quote_precision: number;
             /** Quantity Precision */
             quantity_precision: number;
         };

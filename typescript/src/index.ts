@@ -57,7 +57,10 @@ export type { HttpClientConfig } from './http/client';
 
 // Utils
 export { retry, withRetry } from './utils/retry';
-export type { RetryConfig } from './utils/retry'; 
+export type { RetryConfig } from './utils/retry';
+export { AssetPairMapper, createAssetPairMapper } from './utils/assetPairMapper';
+export type { MappedAsset } from './utils/assetPairMapper';
+export { PrecisionHandler, createPrecisionHandler } from './utils/precisionHandler'; 
 
 // Orders
 export enum OrderSettlement {

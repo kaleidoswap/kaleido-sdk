@@ -1,6 +1,6 @@
 {
   "name": "kaleidoswap-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "TypeScript SDK for KaleidoSwap",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,7 +12,9 @@
     "generate:types": "openapi-typescript /home/mo_/Code/kaleidoswap/kaleidoswap-maker/openapi.json -o src/types/schema.d.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "example:btc-to-usdt": "ts-node examples/btc-to-usdt-swap.ts",
+    "example:usdt-to-btc": "ts-node examples/usdt-to-btc-swap.ts"
   },
   "keywords": [
     "kaleidoswap",
