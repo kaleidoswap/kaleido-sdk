@@ -14,7 +14,6 @@ export type {
   PairResponse,
   PairQuoteResponse,
   PairQuoteRequest,
-
   // Order Types
   CreateOrderRequest,
   PaymentState,
@@ -25,6 +24,9 @@ export type {
   Swap,
   SwapResponse,
   SwapStatus,
+  // LSP Types
+  GetInfoResponseModel,
+  NetworkInfoResponse,
 } from './types/index';
 
 // Exceptions
