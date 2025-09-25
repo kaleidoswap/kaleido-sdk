@@ -7,47 +7,48 @@ import {
   NodeError,
   PairError,
   QuoteError,
+  Swap,
   SwapError,
+  SwapRequest,
+  SwapResponse,
   TimeoutError,
   WebSocketError,
-} from './types/exceptions';
-
-import { 
   AssetResponse,
-  TradingPair,
   PairResponse,
   PairQuoteResponse,
-  SwapRequest,
   ConfirmSwapRequest,
   ConfirmSwapResponse,
-  Swap,
- } from './types/index'
+  GetInfoResponseModel,
+  CreateOrderRequest,
+  NetworkInfoResponse,
+} from './index';
 
-export interface KaleidoConfig extends HttpClientConfig {
-  nodeUrl: string;
+export interface KaleidoConfig extends Omit<HttpClientConfig, 'baseUrl'> {
+  baseUrl?: string;
+  nodeUrl?: string;
   wsUrl?: string;
 }
 
 export class KaleidoClient {
   private readonly apiClient: HttpClient;
-  private readonly nodeClient: HttpClient;
+  private readonly nodeClient: HttpClient | null;
   private readonly wsClient: WebSocketClient;
 
   constructor(config: KaleidoConfig) {
-    const { nodeUrl, wsUrl, ...apiConfig } = config;
-    this.apiClient = new HttpClient(apiConfig);
-    this.nodeClient = new HttpClient({
+    const { nodeUrl, wsUrl, baseUrl, ...apiConfig } = config;
+    const finalBaseUrl = baseUrl || process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1';
+    
+    this.apiClient = new HttpClient({ ...apiConfig, baseUrl: finalBaseUrl });
+    this.nodeClient = nodeUrl ? new HttpClient({
       ...apiConfig,
       baseUrl: nodeUrl
-    });
+    }) : null;
     
-    // Determine WebSocket URL
     let wsBaseUrl: string;
     if (wsUrl) {
       wsBaseUrl = wsUrl;
     } else {
-      // Convert http:// or https:// to ws:// or wss://
-      const url = new URL(apiConfig.baseUrl);
+      const url = new URL(finalBaseUrl);
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       wsBaseUrl = url.toString();
     }
@@ -62,7 +63,13 @@ export class KaleidoClient {
     }
   }
 
-  async getLspInfo(): Promise<any> { // TODO: type
+  private ensureNodeClient(): void {
+    if (!this.nodeClient) {
+      throw new NodeError('Node URL is required for this operation. Please provide nodeUrl in the client configuration.');
+    }
+  }
+
+  async getLspInfo(): Promise<GetInfoResponseModel> {
     try {
       return await this.apiClient.get('/lsps1/get_info');
     } catch (error) {
@@ -70,12 +77,12 @@ export class KaleidoClient {
     }
   }
 
-  async getLspConnectionUrl(): Promise<any> { // TODO: type
+  async getLspConnectionUrl(): Promise<string> {
     const lspInfo = await this.getLspInfo();
     return lspInfo?.lsp_connection_url;
   }
 
-  async getLspNetworkInfo(): Promise<any> { // TODO: type
+  async getLspNetworkInfo(): Promise<NetworkInfoResponse> {
     try {
       return await this.apiClient.get('/lsps1/network_info');
     } catch (error) {
@@ -83,57 +90,28 @@ export class KaleidoClient {
     }
   }
 
-  async createOrder(order: any): Promise<any> { // TODO: type
+  async connectPeer(connectionUrl: string): Promise<any> {
+    this.ensureNodeClient();
     try {
-      return await this.apiClient.post('/lsps1/create_order', order);
-    } catch (error) {
-      throw new Error(`Failed to create order: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  async getOrder(orderId: string): Promise<any> { // TODO: type
-    try {
-      return await this.apiClient.post('/lsps1/get_order', { order_id: orderId });
-    } catch (error) {
-      throw new Error(`Failed to get order: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  async connectPeer(connectionUrl: string): Promise<any> { // TODO: type
-    try {
-      return await this.nodeClient.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
+      return await this.nodeClient!.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
     } catch (error) {
       throw new Error(`Failed to connect peer: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  async listPeers(): Promise<any> { // TODO: type
+  async getAssetMetadata(assetId: string): Promise<any> {
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.get('/listpeers');
-    } catch (error) {
-      throw new Error(`Failed to list peers: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  async getOnchainAddress(): Promise<any> { // TODO: type
-    try {
-      return await this.nodeClient.post('/address', {});
-    } catch (error) {
-      throw new Error(`Failed to get onchain address: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-
-  async getAssetMetadata(assetId: string): Promise<any> { // TODO: type
-    try {
-      return await this.nodeClient.post('/assetmetadata', { asset_id: assetId });
+      return await this.nodeClient!.post('/assetmetadata', { asset_id: assetId });
     } catch (error) {
       throw new Error(`Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
   async getNodeInfo(): Promise<{ pubkey: string }> {
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.get<{ pubkey: string }>('/nodeinfo');
+      return await this.nodeClient!.get<{ pubkey: string }>('/nodeinfo');
     } catch (error) {
       throw new NodeError(
         `Failed to get node info: ${error instanceof Error ? error.message : String(error)}`
@@ -146,7 +124,7 @@ export class KaleidoClient {
     return info.pubkey;
   }
 
-  async listAssets(): Promise<AssetResponse> {
+  async assetList(): Promise<AssetResponse> {
     try {
       return await this.apiClient.get<AssetResponse>(
         '/market/assets'
@@ -158,7 +136,7 @@ export class KaleidoClient {
     }
   }
 
-  async listPairs(): Promise<PairResponse> {
+  async pairList(): Promise<PairResponse> {
     try {
       return await this.apiClient.get<PairResponse>('/market/pairs');
     } catch (error) {
@@ -168,40 +146,27 @@ export class KaleidoClient {
     }
   }
 
-  async getPairByAssets(baseAsset: string, quoteAsset: string): Promise<TradingPair | null> {
-    try {
-      const response = await this.listPairs();
-      const pairs = response.pairs;
-      
-      for (const pair of pairs) {
-        if (pair.base_asset_id === baseAsset && pair.quote_asset_id === quoteAsset) {
-          return pair;
-        }
-        if (pair.quote_asset_id === baseAsset && pair.base_asset_id === quoteAsset) {
-          return pair;
-        }
-      }
-      return null;
-    } catch (error) {
-      throw new PairError(
-        `Failed to get trading pair: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
-  async getQuote(
+  async quoteRequest(
     fromAsset: string,
     toAsset: string,
-    fromAmount: number
+    fromAmount?: number,
+    toAmount?: number
   ): Promise<PairQuoteResponse> {
     try {
+      const requestBody = fromAmount ? {
+            from_asset: fromAsset,
+            to_asset: toAsset,
+            from_amount: fromAmount
+          }
+        : {
+            from_asset: fromAsset,
+            to_asset: toAsset,
+            to_amount: toAmount
+          };
+
       return await this.apiClient.post<PairQuoteResponse>(
         '/market/quote',
-        {
-          from_asset: fromAsset,
-          to_asset: toAsset,
-          from_amount: fromAmount
-        }
+        requestBody
       );
     } catch (error) {
       throw new QuoteError(
@@ -210,10 +175,11 @@ export class KaleidoClient {
     }
   }
 
-  async getQuoteWS(
+  async quoteRequestWS(
     fromAsset: string,
     toAsset: string,
-    fromAmount: number
+    fromAmount?: number,
+    toAmount?: number
   ): Promise<PairQuoteResponse> {
     if (this.wsClient.getConnectionState() !== WebSocket.OPEN) {
       await this.wsClient.connect();
@@ -222,13 +188,21 @@ export class KaleidoClient {
     return new Promise<PairQuoteResponse>((resolve, reject) => {
       let timeoutId: NodeJS.Timeout;
 
-      const quoteMessage = {
-        action: 'quote_request',
-        from_asset: fromAsset,
-        to_asset: toAsset,
-        from_amount: fromAmount,
-        timestamp: Math.floor(Date.now() / 1000)
-      };
+      const quoteMessage = fromAmount
+        ? {
+            action: 'quote_request',
+            from_asset: fromAsset,
+            to_asset: toAsset,
+            from_amount: fromAmount,
+            timestamp: Math.floor(Date.now() / 1000)
+          }
+        : {
+            action: 'quote_request',
+            from_asset: fromAsset,
+            to_asset: toAsset,
+            to_amount: toAmount,
+            timestamp: Math.floor(Date.now() / 1000)
+          };
       console.log('Sending quote message:', quoteMessage);
 
       timeoutId = setTimeout(() => {
@@ -260,22 +234,16 @@ export class KaleidoClient {
     });
   }
 
-  async initMakerSwap(
-    rfqId: string,
-    fromAsset: string,
-    toAsset: string,
-    fromAmount: number,
-    toAmount: number
-  ): Promise<SwapRequest> {
+  async initMakerSwap(request: SwapRequest): Promise<SwapResponse> {
     try {
-      return await this.apiClient.post<SwapRequest>(
+      return await this.apiClient.post<SwapResponse>(
         '/swaps/init',
         {
-          rfq_id: rfqId,
-          from_asset: fromAsset,
-          to_asset: toAsset,
-          from_amount: fromAmount,
-          to_amount: toAmount,
+          rfq_id: request.rfq_id,
+          from_asset: request.from_asset,
+          to_asset: request.to_asset,
+          from_amount: request.from_amount,
+          to_amount: request.to_amount,
       });
     } catch (error) {
       throw new SwapError(
@@ -309,8 +277,9 @@ export class KaleidoClient {
   }
   
   async whitelistTrade(swapstring: string): Promise<Record<string, never>> {
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.post<Record<string, never>>('/taker', {
+      return await this.nodeClient!.post<Record<string, never>>('/taker', {
         swapstring,
       });
     } catch (error) {
@@ -320,10 +289,11 @@ export class KaleidoClient {
     }
   }
   
-  async getSwapStatus(paymentHash: string): Promise<Swap> {
+  async atomicSwapStatus(orderId: any): Promise<Swap> {
+    this.ensureNodeClient();
     try {
-      return await this.nodeClient.post<Swap>(`/swaps/status`, {
-        payment_hash: paymentHash
+      return await this.nodeClient!.post<Swap>(`/swaps/atomic/status`, {
+        order_id: orderId
       });
     } catch (error) {
       throw new SwapError(
@@ -332,15 +302,6 @@ export class KaleidoClient {
     }
   }
 
-  /**
-   * Waits for a swap to reach a terminal state (Succeeded, Failed, or Expired)
-   * @param paymentHash - The payment hash of the swap to monitor
-   * @param timeoutSeconds - Maximum time to wait in seconds (default: 300)
-   * @param pollIntervalSeconds - Time between status checks in seconds (default: 5)
-   * @returns Promise that resolves with the final swap status
-   * @throws {TimeoutError} If the swap doesn't complete within the timeout
-   * @throws {SwapError} If there's an error checking the swap status
-   */
   async waitForSwapCompletion(
     paymentHash: string,
     timeoutSeconds = 300,
@@ -351,7 +312,7 @@ export class KaleidoClient {
     const pollIntervalMs = pollIntervalSeconds * 1000;
 
     while (true) {
-      const swap = await this.getSwapStatus(paymentHash);
+      const swap = await this.atomicSwapStatus(paymentHash);
       
       // Check if swap has reached a terminal state
       if (swap.status && ['Succeeded', 'Failed', 'Expired'].includes(swap.status)) {
@@ -369,4 +330,41 @@ export class KaleidoClient {
       await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
     }
   }
-} 
+
+  async createOrder(request: CreateOrderRequest): Promise<any> {
+    try {
+      return await this.apiClient.post<any>(
+        '/swaps/orders',
+        request
+      );
+    } catch (error) {
+      throw new SwapError(
+        `Failed to create swap order: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  async swapOrderStatus(request: string): Promise<any> {
+    try {
+      return await this.apiClient.post<any>(
+        '/swaps/orders/status',
+        request
+      );
+    } catch (error) {
+      throw new SwapError(
+        `Failed to get swap order status: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  async swapOrderAnalytic(): Promise<any> {
+    try {
+      return await this.apiClient.get<any>('/swaps/orders/analytics');
+    } catch (error) {
+      throw new SwapError(
+        `Failed to get swap orders analytics: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+}

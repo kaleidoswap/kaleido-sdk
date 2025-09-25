@@ -90,12 +90,6 @@ export class HttpClient {
         const url = `${this.baseUrl}${endpoint}`;
         const headers = this.getHeaders();
 
-        console.log(`Making ${method} request to: ${url}`);
-        console.log('Request headers:', headers);
-        if (data) {
-          console.log('Request body:', JSON.stringify(data, null, 2));
-        }
-
         const options: RequestInit = {
           method,
           headers: {
@@ -106,27 +100,13 @@ export class HttpClient {
         };
 
         try {
-          console.log('Sending request to:', url);
-          const startTime = Date.now();
           const response = await fetch(url, {
             ...options,
             // Add a timeout to prevent hanging requests
             signal: AbortSignal.timeout(10000) // 10 second timeout
           });
-          const endTime = Date.now();
-          console.log(`Request to ${url} completed in ${endTime - startTime}ms`);
 
           const responseText = await response.text();
-          console.log('Response status:', response.status);
-          
-          // Convert headers to a plain object for logging
-          const headersObj: Record<string, string> = {};
-          response.headers.forEach((value, key) => {
-            headersObj[key] = value;
-          });
-          console.log('Response headers:', headersObj);
-          
-          console.log('Response body:', responseText);
 
           if (response.status === 401) {
             throw new AuthenticationError(
@@ -151,7 +131,6 @@ export class HttpClient {
           try {
             return JSON.parse(responseText) as T;
           } catch (e) {
-            console.error('Failed to parse JSON response:', e);
             throw new Error(`Invalid JSON response: ${responseText}`);
           }
         } catch (error) {

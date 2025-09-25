@@ -1,54 +1,53 @@
 import { KaleidoClient } from './client';
+import type { 
+} from './client';
 
 import {
   SwapRequest,
   SwapResponse,
-} from './types/index'
-
-interface TestConfig {
-  nodeUrl: string;
-  baseUrl: string;
-  apiKey: string;
-}
+  KaleidoConfig,
+} from './index'
 
 interface AssetPairIds {
   baseAssetId: string;
   quoteAssetId: string;
 }
 
-export const testConfig: TestConfig & { wsUrl?: string } = {
-  nodeUrl: process.env.TEST_NODE_URL || 'http://localhost:3001',
-  baseUrl: process.env.TEST_BASE_URL || 'http://localhost:8000/api/v1/',
-  //baseUrl: process.env.TEST_BASE_URL || 'https://api.staging.kaleidoswap.com/api/v1/',
+export const testConfig: KaleidoConfig = {
   apiKey: process.env.TEST_API_KEY || '',
-  // Derive WebSocket URL from base URL if not explicitly set
   get wsUrl(): string {
-    if (process.env.TEST_WS_URL) {
-      return process.env.TEST_WS_URL;
-    }
-    // Convert http:// or https:// to ws:// or wss://
-    const url = new URL(this.baseUrl);
+    // Use the same default as client.ts
+    const baseUrl = this.baseUrl || process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1';
+    const url = new URL(baseUrl);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Set the correct WebSocket endpoint path
     url.pathname = '/api/v1/market/ws/testclient';
     return url.toString();
   }
 };
 
 export const createTestClient = (): KaleidoClient => {
-  const client = new KaleidoClient({
-    nodeUrl: testConfig.nodeUrl,
-    baseUrl: testConfig.baseUrl,
-    apiKey: testConfig.apiKey,
-    wsUrl: testConfig.wsUrl
-  });
+  const config = testConfig;
+  
+  // Build the client config, only including baseUrl if it's defined
+  const clientConfig: any = {
+    apiKey: config.apiKey,
+    wsUrl: config.wsUrl
+  };
+  
+  // Only add baseUrl if it's explicitly set
+  if (config.baseUrl) {
+    clientConfig.baseUrl = config.baseUrl;
+  }
+  
+  const client = new KaleidoClient(clientConfig);
   
   if (process.env.DEBUG_WS) {
-    console.log('Created test client with WebSocket URL:', testConfig.wsUrl);
+    console.log('Created test client with WebSocket URL:', config.wsUrl);
   }
   
   return client;
 };
+
 
 export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairIds> => {
   const response = await client.listPairs();

@@ -131,6 +131,33 @@ const confirmed = await client.confirmSwap('swap-id');
 const status = await client.getSwapStatus('swap-id');
 ```
 
+##### Order Operations
+
+```typescript
+import { SwapSettlement } from 'kaleidoswap-sdk';
+
+// Create a swap order from an RFQ
+const createOrderRequest = {
+  rfq_id: 'rfq-id-from-quote',
+  from_type: SwapSettlement.ONCHAIN,
+  to_type: SwapSettlement.LIGHTNING,
+  min_onchain_conf: 1,
+  dest_bolt11: 'lnbc100n1...', // Lightning invoice for payout
+  refund_address: 'bc1q...' // Bitcoin address for refunds
+};
+
+const order = await client.createOrder(createOrderRequest);
+console.log('Order created:', order);
+
+// Get order status
+const statusRequest = {
+  order_id: order.id
+};
+
+const orderStatus = await client.getOrderStatus(statusRequest);
+console.log('Order status:', orderStatus);
+```
+
 ### WebSocket Client
 
 For real-time updates and market data.
