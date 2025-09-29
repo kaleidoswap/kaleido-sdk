@@ -29,9 +29,30 @@ export type {
   NetworkInfoResponse,
 } from './types/index';
 
-// Exceptions
+// Enhanced error handling system
 export {
+  // Error types and enums
+  ErrorCode,
+  ErrorSeverity,
+  ErrorCategory,
+  RetryStrategy,
+  
+  // Base error class
+  KaleidoSDKError,
+  
+  // Error metadata interface
+  type ErrorMetadata
+} from './types/errors';
+
+// Error factory
+export { ErrorFactory } from './types/errorFactory';
+
+// Legacy and specific error classes
+export {
+  // Legacy base error (for backward compatibility)
   KaleidoError,
+  
+  // Specific error types
   NetworkError,
   AuthenticationError,
   RateLimitError,
@@ -42,7 +63,9 @@ export {
   AssetError,
   PairError,
   QuoteError,
-  NodeError
+  NodeError,
+  HttpError,
+  ConfigurationError
 } from './types/exceptions';
 
 // WebSocket
@@ -58,7 +81,7 @@ export { HttpClient } from './http/client';
 export type { HttpClientConfig } from './http/client';
 
 // Utils
-export { retry, withRetry } from './utils/retry';
+export { retry, withRetry, createRetryWrapper } from './utils/retry';
 export type { RetryConfig } from './utils/retry';
 export { AssetPairMapper, createAssetPairMapper } from './utils/assetPairMapper';
 export type { MappedAsset } from './utils/assetPairMapper';

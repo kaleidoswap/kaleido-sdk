@@ -1,4 +1,4 @@
-import { WebSocketError } from '../types/exceptions';
+import { ErrorFactory } from '../types/errorFactory';
 import WebSocket, { MessageEvent as WSMessageEvent } from 'ws';
 
 // Debug logging helper
@@ -164,14 +164,21 @@ export class WebSocketClient {
 
       await new Promise<void>((resolve, reject) => {
         if (!this.ws) {
-          const error = new WebSocketError('WebSocket instance is null');
+          const error = ErrorFactory.fromWebSocketError(
+            new Error('WebSocket instance is null'),
+            'connection initialization'
+          );
           debug(error.message);
           reject(error);
           return;
         }
 
         const timeout = setTimeout(() => {
-          const error = new WebSocketError(`Connection timeout after ${this.pingTimeout}ms`);
+          const error = ErrorFactory.createTimeoutError(
+            'WebSocket connection',
+            this.pingTimeout,
+            { wsUrl }
+          );
           debug(error.message);
           reject(error);
         }, this.pingTimeout);
@@ -187,7 +194,10 @@ export class WebSocketClient {
         this.ws.onerror = (event) => {
           clearTimeout(timeout);
           const errorMessage = event.message || 'Unknown WebSocket error';
-          const error = new WebSocketError(`Connection error: ${errorMessage}`);
+          const error = ErrorFactory.fromWebSocketError(
+            new Error(errorMessage),
+            'connection error'
+          );
           debug('WebSocket error:', error);
           reject(error);
         };
@@ -263,7 +273,10 @@ export class WebSocketClient {
 
   private attemptReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      const error = new WebSocketError(`Max reconnection attempts (${this.maxReconnectAttempts}) reached`);
+      const error = ErrorFactory.fromWebSocketError(
+        new Error(`Max reconnection attempts (${this.maxReconnectAttempts}) reached`),
+        'reconnection failure'
+      );
       debug(error.message);
       this.emit('error', { action: 'max_reconnect_attempts', error: error.message });
       return;
@@ -334,7 +347,10 @@ export class WebSocketClient {
     }
 
     if (!this.ws) {
-      const error = new WebSocketError('WebSocket is not connected');
+      const error = ErrorFactory.fromWebSocketError(
+        new Error('WebSocket is not connected'),
+        'send message'
+      );
       debug('Send failed:', error);
       throw error;
     }
@@ -348,7 +364,10 @@ export class WebSocketClient {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       debug('Error sending message:', errorMessage);
-      throw new WebSocketError(`Failed to send message: ${errorMessage}`);
+      throw ErrorFactory.fromWebSocketError(
+        error instanceof Error ? error : new Error(errorMessage),
+        'send message'
+      );
     }
   }
 

@@ -2,6 +2,7 @@ import { HttpClient, HttpClientConfig } from './http/client';
 import { WebSocketClient } from './websocket/client';
 import WebSocket from 'ws';
 
+import { ErrorFactory } from './types/errorFactory';
 import {
   AssetError,
   NodeError,
@@ -65,7 +66,10 @@ export class KaleidoClient {
 
   private ensureNodeClient(): void {
     if (!this.nodeClient) {
-      throw new NodeError('Node URL is required for this operation. Please provide nodeUrl in the client configuration.');
+      throw ErrorFactory.createNodeError(
+        'node operation',
+        'Node URL is required for this operation. Please provide nodeUrl in the client configuration.'
+      );
     }
   }
 
@@ -73,7 +77,7 @@ export class KaleidoClient {
     try {
       return await this.apiClient.get('/lsps1/get_info');
     } catch (error) {
-      throw new Error(`Failed to get LSP info: ${error instanceof Error ? error.message : String(error)}`);
+      throw ErrorFactory.fromUnknownError(error, 'Failed to get LSP info', 'getLspInfo');
     }
   }
 
@@ -86,7 +90,7 @@ export class KaleidoClient {
     try {
       return await this.apiClient.get('/lsps1/network_info');
     } catch (error) {
-      throw new Error(`Failed to get LSP network info: ${error instanceof Error ? error.message : String(error)}`);
+      throw ErrorFactory.fromUnknownError(error, 'Failed to get LSP network info', 'getLspNetworkInfo');
     }
   }
 
@@ -95,7 +99,7 @@ export class KaleidoClient {
     try {
       return await this.nodeClient!.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
     } catch (error) {
-      throw new Error(`Failed to connect peer: ${error instanceof Error ? error.message : String(error)}`);
+      throw ErrorFactory.fromUnknownError(error, 'Failed to connect peer', 'connectPeer');
     }
   }
 
@@ -359,12 +363,11 @@ export class KaleidoClient {
 
   async swapOrderAnalytic(): Promise<any> {
     try {
-      return await this.apiClient.get<any>('/swaps/orders/analytics');
+      return await this.apiClient.get<any>('/swaps/orders/stats');
     } catch (error) {
       throw new SwapError(
         `Failed to get swap orders analytics: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
-
 }

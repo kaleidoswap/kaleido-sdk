@@ -2,6 +2,7 @@ import { components } from "./schema";
 
 export { components };
 
+// Schema types
 export type PairResponse = components['schemas']['PairResponse'];
 export type ConfirmSwapRequest = components['schemas']['ConfirmSwapRequest']
 export type AssetResponse = components['schemas']['AssetsResponse']
@@ -19,3 +20,8 @@ export type CreateOrderRequest = components['schemas']['CreateOrderRequest']
 export type PaymentState = components['schemas']['PaymentState']
 export type GetInfoResponseModel = components['schemas']['GetInfoResponseModel']
 export type NetworkInfoResponse = components['schemas']['NetworkInfoResponse']
+
+// Error system exports
+export * from './errors';
+export * from './exceptions';
+export * from './errorFactory';

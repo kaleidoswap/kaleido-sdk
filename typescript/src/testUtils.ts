@@ -50,7 +50,7 @@ export const createTestClient = (): KaleidoClient => {
 
 
 export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairIds> => {
-  const response = await client.listPairs();
+  const response = await client.pairList();
   const pairs = response.pairs;
   if (pairs && pairs.length > 0) {
     const pair = pairs[0];
@@ -64,7 +64,7 @@ export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairI
 
 export const assetListResponse = async (client: KaleidoClient): Promise<{ fromAsset: string; toAsset: string; fromAmount: number; }> => {
   try {
-    const assetsResponse = await client.listAssets();
+    const assetsResponse = await client.assetList();
     const assetsList = assetsResponse.assets || [];
 
     // Find USDT asset_id
@@ -98,7 +98,7 @@ export const testWhiteListTrade = async (
       
       // Get assets and quote
       const assetsResponse = await assetListResponse(client);
-      const quote = await client.getQuoteWS(
+      const quote = await client.quoteRequestWS(
         assetsResponse.fromAsset, 
         assetsResponse.toAsset, 
         assetsResponse.fromAmount
@@ -108,11 +108,13 @@ export const testWhiteListTrade = async (
       
       // Initialize the swap
       const initResult = await client.initMakerSwap(
-        quote.rfq_id,
-        quote.from_asset,
-        quote.to_asset,
-        quote.from_amount,
-        quote.to_amount
+        {
+          rfq_id: quote.rfq_id,
+          from_asset: quote.from_asset,
+          from_amount: quote.from_amount,
+          to_asset: quote.to_asset,
+          to_amount: quote.to_amount
+        }
       ) as SwapRequest & SwapResponse; // the response type only has SwapResponse...
 
       if (!initResult.swapstring) {

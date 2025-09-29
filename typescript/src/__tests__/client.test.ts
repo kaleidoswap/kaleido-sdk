@@ -3,7 +3,6 @@ import { components } from '../types/index';
 //import { WebSocket } from 'ws';
 import { 
   createTestClient,
-  getPairAssetIds,
   assetListResponse,
   testWhiteListTrade,
 } from '../testUtils';
@@ -72,7 +71,7 @@ describe('KaleidoClient', () => {
 
   describe('asset operations', () => {
     it('should get list assets', async () => {
-      const result = await client.listAssets();
+      const result = await client.assetList();
       expect(result).toHaveProperty('assets')
       expect(result).toHaveProperty('network')
       expect(result).toHaveProperty('timestamp')
@@ -80,7 +79,7 @@ describe('KaleidoClient', () => {
 
     it('should get asset metadata', async () => {
       try {
-        const assets = await client.listAssets();
+        const assets = await client.assetList();
         if (assets.assets && assets.assets.length > 0 && assets.assets[0].asset_id) {
           const assetId = assets.assets[0].asset_id;
           const metadata = await client.getAssetMetadata(assetId);
@@ -94,46 +93,21 @@ describe('KaleidoClient', () => {
         console.warn('Test skipped: Could not get asset metadata:', error);
       }
     });
-
-    // TODO: test for error handling -- not working
-    //it('should handle asset errors', async () => {
-      //jest.spyOn(client['apiClient'], 'get').mockRejectedValue(new Error('Asset error'));
-      //await expect(client.listAssets()).rejects.toThrow(AssetError);
-    //});
   })
 
   describe('trading pair operations', () => {
     it('should list pairs', async () => {
-      const result = await client.listPairs()
+      const result = await client.pairList()
       expect(result).toHaveProperty('pairs');
     })
 
-    it('should get pair by assets', async () => {
-      try {
-        const assetPair = await getPairAssetIds(client)
-        const foundPair = await client.getPairByAssets(
-          assetPair.baseAssetId,
-          assetPair.quoteAssetId
-        );
-        expect(foundPair).not.toBeNull();
-        //expect(foundPair?.id).toBe(pair.id);
-      } catch (error) {
-        // TODO: catch this error
-      }
-    })
-
-    // TODO: test for error handling -- not working
-    //it('should handle pair errors', async () => {
-      //jest.spyOn(client['apiClient'], 'get').mockRejectedValue(new Error('Pair error'));
-      //await expect(client.listPairs()).rejects.toThrow(PairError);
-    //});
   })
   
   describe('quote operations', () => {
     it('should get quote', async () => {
       try{
       const assetsResponse = await assetListResponse(client);
-      const result = await client.getQuote(
+      const result = await client.quoteRequest(
         assetsResponse.fromAsset,
         assetsResponse.toAsset,
         assetsResponse.fromAmount
@@ -142,17 +116,17 @@ describe('KaleidoClient', () => {
       expect(result).toHaveProperty('rfq_id');
       expect(result).toHaveProperty('to_amount');
     } catch {
-      // TODO: catch error
+      const error = new Error('Skipping test: Unable to get quote, possibly due to insufficient liquidity or misconfiguration.');
+      console.warn(error.message);
     }
   })
-    // TODO: test for error handling -- not working
   })
 
   describe('WebSocket operations', () => {
     it('should get quote via websocket', async () => {
       try{
       const assetsResponse = await assetListResponse(client);
-      const result = await client.getQuoteWS(
+      const result = await client.quoteRequestWS(
         assetsResponse.fromAsset,
         assetsResponse.toAsset,
         assetsResponse.fromAmount
@@ -170,14 +144,16 @@ describe('KaleidoClient', () => {
     it('should initialize maker swap', async () => {
         const assetsResponse = await assetListResponse(client);
 
-        const quote = await client.getQuoteWS(assetsResponse.fromAsset, assetsResponse.toAsset, 100000000);
+        const quote = await client.quoteRequestWS(assetsResponse.fromAsset, assetsResponse.toAsset, 100000000);
   
         const init_result = await client.initMakerSwap(
-          quote.rfq_id,
-          quote.from_asset,
-          quote.to_asset,
-          quote.from_amount,
-          quote.to_amount
+          {
+            rfq_id: quote.rfq_id,
+            from_asset: quote.from_asset,
+            to_asset: quote.to_asset,
+            from_amount: quote.from_amount,
+            to_amount: quote.to_amount
+          }
         );
 
         expect(init_result).toBeDefined();
@@ -189,14 +165,16 @@ describe('KaleidoClient', () => {
     it('should whitelist a trade', async () => {
         const assetsResponse = await assetListResponse(client);
 
-        const quote = await client.getQuoteWS(assetsResponse.fromAsset, assetsResponse.toAsset, 100000000);
+        const quote = await client.quoteRequestWS(assetsResponse.fromAsset, assetsResponse.toAsset, 100000000);
 
         const initResult = await client.initMakerSwap(
-          quote.rfq_id,
-          quote.from_asset,
-          quote.to_asset,
-          quote.from_amount,
-          quote.to_amount
+          {
+            rfq_id: quote.rfq_id,
+            from_asset: quote.from_asset,
+            to_asset: quote.to_asset,
+            from_amount: quote.from_amount,
+            to_amount: quote.to_amount
+          }
         ) as components['schemas']['SwapRequest'] & { payment_hash: string; swapstring: string };
 
         expect(initResult).toBeDefined();

@@ -1,7 +1,9 @@
-import {
+import { ErrorFactory } from '../types/errorFactory';
+import { 
   AuthenticationError,
   NetworkError,
   RateLimitError,
+  TimeoutError,
   ValidationError
 } from '../types/exceptions';
 import { retry, RetryConfig } from '../utils/retry';
@@ -79,6 +81,7 @@ export class HttpClient {
    * @throws {RateLimitError} If rate limit is exceeded
    * @throws {ValidationError} If request validation fails
    * @throws {NetworkError} If there's a network error
+   * @throws {TimeoutError} If request times out
    */
   private async request<T>(
     method: string,
@@ -89,39 +92,32 @@ export class HttpClient {
       async (): Promise<T> => {
         const url = `${this.baseUrl}${endpoint}`;
         const headers = this.getHeaders();
+        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         const options: RequestInit = {
           method,
           headers: {
             ...headers,
             'Content-Type': 'application/json',
+            'X-Request-ID': requestId,
           },
           body: data ? JSON.stringify(data) : undefined,
         };
 
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
           const response = await fetch(url, {
             ...options,
-            // Add a timeout to prevent hanging requests
-            signal: AbortSignal.timeout(10000) // 10 second timeout
+            signal: controller.signal
           });
 
+          clearTimeout(timeoutId);
           const responseText = await response.text();
 
-          if (response.status === 401) {
-            throw new AuthenticationError(
-              `Authentication failed: ${response.statusText}`
-            );
-          }
-
-          if (response.status === 429) {
-            throw new RateLimitError(
-              `Rate limit exceeded: ${response.statusText}`
-            );
-          }
-
-          if (response.status >= 400) {
-            throw new Error(`HTTP error! status: ${response.status}, body: ${responseText}`);
+          if (!response.ok) {
+            throw ErrorFactory.fromHttpResponse(response, responseText, data, requestId);
           }
 
           if (!responseText) {
@@ -130,19 +126,38 @@ export class HttpClient {
 
           try {
             return JSON.parse(responseText) as T;
-          } catch (e) {
-            throw new Error(`Invalid JSON response: ${responseText}`);
+          } catch (parseError) {
+            throw ErrorFactory.createValidationError(
+              'response',
+              responseText,
+              'Invalid JSON format in server response',
+              { endpoint, method }
+            );
           }
         } catch (error) {
+          // Re-throw SDK errors as-is
           if (error instanceof AuthenticationError ||
               error instanceof RateLimitError ||
               error instanceof ValidationError ||
-              error instanceof NetworkError) {
+              error instanceof NetworkError ||
+              error instanceof TimeoutError) {
             throw error;
           }
 
-          throw new NetworkError(
-            `Network error: ${error instanceof Error ? error.message : String(error)}`
+          // Handle AbortError (timeout)
+          if (error instanceof Error && error.name === 'AbortError') {
+            throw ErrorFactory.createTimeoutError(
+              `${method} ${endpoint}`,
+              30000,
+              { data, requestId }
+            );
+          }
+
+          // Handle other network errors
+          throw ErrorFactory.fromNetworkError(
+            error instanceof Error ? error : new Error(String(error)),
+            data,
+            requestId
           );
         }
       },
