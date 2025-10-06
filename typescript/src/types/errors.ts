@@ -99,21 +99,16 @@ export enum ErrorSeverity {
   CRITICAL = 'critical'
 }
 
-/**
- * Error categories for grouping related errors
- */
 export enum ErrorCategory {
   NETWORK = 'network',
   HTTP = 'http',
   AUTHENTICATION = 'authentication',
   VALIDATION = 'validation',
-  BUSINESS_LOGIC = 'business_logic',
-  TRADING = 'trading',
-  LIGHTNING_NETWORK = 'lightning_network',
-  RATE_LIMITING = 'rate_limiting',
+  BUSINESS_LOGIC = 'business_logic', // not needed
+  TRADING = 'trading', // not needed
+  LIGHTNING_NETWORK = 'lightning_network', // might not needed
+  RATE_LIMITING = 'rate_limiting', // not need to be handled here (we don't have rate limit currently, afa arshia knows)
   CONFIGURATION = 'configuration',
-  PARSING = 'parsing',
-  SYSTEM = 'system'
 }
 
 /**

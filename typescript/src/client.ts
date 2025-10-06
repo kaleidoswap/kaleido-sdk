@@ -335,7 +335,7 @@ export class KaleidoClient {
     }
   }
 
-  async createOrder(request: CreateOrderRequest): Promise<any> {
+  async createOrder(request: object): Promise<any> {
     try {
       return await this.apiClient.post<any>(
         '/swaps/orders',
