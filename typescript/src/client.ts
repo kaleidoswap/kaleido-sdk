@@ -363,7 +363,7 @@ export class KaleidoClient {
 
   async swapOrderAnalytic(): Promise<any> {
     try {
-      return await this.apiClient.get<any>('/swaps/orders/stats');
+      return await this.apiClient.get<any>('/swaps/orders/analytics');
     } catch (error) {
       throw new SwapError(
         `Failed to get swap orders analytics: ${error instanceof Error ? error.message : String(error)}`

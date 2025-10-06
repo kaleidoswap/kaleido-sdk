@@ -126,7 +126,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/status": {
+    "/api/v1/swaps/atomic/status": {
         parameters: {
             query?: never;
             header?: never;

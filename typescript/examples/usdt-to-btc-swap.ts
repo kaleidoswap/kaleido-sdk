@@ -1,6 +1,8 @@
 /**
  * USDT to BTC Swap Example (Buying BTC with USDT)
  * 
+ * The process is the same for any other assets available on Kaleido.
+ * 
  * This example demonstrates the complete onchain swap flow:
  * 1. List trading pairs
  * 2. Create asset pair mapper from pairs data
@@ -12,7 +14,6 @@
  */
 
 import { KaleidoClient } from '../src/client';
-import { CreateOrderRequest } from '../src/types';
 import { createAssetPairMapper, createPrecisionHandler } from '../src/utils';
 
 async function usdtToBtcSwap() {
@@ -26,7 +27,7 @@ async function usdtToBtcSwap() {
   try {
     // Step 1: Get trading pairs data
     console.log('Fetching trading pairs...');
-    const pairs = await client.listPairs();
+    const pairs = await client.pairList();
 
     // Step 2: Create asset pair mapper
     console.log('Creating asset pair mapper...');
@@ -77,11 +78,10 @@ async function usdtToBtcSwap() {
 
     // Step 7: Get quote with atomic amount
     console.log('\nGetting quote...');
-    const quote = await client.getQuote(
+    const quote = await client.quoteRequest(
       usdt.asset_id, 
       btc.asset_id, 
       validation.atomicAmount, // Use atomic amount for API
-      'from'
     );
 
     // Convert quote amounts back to decimal for display
@@ -106,19 +106,10 @@ async function usdtToBtcSwap() {
       min_onchain_conf: 1,
       dest_onchain_address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', // BTC destination address
       refund_address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', // BTC refund address
-      
-      // Required Lightning fields (even for onchain swaps)
-      client_pubkey: '02' + '0'.repeat(64), // Example pubkey
-      lsp_balance_sat: 0,
-      client_balance_sat: 0,
-      required_channel_confirmations: 1,
-      funding_confirms_within_blocks: 144,
-      channel_expiry_blocks: 1008,
-      announce_channel: true
     };
 
     console.log('\nCreating swap order...');
-    const order = await client.createOrder(orderRequest as CreateOrderRequest);
+    const order = await client.createOrder(orderRequest);
 
     console.log(`Order created:`);
     console.log(`- Order ID: ${order.order_id || order.rfq_id}`);
@@ -134,7 +125,7 @@ async function usdtToBtcSwap() {
       
       try {
         const orderId = order.order_id || order.rfq_id;
-        const status = await client.getOrderStatus(orderId);
+        const status = await client.swapOrderStatus(orderId);
         console.log(`[${attempts + 1}/${maxAttempts}] Order Status: ${status.order_state || 'Unknown'}`);
         
         if (status.order_state === 'COMPLETED') {
