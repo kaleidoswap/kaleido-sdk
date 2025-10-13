@@ -1,20 +1,9 @@
-import { ErrorFactory } from '../types/errorFactory';
-import { 
-  AuthenticationError,
-  NetworkError,
-  RateLimitError,
-  TimeoutError,
-  ValidationError
-} from '../types/exceptions';
-import { retry, RetryConfig } from '../utils/retry';
-
 /**
  * Configuration for the HTTP client
  */
 export interface HttpClientConfig {
   baseUrl: string;
   apiKey?: string;
-  retryConfig?: Partial<RetryConfig>;
 }
 
 /**
@@ -23,7 +12,6 @@ export interface HttpClientConfig {
 export class HttpClient {
   private readonly baseUrl: string;
   private readonly apiKey?: string;
-  private readonly retryConfig: Partial<RetryConfig>;
 
   /**
    * Makes a GET request
@@ -51,7 +39,6 @@ export class HttpClient {
   constructor(config: HttpClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, '');
     this.apiKey = config.apiKey;
-    this.retryConfig = config.retryConfig || {};
   }
 
   /**
@@ -72,96 +59,81 @@ export class HttpClient {
   }
 
   /**
-   * Makes an HTTP request with retry logic
+   * Makes an HTTP request
    * @param method - HTTP method (GET, POST, etc.)
    * @param endpoint - API endpoint
    * @param data - Optional request data
    * @returns Promise resolving to the response data
-   * @throws {AuthenticationError} If authentication fails
-   * @throws {RateLimitError} If rate limit is exceeded
-   * @throws {ValidationError} If request validation fails
-   * @throws {NetworkError} If there's a network error
-   * @throws {TimeoutError} If request times out
    */
   private async request<T>(
     method: string,
     endpoint: string,
     data?: any
   ): Promise<T> {
-    return retry<T>(
-      async (): Promise<T> => {
-        const url = `${this.baseUrl}${endpoint}`;
-        const headers = this.getHeaders();
-        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers = this.getHeaders();
 
-        const options: RequestInit = {
-          method,
-          headers: {
-            ...headers,
-            'Content-Type': 'application/json',
-            'X-Request-ID': requestId,
-          },
-          body: data ? JSON.stringify(data) : undefined,
-        };
+    const options: RequestInit = {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+    };
 
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-          const response = await fetch(url, {
-            ...options,
-            signal: controller.signal
-          });
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
 
-          clearTimeout(timeoutId);
-          const responseText = await response.text();
+      clearTimeout(timeoutId);
+      
+      const responseText = await response.text();
 
-          if (!response.ok) {
-            throw ErrorFactory.fromHttpResponse(response, responseText, data, requestId);
-          }
-
-          if (!responseText) {
-            return {} as T;
-          }
-
+      if (!response.ok) {
+        // Try to parse error message from response
+        let errorMessage = response.statusText;
+        if (responseText) {
           try {
-            return JSON.parse(responseText) as T;
-          } catch (parseError) {
-            throw ErrorFactory.createValidationError(
-              'response',
-              responseText,
-              'Invalid JSON format in server response',
-              { endpoint, method }
-            );
+            const errorData = JSON.parse(responseText);
+            // Extract the actual error message from FastAPI
+            errorMessage = errorData.detail || errorData.message || errorData.error || errorMessage;
+          } catch {
+            // If not JSON, use the text directly
+            errorMessage = responseText || errorMessage;
           }
-        } catch (error) {
-          // Re-throw SDK errors as-is
-          if (error instanceof AuthenticationError ||
-              error instanceof RateLimitError ||
-              error instanceof ValidationError ||
-              error instanceof NetworkError ||
-              error instanceof TimeoutError) {
-            throw error;
-          }
-
-          // Handle AbortError (timeout)
-          if (error instanceof Error && error.name === 'AbortError') {
-            throw ErrorFactory.createTimeoutError(
-              `${method} ${endpoint}`,
-              30000,
-              { data, requestId }
-            );
-          }
-
-          // Handle other network errors
-          throw ErrorFactory.fromNetworkError(
-            error instanceof Error ? error : new Error(String(error)),
-            data,
-            requestId
-          );
         }
-      },
-      this.retryConfig
-    );
+        
+        const error = new Error(`HTTP ${response.status}: ${errorMessage}`) as any;
+        error.statusCode = response.status;
+        error.response = responseText;
+        throw error;
+      }
+
+      if (!responseText) {
+        return {} as T;
+      }
+
+      try {
+        return JSON.parse(responseText) as T;
+      } catch (parseError) {
+        throw new Error(`Invalid JSON response: ${responseText}`);
+      }
+    } catch (error) {
+      // Re-throw as-is if it's already our error format
+      if (error instanceof Error && 'statusCode' in error) {
+        throw error;
+      }
+
+      // Handle AbortError (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Request timeout after 30 seconds`);
+      }
+
+      // Handle other network errors
+      throw error;
+    }
   }
 } 

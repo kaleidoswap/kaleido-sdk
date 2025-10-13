@@ -13,8 +13,8 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "npm run build",
-    "example:btc-to-usdt": "ts-node examples/btc-to-usdt-swap.ts",
-    "example:usdt-to-btc": "ts-node examples/usdt-to-btc-swap.ts"
+    "example:usdt-to-btc": "ts-node examples/usdt-to-btc-swap.ts",
+    "example:test": "ts-node examples/test.ts"
   },
   "keywords": [
     "kaleidoswap",

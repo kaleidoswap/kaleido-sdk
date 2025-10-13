@@ -471,7 +471,7 @@ export class ErrorFactory {
       return new KaleidoSDKError(
         message,
         ErrorCode.UNKNOWN_ERROR,
-        ErrorCategory.SYSTEM,
+        ErrorCategory.NETWORK,
         ErrorSeverity.MEDIUM,
         metadata,
         error
@@ -485,7 +485,7 @@ export class ErrorFactory {
     return new KaleidoSDKError(
       message,
       ErrorCode.UNKNOWN_ERROR,
-      ErrorCategory.SYSTEM,
+      ErrorCategory.NETWORK,
       ErrorSeverity.MEDIUM,
       metadata
     );

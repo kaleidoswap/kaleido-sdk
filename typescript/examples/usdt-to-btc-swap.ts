@@ -43,7 +43,7 @@ async function usdtToBtcSwap() {
       console.log(`- ${asset.ticker} (${asset.asset_id})`);
       console.log(`  Precision: ${asset.precision}`);
       const limits = precisionHandler.getOrderSizeLimits(asset);
-      console.log(`  Order limits: ${limits.minDecimal} - ${limits.maxDecimal} ${asset.ticker}`);
+      console.log(`  Order limits: ${limits.asset_min_decimal_amount} - ${limits.asset_max_decimal_amount} ${asset.ticker}`);
     });
 
     // Step 4: Find USDT and BTC assets
@@ -63,32 +63,32 @@ async function usdtToBtcSwap() {
     }
 
     // Step 6: Validate and prepare amount
-    const decimalAmount = 100; // 100 USDT
-    console.log(`\nPreparing to swap ${decimalAmount} ${usdt.ticker}...`);
+    const asset_decimal_amount = 0.0001; // 100 USDT
+    console.log(`\nPreparing to swap ${asset_decimal_amount} ${usdt.ticker}...`);
 
     // Validate order size
-    const validation = precisionHandler.validateOrderSize(decimalAmount, usdt);
+    const validation = precisionHandler.validateOrderSize(asset_decimal_amount, btc);
     if (!validation.valid) {
       throw new Error(validation.error);
     }
 
     console.log(`Amount validation passed:`);
-    console.log(`- Decimal amount: ${decimalAmount} ${usdt.ticker}`);
-    console.log(`- Atomic amount: ${validation.atomicAmount} units`);
+    console.log(`- Decimal amount: ${asset_decimal_amount} ${usdt.ticker}`);
+    console.log(`- Asset amount: ${validation.asset_amount} units`);
 
     // Step 7: Get quote with atomic amount
     console.log('\nGetting quote...');
     const quote = await client.quoteRequest(
-      usdt.asset_id, 
       btc.asset_id, 
-      validation.atomicAmount, // Use atomic amount for API
+      usdt.asset_id, 
+      validation.asset_amount, // Use asset amount for API
     );
 
     // Convert quote amounts back to decimal for display
-    const fromAmountDecimal = precisionHandler.toDecimalAmount(quote.from_amount, usdt.asset_id);
-    const toAmountDecimal = precisionHandler.toDecimalAmount(quote.to_amount, btc.asset_id);
+    const fromAmountDecimal = precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id);
+    const toAmountDecimal = precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id);
     const feeDecimal = quote.fee && typeof quote.fee === 'object' && 'final_fee' in quote.fee
-      ? precisionHandler.toDecimalAmount((quote.fee as any).final_fee, btc.asset_id)
+      ? precisionHandler.toAssetDecimalAmount((quote.fee as any).final_fee, btc.asset_id)
       : 0;
 
     console.log(`Quote received:`);
@@ -104,7 +104,7 @@ async function usdtToBtcSwap() {
       from_type: 'ONCHAIN',
       to_type: 'ONCHAIN',
       min_onchain_conf: 1,
-      dest_onchain_address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', // BTC destination address
+      dest_rgb_invoice: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', // BTC destination address
       refund_address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', // BTC refund address
     };
 

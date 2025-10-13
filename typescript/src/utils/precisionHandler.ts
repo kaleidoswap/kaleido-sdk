@@ -4,119 +4,113 @@ import { MappedAsset } from './assetPairMapper';
  * Precision handling utility for asset amounts
  */
 export class PrecisionHandler {
-  private assetPrecisionMap: Map<string, number> = new Map();
+  private asset_precision_map: Map<string, number> = new Map();
 
   constructor(assets: MappedAsset[]) {
     // Build precision map from assets
     assets.forEach(asset => {
-      this.assetPrecisionMap.set(asset.asset_id, asset.precision);
+      this.asset_precision_map.set(asset.asset_id, asset.precision);
     });
   }
 
-  /**
-   * Convert decimal amount to atomic units (raw amount for API)
-   * @param amount - Decimal amount (e.g., 0.001 BTC)
-   * @param assetId - Asset ID
-   * @returns Atomic amount (e.g., 100000 satoshis for 0.001 BTC with precision 8)
-   */
-  toAtomicAmount(amount: number, assetId: string): number {
-    const precision = this.assetPrecisionMap.get(assetId);
-    if (precision === undefined) {
+  toAssetAmount(asset_decimal_amount: number, assetId: string): number {
+    const asset_precision = this.asset_precision_map.get(assetId);
+    if (asset_precision === undefined) {
       throw new Error(`Precision not found for asset: ${assetId}`);
     }
     
-    return Math.floor(amount * Math.pow(10, precision));
+    return Math.floor(asset_decimal_amount * Math.pow(10, asset_precision));
   }
 
   /**
-   * Convert atomic units to decimal amount (for display)
-   * @param atomicAmount - Atomic amount from API
+   * Convert asset units to decimal amount (for display)
+   * @param asset_amount - Atomic amount from API
    * @param assetId - Asset ID
    * @returns Decimal amount for display
    */
-  toDecimalAmount(atomicAmount: number, assetId: string): number {
-    const precision = this.assetPrecisionMap.get(assetId);
-    if (precision === undefined) {
+  toAssetDecimalAmount(asset_amount: number, assetId: string): number {
+    const asset_precision = this.asset_precision_map.get(assetId);
+    if (asset_precision === undefined) {
       throw new Error(`Precision not found for asset: ${assetId}`);
     }
     
-    return atomicAmount / Math.pow(10, precision);
+    return asset_amount / Math.pow(10, asset_precision);
   }
 
   /**
    * Get precision for an asset
    */
-  getPrecision(assetId: string): number {
-    const precision = this.assetPrecisionMap.get(assetId);
-    if (precision === undefined) {
+  getAssetPrecision(assetId: string): number {
+    const asset_precision = this.asset_precision_map.get(assetId);
+    if (asset_precision === undefined) {
       throw new Error(`Precision not found for asset: ${assetId}`);
     }
-    return precision;
+    return asset_precision;
   }
 
   /**
    * Format amount for display with proper decimal places
    */
-  formatAmount(amount: number, assetId: string): string {
-    const precision = this.getPrecision(assetId);
-    return amount.toFixed(precision);
+  formatAssetDecimalAmount(asset_decimal_amount: number, assetId: string): string {
+    const asset_precision = this.getAssetPrecision(assetId);
+    return asset_decimal_amount.toFixed(asset_precision);
   }
 
   /**
    * Validate if amount meets minimum order size requirements
    */
-  validateMinOrderSize(decimalAmount: number, asset: MappedAsset): boolean {
-    const atomicAmount = this.toAtomicAmount(decimalAmount, asset.asset_id);
-    return atomicAmount >= asset.min_order_size;
+  validateMinOrderSize(asset_decimal_amount: number, asset: MappedAsset): boolean {
+    const asset_amount = this.toAssetAmount(asset_decimal_amount, asset.asset_id);
+    return asset_amount >= asset.min_order_size;
   }
 
   /**
    * Validate if amount meets maximum order size requirements
    */
-  validateMaxOrderSize(decimalAmount: number, asset: MappedAsset): boolean {
-    const atomicAmount = this.toAtomicAmount(decimalAmount, asset.asset_id);
-    return atomicAmount <= asset.max_order_size;
+  validateMaxOrderSize(asset_decimal_amount: number, asset: MappedAsset): boolean {
+    const asset_amount = this.toAssetAmount(asset_decimal_amount, asset.asset_id);
+    return asset_amount <= asset.max_order_size;
   }
 
   /**
    * Validate order size (both min and max)
    */
-  validateOrderSize(decimalAmount: number, asset: MappedAsset): {
+  validateOrderSize(asset_decimal_amount: number, asset: MappedAsset): {
     valid: boolean;
     error?: string;
-    atomicAmount: number;
-    minOrderSize: number;
-    maxOrderSize: number;
+    asset_amount: number;
+    asset_min_amount: number;
+    asset_max_amount: number;
   } {
-    const atomicAmount = this.toAtomicAmount(decimalAmount, asset.asset_id);
-    const minDecimal = this.toDecimalAmount(asset.min_order_size, asset.asset_id);
-    const maxDecimal = this.toDecimalAmount(asset.max_order_size, asset.asset_id);
+    const asset_amount = this.toAssetAmount(asset_decimal_amount, asset.asset_id);
+    const asset_min_decimal_amount = this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id);
+    const asset_max_decimal_amount = this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id);
 
-    if (atomicAmount < asset.min_order_size) {
+    if (asset_amount < asset.min_order_size) {
       return {
         valid: false,
-        error: `Amount ${decimalAmount} ${asset.ticker} is below minimum order size of ${minDecimal} ${asset.ticker}`,
-        atomicAmount,
-        minOrderSize: asset.min_order_size,
-        maxOrderSize: asset.max_order_size
+        error: `Amount ${asset_decimal_amount} ${asset.ticker} is below minimum order size of ${asset_min_decimal_amount} ${asset.ticker}`,
+        asset_amount,
+        asset_min_amount: asset.min_order_size,
+        asset_max_amount: asset.max_order_size
       };
     }
 
-    if (atomicAmount > asset.max_order_size) {
+    if (asset_amount > asset.max_order_size) {
       return {
         valid: false,
-        error: `Amount ${decimalAmount} ${asset.ticker} exceeds maximum order size of ${maxDecimal} ${asset.ticker}`,
-        atomicAmount,
-        minOrderSize: asset.min_order_size,
-        maxOrderSize: asset.max_order_size
+        error: `Amount ${asset_decimal_amount} ${asset.ticker} exceeds maximum order size of ${asset_max_decimal_amount} ${asset.ticker}`,
+        asset_amount,
+        asset_min_amount: asset.min_order_size,
+        asset_max_amount: asset.max_order_size
       };
     }
 
     return {
       valid: true,
-      atomicAmount,
-      minOrderSize: asset.min_order_size,
-      maxOrderSize: asset.max_order_size
+      asset_amount,
+      asset_min_amount: asset.min_order_size,
+      asset_max_amount: asset.max_order_size
     };
   }
 
@@ -124,18 +118,18 @@ export class PrecisionHandler {
    * Get human-readable order size limits for an asset
    */
   getOrderSizeLimits(asset: MappedAsset): {
-    minDecimal: number;
-    maxDecimal: number;
-    minAtomic: number;
-    maxAtomic: number;
-    precision: number;
+    asset_min_decimal_amount: number;
+    asset_max_decimal_amount: number;
+    asset_min_amount: number;
+    asset_max_amount: number;
+    asset_precision: number;
   } {
     return {
-      minDecimal: this.toDecimalAmount(asset.min_order_size, asset.asset_id),
-      maxDecimal: this.toDecimalAmount(asset.max_order_size, asset.asset_id),
-      minAtomic: asset.min_order_size,
-      maxAtomic: asset.max_order_size,
-      precision: asset.precision
+      asset_min_decimal_amount: this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id),
+      asset_max_decimal_amount: this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id),
+      asset_min_amount: asset.min_order_size,
+      asset_max_amount: asset.max_order_size,
+      asset_precision: asset.precision
     };
   }
 }
