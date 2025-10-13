@@ -7,6 +7,7 @@
  * 2. Find your assets and validate amounts
  * 3. Request a quote
  * 4. Create the swap order
+ * 5. Display payment address and monitor order status
  */
 
 import { KaleidoClient } from '../src/client';
@@ -47,11 +48,10 @@ async function usdtToBtcSwap() {
       validation.asset_amount
     );
 
-    console.log('Quote:', {
-      from: `${precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id)} BTC`,
-      to: `${precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id)} USDT`,
-      price: quote.price
-    });
+    console.log('Quote received:');
+    console.log(`  From: ${precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id)} BTC`);
+    console.log(`  To: ${precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id)} USDT`);
+    console.log(`  Price: ${quote.price}`);
 
     // Step 5: Create the swap order
     const order = await client.createOrder({
@@ -59,18 +59,53 @@ async function usdtToBtcSwap() {
       from_type: 'ONCHAIN',
       to_type: 'ONCHAIN',
       min_onchain_conf: 1,
-      dest_rgb_invoice: 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ', // Your BTC address
-      refund_address: 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ', // Refund address
+      dest_rgb_invoice: 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ',
+      refund_address: 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ',
     });
 
-    console.log('Order created:', order.order_id || order.rfq_id);
+    // Step 6: Display payment information
+    console.log('\nOrder created successfully!');
+    console.log(`Order ID: ${order.id}`);
+    console.log(`\nPayment Details:`);
+    console.log(`  Address: ${order.onchain_address}`);
+    console.log(`  Status: ${order.status}`);
+    console.log(`\nPlease send ${precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id)} BTC to the address above.`);
 
-    // Optional: Check order status (if needed)
-    // const status = await client.swapOrderStatus(order.order_id || order.rfq_id);
-    // console.log('Order status:', status.order_state);
+    // Step 7: Monitor order status
+    console.log('\nMonitoring order status...');
+    const maxAttempts = 60; // 5 minutes with 5-second intervals
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+      
+      try {
+        const status = await client.swapOrderStatus(order.id);
+
+        console.log(`[${attempts + 1}] Status: ${status.status}`);
+        
+        if (status.status === 'COMPLETED') {
+          console.log('\n🎉 Swap completed successfully!');
+          console.log(`Received ${precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id)} USDT`);
+          break;
+        } else if (status.status === 'FAILED') {
+          console.log('\n❌ Swap failed');
+          break;
+        }
+      } catch (error) {
+        console.log(`[${attempts + 1}] Status check failed:`, error instanceof Error ? error.message : error);
+      }
+      
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      console.log('\n⏱️  Monitoring timeout reached. Order may still be processing.');
+      console.log(`You can check the status manually using order ID: ${order.id}`);
+    }
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('\n❌ Error:', error);
   }
 }
 
