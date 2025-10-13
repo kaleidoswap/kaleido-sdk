@@ -286,10 +286,10 @@ export class KaleidoClient {
     );
   }
 
-  async swapOrderStatus(request: string): Promise<any> {
+  async swapOrderStatus(orderId: string): Promise<any> {
     return await this.apiClient.post<any>(
       '/swaps/orders/status',
-      request
+      { order_id: orderId }
     );
   }
 
