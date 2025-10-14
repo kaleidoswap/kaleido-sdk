@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@kaleidoswap/kaleidoswap-sdk": "^0.1.1"
+  }
+}
