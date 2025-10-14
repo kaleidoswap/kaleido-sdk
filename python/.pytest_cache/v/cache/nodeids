@@ -1,0 +1,22 @@
+[
+  "tests/test_client.py::test_complete_swap",
+  "tests/test_client.py::test_complete_swap_in_one_call",
+  "tests/test_client.py::test_connect_peer",
+  "tests/test_client.py::test_create_order",
+  "tests/test_client.py::test_get_asset_metadata",
+  "tests/test_client.py::test_get_onchain_address",
+  "tests/test_client.py::test_get_order",
+  "tests/test_client.py::test_get_pair_by_assets",
+  "tests/test_client.py::test_get_quote",
+  "tests/test_client.py::test_get_quote_websocket",
+  "tests/test_client.py::test_init_maker_swap",
+  "tests/test_client.py::test_list_assets",
+  "tests/test_client.py::test_list_pairs",
+  "tests/test_client.py::test_list_peers",
+  "tests/test_client.py::test_lsp_connection_url",
+  "tests/test_client.py::test_lsp_info",
+  "tests/test_client.py::test_lsp_network_info",
+  "tests/test_client.py::test_node_info",
+  "tests/test_client.py::test_node_pubkey",
+  "tests/test_client.py::test_whitelist_trade"
+]
