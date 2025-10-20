@@ -4,6 +4,7 @@
 export interface HttpClientConfig {
   baseUrl: string;
   apiKey?: string;
+  timeoutMs?: number;
 }
 
 /**
@@ -12,6 +13,7 @@ export interface HttpClientConfig {
 export class HttpClient {
   private readonly baseUrl: string;
   private readonly apiKey?: string;
+  private readonly timeoutMs: number;
 
   /**
    * Makes a GET request
@@ -39,6 +41,7 @@ export class HttpClient {
   constructor(config: HttpClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, '');
     this.apiKey = config.apiKey;
+    this.timeoutMs = config.timeoutMs ?? 30000;
   }
 
   /**
@@ -70,7 +73,7 @@ export class HttpClient {
     endpoint: string,
     data?: any
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const headers = this.getHeaders();
 
     const options: RequestInit = {
@@ -81,7 +84,7 @@ export class HttpClient {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
       const response = await fetch(url, {
         ...options,
@@ -129,7 +132,7 @@ export class HttpClient {
 
       // Handle AbortError (timeout)
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`Request timeout after 30 seconds`);
+        throw new Error(`Request timeout after ${this.timeoutMs / 1000} seconds`);
       }
 
       // Handle other network errors

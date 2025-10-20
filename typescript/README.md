@@ -134,28 +134,25 @@ const status = await client.getSwapStatus('swap-id');
 ##### Order Operations
 
 ```typescript
-import { SwapSettlement } from 'kaleidoswap-sdk';
-
 // Create a swap order from an RFQ
 const createOrderRequest = {
   rfq_id: 'rfq-id-from-quote',
-  from_type: SwapSettlement.ONCHAIN,
-  to_type: SwapSettlement.LIGHTNING,
+  from_type: 'ONCHAIN',
+  to_type: 'ONCHAIN',
   min_onchain_conf: 1,
-  dest_bolt11: 'lnbc100n1...', // Lightning invoice for payout
-  refund_address: 'bc1q...' // Bitcoin address for refunds
+  dest_rgb_invoice: 'rgb:2whK8s5O-...', // RGB invoice for payout
+  refund_address: 'rgb:2whK8s5O-...'   // RGB address for refunds
 };
 
 const order = await client.createOrder(createOrderRequest);
-console.log('Order created:', order);
+console.log('Order ID:', order.id);
+console.log('Payment Address:', order.onchain_address);
+console.log('Status:', order.status);
 
 // Get order status
-const statusRequest = {
-  order_id: order.id
-};
-
-const orderStatus = await client.getOrderStatus(statusRequest);
-console.log('Order status:', orderStatus);
+const orderStatus = await client.swapOrderStatus(order.id);
+console.log('Order status:', orderStatus.status);
+// Possible statuses: 'PENDING_PAYMENT', 'COMPLETED', 'FAILED'
 ```
 
 ### WebSocket Client

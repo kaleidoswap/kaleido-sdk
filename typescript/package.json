@@ -9,6 +9,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:integration": "jest src/__tests__/client.integration.test.ts src/http/__tests__/client.integration.test.ts",
+    "generate:types": "openapi-typescript /home/mo_/Code/kaleidoswap/kaleidoswap-maker/openapi.json -o src/types/schema.d.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "npm run build",

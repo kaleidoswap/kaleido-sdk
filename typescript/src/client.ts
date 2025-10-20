@@ -58,7 +58,6 @@ export class KaleidoClient {
   private ensureNodeClient(): void {
     if (!this.nodeClient) {
       throw new Error('Node URL is required for this operation. Please provide nodeUrl in the client configuration.');
-      throw new Error('Node URL is required for this operation. Please provide nodeUrl in the client configuration.');
     }
   }
 
@@ -280,17 +279,13 @@ export class KaleidoClient {
   }
 
   async createOrder(request: object): Promise<any> {
-    return await this.apiClient.post<any>(
-      '/swaps/orders',
-      request
-    );
+    return await this.apiClient.post<any>('/swaps/orders', request);
   }
 
   async swapOrderStatus(orderId: string): Promise<any> {
-    return await this.apiClient.post<any>(
-      '/swaps/orders/status',
-      { order_id: orderId }
-    );
+    return await this.apiClient.post<any>('/swaps/orders/status', {
+      order_id: orderId,
+    });
   }
 
   async swapOrderAnalytic(): Promise<any> {

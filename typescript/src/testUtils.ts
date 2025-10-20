@@ -1,23 +1,29 @@
 import { KaleidoClient } from './client';
-import type { 
-} from './client';
-
 import {
   SwapRequest,
   SwapResponse,
   KaleidoConfig,
-} from './index'
+} from './index';
 
 interface AssetPairIds {
   baseAssetId: string;
   quoteAssetId: string;
 }
 
+const defaultBaseUrl = process.env.KALEIDO_TEST_BASE_URL
+  || process.env.KALEIDO_API_URL
+  || 'https://api.staging.kaleidoswap.com/api/v1';
+
+const defaultNodeUrl = process.env.KALEIDO_TEST_NODE_URL
+  || process.env.KALEIDO_NODE_URL
+  || undefined;
+
 export const testConfig: KaleidoConfig = {
-  apiKey: process.env.TEST_API_KEY || '',
+  baseUrl: defaultBaseUrl,
+  nodeUrl: defaultNodeUrl,
+  apiKey: process.env.TEST_API_KEY || process.env.KALEIDO_TEST_API_KEY || '',
   get wsUrl(): string {
-    // Use the same default as client.ts
-    const baseUrl = this.baseUrl || process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1';
+    const baseUrl = this.baseUrl || defaultBaseUrl;
     const url = new URL(baseUrl);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.pathname = '/api/v1/market/ws/testclient';
@@ -25,26 +31,20 @@ export const testConfig: KaleidoConfig = {
   }
 };
 
-export const createTestClient = (): KaleidoClient => {
-  const config = testConfig;
-  
-  // Build the client config, only including baseUrl if it's defined
-  const clientConfig: any = {
+export const createTestClient = (overrides: Partial<KaleidoConfig> = {}): KaleidoClient => {
+  const config = { ...testConfig, ...overrides };
+
+  const client = new KaleidoClient({
+    baseUrl: config.baseUrl,
     apiKey: config.apiKey,
-    wsUrl: config.wsUrl
-  };
-  
-  // Only add baseUrl if it's explicitly set
-  if (config.baseUrl) {
-    clientConfig.baseUrl = config.baseUrl;
-  }
-  
-  const client = new KaleidoClient(clientConfig);
-  
+    wsUrl: config.wsUrl,
+    nodeUrl: config.nodeUrl,
+  });
+
   if (process.env.DEBUG_WS) {
     console.log('Created test client with WebSocket URL:', config.wsUrl);
   }
-  
+
   return client;
 };
 
@@ -62,29 +62,26 @@ export const getPairAssetIds = async (client: KaleidoClient): Promise<AssetPairI
   throw new Error("No pair was found.")
 }
 
-export const assetListResponse = async (client: KaleidoClient): Promise<{ fromAsset: string; toAsset: string; fromAmount: number; }> => {
-  try {
-    const assetsResponse = await client.assetList();
-    const assetsList = assetsResponse.assets || [];
+export const assetListResponse = async (
+  client: KaleidoClient,
+  fallbackAmount = 10000000,
+): Promise<{ fromAsset: string; toAsset: string; fromAmount: number }> => {
+  const assetsResponse = await client.assetList();
+  const assetsList = assetsResponse.assets || [];
 
-    // Find USDT asset_id
-    const toAssetObj = assetsList.find(a => a.ticker === "USDT");
-    const toAsset = toAssetObj?.asset_id;
+  const toAssetObj = assetsList.find((a) => a.ticker === 'USDT');
+  const btcAsset = assetsList.find((a) => a.ticker === 'BTC');
 
-    // Hardcode BTC as fromAsset (by ticker, not asset_id)
-    const fromAsset = "BTC";
-    const fromAmount = 10000000; // 0.1 BTC in satoshis
-
-    if (!toAsset) {
-      throw new Error('Required asset (USDT) for testing not found');
-    }
-
-    return { fromAsset, toAsset, fromAmount };
-  } catch (error) {
-    console.error('Error in assetListResponse:', error);
-    throw error;
+  if (!toAssetObj?.asset_id || !btcAsset?.asset_id) {
+    throw new Error('BTC/USDT assets not found in asset list.');
   }
-}
+
+  return {
+    fromAsset: btcAsset.asset_id,
+    toAsset: toAssetObj.asset_id,
+    fromAmount: fallbackAmount,
+  };
+};
 
 export const testWhiteListTrade = async (
   client: KaleidoClient,

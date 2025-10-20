@@ -126,7 +126,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/atomic/status": {
+    "/api/v1/swaps/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -603,6 +603,10 @@ export interface components {
             quote_asset_id: string;
             /** Is Active */
             is_active: boolean;
+            /** Base Precision */
+            base_precision: number;
+            /** Quote Precision */
+            quote_precision: number;
             /** Min Base Order Size */
             min_base_order_size: number;
             /** Max Base Order Size */
@@ -611,12 +615,6 @@ export interface components {
             min_quote_order_size: number;
             /** Max Quote Order Size */
             max_quote_order_size: number;
-            /** Base Precision */
-            base_precision: number;
-            /** Quote Precision */
-            quote_precision: number;
-            /** Quantity Precision */
-            quantity_precision: number;
         };
         /** PairQuoteRequest */
         PairQuoteRequest: {
