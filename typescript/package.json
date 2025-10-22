@@ -1,6 +1,6 @@
 {
   "name": "@kaleidoswap/kaleidoswap-sdk",
-  "version": "0.2.0-beta.1",
+  "version": "0.1.0",
   "description": "TypeScript SDK for KaleidoSwap - A decentralized exchange for Bitcoin and RGB assets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "generate:types": "openapi-typescript /home/mo_/Code/kaleidoswap/kaleidoswap-maker/openapi.json -o src/types/schema.d.ts",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "npm run build",
