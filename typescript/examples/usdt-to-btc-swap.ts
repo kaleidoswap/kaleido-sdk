@@ -16,7 +16,7 @@ import { createAssetPairMapper, createPrecisionHandler } from '../src/utils';
 async function usdtToBtcSwap() {
   // Initialize the client
   const client = new KaleidoClient({
-    baseUrl: 'https://api.staging.kaleidoswap.com/api/v1'
+    baseUrl: 'https://api.regtest.kaleidoswap.com/api/v1'
   });
 
   try {

@@ -12,7 +12,7 @@ interface AssetPairIds {
 
 const defaultBaseUrl = process.env.KALEIDO_TEST_BASE_URL
   || process.env.KALEIDO_API_URL
-  || 'https://api.staging.kaleidoswap.com/api/v1';
+  || 'https://api.regtest.kaleidoswap.com/api/v1';
 
 const defaultNodeUrl = process.env.KALEIDO_TEST_NODE_URL
   || process.env.KALEIDO_NODE_URL

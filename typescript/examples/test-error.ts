@@ -1,6 +1,6 @@
 import { KaleidoClient } from '../src/client';
 
-const baseUrl = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1';
+const baseUrl = process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com/api/v1';
 
 function logSection(title: string) {
   console.log(`\n=== ${title} ===`);

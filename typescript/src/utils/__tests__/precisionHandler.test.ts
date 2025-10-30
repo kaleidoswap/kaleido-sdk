@@ -1,5 +1,5 @@
 import { createPrecisionHandler } from '../precisionHandler';
-import { MappedAsset } from '../../types';
+import { MappedAsset } from '../../index';
 
 describe('PrecisionHandler', () => {
   const mockAssets: MappedAsset[] = [
@@ -10,7 +10,7 @@ describe('PrecisionHandler', () => {
       precision: 11, // BTC uses 11 decimal places in this system
       is_active: true,
       min_order_size: 1000, // 0.00001 BTC in atomic units
-      max_order_size: 100000000, // 1 BTC in atomic units
+      max_order_size: 100000000, // 1 BTr in atomic units
       trading_pairs: ['rgb:usdt123']
     },
     {
