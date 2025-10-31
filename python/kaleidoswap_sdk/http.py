@@ -54,7 +54,11 @@ class HttpClient:
 
     @with_retry(config=None)  # Will use default config from instance
     async def _request(
-        self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None
+        self,
+        method: str,
+        endpoint: str,
+        data: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Make an HTTP request to the API.
 
@@ -62,6 +66,7 @@ class HttpClient:
             method: HTTP method (GET, POST, etc.)
             endpoint: API endpoint
             data: Optional request payload
+            params: Optional query parameters
 
         Returns:
             API response as dictionary
@@ -74,6 +79,12 @@ class HttpClient:
         """
         session = await self._ensure_session()
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
+
+        # Build URL with query parameters if provided
+        if params:
+            query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+            url = f"{url}?{query_string}"
+
         headers = self._get_headers()
 
         try:
@@ -115,16 +126,19 @@ class HttpClient:
         except aiohttp.ClientError as e:
             raise NetworkError(f"Network error: {str(e)}")
 
-    async def get(self, endpoint: str) -> Dict[str, Any]:
+    async def get(
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """Make a GET request to the API.
 
         Args:
             endpoint: API endpoint
+            params: Optional query parameters
 
         Returns:
             API response as dictionary
         """
-        return await self._request("GET", endpoint)
+        return await self._request("GET", endpoint, params=params)
 
     async def post(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Make a POST request to the API.

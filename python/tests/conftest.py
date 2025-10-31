@@ -11,6 +11,7 @@ API_KEY = "test_api_key"
 # Create logs directory if it doesn't exist
 os.makedirs("logs", exist_ok=True)
 
+
 # Configure logging
 def setup_logging():
     """Configure logging for tests."""

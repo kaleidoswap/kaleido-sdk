@@ -13,7 +13,6 @@ version = "0.1.0"
 description = "SDK for interacting with Kaleidoswap"
 authors = ["Your Name <your.email@example.com>"]
 packages = [{include = "kaleidoswap_sdk"}]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
