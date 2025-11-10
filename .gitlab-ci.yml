@@ -163,9 +163,10 @@ deploy-all:
     - job: deploy:npm
     - job: deploy:pip
   script:
-    - echo "✅ Both SDKs have been deployed successfully"
-    - echo "📦 npm: https://www.npmjs.com/package/kaleidoswap-sdk"
-    - echo "📦 PyPI: https://pypi.org/project/kaleidoswap-sdk/"
+    - |
+      echo "Both SDKs have been deployed successfully"
+      echo "npm: https://www.npmjs.com/package/kaleidoswap-sdk"
+      echo "PyPI: https://pypi.org/project/kaleidoswap-sdk/"
   only:
     - tags
   when: manual
