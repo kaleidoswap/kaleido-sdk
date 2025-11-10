@@ -29,6 +29,8 @@ export type {
   NetworkInfoResponse,
 } from './types/index';
 
+export * from './types/rln';
+
 // Enhanced error handling system
 export {
   // Error types and enums

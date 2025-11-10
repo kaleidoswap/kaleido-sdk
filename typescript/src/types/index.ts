@@ -21,6 +21,9 @@ export type PaymentState = components['schemas']['PaymentState']
 export type GetInfoResponseModel = components['schemas']['GetInfoResponseModel']
 export type NetworkInfoResponse = components['schemas']['NetworkInfoResponse']
 
+// RLN (RGB Lightning Node) types
+export * from './rln';
+
 // Error system exports
 export * from './errors';
 export * from './exceptions';
