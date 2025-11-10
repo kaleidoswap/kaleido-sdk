@@ -156,7 +156,7 @@ deploy:pip:
   allow_failure: false
 
 # Deploy both SDKs (can be triggered manually after individual deployments)
-deploy:all:
+deploy-all:
   stage: deploy
   image: alpine:latest
   needs:
