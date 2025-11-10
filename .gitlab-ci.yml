@@ -1,0 +1,173 @@
+# GitLab CI/CD Pipeline for Kaleidoswap SDK
+# This pipeline handles building and publishing the SDK to npm and PyPI on tag creation
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
+
+# Default tags for runners
+default:
+  tags:
+    - linux-runner
+
+# Workflow rules: Only run on tags
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - when: never
+
+# Build TypeScript SDK
+build:npm:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - cd typescript
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - typescript/dist
+    expire_in: 1 hour
+  only:
+    - tags
+
+# Build Python SDK
+build:pip:
+  stage: build
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  script:
+    - cd python
+    - uv sync --frozen
+    - uv build
+  artifacts:
+    paths:
+      - python/dist
+    expire_in: 1 hour
+  only:
+    - tags
+
+# Test TypeScript SDK
+test:npm:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - cd typescript
+    - npm ci
+    - npm test
+  dependencies: []
+  only:
+    - tags
+
+# Test Python SDK
+test:pip:
+  stage: test
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  script:
+    - cd python
+    - uv sync --frozen
+    - uv run pytest tests/
+  dependencies: []
+  only:
+    - tags
+
+# Deploy TypeScript SDK to npm
+deploy:npm:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  needs:
+    - job: build:npm
+      artifacts: true
+    - job: test:npm
+  before_script:
+    - cd typescript
+    - |
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "❌ Error: NPM_TOKEN CI/CD variable is not set"
+        exit 1
+      fi
+    - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+    - chmod 600 ~/.npmrc
+  script:
+    - npm ci
+    - npm run build
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "📦 Publishing version: $VERSION"
+      
+      # Determine tag based on version
+      if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        TAG="latest"
+      elif [[ "$VERSION" =~ -beta ]]; then
+        TAG="beta"
+      elif [[ "$VERSION" =~ -alpha ]]; then
+        TAG="alpha"
+      else
+        TAG="latest"
+      fi
+      
+      echo "📤 Publishing with tag: $TAG"
+      npm publish --tag "$TAG" --access public
+      
+      echo "✅ Successfully published kaleidoswap-sdk@$VERSION to npm"
+  environment:
+    name: npm
+    url: https://www.npmjs.com/package/kaleidoswap-sdk
+  only:
+    - tags
+  when: manual
+  allow_failure: false
+
+# Deploy Python SDK to PyPI
+deploy:pip:
+  stage: deploy
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  needs:
+    - job: build:pip
+      artifacts: true
+    - job: test:pip
+  before_script:
+    - cd python
+    - |
+      if [ -z "$PYPI_TOKEN" ]; then
+        echo "❌ Error: PYPI_TOKEN CI/CD variable is not set"
+        exit 1
+      fi
+  script:
+    - uv sync --frozen
+    - uv build
+    - |
+      VERSION=$(grep -E '^version\s*=' pyproject.toml | sed -E 's/^version\s*=\s*"([^"]+)".*/\1/')
+      echo "📦 Publishing version: $VERSION"
+      
+      uv publish --token "$PYPI_TOKEN"
+      
+      echo "✅ Successfully published kaleidoswap-sdk@$VERSION to PyPI"
+  environment:
+    name: pypi
+    url: https://pypi.org/project/kaleidoswap-sdk/
+  only:
+    - tags
+  when: manual
+  allow_failure: false
+
+# Deploy both SDKs (can be triggered manually after individual deployments)
+deploy:all:
+  stage: deploy
+  image: alpine:latest
+  needs:
+    - job: deploy:npm
+    - job: deploy:pip
+  script:
+    - echo "✅ Both SDKs have been deployed successfully"
+    - echo "📦 npm: https://www.npmjs.com/package/kaleidoswap-sdk"
+    - echo "📦 PyPI: https://pypi.org/project/kaleidoswap-sdk/"
+  only:
+    - tags
+  when: manual
+  allow_failure: false
+
