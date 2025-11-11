@@ -1,97 +1,103 @@
 import { MappedAsset } from './assetPairMapper';
 
 export class PrecisionHandler {
-  private asset_precision_map: Map<string, number> = new Map();
+  private assetPrecisionMap: Map<string, number> = new Map();
 
   constructor(assets: MappedAsset[]) {
+    if (assets.length === 0) {
+      throw new Error('Cannot create PrecisionHandler with empty assets array');
+    }
     assets.forEach(asset => {
-      this.asset_precision_map.set(asset.asset_id, asset.precision);
+      this.assetPrecisionMap.set(asset.asset_id, asset.precision);
     });
   }
 
-  toAssetAmount(asset_decimal_amount: number, assetId: string): number {
-    const asset_precision = this.asset_precision_map.get(assetId);
-    if (asset_precision === undefined) {
-      throw new Error(`Precision not found for asset: ${assetId}`);
+  toAssetAmount(assetDecimalAmount: number, assetId: string): number {
+    const assetPrecision = this.assetPrecisionMap.get(assetId);
+    if (assetPrecision === undefined) {
+      throw new Error(`Asset ${assetId} not found`);
     }
-    
-    return Math.floor(asset_decimal_amount * Math.pow(10, asset_precision));
+
+    return Math.floor(assetDecimalAmount * Math.pow(10, assetPrecision));
   }
 
-  toAssetDecimalAmount(asset_amount: number, assetId: string): number {
-    const asset_precision = this.asset_precision_map.get(assetId);
-    if (asset_precision === undefined) {
-      throw new Error(`Precision not found for asset: ${assetId}`);
+  toAssetDecimalAmount(assetAmount: number, assetId: string): number {
+    const assetPrecision = this.assetPrecisionMap.get(assetId);
+    if (assetPrecision === undefined) {
+      throw new Error(`Asset ${assetId} not found`);
     }
-    
-    return asset_amount / Math.pow(10, asset_precision);
+
+    return assetAmount / Math.pow(10, assetPrecision);
   }
 
   getAssetPrecision(assetId: string): number {
-    const asset_precision = this.asset_precision_map.get(assetId);
-    if (asset_precision === undefined) {
-      throw new Error(`Precision not found for asset: ${assetId}`);
+    const assetPrecision = this.assetPrecisionMap.get(assetId);
+    if (assetPrecision === undefined) {
+      throw new Error(`Asset ${assetId} not found`);
     }
-    return asset_precision;
+    return assetPrecision;
   }
 
-  formatAssetDecimalAmount(asset_decimal_amount: number, assetId: string): string {
-    const asset_precision = this.getAssetPrecision(assetId);
-    return asset_decimal_amount.toFixed(asset_precision);
+  formatAssetDecimalAmount(assetDecimalAmount: number, assetId: string): string {
+    const assetPrecision = this.getAssetPrecision(assetId);
+    return assetDecimalAmount.toFixed(assetPrecision);
   }
 
-  validateOrderSize(asset_decimal_amount: number, asset: MappedAsset): {
+  validateOrderSize(
+    assetDecimalAmount: number,
+    asset: MappedAsset
+  ): {
     valid: boolean;
     error?: string;
-    asset_amount: number;
-    asset_min_amount: number;
-    asset_max_amount: number;
+    assetAmount: number;
+    assetMinAmount: number;
+    assetMaxAmount: number;
   } {
-    const asset_amount = this.toAssetAmount(asset_decimal_amount, asset.asset_id);
-    const asset_min_decimal_amount = this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id);
-    const asset_max_decimal_amount = this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id);
+    const assetAmount = this.toAssetAmount(assetDecimalAmount, asset.asset_id);
+    const assetMinDecimalAmount = this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id);
+    const assetMaxDecimalAmount = this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id);
 
-    if (asset_amount < asset.min_order_size) {
+    if (assetAmount < asset.min_order_size) {
       return {
         valid: false,
-        error: `Amount ${asset_decimal_amount} ${asset.ticker} is below minimum order size of ${asset_min_decimal_amount} ${asset.ticker}`,
-        asset_amount,
-        asset_min_amount: asset.min_order_size,
-        asset_max_amount: asset.max_order_size
+        error: `Amount ${assetDecimalAmount} ${asset.ticker} is below minimum order size of ${assetMinDecimalAmount} ${asset.ticker}`,
+        assetAmount,
+        assetMinAmount: asset.min_order_size,
+        assetMaxAmount: asset.max_order_size,
       };
     }
 
-    if (asset_amount > asset.max_order_size) {
+    if (assetAmount > asset.max_order_size) {
       return {
         valid: false,
-        error: `Amount ${asset_decimal_amount} ${asset.ticker} exceeds maximum order size of ${asset_max_decimal_amount} ${asset.ticker}`,
-        asset_amount,
-        asset_min_amount: asset.min_order_size,
-        asset_max_amount: asset.max_order_size
+        error: `Amount ${assetDecimalAmount} ${asset.ticker} is above maximum order size of ${assetMaxDecimalAmount} ${asset.ticker}`,
+        assetAmount,
+        assetMinAmount: asset.min_order_size,
+        assetMaxAmount: asset.max_order_size,
       };
     }
 
     return {
       valid: true,
-      asset_amount,
-      asset_min_amount: asset.min_order_size,
-      asset_max_amount: asset.max_order_size
+      assetAmount,
+      assetMinAmount: asset.min_order_size,
+      assetMaxAmount: asset.max_order_size,
     };
   }
 
   getOrderSizeLimits(asset: MappedAsset): {
-    asset_min_decimal_amount: number;
-    asset_max_decimal_amount: number;
-    asset_min_amount: number;
-    asset_max_amount: number;
-    asset_precision: number;
+    assetMinDecimalAmount: number;
+    assetMaxDecimalAmount: number;
+    assetMinAmount: number;
+    assetMaxAmount: number;
+    assetPrecision: number;
   } {
     return {
-      asset_min_decimal_amount: this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id),
-      asset_max_decimal_amount: this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id),
-      asset_min_amount: asset.min_order_size,
-      asset_max_amount: asset.max_order_size,
-      asset_precision: asset.precision
+      assetMinDecimalAmount: this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id),
+      assetMaxDecimalAmount: this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id),
+      assetMinAmount: asset.min_order_size,
+      assetMaxAmount: asset.max_order_size,
+      assetPrecision: asset.precision,
     };
   }
 }

@@ -1,0 +1,299 @@
+# GitLab CI/CD Pipeline for Kaleidoswap SDK
+# This pipeline handles building and publishing the SDK to npm and PyPI on tag creation
+
+stages:
+  - lint
+  - build
+  - test
+  - deploy
+
+variables:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
+  RUST_VERSION: "1.75"
+
+# Default tags for runners
+default:
+  tags:
+    - linux-runner
+
+# Workflow rules: Run on tags, merge requests, and main/dev branches
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - when: never
+
+# Lint TypeScript SDK
+lint:npm:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript linting"
+        exit 0
+      fi
+    - cd typescript
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install --no-save
+      fi
+    - |
+      if [ ! -f .eslintrc.js ] && [ ! -f .eslintrc.json ] && [ ! -f .eslintrc.yml ] && [ ! -f .eslintrc.yaml ]; then
+        echo "⚠️  ESLint config file not found, skipping linting"
+        exit 0
+      fi
+    - npm run lint
+    - npm run format:check
+  allow_failure: false
+
+# Lint Python SDK
+lint:pip:
+  stage: lint
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  script:
+    - cd python
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen --extra dev
+      else
+        uv sync --extra dev
+      fi
+    - uv run ruff check .
+    - uv run ruff format --check .
+    - uv run black --check .
+  allow_failure: false
+
+# Lint Rust SDK
+lint:rust:
+  stage: lint
+  image: rust:${RUST_VERSION}
+  script:
+    - |
+      if [ ! -d rust ] || [ ! -f rust/Cargo.toml ]; then
+        echo "⚠️  rust/Cargo.toml not found, skipping Rust linting"
+        exit 0
+      fi
+    - cd rust
+    - rustup component add rustfmt clippy
+    - cargo fmt -- --check
+    - cargo clippy --all-targets -- -D warnings
+  allow_failure: false
+
+# Build TypeScript SDK
+build:npm:
+  stage: build
+  image: node:${NODE_VERSION}
+  needs:
+    - job: lint:npm
+  script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript build"
+        exit 0
+      fi
+    - cd typescript
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
+    - npm run build
+  artifacts:
+    paths:
+      - typescript/dist
+    expire_in: 1 hour
+
+# Build Python SDK
+build:pip:
+  stage: build
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  needs:
+    - job: lint:pip
+  script:
+    - cd python
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen --extra dev
+      else
+        uv sync --extra dev
+      fi
+    - uv build
+  artifacts:
+    paths:
+      - python/dist
+    expire_in: 1 hour
+
+# Test TypeScript SDK
+test:npm:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript tests"
+        exit 0
+      fi
+    - cd typescript
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
+    - npm run test:coverage
+  dependencies: []
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: typescript/coverage/cobertura-coverage.xml
+    paths:
+      - typescript/coverage
+    expire_in: 1 week
+  allow_failure: true
+
+# Test Python SDK
+test:pip:
+  stage: test
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  script:
+    - cd python
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen --extra dev
+      else
+        uv sync --extra dev
+      fi
+    - uv run pytest tests/ --cov=kaleidoswap_sdk --cov-report=xml --cov-report=html --cov-report=term
+  dependencies: []
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: python/coverage.xml
+    paths:
+      - python/htmlcov
+    expire_in: 1 week
+  allow_failure: true
+
+# Deploy TypeScript SDK to npm
+deploy:npm:
+  stage: deploy
+  image: node:${NODE_VERSION}
+  needs:
+    - job: build:npm
+      artifacts: true
+    - job: test:npm
+  before_script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript deployment"
+        exit 0
+      fi
+    - cd typescript
+    - |
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "❌ Error: NPM_TOKEN CI/CD variable is not set"
+        exit 1
+      fi
+    - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+    - chmod 600 ~/.npmrc
+  script:
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
+    - npm run build
+    - |
+      VERSION=$(node -p "require('./package.json').version")
+      echo "📦 Publishing version: $VERSION"
+      
+      # Determine tag based on version
+      if [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        TAG="latest"
+      elif [[ "$VERSION" =~ -beta ]]; then
+        TAG="beta"
+      elif [[ "$VERSION" =~ -alpha ]]; then
+        TAG="alpha"
+      else
+        TAG="latest"
+      fi
+      
+      echo "📤 Publishing with tag: $TAG"
+      npm publish --tag "$TAG" --access public
+      
+      echo "✅ Successfully published kaleidoswap-sdk@$VERSION to npm"
+  environment:
+    name: npm
+    url: https://www.npmjs.com/package/kaleidoswap-sdk
+  only:
+    - tags
+  when: manual
+  allow_failure: false
+
+# Deploy Python SDK to PyPI
+deploy:pip:
+  stage: deploy
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  needs:
+    - job: build:pip
+      artifacts: true
+    - job: test:pip
+  before_script:
+    - cd python
+    - |
+      if [ -z "$PYPI_TOKEN" ]; then
+        echo "❌ Error: PYPI_TOKEN CI/CD variable is not set"
+        exit 1
+      fi
+  script:
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen
+      else
+        uv sync
+      fi
+    - uv build
+    - |
+      VERSION=$(grep -E '^version\s*=' pyproject.toml | sed -E 's/^version\s*=\s*"([^"]+)".*/\1/')
+      echo "📦 Publishing version: $VERSION"
+      
+      uv publish --token "$PYPI_TOKEN"
+      
+      echo "✅ Successfully published kaleidoswap-sdk@$VERSION to PyPI"
+  environment:
+    name: pypi
+    url: https://pypi.org/project/kaleidoswap-sdk/
+  only:
+    - tags
+  when: manual
+  allow_failure: false
+
+# Deploy both SDKs (can be triggered manually after individual deployments)
+deploy-all:
+  stage: deploy
+  image: alpine:latest
+  needs:
+    - job: deploy:npm
+    - job: deploy:pip
+  script:
+    - |
+      echo "Both SDKs have been deployed successfully"
+      echo "npm: https://www.npmjs.com/package/kaleidoswap-sdk"
+      echo "PyPI: https://pypi.org/project/kaleidoswap-sdk/"
+  only:
+    - tags
+  when: manual
+  allow_failure: false
+

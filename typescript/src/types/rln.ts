@@ -800,4 +800,3 @@ export interface RevokeTokenRequest {
 }
 
 export interface EmptyResponse {}
-

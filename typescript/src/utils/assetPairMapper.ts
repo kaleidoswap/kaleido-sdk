@@ -31,7 +31,7 @@ export class AssetPairMapper {
         is_active: pair.is_active,
         min_order_size: pair.min_base_order_size,
         max_order_size: pair.max_base_order_size,
-        trading_partner: pair.quote_asset_id
+        trading_partner: pair.quote_asset_id,
       });
 
       // Process quote asset
@@ -43,7 +43,7 @@ export class AssetPairMapper {
         is_active: pair.is_active,
         min_order_size: pair.min_quote_order_size,
         max_order_size: pair.max_quote_order_size,
-        trading_partner: pair.base_asset_id
+        trading_partner: pair.base_asset_id,
       });
     });
   }
@@ -67,7 +67,6 @@ export class AssetPairMapper {
       existing.min_order_size = Math.max(existing.min_order_size, assetData.min_order_size);
       existing.max_order_size = Math.min(existing.max_order_size, assetData.max_order_size);
     } else {
-
       this.assetMap.set(assetData.asset_id, {
         asset_id: assetData.asset_id,
         ticker: assetData.ticker,
@@ -76,14 +75,14 @@ export class AssetPairMapper {
         is_active: assetData.is_active,
         min_order_size: assetData.min_order_size,
         max_order_size: assetData.max_order_size,
-        trading_pairs: [assetData.trading_partner]
+        trading_pairs: [assetData.trading_partner],
       });
     }
   }
 
   findByTicker(ticker: string): MappedAsset | undefined {
     for (const asset of this.assetMap.values()) {
-      if (asset.ticker.toLowerCase() === ticker.toLowerCase()) {
+      if (asset.ticker === ticker) {
         return asset;
       }
     }

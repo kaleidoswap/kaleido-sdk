@@ -9,7 +9,7 @@ export enum ErrorCode {
   DNS_RESOLUTION_FAILED = 'DNS_RESOLUTION_FAILED',
   WEBSOCKET_CONNECTION_FAILED = 'WEBSOCKET_CONNECTION_FAILED',
   WEBSOCKET_DISCONNECTED = 'WEBSOCKET_DISCONNECTED',
-  
+
   // HTTP and API errors (1100-1199)
   HTTP_BAD_REQUEST = 'HTTP_BAD_REQUEST',
   HTTP_UNAUTHORIZED = 'HTTP_UNAUTHORIZED',
@@ -23,13 +23,13 @@ export enum ErrorCode {
   HTTP_BAD_GATEWAY = 'HTTP_BAD_GATEWAY',
   HTTP_SERVICE_UNAVAILABLE = 'HTTP_SERVICE_UNAVAILABLE',
   HTTP_GATEWAY_TIMEOUT = 'HTTP_GATEWAY_TIMEOUT',
-  
+
   // Authentication and authorization errors (1200-1299)
   AUTH_INVALID_API_KEY = 'AUTH_INVALID_API_KEY',
   AUTH_EXPIRED_API_KEY = 'AUTH_EXPIRED_API_KEY',
   AUTH_MISSING_API_KEY = 'AUTH_MISSING_API_KEY',
   AUTH_INSUFFICIENT_PERMISSIONS = 'AUTH_INSUFFICIENT_PERMISSIONS',
-  
+
   // Validation errors (1300-1399)
   VALIDATION_REQUIRED_FIELD_MISSING = 'VALIDATION_REQUIRED_FIELD_MISSING',
   VALIDATION_INVALID_FORMAT = 'VALIDATION_INVALID_FORMAT',
@@ -37,7 +37,7 @@ export enum ErrorCode {
   VALIDATION_INVALID_ASSET_ID = 'VALIDATION_INVALID_ASSET_ID',
   VALIDATION_INVALID_PAIR = 'VALIDATION_INVALID_PAIR',
   VALIDATION_INVALID_AMOUNT = 'VALIDATION_INVALID_AMOUNT',
-  
+
   // Business logic errors (1400-1499)
   ASSET_NOT_FOUND = 'ASSET_NOT_FOUND',
   ASSET_NOT_SUPPORTED = 'ASSET_NOT_SUPPORTED',
@@ -49,7 +49,7 @@ export enum ErrorCode {
   ORDER_NOT_FOUND = 'ORDER_NOT_FOUND',
   ORDER_EXPIRED = 'ORDER_EXPIRED',
   ORDER_ALREADY_EXECUTED = 'ORDER_ALREADY_EXECUTED',
-  
+
   // Swap and trading errors (1500-1599)
   SWAP_FAILED = 'SWAP_FAILED',
   SWAP_TIMEOUT = 'SWAP_TIMEOUT',
@@ -57,7 +57,7 @@ export enum ErrorCode {
   SWAP_INSUFFICIENT_BALANCE = 'SWAP_INSUFFICIENT_BALANCE',
   SWAP_PRICE_IMPACT_TOO_HIGH = 'SWAP_PRICE_IMPACT_TOO_HIGH',
   SWAP_SLIPPAGE_EXCEEDED = 'SWAP_SLIPPAGE_EXCEEDED',
-  
+
   // Lightning Network errors (1600-1699)
   LN_NODE_UNREACHABLE = 'LN_NODE_UNREACHABLE',
   LN_NODE_NOT_CONFIGURED = 'LN_NODE_NOT_CONFIGURED',
@@ -66,22 +66,22 @@ export enum ErrorCode {
   LN_INSUFFICIENT_OUTBOUND_CAPACITY = 'LN_INSUFFICIENT_OUTBOUND_CAPACITY',
   LN_PAYMENT_FAILED = 'LN_PAYMENT_FAILED',
   LN_INVOICE_EXPIRED = 'LN_INVOICE_EXPIRED',
-  
+
   // Rate limiting and throttling (1700-1799)
   RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
   QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
   THROTTLED = 'THROTTLED',
-  
+
   // Configuration and setup errors (1800-1899)
   CONFIG_INVALID_BASE_URL = 'CONFIG_INVALID_BASE_URL',
   CONFIG_MISSING_REQUIRED_FIELD = 'CONFIG_MISSING_REQUIRED_FIELD',
   CONFIG_INVALID_RETRY_CONFIG = 'CONFIG_INVALID_RETRY_CONFIG',
-  
+
   // Parsing and serialization errors (1900-1999)
   PARSE_INVALID_JSON = 'PARSE_INVALID_JSON',
   PARSE_INVALID_RESPONSE_FORMAT = 'PARSE_INVALID_RESPONSE_FORMAT',
   SERIALIZE_FAILED = 'SERIALIZE_FAILED',
-  
+
   // Generic errors (2000-2099)
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   OPERATION_TIMEOUT = 'OPERATION_TIMEOUT',
@@ -94,9 +94,9 @@ export enum ErrorCode {
  */
 export enum ErrorSeverity {
   LOW = 'low',
-  MEDIUM = 'medium', 
+  MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 export enum ErrorCategory {
@@ -119,7 +119,7 @@ export enum RetryStrategy {
   IMMEDIATE_RETRY = 'immediate_retry',
   LINEAR_BACKOFF = 'linear_backoff',
   EXPONENTIAL_BACKOFF = 'exponential_backoff',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -175,7 +175,7 @@ export class KaleidoSDKError extends Error {
     this.severity = severity;
     this.metadata = {
       timestamp: new Date(),
-      ...metadata
+      ...(metadata as Record<string, unknown>),
     };
     this.cause = cause;
 
@@ -195,7 +195,7 @@ export class KaleidoSDKError extends Error {
       severity: this.severity,
       metadata: this.metadata,
       stack: this.stack,
-      cause: this.cause?.message
+      cause: this.cause?.message,
     };
   }
 
@@ -244,7 +244,9 @@ export class KaleidoSDKError extends Error {
       case ErrorCategory.RATE_LIMITING:
         return true;
       case ErrorCategory.HTTP:
-        return this.metadata.statusCode ? [500, 502, 503, 504].includes(this.metadata.statusCode) : false;
+        return this.metadata.statusCode
+          ? [500, 502, 503, 504].includes(this.metadata.statusCode)
+          : false;
       case ErrorCategory.AUTHENTICATION:
       case ErrorCategory.VALIDATION:
       case ErrorCategory.BUSINESS_LOGIC:

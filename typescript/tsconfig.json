@@ -19,7 +19,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "removeComments": false,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"

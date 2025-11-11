@@ -6,7 +6,9 @@ typescript/coverage
 typescript/*.js
 typescript/*.js.map
 typescript/*.d.ts
-!typescript/jest.config.js# Byte-compiled / optimized / DLL files
+!typescript/jest.config.js
+!typescript/.eslintrc.js
+# Byte-compiled / optimized / DLL files
 
 ./typescript/package-lock.json
 typescript/package-lock.json
@@ -14,6 +16,8 @@ typescript/package-lock.json
 node_modules
 package.json
 package-lock.json
+# Allow typescript package.json to be tracked
+!typescript/package.json
 
 # Python
 __pycache__/

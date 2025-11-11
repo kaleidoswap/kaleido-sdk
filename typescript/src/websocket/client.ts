@@ -2,9 +2,10 @@ import { ErrorFactory } from '../types/errorFactory';
 import WebSocket, { MessageEvent as WSMessageEvent } from 'ws';
 
 // Debug logging helper
-const debug = (...args: any[]) => {
+const debug = (...args: unknown[]): void => {
   if (process.env.DEBUG_WS) {
-    console.log('[WebSocket]', ...args);
+    // eslint-disable-next-line no-console
+    console.log('[WebSocket]', ...(args as string[]));
   }
 };
 
@@ -78,18 +79,21 @@ export class WebSocketClient {
     this.pingTimeout = config.pingTimeout || 10000; // 10 seconds
     this.reconnectInterval = config.reconnectInterval || 5000; // 5 seconds
     this.maxReconnectAttempts = config.maxReconnectAttempts || 5;
-    
+
     // Set up headers
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     this.headers = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      Accept: 'application/json',
     };
-    
+
     // Add API key if provided
     if (config.apiKey) {
       this.headers['Authorization'] = `Bearer ${config.apiKey}`;
     }
-    
+
     if (process.env.DEBUG_WS) {
       debug(`Initializing WebSocket client for ${this.baseUrl}`);
       if (config.apiKey) {
@@ -115,10 +119,18 @@ export class WebSocketClient {
       const state = this.ws?.readyState;
       let stateStr = 'UNKNOWN';
       switch (state) {
-        case WebSocket.CONNECTING: stateStr = 'CONNECTING'; break;
-        case WebSocket.OPEN: stateStr = 'OPEN'; break;
-        case WebSocket.CLOSING: stateStr = 'CLOSING'; break;
-        case WebSocket.CLOSED: stateStr = 'CLOSED'; break;
+        case WebSocket.CONNECTING:
+          stateStr = 'CONNECTING';
+          break;
+        case WebSocket.OPEN:
+          stateStr = 'OPEN';
+          break;
+        case WebSocket.CLOSING:
+          stateStr = 'CLOSING';
+          break;
+        case WebSocket.CLOSED:
+          stateStr = 'CLOSED';
+          break;
       }
       debug(`${event} - State: ${stateStr}`);
     }
@@ -135,15 +147,15 @@ export class WebSocketClient {
     }
 
     this.isConnecting = true;
-    
+
     // For ws library, we need to handle headers differently
     const wsOptions: WebSocket.ClientOptions = {};
-    
+
     // Add headers if needed (some WebSocket servers support this)
     if (Object.keys(this.headers).length > 0) {
       wsOptions.headers = this.headers;
     }
-    
+
     // If using an API key, add it to the URL as a query parameter
     // This is a common pattern when headers aren't supported
     let wsUrl = this.baseUrl;
@@ -152,7 +164,7 @@ export class WebSocketClient {
       url.searchParams.append('token', this.headers['Authorization'].replace('Bearer ', ''));
       wsUrl = url.toString();
     }
-    
+
     debug(`Connecting to WebSocket: ${wsUrl}`);
     if (process.env.DEBUG_WS) {
       debug('Using options:', JSON.stringify(wsOptions, null, 2));
@@ -174,11 +186,9 @@ export class WebSocketClient {
         }
 
         const timeout = setTimeout(() => {
-          const error = ErrorFactory.createTimeoutError(
-            'WebSocket connection',
-            this.pingTimeout,
-            { wsUrl }
-          );
+          const error = ErrorFactory.createTimeoutError('WebSocket connection', this.pingTimeout, {
+            wsUrl,
+          });
           debug(error.message);
           reject(error);
         }, this.pingTimeout);
@@ -191,7 +201,7 @@ export class WebSocketClient {
           resolve();
         };
 
-        this.ws.onerror = (event) => {
+        this.ws.onerror = event => {
           clearTimeout(timeout);
           const errorMessage = event.message || 'Unknown WebSocket error';
           const error = ErrorFactory.fromWebSocketError(
@@ -229,7 +239,7 @@ export class WebSocketClient {
 
   private stopPing(): void {
     if (this.pingTimer) {
-      clearInterval(this.pingTimer as NodeJS.Timeout);
+      clearInterval(this.pingTimer);
       this.pingTimer = null;
     }
   }
@@ -240,12 +250,22 @@ export class WebSocketClient {
    */
   private handleMessage(event: WSMessageEvent): void {
     try {
-      const data = event.data.toString();
+      let data: string;
+      if (typeof event.data === 'string') {
+        data = event.data;
+      } else if (event.data instanceof ArrayBuffer) {
+        data = new TextDecoder().decode(event.data);
+      } else if (event.data instanceof Blob) {
+        // For Blob, we'd need async handling, but for WebSocket messages it should be string
+        data = String(event.data);
+      } else {
+        data = String(event.data);
+      }
       if (process.env.DEBUG_WS) {
         debug('Received message:', data);
       }
-      
-      const message = JSON.parse(data);
+
+      const message = JSON.parse(data) as { action: string; data: unknown };
       this.emit(message.action, message.data);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -260,11 +280,12 @@ export class WebSocketClient {
   private handleClose(event: { code: number; reason: string }): void {
     this.logConnectionState('onclose');
     debug(`Connection closed: ${event.code} ${event.reason || 'No reason provided'}`);
-    
+
     this.stopPing();
-    
+
     // Only attempt reconnect if this was an unexpected closure
-    if (event.code !== 1000) { // 1000 is normal closure
+    if (event.code !== 1000) {
+      // 1000 is normal closure
       this.attemptReconnect();
     } else {
       debug('Normal WebSocket closure, not reconnecting');
@@ -287,8 +308,12 @@ export class WebSocketClient {
       30000 // Max 30 seconds between retries
     );
 
-    debug(`Attempting to reconnect (${this.reconnectAttempts + 1}/${this.maxReconnectAttempts}) in ${delay}ms`);
-    
+    debug(
+      `Attempting to reconnect (${this.reconnectAttempts + 1}/${
+        this.maxReconnectAttempts
+      }) in ${delay}ms`
+    );
+
     this.reconnectTimer = setTimeout(() => {
       this.reconnectAttempts++;
       this.connect().catch(error => {
@@ -302,23 +327,23 @@ export class WebSocketClient {
    */
   public async disconnect(code = 1000, reason?: string): Promise<void> {
     debug(`Disconnecting${reason ? ` (${reason})` : ''}`);
-    
+
     this.stopPing();
-    
+
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-    
+
     if (this.ws) {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         if (this.ws) {
           this.ws.once('close', () => {
             debug('Disconnected successfully');
             this.ws = null;
             resolve();
           });
-          
+
           if (this.ws.readyState === WebSocket.OPEN) {
             this.ws.close(code, reason);
           } else {
@@ -331,7 +356,7 @@ export class WebSocketClient {
         }
       });
     }
-    
+
     return Promise.resolve();
   }
 
@@ -382,7 +407,7 @@ export class WebSocketClient {
     }
     const handlers = this.messageHandlers.get(event)!;
     handlers.add(handler);
-    
+
     // Return unsubscribe function
     return () => {
       handlers.delete(handler);
@@ -422,7 +447,7 @@ export class WebSocketClient {
   async subscribe(pairId: string): Promise<void> {
     await this.send({
       action: 'subscribe',
-      data: { pairId }
+      data: { pairId },
     });
   }
 
@@ -434,7 +459,7 @@ export class WebSocketClient {
   async unsubscribe(pairId: string): Promise<void> {
     await this.send({
       action: 'unsubscribe',
-      data: { pairId }
+      data: { pairId },
     });
   }
 
@@ -445,4 +470,4 @@ export class WebSocketClient {
   public getConnectionState(): number | undefined {
     return this.ws?.readyState;
   }
-} 
+}

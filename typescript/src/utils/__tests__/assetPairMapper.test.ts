@@ -16,7 +16,7 @@ describe('AssetPairMapper', () => {
         min_base_order_size: 1000,
         max_base_order_size: 100000000,
         min_quote_order_size: 1000000,
-        max_quote_order_size: 1000000000
+        max_quote_order_size: 1000000000,
       },
       {
         id: 'pair2',
@@ -30,9 +30,9 @@ describe('AssetPairMapper', () => {
         min_base_order_size: 1000,
         max_base_order_size: 100000000,
         min_quote_order_size: 1000000,
-        max_quote_order_size: 1000000000
-      }
-    ]
+        max_quote_order_size: 1000000000,
+      },
+    ],
   };
 
   describe('findByTicker', () => {
@@ -176,7 +176,7 @@ describe('AssetPairMapper', () => {
             min_base_order_size: 1000,
             max_base_order_size: 100000000,
             min_quote_order_size: 1000000,
-            max_quote_order_size: 1000000000
+            max_quote_order_size: 1000000000,
           },
           {
             id: 'pair2',
@@ -190,9 +190,9 @@ describe('AssetPairMapper', () => {
             min_base_order_size: 1000000,
             max_base_order_size: 1000000000,
             min_quote_order_size: 1000,
-            max_quote_order_size: 100000000
-          }
-        ]
+            max_quote_order_size: 100000000,
+          },
+        ],
       };
 
       const mapper = createAssetPairMapper(response);

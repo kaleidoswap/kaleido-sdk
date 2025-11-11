@@ -137,7 +137,7 @@ class KaleidoClient:
                 whitelist_request = WhitelistTradeRequest(
                     swapstring=init_result.swapstring
                 )
-                whitelist_result = await self.whitelist_trade(whitelist_request)
+                await self.whitelist_trade(whitelist_request)
             except Exception as e:
                 logger.error(f"Error whitelisting trade: {e}")
                 raise e
@@ -145,13 +145,11 @@ class KaleidoClient:
             # Execute swap from maker
             taker_pubkey = await self.get_node_pubkey()
             try:
-                execute_result: ExecuteMakerSwapResponse = (
-                    await self.execute_maker_swap(
-                        request=ExecuteMakerSwapRequest(
-                            swapstring=init_result.swapstring,
-                            payment_hash=init_result.payment_hash,
-                            taker_pubkey=taker_pubkey,
-                        )
+                await self.execute_maker_swap(
+                    request=ExecuteMakerSwapRequest(
+                        swapstring=init_result.swapstring,
+                        payment_hash=init_result.payment_hash,
+                        taker_pubkey=taker_pubkey,
                     )
                 )
             except Exception as e:
@@ -373,7 +371,7 @@ class KaleidoClient:
         Returns:
             OrderResponse containing order details
         """
-        response = await self.api_client.post(f"/lsps1/get_order", request.model_dump())
+        response = await self.api_client.post("/lsps1/get_order", request.model_dump())
         return OrderResponse.model_validate(response)
 
     async def get_order_analytics(self) -> OrderStatsResponse:
