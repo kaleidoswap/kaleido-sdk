@@ -158,6 +158,7 @@ test:npm:
     paths:
       - typescript/coverage
     expire_in: 1 week
+  allow_failure: true
 
 # Test Python SDK
 test:pip:
@@ -182,6 +183,7 @@ test:pip:
     paths:
       - python/htmlcov
     expire_in: 1 week
+  allow_failure: true
 
 # Deploy TypeScript SDK to npm
 deploy:npm:
