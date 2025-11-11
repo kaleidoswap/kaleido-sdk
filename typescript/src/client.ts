@@ -259,7 +259,9 @@ export class KaleidoClient {
         reject(new Error('Quote request timed out'));
       }, 30000);
 
-      const quoteHandler = (response: { error?: { message?: string }; data?: PairQuoteResponse } | PairQuoteResponse) => {
+      const quoteHandler = (
+        response: { error?: { message?: string }; data?: PairQuoteResponse } | PairQuoteResponse
+      ) => {
         clearTimeout(timeoutId);
         this.wsClient.off('quote_response', quoteHandler);
 
