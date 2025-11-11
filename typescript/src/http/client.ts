@@ -54,7 +54,7 @@ export class HttpClient {
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      Accept: 'application/json',
     };
 
     if (this.apiKey) {
@@ -71,12 +71,10 @@ export class HttpClient {
    * @param data - Optional request data
    * @returns Promise resolving to the response data
    */
-  private async request<T>(
-    method: string,
-    endpoint: string,
-    data?: unknown
-  ): Promise<T> {
-    const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  private async request<T>(method: string, endpoint: string, data?: unknown): Promise<T> {
+    const url = endpoint.startsWith('http')
+      ? endpoint
+      : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const headers = this.getHeaders();
 
     const options: RequestInit = {
@@ -91,11 +89,11 @@ export class HttpClient {
     try {
       const response = await fetch(url, {
         ...options,
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
-      
+
       const responseText = await response.text();
 
       if (!response.ok) {
@@ -123,7 +121,7 @@ export class HttpClient {
       }
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       // Re-throw as-is if it's already a KaleidoSDKError
       if (error instanceof KaleidoSDKError) {
         throw error;
@@ -131,17 +129,16 @@ export class HttpClient {
 
       // Handle AbortError (timeout) - can be DOMException or Error with name 'AbortError'
       // In Node.js, fetch may throw different error types when aborted
-      const isAbortError = 
+      const isAbortError =
         (error instanceof Error && error.name === 'AbortError') ||
-        (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') ||
-        (error instanceof Error && (error.message.includes('aborted') || error.message.includes('AbortError')));
+        (typeof DOMException !== 'undefined' &&
+          error instanceof DOMException &&
+          error.name === 'AbortError') ||
+        (error instanceof Error &&
+          (error.message.includes('aborted') || error.message.includes('AbortError')));
 
       if (isAbortError) {
-        throw ErrorFactory.createTimeoutError(
-          `${method} ${endpoint}`,
-          this.timeoutMs,
-          { url }
-        );
+        throw ErrorFactory.createTimeoutError(`${method} ${endpoint}`, this.timeoutMs, { url });
       }
 
       // Handle other network errors
@@ -154,11 +151,7 @@ export class HttpClient {
       }
 
       // Fallback for unknown error types
-      throw ErrorFactory.fromUnknownError(
-        error,
-        'HTTP request failed',
-        `${method} ${endpoint}`
-      );
+      throw ErrorFactory.fromUnknownError(error, 'HTTP request failed', `${method} ${endpoint}`);
     }
   }
-} 
+}

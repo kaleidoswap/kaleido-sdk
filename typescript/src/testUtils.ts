@@ -43,4 +43,3 @@ export async function assetListResponse(
     fromAmount: firstPair.min_base_order_size || 1000,
   };
 }
-

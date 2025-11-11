@@ -1,11 +1,5 @@
-import { 
-  NetworkError, 
-  RateLimitError 
-} from '../types/exceptions';
-import { 
-  KaleidoSDKError, 
-  RetryStrategy 
-} from '../types/errors';
+import { NetworkError, RateLimitError } from '../types/exceptions';
+import { KaleidoSDKError, RetryStrategy } from '../types/errors';
 
 export interface RetryConfig {
   maxRetries: number;
@@ -26,7 +20,7 @@ export const defaultRetryConfig: RetryConfig = {
   exponentialBase: 2,
   jitter: true,
   retryOnExceptions: [NetworkError, RateLimitError],
-  respectErrorRetryConfig: true
+  respectErrorRetryConfig: true,
 };
 
 /**
@@ -60,7 +54,7 @@ export async function retry<T>(
       } else {
         // Legacy retry logic for backward compatibility
         const shouldRetry = finalConfig.retryOnExceptions.some(
-          (ExceptionClass) => error instanceof ExceptionClass
+          ExceptionClass => error instanceof ExceptionClass
         );
 
         if (!shouldRetry) {
@@ -75,11 +69,11 @@ export async function retry<T>(
 
       // Calculate delay based on error's retry strategy or config
       let delay = finalConfig.initialDelay;
-      
+
       if (error instanceof KaleidoSDKError && finalConfig.respectErrorRetryConfig) {
         const errorDelay = error.metadata.retryDelay;
         const retryStrategy = error.getRetryStrategy();
-        
+
         if (errorDelay) {
           delay = errorDelay;
         } else {
@@ -100,9 +94,7 @@ export async function retry<T>(
       }
 
       // Add jitter if enabled
-      const finalDelay = finalConfig.jitter
-        ? delay + Math.random() * delay * 0.1
-        : delay;
+      const finalDelay = finalConfig.jitter ? delay + Math.random() * delay * 0.1 : delay;
 
       await new Promise(resolve => setTimeout(resolve, finalDelay));
     }
@@ -124,16 +116,13 @@ function calculateDelayFromStrategy(
   switch (strategy) {
     case RetryStrategy.IMMEDIATE_RETRY:
       return 0;
-    
+
     case RetryStrategy.LINEAR_BACKOFF:
       return Math.min(initialDelay * (attempt + 1), maxDelay);
-    
+
     case RetryStrategy.EXPONENTIAL_BACKOFF:
-      return Math.min(
-        initialDelay * Math.pow(exponentialBase, attempt),
-        maxDelay
-      );
-    
+      return Math.min(initialDelay * Math.pow(exponentialBase, attempt), maxDelay);
+
     case RetryStrategy.NO_RETRY:
     default:
       return 0; // This shouldn't be called for NO_RETRY, but just in case
@@ -143,10 +132,8 @@ function calculateDelayFromStrategy(
 /**
  * Convenient wrapper for retry with predefined configuration
  */
-export const withRetry = <T>(
-  fn: () => Promise<T>,
-  config?: Partial<RetryConfig>
-): Promise<T> => retry(fn, config);
+export const withRetry = <T>(fn: () => Promise<T>, config?: Partial<RetryConfig>): Promise<T> =>
+  retry(fn, config);
 
 /**
  * Creates a retry wrapper for a function

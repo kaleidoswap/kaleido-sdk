@@ -73,10 +73,9 @@ describe('HttpClient', () => {
         } as Response)
       );
 
-      const result = await client.post<{ success: boolean }, { name: string }>(
-        '/test',
-        { name: 'test' }
-      );
+      const result = await client.post<{ success: boolean }, { name: string }>('/test', {
+        name: 'test',
+      });
       expect(result).toEqual({ success: true });
       expect(global.fetch).toHaveBeenCalledWith(
         'https://api.test.com/test',

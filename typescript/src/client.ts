@@ -112,14 +112,17 @@ export class KaleidoClient {
 
   constructor(config: KaleidoConfig) {
     const { nodeUrl, wsUrl, baseUrl, ...apiConfig } = config;
-    const finalBaseUrl = baseUrl || process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com/api/v1';
-    
+    const finalBaseUrl =
+      baseUrl || process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com/api/v1';
+
     this.apiClient = new HttpClient({ ...apiConfig, baseUrl: finalBaseUrl });
-    this.nodeClient = nodeUrl ? new HttpClient({
-      ...apiConfig,
-      baseUrl: nodeUrl
-    }) : null;
-    
+    this.nodeClient = nodeUrl
+      ? new HttpClient({
+          ...apiConfig,
+          baseUrl: nodeUrl,
+        })
+      : null;
+
     let wsBaseUrl: string;
     if (wsUrl) {
       wsBaseUrl = wsUrl;
@@ -128,16 +131,18 @@ export class KaleidoClient {
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
       wsBaseUrl = url.toString();
     }
-    
+
     this.wsClient = new WebSocketClient({
       ...apiConfig,
-      baseUrl: wsBaseUrl
+      baseUrl: wsBaseUrl,
     });
   }
 
   private ensureNodeClient(): void {
     if (!this.nodeClient) {
-      throw new Error('Node URL is required for this operation. Please provide nodeUrl in the client configuration.');
+      throw new Error(
+        'Node URL is required for this operation. Please provide nodeUrl in the client configuration.'
+      );
     }
   }
 
@@ -160,7 +165,7 @@ export class KaleidoClient {
     try {
       return await this.nodeClient!.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
     } catch (error) {
-      return await this.nodeClient!.post("/connectpeer", { peer_pubkey_and_addr: connectionUrl });
+      return await this.nodeClient!.post('/connectpeer', { peer_pubkey_and_addr: connectionUrl });
     }
   }
 
@@ -170,7 +175,9 @@ export class KaleidoClient {
     try {
       return await this.nodeClient!.post('/assetmetadata', { asset_id: assetId });
     } catch (error) {
-      throw new Error(`Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to get asset metadata: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -205,21 +212,19 @@ export class KaleidoClient {
     fromAmount?: number,
     toAmount?: number
   ): Promise<PairQuoteResponse> {
-    const requestBody = fromAmount ? {
+    const requestBody = fromAmount
+      ? {
           from_asset: fromAsset,
           to_asset: toAsset,
-          from_amount: fromAmount
+          from_amount: fromAmount,
         }
       : {
           from_asset: fromAsset,
           to_asset: toAsset,
-          to_amount: toAmount
+          to_amount: toAmount,
         };
 
-    return await this.apiClient.post<PairQuoteResponse>(
-      '/market/quote',
-      requestBody
-    );
+    return await this.apiClient.post<PairQuoteResponse>('/market/quote', requestBody);
   }
 
   async quoteRequestWS(
@@ -241,14 +246,14 @@ export class KaleidoClient {
             from_asset: fromAsset,
             to_asset: toAsset,
             from_amount: fromAmount,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: Math.floor(Date.now() / 1000),
           }
         : {
             action: 'quote_request',
             from_asset: fromAsset,
             to_asset: toAsset,
             to_amount: toAmount,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: Math.floor(Date.now() / 1000),
           };
 
       timeoutId = setTimeout(() => {
@@ -271,7 +276,7 @@ export class KaleidoClient {
 
       this.wsClient.on('quote_response', quoteHandler);
 
-      this.wsClient.send(quoteMessage).catch((error) => {
+      this.wsClient.send(quoteMessage).catch(error => {
         clearTimeout(timeoutId);
         this.wsClient.off('quote_response', quoteHandler);
         reject(new Error(`Failed to send quote request: ${error.message}`));
@@ -280,14 +285,12 @@ export class KaleidoClient {
   }
 
   async initMakerSwap(request: SwapRequest): Promise<SwapResponse> {
-    return await this.apiClient.post<SwapResponse>(
-      '/swaps/init',
-      {
-        rfq_id: request.rfq_id,
-        from_asset: request.from_asset,
-        to_asset: request.to_asset,
-        from_amount: request.from_amount,
-        to_amount: request.to_amount,
+    return await this.apiClient.post<SwapResponse>('/swaps/init', {
+      rfq_id: request.rfq_id,
+      from_asset: request.from_asset,
+      to_asset: request.to_asset,
+      from_amount: request.from_amount,
+      to_amount: request.to_amount,
     });
   }
 
@@ -295,21 +298,21 @@ export class KaleidoClient {
     return await this.apiClient.post<ConfirmSwapResponse>('/swaps/execute', {
       swapstring: request.swapstring,
       payment_hash: request.payment_hash,
-      taker_pubkey: request.taker_pubkey
+      taker_pubkey: request.taker_pubkey,
     });
   }
-  
+
   async whitelistTrade(swapstring: string): Promise<Record<string, never>> {
     this.ensureNodeClient();
     return await this.nodeClient!.post<Record<string, never>>('/taker', {
       swapstring,
     });
   }
-  
+
   async atomicSwapStatus(orderId: any): Promise<Swap> {
     this.ensureNodeClient();
     return await this.nodeClient!.post<Swap>(`/swaps/atomic/status`, {
-      order_id: orderId
+      order_id: orderId,
     });
   }
 
@@ -324,7 +327,7 @@ export class KaleidoClient {
 
     while (true) {
       const swap = await this.atomicSwapStatus(paymentHash);
-      
+
       // Check if swap has reached a terminal state
       if (swap.status && ['Succeeded', 'Failed', 'Expired'].includes(swap.status)) {
         return swap;
@@ -332,9 +335,7 @@ export class KaleidoClient {
 
       // Check if we've exceeded the timeout
       if (Date.now() - startTime >= timeoutMs) {
-        throw new Error(
-          `Swap ${paymentHash} did not complete within ${timeoutSeconds} seconds`
-        );
+        throw new Error(`Swap ${paymentHash} did not complete within ${timeoutSeconds} seconds`);
       }
 
       // Wait before polling again
@@ -517,7 +518,10 @@ export class KaleidoClient {
    */
   async listTransactions(request?: ListTransactionsRequest): Promise<ListTransactionsResponse> {
     this.ensureNodeClient();
-    return await this.nodeClient!.post<ListTransactionsResponse>('/listtransactions', request || {});
+    return await this.nodeClient!.post<ListTransactionsResponse>(
+      '/listtransactions',
+      request || {}
+    );
   }
 
   /**
@@ -660,7 +664,7 @@ export class KaleidoClient {
     this.ensureNodeClient();
     // For multipart/form-data, we need to use FormData
     const formData = new FormData();
-    
+
     // Convert different types to Blob for FormData
     let blob: Blob;
     if (request.file instanceof File || request.file instanceof Blob) {
@@ -673,16 +677,18 @@ export class KaleidoClient {
     } else {
       throw new Error('Unsupported file type. Expected File, Blob, ArrayBuffer, or Uint8Array');
     }
-    
+
     formData.append('file', blob);
-    
+
     const url = `${this.nodeClient!['baseUrl']}/postassetmedia`;
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
-      headers: this.nodeClient!['apiKey'] ? {
-        'Authorization': `Bearer ${this.nodeClient!['apiKey']}`
-      } : {}
+      headers: this.nodeClient!['apiKey']
+        ? {
+            Authorization: `Bearer ${this.nodeClient!['apiKey']}`,
+          }
+        : {},
     });
 
     if (!response.ok) {

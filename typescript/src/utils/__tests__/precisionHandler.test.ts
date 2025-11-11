@@ -11,7 +11,7 @@ describe('PrecisionHandler', () => {
       is_active: true,
       min_order_size: 1000, // 0.00001 BTC in atomic units
       max_order_size: 100000000, // 1 BTr in atomic units
-      trading_pairs: ['rgb:usdt123']
+      trading_pairs: ['rgb:usdt123'],
     },
     {
       asset_id: 'rgb:usdt123',
@@ -21,8 +21,8 @@ describe('PrecisionHandler', () => {
       is_active: true,
       min_order_size: 1000000, // 1 USDT in atomic units
       max_order_size: 1000000000, // 1000 USDT in atomic units
-      trading_pairs: ['BTC']
-    }
+      trading_pairs: ['BTC'],
+    },
   ];
 
   describe('toAssetAmount', () => {

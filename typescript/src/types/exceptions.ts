@@ -1,18 +1,8 @@
-import { 
-  KaleidoSDKError, 
-  ErrorCode, 
-  ErrorCategory, 
-  ErrorSeverity, 
-  ErrorMetadata 
-} from './errors';
+import { KaleidoSDKError, ErrorCode, ErrorCategory, ErrorSeverity, ErrorMetadata } from './errors';
 
 // Legacy base error for backward compatibility
 export class KaleidoError extends Error {
-  constructor(
-    message: string,
-    public statusCode?: number,
-    public response?: any
-  ) {
+  constructor(message: string, public statusCode?: number, public response?: any) {
     super(message);
     this.name = 'KaleidoError';
   }
@@ -58,13 +48,20 @@ export class RateLimitError extends KaleidoSDKError {
     metadata: ErrorMetadata = {},
     cause?: Error
   ) {
-    super(message, code, ErrorCategory.RATE_LIMITING, ErrorSeverity.MEDIUM, {
-      retryable: true,
-      retryStrategy: 'linear_backoff' as any,
-      retryDelay: 1000,
-      maxRetries: 3,
-      ...metadata
-    }, cause);
+    super(
+      message,
+      code,
+      ErrorCategory.RATE_LIMITING,
+      ErrorSeverity.MEDIUM,
+      {
+        retryable: true,
+        retryStrategy: 'linear_backoff' as any,
+        retryDelay: 1000,
+        maxRetries: 3,
+        ...metadata,
+      },
+      cause
+    );
     this.name = 'RateLimitError';
   }
 }
@@ -79,10 +76,17 @@ export class ValidationError extends KaleidoSDKError {
     metadata: ErrorMetadata = {},
     cause?: Error
   ) {
-    super(message, code, ErrorCategory.VALIDATION, ErrorSeverity.MEDIUM, {
-      retryable: false,
-      ...metadata
-    }, cause);
+    super(
+      message,
+      code,
+      ErrorCategory.VALIDATION,
+      ErrorSeverity.MEDIUM,
+      {
+        retryable: false,
+        ...metadata,
+      },
+      cause
+    );
     this.name = 'ValidationError';
   }
 }
@@ -112,11 +116,18 @@ export class TimeoutError extends KaleidoSDKError {
     metadata: ErrorMetadata = {},
     cause?: Error
   ) {
-    super(message, code, ErrorCategory.NETWORK, ErrorSeverity.MEDIUM, {
-      retryable: true,
-      retryStrategy: 'exponential_backoff' as any,
-      ...metadata
-    }, cause);
+    super(
+      message,
+      code,
+      ErrorCategory.NETWORK,
+      ErrorSeverity.MEDIUM,
+      {
+        retryable: true,
+        retryStrategy: 'exponential_backoff' as any,
+        ...metadata,
+      },
+      cause
+    );
     this.name = 'TimeoutError';
   }
 }
@@ -131,11 +142,18 @@ export class WebSocketError extends KaleidoSDKError {
     metadata: ErrorMetadata = {},
     cause?: Error
   ) {
-    super(message, code, ErrorCategory.NETWORK, ErrorSeverity.HIGH, {
-      retryable: true,
-      retryStrategy: 'exponential_backoff' as any,
-      ...metadata
-    }, cause);
+    super(
+      message,
+      code,
+      ErrorCategory.NETWORK,
+      ErrorSeverity.HIGH,
+      {
+        retryable: true,
+        retryStrategy: 'exponential_backoff' as any,
+        ...metadata,
+      },
+      cause
+    );
     this.name = 'WebSocketError';
   }
 }
@@ -213,30 +231,50 @@ export class HttpError extends KaleidoSDKError {
   ) {
     const errorCode = code || HttpError.getErrorCodeFromStatusCode(statusCode);
     const severity = statusCode >= 500 ? ErrorSeverity.HIGH : ErrorSeverity.MEDIUM;
-    
-    super(message, errorCode, ErrorCategory.HTTP, severity, {
-      statusCode,
-      retryable: statusCode >= 500 || statusCode === 429,
-      ...metadata
-    }, cause);
+
+    super(
+      message,
+      errorCode,
+      ErrorCategory.HTTP,
+      severity,
+      {
+        statusCode,
+        retryable: statusCode >= 500 || statusCode === 429,
+        ...metadata,
+      },
+      cause
+    );
     this.name = 'HttpError';
   }
 
   private static getErrorCodeFromStatusCode(statusCode: number): ErrorCode {
     switch (statusCode) {
-      case 400: return ErrorCode.HTTP_BAD_REQUEST;
-      case 401: return ErrorCode.HTTP_UNAUTHORIZED;
-      case 403: return ErrorCode.HTTP_FORBIDDEN;
-      case 404: return ErrorCode.HTTP_NOT_FOUND;
-      case 405: return ErrorCode.HTTP_METHOD_NOT_ALLOWED;
-      case 409: return ErrorCode.HTTP_CONFLICT;
-      case 422: return ErrorCode.HTTP_UNPROCESSABLE_ENTITY;
-      case 429: return ErrorCode.HTTP_TOO_MANY_REQUESTS;
-      case 500: return ErrorCode.HTTP_INTERNAL_SERVER_ERROR;
-      case 502: return ErrorCode.HTTP_BAD_GATEWAY;
-      case 503: return ErrorCode.HTTP_SERVICE_UNAVAILABLE;
-      case 504: return ErrorCode.HTTP_GATEWAY_TIMEOUT;
-      default: return ErrorCode.UNKNOWN_ERROR;
+      case 400:
+        return ErrorCode.HTTP_BAD_REQUEST;
+      case 401:
+        return ErrorCode.HTTP_UNAUTHORIZED;
+      case 403:
+        return ErrorCode.HTTP_FORBIDDEN;
+      case 404:
+        return ErrorCode.HTTP_NOT_FOUND;
+      case 405:
+        return ErrorCode.HTTP_METHOD_NOT_ALLOWED;
+      case 409:
+        return ErrorCode.HTTP_CONFLICT;
+      case 422:
+        return ErrorCode.HTTP_UNPROCESSABLE_ENTITY;
+      case 429:
+        return ErrorCode.HTTP_TOO_MANY_REQUESTS;
+      case 500:
+        return ErrorCode.HTTP_INTERNAL_SERVER_ERROR;
+      case 502:
+        return ErrorCode.HTTP_BAD_GATEWAY;
+      case 503:
+        return ErrorCode.HTTP_SERVICE_UNAVAILABLE;
+      case 504:
+        return ErrorCode.HTTP_GATEWAY_TIMEOUT;
+      default:
+        return ErrorCode.UNKNOWN_ERROR;
     }
   }
 }
@@ -251,10 +289,17 @@ export class ConfigurationError extends KaleidoSDKError {
     metadata: ErrorMetadata = {},
     cause?: Error
   ) {
-    super(message, code, ErrorCategory.CONFIGURATION, ErrorSeverity.HIGH, {
-      retryable: false,
-      ...metadata
-    }, cause);
+    super(
+      message,
+      code,
+      ErrorCategory.CONFIGURATION,
+      ErrorSeverity.HIGH,
+      {
+        retryable: false,
+        ...metadata,
+      },
+      cause
+    );
     this.name = 'ConfigurationError';
   }
-} 
+}

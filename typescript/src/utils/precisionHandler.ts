@@ -43,7 +43,10 @@ export class PrecisionHandler {
     return assetDecimalAmount.toFixed(assetPrecision);
   }
 
-  validateOrderSize(assetDecimalAmount: number, asset: MappedAsset): {
+  validateOrderSize(
+    assetDecimalAmount: number,
+    asset: MappedAsset
+  ): {
     valid: boolean;
     error?: string;
     assetAmount: number;
@@ -60,7 +63,7 @@ export class PrecisionHandler {
         error: `Amount ${assetDecimalAmount} ${asset.ticker} is below minimum order size of ${assetMinDecimalAmount} ${asset.ticker}`,
         assetAmount,
         assetMinAmount: asset.min_order_size,
-        assetMaxAmount: asset.max_order_size
+        assetMaxAmount: asset.max_order_size,
       };
     }
 
@@ -70,7 +73,7 @@ export class PrecisionHandler {
         error: `Amount ${assetDecimalAmount} ${asset.ticker} is above maximum order size of ${assetMaxDecimalAmount} ${asset.ticker}`,
         assetAmount,
         assetMinAmount: asset.min_order_size,
-        assetMaxAmount: asset.max_order_size
+        assetMaxAmount: asset.max_order_size,
       };
     }
 
@@ -78,7 +81,7 @@ export class PrecisionHandler {
       valid: true,
       assetAmount,
       assetMinAmount: asset.min_order_size,
-      assetMaxAmount: asset.max_order_size
+      assetMaxAmount: asset.max_order_size,
     };
   }
 
@@ -94,7 +97,7 @@ export class PrecisionHandler {
       assetMaxDecimalAmount: this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id),
       assetMinAmount: asset.min_order_size,
       assetMaxAmount: asset.max_order_size,
-      assetPrecision: asset.precision
+      assetPrecision: asset.precision,
     };
   }
 }

@@ -17,7 +17,7 @@ describe('HttpClient integration', () => {
 
   const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     const chunks: Buffer[] = [];
-    req.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+    req.on('data', chunk => chunks.push(Buffer.from(chunk)));
     req.on('end', () => {
       lastRequest = {
         url: req.url || undefined,
@@ -35,7 +35,12 @@ describe('HttpClient integration', () => {
 
         case '/echo': {
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ method: req.method, body: lastRequest.body ? JSON.parse(lastRequest.body) : null }));
+          res.end(
+            JSON.stringify({
+              method: req.method,
+              body: lastRequest.body ? JSON.parse(lastRequest.body) : null,
+            })
+          );
           break;
         }
 
@@ -68,7 +73,7 @@ describe('HttpClient integration', () => {
   });
 
   beforeAll(async () => {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       server.listen(0, '127.0.0.1', () => resolve());
     });
 
@@ -77,7 +82,7 @@ describe('HttpClient integration', () => {
   });
 
   afterAll(async () => {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       server.close(() => resolve());
     });
   });
@@ -117,4 +122,3 @@ describe('HttpClient integration', () => {
     await expect(shortTimeoutClient.get('/slow')).rejects.toThrow('timed out after 100ms');
   });
 });
-

@@ -1,4 +1,4 @@
-.PHONY: help build test clean deploy-npm deploy-pip deploy-all version-bump-npm version-bump-pip version-bump-all
+.PHONY: help build test clean format lint lint-fix format-lint deploy-npm deploy-pip deploy-all version-bump-npm version-bump-pip version-bump-all
 
 # Default target
 help:
@@ -15,6 +15,18 @@ help:
 	@echo "  clean             - Clean build artifacts for both SDKs"
 	@echo "  clean-npm         - Clean TypeScript SDK build artifacts"
 	@echo "  clean-pip         - Clean Python SDK build artifacts"
+	@echo "  format            - Format code for all SDKs"
+	@echo "  format-npm        - Format TypeScript SDK code"
+	@echo "  format-pip        - Format Python SDK code"
+	@echo "  format-rust       - Format Rust SDK code"
+	@echo "  lint              - Lint code for all SDKs"
+	@echo "  lint-npm          - Lint TypeScript SDK code"
+	@echo "  lint-pip          - Lint Python SDK code"
+	@echo "  lint-rust         - Lint Rust SDK code"
+	@echo "  lint-fix          - Lint and auto-fix issues for all SDKs"
+	@echo "  lint-fix-npm      - Lint and auto-fix TypeScript SDK code"
+	@echo "  lint-fix-pip      - Lint and auto-fix Python SDK code"
+	@echo "  format-lint       - Format and lint all SDKs"
 	@echo "  deploy-npm        - Deploy TypeScript SDK to npm (dry-run)"
 	@echo "  deploy-npm-publish - Deploy TypeScript SDK to npm (publish)"
 	@echo "  deploy-pip        - Deploy Python SDK to PyPI (dry-run)"
@@ -36,6 +48,7 @@ help:
 # Directories
 TYPESCRIPT_DIR := typescript
 PYTHON_DIR := python
+RUST_DIR := rust
 SCRIPTS_DIR := scripts
 
 # Build targets
@@ -80,6 +93,81 @@ clean-npm:
 clean-pip:
 	@echo "🧹 Cleaning Python SDK build artifacts..."
 	cd $(PYTHON_DIR) && rm -rf dist build *.egg-info
+
+# Format targets
+format: format-npm format-pip format-rust
+
+format-npm:
+	@echo "✨ Formatting TypeScript SDK..."
+	cd $(TYPESCRIPT_DIR) && npm ci && npm run format
+
+format-pip:
+	@echo "✨ Formatting Python SDK..."
+	cd $(PYTHON_DIR) && \
+		if [ -f uv.lock ]; then \
+			uv sync --frozen --extra dev && \
+			uv run ruff format . && \
+			uv run black .; \
+		else \
+			uv sync --extra dev && \
+			uv run ruff format . && \
+			uv run black .; \
+		fi
+
+format-rust:
+	@echo "✨ Formatting Rust SDK..."
+	cd $(RUST_DIR) && cargo fmt
+
+# Lint targets
+lint: lint-npm lint-pip lint-rust
+
+lint-npm:
+	@echo "🔍 Linting TypeScript SDK..."
+	cd $(TYPESCRIPT_DIR) && npm ci && npm run lint && npm run format:check
+
+lint-pip:
+	@echo "🔍 Linting Python SDK..."
+	cd $(PYTHON_DIR) && \
+		if [ -f uv.lock ]; then \
+			uv sync --frozen --extra dev && \
+			uv run ruff check . && \
+			uv run ruff format --check . && \
+			uv run black --check .; \
+		else \
+			uv sync --extra dev && \
+			uv run ruff check . && \
+			uv run ruff format --check . && \
+			uv run black --check .; \
+		fi
+
+lint-rust:
+	@echo "🔍 Linting Rust SDK..."
+	cd $(RUST_DIR) && cargo fmt -- --check && cargo clippy --all-targets -- -D warnings
+
+# Lint and fix targets
+lint-fix: lint-fix-npm lint-fix-pip
+
+lint-fix-npm:
+	@echo "🔧 Linting and fixing TypeScript SDK..."
+	cd $(TYPESCRIPT_DIR) && npm ci && npm run lint:fix && npm run format
+
+lint-fix-pip:
+	@echo "🔧 Linting and fixing Python SDK..."
+	cd $(PYTHON_DIR) && \
+		if [ -f uv.lock ]; then \
+			uv sync --frozen --extra dev && \
+			uv run ruff check --fix . && \
+			uv run ruff format . && \
+			uv run black .; \
+		else \
+			uv sync --extra dev && \
+			uv run ruff check --fix . && \
+			uv run ruff format . && \
+			uv run black .; \
+		fi
+
+# Format and lint targets
+format-lint: format lint
 
 # Deployment targets (dry-run)
 deploy-npm:

@@ -38,12 +38,12 @@ export {
   ErrorSeverity,
   ErrorCategory,
   RetryStrategy,
-  
+
   // Base error class
   KaleidoSDKError,
-  
+
   // Error metadata interface
-  type ErrorMetadata
+  type ErrorMetadata,
 } from './types/errors';
 
 // Error factory
@@ -53,7 +53,7 @@ export { ErrorFactory } from './types/errorFactory';
 export {
   // Legacy base error (for backward compatibility)
   KaleidoError,
-  
+
   // Specific error types
   NetworkError,
   AuthenticationError,
@@ -67,16 +67,12 @@ export {
   QuoteError,
   NodeError,
   HttpError,
-  ConfigurationError
+  ConfigurationError,
 } from './types/exceptions';
 
 // WebSocket
 export { WebSocketClient } from './websocket/client';
-export type {
-  WebSocketConfig,
-  WebSocketMessage,
-  MessageHandler
-} from './websocket/client';
+export type { WebSocketConfig, WebSocketMessage, MessageHandler } from './websocket/client';
 
 // HTTP
 export { HttpClient } from './http/client';
@@ -87,10 +83,10 @@ export { retry, withRetry, createRetryWrapper } from './utils/retry';
 export type { RetryConfig } from './utils/retry';
 export { AssetPairMapper, createAssetPairMapper } from './utils/assetPairMapper';
 export type { MappedAsset } from './utils/assetPairMapper';
-export { PrecisionHandler, createPrecisionHandler } from './utils/precisionHandler'; 
+export { PrecisionHandler, createPrecisionHandler } from './utils/precisionHandler';
 
 // Orders
 export enum OrderSettlement {
-  LIGHTNING = "LIGHTNING",
-  ONCHAIN = "ONCHAIN"
+  LIGHTNING = 'LIGHTNING',
+  ONCHAIN = 'ONCHAIN',
 }

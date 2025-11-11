@@ -1,10 +1,10 @@
-import { 
+import {
   KaleidoSDKError,
-  ErrorCode, 
-  ErrorCategory, 
-  ErrorSeverity, 
+  ErrorCode,
+  ErrorCategory,
+  ErrorSeverity,
   ErrorMetadata,
-  RetryStrategy
+  RetryStrategy,
 } from './errors';
 import {
   NetworkError,
@@ -19,7 +19,7 @@ import {
   QuoteError,
   NodeError,
   HttpError,
-  ConfigurationError
+  ConfigurationError,
 } from './exceptions';
 
 /**
@@ -41,7 +41,7 @@ export class ErrorFactory {
       response: responseText,
       requestData,
       requestId,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     let message = `HTTP ${statusCode}: ${response.statusText}`;
@@ -57,30 +57,14 @@ export class ErrorFactory {
     // Map specific HTTP status codes to appropriate error types
     switch (statusCode) {
       case 401:
-        return new AuthenticationError(
-          message,
-          ErrorCode.AUTH_INVALID_API_KEY,
-          metadata
-        );
+        return new AuthenticationError(message, ErrorCode.AUTH_INVALID_API_KEY, metadata);
       case 403:
-        return new AuthenticationError(
-          message,
-          ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS,
-          metadata
-        );
+        return new AuthenticationError(message, ErrorCode.AUTH_INSUFFICIENT_PERMISSIONS, metadata);
       case 429:
-        return new RateLimitError(
-          message,
-          ErrorCode.RATE_LIMIT_EXCEEDED,
-          metadata
-        );
+        return new RateLimitError(message, ErrorCode.RATE_LIMIT_EXCEEDED, metadata);
       case 400:
       case 422:
-        return new ValidationError(
-          message,
-          ErrorCode.VALIDATION_INVALID_FORMAT,
-          metadata
-        );
+        return new ValidationError(message, ErrorCode.VALIDATION_INVALID_FORMAT, metadata);
       default:
         return new HttpError(message, statusCode, undefined, metadata);
     }
@@ -89,17 +73,13 @@ export class ErrorFactory {
   /**
    * Create an error from a fetch/network error
    */
-  static fromNetworkError(
-    error: Error,
-    requestData?: any,
-    requestId?: string
-  ): NetworkError {
+  static fromNetworkError(error: Error, requestData?: any, requestId?: string): NetworkError {
     const metadata: ErrorMetadata = {
       requestData,
       requestId,
       timestamp: new Date(),
       retryable: true,
-      retryStrategy: RetryStrategy.EXPONENTIAL_BACKOFF
+      retryStrategy: RetryStrategy.EXPONENTIAL_BACKOFF,
     };
 
     let code = ErrorCode.NETWORK_UNREACHABLE;
@@ -126,17 +106,14 @@ export class ErrorFactory {
   /**
    * Create an error from a WebSocket error
    */
-  static fromWebSocketError(
-    error: Error | Event,
-    context?: string
-  ): WebSocketError {
+  static fromWebSocketError(error: Error | Event, context?: string): WebSocketError {
     const metadata: ErrorMetadata = {
       context: { websocketContext: context },
       timestamp: new Date(),
       retryable: true,
       retryStrategy: RetryStrategy.EXPONENTIAL_BACKOFF,
       retryDelay: 1000,
-      maxRetries: 5
+      maxRetries: 5,
     };
 
     let code = ErrorCode.WEBSOCKET_CONNECTION_FAILED;
@@ -155,12 +132,7 @@ export class ErrorFactory {
       }
     }
 
-    return new WebSocketError(
-      message,
-      code,
-      metadata,
-      error instanceof Error ? error : undefined
-    );
+    return new WebSocketError(message, code, metadata, error instanceof Error ? error : undefined);
   }
 
   /**
@@ -178,15 +150,15 @@ export class ErrorFactory {
         field,
         value,
         reason,
-        requestData
+        requestData,
       },
       timestamp: new Date(),
       retryable: false,
       recoveryActions: [
         `Check the '${field}' field value`,
         'Refer to API documentation for valid formats',
-        'Contact support if the issue persists'
-      ]
+        'Contact support if the issue persists',
+      ],
     };
 
     let code = ErrorCode.VALIDATION_INVALID_FORMAT;
@@ -202,24 +174,22 @@ export class ErrorFactory {
   /**
    * Create an asset-related error
    */
-  static createAssetError(
-    assetId: string,
-    operation: string,
-    reason?: string
-  ): AssetError {
-    const message = `Asset error for '${assetId}' during ${operation}${reason ? ': ' + reason : ''}`;
+  static createAssetError(assetId: string, operation: string, reason?: string): AssetError {
+    const message = `Asset error for '${assetId}' during ${operation}${
+      reason ? ': ' + reason : ''
+    }`;
     const metadata: ErrorMetadata = {
       context: {
         assetId,
         operation,
-        reason
+        reason,
       },
       timestamp: new Date(),
       recoveryActions: [
         'Verify the asset ID is correct',
         'Check if the asset is supported',
-        'Try refreshing asset data'
-      ]
+        'Try refreshing asset data',
+      ],
     };
 
     let code = ErrorCode.ASSET_NOT_FOUND;
@@ -240,21 +210,23 @@ export class ErrorFactory {
     reason?: string
   ): PairError {
     const pairName = `${baseAsset}/${quoteAsset}`;
-    const message = `Pair error for '${pairName}' during ${operation}${reason ? ': ' + reason : ''}`;
+    const message = `Pair error for '${pairName}' during ${operation}${
+      reason ? ': ' + reason : ''
+    }`;
     const metadata: ErrorMetadata = {
       context: {
         baseAsset,
         quoteAsset,
         pairName,
         operation,
-        reason
+        reason,
       },
       timestamp: new Date(),
       recoveryActions: [
         'Verify both asset IDs are correct',
         'Check if the trading pair is supported',
-        'Try a different trading pair'
-      ]
+        'Try a different trading pair',
+      ],
     };
 
     let code = ErrorCode.PAIR_NOT_FOUND;
@@ -268,25 +240,20 @@ export class ErrorFactory {
   /**
    * Create a quote-related error
    */
-  static createQuoteError(
-    quoteId: string | undefined,
-    reason: string
-  ): QuoteError {
-    const message = quoteId 
-      ? `Quote error for '${quoteId}': ${reason}`
-      : `Quote error: ${reason}`;
-    
+  static createQuoteError(quoteId: string | undefined, reason: string): QuoteError {
+    const message = quoteId ? `Quote error for '${quoteId}': ${reason}` : `Quote error: ${reason}`;
+
     const metadata: ErrorMetadata = {
       context: {
         quoteId,
-        reason
+        reason,
       },
       timestamp: new Date(),
       recoveryActions: [
         'Request a new quote',
         'Check if the quote parameters are valid',
-        'Verify sufficient liquidity exists'
-      ]
+        'Verify sufficient liquidity exists',
+      ],
     };
 
     let code = ErrorCode.QUOTE_NOT_FOUND;
@@ -315,15 +282,15 @@ export class ErrorFactory {
         operation,
         reason,
         swapId,
-        ...additionalContext
+        ...additionalContext,
       },
       timestamp: new Date(),
       recoveryActions: [
         'Check swap parameters',
         'Verify sufficient balance',
         'Request a new quote if expired',
-        'Contact support if issue persists'
-      ]
+        'Contact support if issue persists',
+      ],
     };
 
     let code = ErrorCode.SWAP_FAILED;
@@ -343,11 +310,7 @@ export class ErrorFactory {
   /**
    * Create a Lightning Network error
    */
-  static createNodeError(
-    operation: string,
-    reason: string,
-    nodeId?: string
-  ): NodeError {
+  static createNodeError(operation: string, reason: string, nodeId?: string): NodeError {
     const message = nodeId
       ? `Lightning node error for '${nodeId}' during ${operation}: ${reason}`
       : `Lightning node error during ${operation}: ${reason}`;
@@ -356,15 +319,15 @@ export class ErrorFactory {
       context: {
         operation,
         reason,
-        nodeId
+        nodeId,
       },
       timestamp: new Date(),
       recoveryActions: [
         'Check Lightning node connectivity',
         'Verify node configuration',
         'Check channel capacity',
-        'Contact support if issue persists'
-      ]
+        'Contact support if issue persists',
+      ],
     };
 
     let code = ErrorCode.LN_NODE_UNREACHABLE;
@@ -394,7 +357,7 @@ export class ErrorFactory {
       context: {
         operation,
         timeoutMs,
-        ...context
+        ...context,
       },
       timestamp: new Date(),
       retryable: true,
@@ -402,8 +365,8 @@ export class ErrorFactory {
       recoveryActions: [
         'Try again with a longer timeout',
         'Check network connectivity',
-        'Verify server status'
-      ]
+        'Verify server status',
+      ],
     };
 
     return new TimeoutError(message, ErrorCode.OPERATION_TIMEOUT, metadata);
@@ -412,25 +375,21 @@ export class ErrorFactory {
   /**
    * Create a configuration error
    */
-  static createConfigError(
-    field: string,
-    reason: string,
-    providedValue?: any
-  ): ConfigurationError {
+  static createConfigError(field: string, reason: string, providedValue?: any): ConfigurationError {
     const message = `Configuration error for '${field}': ${reason}`;
     const metadata: ErrorMetadata = {
       context: {
         field,
         reason,
-        providedValue
+        providedValue,
       },
       timestamp: new Date(),
       retryable: false,
       recoveryActions: [
         `Check the '${field}' configuration`,
         'Refer to documentation for valid values',
-        'Contact support if issue persists'
-      ]
+        'Contact support if issue persists',
+      ],
     };
 
     let code = ErrorCode.CONFIG_MISSING_REQUIRED_FIELD;
@@ -444,19 +403,15 @@ export class ErrorFactory {
   /**
    * Wrap an unknown error into the SDK error system
    */
-  static fromUnknownError(
-    error: unknown,
-    context?: string,
-    operation?: string
-  ): KaleidoSDKError {
+  static fromUnknownError(error: unknown, context?: string, operation?: string): KaleidoSDKError {
     const metadata: ErrorMetadata = {
       context: { operation, errorContext: context },
       timestamp: new Date(),
       recoveryActions: [
         'Try the operation again',
         'Check input parameters',
-        'Contact support if issue persists'
-      ]
+        'Contact support if issue persists',
+      ],
     };
 
     if (error instanceof KaleidoSDKError) {
@@ -464,10 +419,8 @@ export class ErrorFactory {
     }
 
     if (error instanceof Error) {
-      const message = context 
-        ? `${context}: ${error.message}`
-        : error.message;
-      
+      const message = context ? `${context}: ${error.message}` : error.message;
+
       return new KaleidoSDKError(
         message,
         ErrorCode.UNKNOWN_ERROR,
@@ -478,9 +431,7 @@ export class ErrorFactory {
       );
     }
 
-    const message = context
-      ? `${context}: ${String(error)}`
-      : `Unknown error: ${String(error)}`;
+    const message = context ? `${context}: ${String(error)}` : `Unknown error: ${String(error)}`;
 
     return new KaleidoSDKError(
       message,

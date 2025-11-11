@@ -2,6 +2,7 @@
 # This pipeline handles building and publishing the SDK to npm and PyPI on tag creation
 
 stages:
+  - lint
   - build
   - test
   - deploy
@@ -9,6 +10,7 @@ stages:
 variables:
   NODE_VERSION: "18"
   PYTHON_VERSION: "3.11"
+  RUST_VERSION: "1.75"
 
 # Default tags for runners
 default:
@@ -24,16 +26,55 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "dev"
     - when: never
 
-# Build TypeScript SDK
-build:npm:
-  stage: build
+# Lint TypeScript SDK
+lint:npm:
+  stage: lint
   image: node:${NODE_VERSION}
   script:
     - cd typescript
     - npm ci
-    - npm run build
     - npm run lint
     - npm run format:check
+  allow_failure: false
+
+# Lint Python SDK
+lint:pip:
+  stage: lint
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  script:
+    - cd python
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen --extra dev
+      else
+        uv sync --extra dev
+      fi
+    - uv run ruff check .
+    - uv run ruff format --check .
+    - uv run black --check .
+  allow_failure: false
+
+# Lint Rust SDK
+lint:rust:
+  stage: lint
+  image: rust:${RUST_VERSION}
+  script:
+    - cd rust
+    - rustup component add rustfmt clippy
+    - cargo fmt -- --check
+    - cargo clippy --all-targets -- -D warnings
+  allow_failure: false
+
+# Build TypeScript SDK
+build:npm:
+  stage: build
+  image: node:${NODE_VERSION}
+  needs:
+    - job: lint:npm
+  script:
+    - cd typescript
+    - npm ci
+    - npm run build
   artifacts:
     paths:
       - typescript/dist
@@ -43,6 +84,8 @@ build:npm:
 build:pip:
   stage: build
   image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  needs:
+    - job: lint:pip
   script:
     - cd python
     - |
