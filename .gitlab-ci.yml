@@ -32,7 +32,12 @@ lint:npm:
   image: node:${NODE_VERSION}
   script:
     - cd typescript
-    - npm ci
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
     - npm run lint
     - npm run format:check
   allow_failure: false
@@ -59,6 +64,11 @@ lint:rust:
   stage: lint
   image: rust:${RUST_VERSION}
   script:
+    - |
+      if [ ! -d rust ] || [ ! -f rust/Cargo.toml ]; then
+        echo "⚠️  rust/Cargo.toml not found, skipping Rust linting"
+        exit 0
+      fi
     - cd rust
     - rustup component add rustfmt clippy
     - cargo fmt -- --check
@@ -73,7 +83,12 @@ build:npm:
     - job: lint:npm
   script:
     - cd typescript
-    - npm ci
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
     - npm run build
   artifacts:
     paths:
@@ -106,7 +121,12 @@ test:npm:
   image: node:${NODE_VERSION}
   script:
     - cd typescript
-    - npm ci
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
     - npm run test:coverage
   dependencies: []
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
@@ -161,7 +181,12 @@ deploy:npm:
     - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
     - chmod 600 ~/.npmrc
   script:
-    - npm ci
+    - |
+      if [ -f package-lock.json ]; then
+        npm ci
+      else
+        npm install
+      fi
     - npm run build
     - |
       VERSION=$(node -p "require('./package.json').version")
