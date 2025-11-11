@@ -31,6 +31,11 @@ lint:npm:
   stage: lint
   image: node:${NODE_VERSION}
   script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript linting"
+        exit 0
+      fi
     - cd typescript
     - |
       if [ -f package-lock.json ]; then
@@ -82,6 +87,11 @@ build:npm:
   needs:
     - job: lint:npm
   script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript build"
+        exit 0
+      fi
     - cd typescript
     - |
       if [ -f package-lock.json ]; then
@@ -120,6 +130,11 @@ test:npm:
   stage: test
   image: node:${NODE_VERSION}
   script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript tests"
+        exit 0
+      fi
     - cd typescript
     - |
       if [ -f package-lock.json ]; then
@@ -172,6 +187,11 @@ deploy:npm:
       artifacts: true
     - job: test:npm
   before_script:
+    - |
+      if [ ! -d typescript ] || [ ! -f typescript/package.json ]; then
+        echo "⚠️  typescript/package.json not found, skipping TypeScript deployment"
+        exit 0
+      fi
     - cd typescript
     - |
       if [ -z "$NPM_TOKEN" ]; then
