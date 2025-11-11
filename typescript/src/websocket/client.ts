@@ -2,9 +2,10 @@ import { ErrorFactory } from '../types/errorFactory';
 import WebSocket, { MessageEvent as WSMessageEvent } from 'ws';
 
 // Debug logging helper
-const debug = (...args: any[]) => {
+const debug = (...args: unknown[]): void => {
   if (process.env.DEBUG_WS) {
-    console.log('[WebSocket]', ...args);
+    // eslint-disable-next-line no-console
+    console.log('[WebSocket]', ...(args as string[]));
   }
 };
 
@@ -82,7 +83,9 @@ export class WebSocketClient {
     // Set up headers
     // eslint-disable-next-line @typescript-eslint/naming-convention
     this.headers = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       'Content-Type': 'application/json',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       Accept: 'application/json',
     };
 
