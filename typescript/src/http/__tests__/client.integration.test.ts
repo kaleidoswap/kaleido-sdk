@@ -17,7 +17,7 @@ describe('HttpClient integration', () => {
 
   const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     const chunks: Buffer[] = [];
-    req.on('data', chunk => chunks.push(Buffer.from(chunk)));
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
     req.on('end', () => {
       lastRequest = {
         url: req.url || undefined,
@@ -28,12 +28,14 @@ describe('HttpClient integration', () => {
 
       switch (req.url) {
         case '/success': {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: true }));
           break;
         }
 
         case '/echo': {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(
             JSON.stringify({
@@ -45,12 +47,14 @@ describe('HttpClient integration', () => {
         }
 
         case '/bad-request': {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ detail: 'invalid payload' }));
           break;
         }
 
         case '/invalid-json': {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end('not-json');
           break;
@@ -58,6 +62,7 @@ describe('HttpClient integration', () => {
 
         case '/slow': {
           setTimeout(() => {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ ok: true }));
           }, 150);
@@ -65,6 +70,7 @@ describe('HttpClient integration', () => {
         }
 
         default: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           res.writeHead(404, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ detail: 'not found' }));
         }

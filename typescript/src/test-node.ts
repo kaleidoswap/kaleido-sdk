@@ -1,6 +1,6 @@
 import { KaleidoClient } from './client';
 
-async function testNodeInfo() {
+async function testNodeInfo(): Promise<void> {
   const client = new KaleidoClient({
     nodeUrl: 'http://localhost:8000',
     baseUrl: 'http://localhost:3001',
@@ -17,4 +17,4 @@ async function testNodeInfo() {
   }
 }
 
-testNodeInfo();
+void testNodeInfo();

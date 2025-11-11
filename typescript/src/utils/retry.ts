@@ -54,7 +54,7 @@ export async function retry<T>(
       } else {
         // Legacy retry logic for backward compatibility
         const shouldRetry = finalConfig.retryOnExceptions.some(
-          ExceptionClass => error instanceof ExceptionClass
+          exceptionClass => error instanceof exceptionClass
         );
 
         if (!shouldRetry) {

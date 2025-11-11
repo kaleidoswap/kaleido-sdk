@@ -53,7 +53,9 @@ export class HttpClient {
    */
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       'Content-Type': 'application/json',
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       Accept: 'application/json',
     };
 

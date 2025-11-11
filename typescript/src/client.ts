@@ -238,8 +238,6 @@ export class KaleidoClient {
     }
 
     return new Promise<PairQuoteResponse>((resolve, reject) => {
-      let timeoutId: NodeJS.Timeout;
-
       const quoteMessage = fromAmount
         ? {
             action: 'quote_request',
@@ -256,21 +254,21 @@ export class KaleidoClient {
             timestamp: Math.floor(Date.now() / 1000),
           };
 
-      timeoutId = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         this.wsClient.off('quote_response', quoteHandler);
         reject(new Error('Quote request timed out'));
       }, 30000);
 
-      const quoteHandler = (response: any) => {
+      const quoteHandler = (response: { error?: { message?: string }; data?: PairQuoteResponse } | PairQuoteResponse) => {
         clearTimeout(timeoutId);
         this.wsClient.off('quote_response', quoteHandler);
 
-        if (response.error) {
+        if ('error' in response && response.error) {
           reject(new Error(response.error.message || 'Failed to get quote'));
-        } else if (response.data) {
+        } else if ('data' in response && response.data) {
           resolve(response.data);
         } else {
-          resolve(response);
+          resolve(response as PairQuoteResponse);
         }
       };
 
@@ -325,6 +323,7 @@ export class KaleidoClient {
     const timeoutMs = timeoutSeconds * 1000;
     const pollIntervalMs = pollIntervalSeconds * 1000;
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const swap = await this.atomicSwapStatus(paymentHash);
 
@@ -686,6 +685,7 @@ export class KaleidoClient {
       body: formData,
       headers: this.nodeClient!['apiKey']
         ? {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             Authorization: `Bearer ${this.nodeClient!['apiKey']}`,
           }
         : {},

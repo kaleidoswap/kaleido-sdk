@@ -175,7 +175,7 @@ export class KaleidoSDKError extends Error {
     this.severity = severity;
     this.metadata = {
       timestamp: new Date(),
-      ...metadata,
+      ...(metadata as Record<string, unknown>),
     };
     this.cause = cause;
 

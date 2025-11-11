@@ -5,7 +5,6 @@ import time
 import pytest
 from kaleidoswap_sdk.client import KaleidoClient
 from kaleidoswap_sdk.models import (
-    ChannelFees,
     ConnectPeerRequest,
     CreateOrderRequest,
     CreateSwapOrderRequest,

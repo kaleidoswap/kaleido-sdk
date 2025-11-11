@@ -80,6 +80,7 @@ export class WebSocketClient {
     this.maxReconnectAttempts = config.maxReconnectAttempts || 5;
 
     // Set up headers
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     this.headers = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -235,7 +236,7 @@ export class WebSocketClient {
 
   private stopPing(): void {
     if (this.pingTimer) {
-      clearInterval(this.pingTimer as NodeJS.Timeout);
+      clearInterval(this.pingTimer);
       this.pingTimer = null;
     }
   }
@@ -246,12 +247,22 @@ export class WebSocketClient {
    */
   private handleMessage(event: WSMessageEvent): void {
     try {
-      const data = event.data.toString();
+      let data: string;
+      if (typeof event.data === 'string') {
+        data = event.data;
+      } else if (event.data instanceof ArrayBuffer) {
+        data = new TextDecoder().decode(event.data);
+      } else if (event.data instanceof Blob) {
+        // For Blob, we'd need async handling, but for WebSocket messages it should be string
+        data = String(event.data);
+      } else {
+        data = String(event.data);
+      }
       if (process.env.DEBUG_WS) {
         debug('Received message:', data);
       }
 
-      const message = JSON.parse(data);
+      const message = JSON.parse(data) as { action: string; data: unknown };
       this.emit(message.action, message.data);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
