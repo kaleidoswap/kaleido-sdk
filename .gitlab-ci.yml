@@ -15,10 +15,13 @@ default:
   tags:
     - linux-runner
 
-# Workflow rules: Only run on tags
+# Workflow rules: Run on tags, merge requests, and main/dev branches
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
     - when: never
 
 # Build TypeScript SDK
@@ -29,12 +32,12 @@ build:npm:
     - cd typescript
     - npm ci
     - npm run build
+    - npm run lint
+    - npm run format:check
   artifacts:
     paths:
       - typescript/dist
     expire_in: 1 hour
-  only:
-    - tags
 
 # Build Python SDK
 build:pip:
@@ -42,14 +45,17 @@ build:pip:
   image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
   script:
     - cd python
-    - uv sync --frozen
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen --extra dev
+      else
+        uv sync --extra dev
+      fi
     - uv build
   artifacts:
     paths:
       - python/dist
     expire_in: 1 hour
-  only:
-    - tags
 
 # Test TypeScript SDK
 test:npm:
@@ -58,10 +64,17 @@ test:npm:
   script:
     - cd typescript
     - npm ci
-    - npm test
+    - npm run test:coverage
   dependencies: []
-  only:
-    - tags
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: typescript/coverage/cobertura-coverage.xml
+    paths:
+      - typescript/coverage
+    expire_in: 1 week
 
 # Test Python SDK
 test:pip:
@@ -69,11 +82,23 @@ test:pip:
   image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
   script:
     - cd python
-    - uv sync --frozen
-    - uv run pytest tests/
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen --extra dev
+      else
+        uv sync --extra dev
+      fi
+    - uv run pytest tests/ --cov=kaleidoswap_sdk --cov-report=xml --cov-report=html --cov-report=term
   dependencies: []
-  only:
-    - tags
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: python/coverage.xml
+    paths:
+      - python/htmlcov
+    expire_in: 1 week
 
 # Deploy TypeScript SDK to npm
 deploy:npm:
@@ -138,7 +163,12 @@ deploy:pip:
         exit 1
       fi
   script:
-    - uv sync --frozen
+    - |
+      if [ -f uv.lock ]; then
+        uv sync --frozen
+      else
+        uv sync
+      fi
     - uv build
     - |
       VERSION=$(grep -E '^version\s*=' pyproject.toml | sed -E 's/^version\s*=\s*"([^"]+)".*/\1/')

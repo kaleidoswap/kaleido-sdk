@@ -1,5 +1,5 @@
 import { createPrecisionHandler } from '../precisionHandler';
-import { MappedAsset } from '../../index';
+import { MappedAsset } from '../assetPairMapper';
 
 describe('PrecisionHandler', () => {
   const mockAssets: MappedAsset[] = [
@@ -104,7 +104,7 @@ describe('PrecisionHandler', () => {
       const result = handler.validateOrderSize(0.001, btc); // 0.001 BTC
 
       expect(result.valid).toBe(true);
-      expect(result.asset_amount).toBe(100000000);
+      expect(result.assetAmount).toBe(100000000);
       expect(result.error).toBeUndefined();
     });
 
@@ -114,14 +114,16 @@ describe('PrecisionHandler', () => {
       const result = handler.validateOrderSize(100, usdt); // 100 USDT
 
       expect(result.valid).toBe(true);
-      expect(result.asset_amount).toBe(100000000);
+      expect(result.assetAmount).toBe(100000000);
       expect(result.error).toBeUndefined();
     });
 
     it('should reject amount below minimum', () => {
       const handler = createPrecisionHandler(mockAssets);
       const btc = mockAssets[0];
-      const result = handler.validateOrderSize(0.000001, btc); // Too small
+      // min_order_size is 1000 atomic units = 0.00000001 BTC (1e-8) with precision 11
+      // Testing with 0.000000001 BTC (1e-9) which should be below minimum
+      const result = handler.validateOrderSize(0.000000001, btc); // Too small
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain('below minimum');
@@ -130,7 +132,9 @@ describe('PrecisionHandler', () => {
     it('should reject amount above maximum', () => {
       const handler = createPrecisionHandler(mockAssets);
       const btc = mockAssets[0];
-      const result = handler.validateOrderSize(10, btc); // 10 BTC, too large
+      // max_order_size is 100000000 atomic units = 0.001 BTC with precision 11
+      // Testing with 0.01 BTC which should be above maximum
+      const result = handler.validateOrderSize(0.01, btc); // Too large
 
       expect(result.valid).toBe(false);
       expect(result.error).toContain('above maximum');
@@ -139,8 +143,8 @@ describe('PrecisionHandler', () => {
     it('should allow amount at minimum boundary', () => {
       const handler = createPrecisionHandler(mockAssets);
       const btc = mockAssets[0];
-      // min_order_size is 1000 atomic units = 0.00001 BTC
-      const result = handler.validateOrderSize(0.00001, btc);
+      // min_order_size is 1000 atomic units = 0.00000001 BTC (1e-8) with precision 11
+      const result = handler.validateOrderSize(0.00000001, btc);
 
       expect(result.valid).toBe(true);
     });
@@ -148,8 +152,8 @@ describe('PrecisionHandler', () => {
     it('should allow amount at maximum boundary', () => {
       const handler = createPrecisionHandler(mockAssets);
       const btc = mockAssets[0];
-      // max_order_size is 100000000 atomic units = 1 BTC
-      const result = handler.validateOrderSize(1, btc);
+      // max_order_size is 100000000 atomic units = 0.001 BTC with precision 11
+      const result = handler.validateOrderSize(0.001, btc);
 
       expect(result.valid).toBe(true);
     });
@@ -161,10 +165,12 @@ describe('PrecisionHandler', () => {
       const btc = mockAssets[0];
       const limits = handler.getOrderSizeLimits(btc);
 
-      expect(limits.asset_min_amount).toBe(1000);
-      expect(limits.asset_max_amount).toBe(100000000);
-      expect(limits.asset_min_decimal_amount).toBe(0.00001);
-      expect(limits.asset_max_decimal_amount).toBe(1);
+      expect(limits.assetMinAmount).toBe(1000);
+      expect(limits.assetMaxAmount).toBe(100000000);
+      // With precision 11: 1000 / 10^11 = 0.00000001 (1e-8)
+      expect(limits.assetMinDecimalAmount).toBeCloseTo(0.00000001, 11);
+      // With precision 11: 100000000 / 10^11 = 0.001
+      expect(limits.assetMaxDecimalAmount).toBeCloseTo(0.001, 11);
     });
 
     it('should return order limits for USDT', () => {
@@ -172,10 +178,10 @@ describe('PrecisionHandler', () => {
       const usdt = mockAssets[1];
       const limits = handler.getOrderSizeLimits(usdt);
 
-      expect(limits.asset_min_amount).toBe(1000000);
-      expect(limits.asset_max_amount).toBe(1000000000);
-      expect(limits.asset_min_decimal_amount).toBe(1);
-      expect(limits.asset_max_decimal_amount).toBe(1000);
+      expect(limits.assetMinAmount).toBe(1000000);
+      expect(limits.assetMaxAmount).toBe(1000000000);
+      expect(limits.assetMinDecimalAmount).toBe(1);
+      expect(limits.assetMaxDecimalAmount).toBe(1000);
     });
   });
 

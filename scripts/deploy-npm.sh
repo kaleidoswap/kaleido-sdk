@@ -62,7 +62,11 @@ rm -rf dist node_modules/.cache
 
 # Install dependencies
 echo -e "${GREEN}📥 Installing dependencies...${NC}"
-npm ci
+if [ -f "package-lock.json" ]; then
+    npm ci
+else
+    npm install
+fi
 
 # Run tests
 echo -e "${GREEN}🧪 Running tests...${NC}"

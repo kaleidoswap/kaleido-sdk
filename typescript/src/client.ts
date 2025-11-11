@@ -133,10 +133,6 @@ export class KaleidoClient {
       ...apiConfig,
       baseUrl: wsBaseUrl
     });
-    
-    if (process.env.DEBUG_WS) {
-      console.log('Initialized WebSocket client with URL:', wsBaseUrl);
-    }
   }
 
   private ensureNodeClient(): void {
@@ -146,11 +142,7 @@ export class KaleidoClient {
   }
 
   async getLspInfo(): Promise<GetInfoResponseModel> {
-    try {
-      return await this.apiClient.get('/lsps1/get_info');
-    } catch (error) {
-      return await this.apiClient.get("/lsps1/get_info");
-    }
+    return await this.apiClient.get('/lsps1/get_info');
   }
 
   async getLspConnectionUrl(): Promise<string> {
@@ -159,11 +151,7 @@ export class KaleidoClient {
   }
 
   async getLspNetworkInfo(): Promise<NetworkInfoResponse> {
-    try {
-      return await this.apiClient.get('/lsps1/network_info');
-    } catch (error) {
-      return await this.apiClient.get("/lsps1/network_info");
-    }
+    return await this.apiClient.get('/lsps1/network_info');
   }
 
   // Legacy method - kept for backward compatibility
@@ -262,7 +250,6 @@ export class KaleidoClient {
             to_amount: toAmount,
             timestamp: Math.floor(Date.now() / 1000)
           };
-      console.log('Sending quote message:', quoteMessage);
 
       timeoutId = setTimeout(() => {
         this.wsClient.off('quote_response', quoteHandler);
@@ -270,7 +257,6 @@ export class KaleidoClient {
       }, 30000);
 
       const quoteHandler = (response: any) => {
-        console.log('quoteHandler received:', response);
         clearTimeout(timeoutId);
         this.wsClient.off('quote_response', quoteHandler);
 
@@ -306,20 +292,11 @@ export class KaleidoClient {
   }
 
   async executeMakerSwap(request: ConfirmSwapRequest): Promise<ConfirmSwapResponse> {
-    console.log('Executing maker swap with request:', JSON.stringify({
-      swapstring: request.swapstring ? `${request.swapstring.substring(0, 20)}...` : 'undefined',
-      payment_hash: request.payment_hash,
-      taker_pubkey: request.taker_pubkey
-    }, null, 2));
-    
-    const response = await this.apiClient.post<ConfirmSwapResponse>('/swaps/execute', {
+    return await this.apiClient.post<ConfirmSwapResponse>('/swaps/execute', {
       swapstring: request.swapstring,
       payment_hash: request.payment_hash,
       taker_pubkey: request.taker_pubkey
     });
-    
-    console.log('Maker swap executed successfully:', response);
-    return response;
   }
   
   async whitelistTrade(swapstring: string): Promise<Record<string, never>> {

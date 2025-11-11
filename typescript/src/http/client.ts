@@ -1,3 +1,6 @@
+import { ErrorFactory } from '../types/errorFactory';
+import { KaleidoSDKError } from '../types/errors';
+
 /**
  * Configuration for the HTTP client
  */
@@ -20,7 +23,7 @@ export class HttpClient {
    * @param endpoint - API endpoint
    * @returns Promise resolving to the response data
    */
-  public async get<T = any>(endpoint: string): Promise<T> {
+  public async get<T>(endpoint: string): Promise<T> {
     return this.request<T>('GET', endpoint);
   }
 
@@ -30,7 +33,7 @@ export class HttpClient {
    * @param data - Request data
    * @returns Promise resolving to the response data
    */
-  public async post<T = any>(endpoint: string, data: any): Promise<T> {
+  public async post<T, D = unknown>(endpoint: string, data: D): Promise<T> {
     return this.request<T>('POST', endpoint, data);
   }
 
@@ -71,7 +74,7 @@ export class HttpClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    data?: any
+    data?: unknown
   ): Promise<T> {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const headers = this.getHeaders();
@@ -82,10 +85,10 @@ export class HttpClient {
       body: data ? JSON.stringify(data) : undefined,
     };
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
+    try {
       const response = await fetch(url, {
         ...options,
         signal: controller.signal
@@ -96,23 +99,13 @@ export class HttpClient {
       const responseText = await response.text();
 
       if (!response.ok) {
-        // Try to parse error message from response
-        let errorMessage = response.statusText;
-        if (responseText) {
-          try {
-            const errorData = JSON.parse(responseText);
-            // Extract the actual error message from FastAPI
-            errorMessage = errorData.detail || errorData.message || errorData.error || errorMessage;
-          } catch {
-            // If not JSON, use the text directly
-            errorMessage = responseText || errorMessage;
-          }
-        }
-        
-        const error = new Error(`HTTP ${response.status}: ${errorMessage}`) as any;
-        error.statusCode = response.status;
-        error.response = responseText;
-        throw error;
+        // Use ErrorFactory to create proper SDK error
+        throw ErrorFactory.fromHttpResponse(
+          response,
+          responseText,
+          data,
+          undefined // requestId could be added if needed
+        );
       }
 
       if (!responseText) {
@@ -122,21 +115,50 @@ export class HttpClient {
       try {
         return JSON.parse(responseText) as T;
       } catch (parseError) {
-        throw new Error(`Invalid JSON response: ${responseText}`);
+        throw ErrorFactory.fromUnknownError(
+          parseError,
+          'JSON parsing failed',
+          `${method} ${endpoint}`
+        );
       }
     } catch (error) {
-      // Re-throw as-is if it's already our error format
-      if (error instanceof Error && 'statusCode' in error) {
+      clearTimeout(timeoutId);
+      
+      // Re-throw as-is if it's already a KaleidoSDKError
+      if (error instanceof KaleidoSDKError) {
         throw error;
       }
 
-      // Handle AbortError (timeout)
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`Request timeout after ${this.timeoutMs / 1000} seconds`);
+      // Handle AbortError (timeout) - can be DOMException or Error with name 'AbortError'
+      // In Node.js, fetch may throw different error types when aborted
+      const isAbortError = 
+        (error instanceof Error && error.name === 'AbortError') ||
+        (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') ||
+        (error instanceof Error && (error.message.includes('aborted') || error.message.includes('AbortError')));
+
+      if (isAbortError) {
+        throw ErrorFactory.createTimeoutError(
+          `${method} ${endpoint}`,
+          this.timeoutMs,
+          { url }
+        );
       }
 
       // Handle other network errors
-      throw error;
+      if (error instanceof Error) {
+        throw ErrorFactory.fromNetworkError(
+          error,
+          data,
+          undefined // requestId could be added if needed
+        );
+      }
+
+      // Fallback for unknown error types
+      throw ErrorFactory.fromUnknownError(
+        error,
+        'HTTP request failed',
+        `${method} ${endpoint}`
+      );
     }
   }
 } 

@@ -67,7 +67,11 @@ rm -rf dist build *.egg-info
 
 # Install dependencies
 echo -e "${GREEN}📥 Installing dependencies...${NC}"
-uv sync --frozen
+if [ -f uv.lock ]; then
+    uv sync --frozen
+else
+    uv sync
+fi
 
 # Run tests
 echo -e "${GREEN}🧪 Running tests...${NC}"

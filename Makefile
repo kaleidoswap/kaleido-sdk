@@ -47,7 +47,12 @@ build-npm:
 
 build-pip:
 	@echo "🔨 Building Python SDK..."
-	cd $(PYTHON_DIR) && uv sync --frozen && uv build
+	cd $(PYTHON_DIR) && \
+		if [ -f uv.lock ]; then \
+			uv sync --frozen --extra dev && uv build; \
+		else \
+			uv sync --extra dev && uv build; \
+		fi
 
 # Test targets
 test: test-npm test-pip
@@ -58,7 +63,12 @@ test-npm:
 
 test-pip:
 	@echo "🧪 Running Python SDK tests..."
-	cd $(PYTHON_DIR) && uv run pytest tests/
+	cd $(PYTHON_DIR) && \
+		if [ -f uv.lock ]; then \
+			uv sync --frozen --extra dev && uv run pytest tests/; \
+		else \
+			uv sync --extra dev && uv run pytest tests/; \
+		fi
 
 # Clean targets
 clean: clean-npm clean-pip

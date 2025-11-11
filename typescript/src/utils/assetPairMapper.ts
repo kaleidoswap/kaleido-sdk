@@ -83,7 +83,7 @@ export class AssetPairMapper {
 
   findByTicker(ticker: string): MappedAsset | undefined {
     for (const asset of this.assetMap.values()) {
-      if (asset.ticker.toLowerCase() === ticker.toLowerCase()) {
+      if (asset.ticker === ticker) {
         return asset;
       }
     }
