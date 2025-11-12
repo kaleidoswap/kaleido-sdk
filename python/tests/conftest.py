@@ -1,6 +1,5 @@
 import logging
 import os
-import pytest
 import pytest_asyncio
 from kaleidoswap_sdk.client import KaleidoClient
 
@@ -51,7 +50,7 @@ async def client(request):
     """
     Create a test client instance that can be used across all test files.
     This fixture will create a new client for each test function and properly clean up resources.
-    
+
     For tests marked with @pytest.mark.api_only, node_url is optional and can be None.
     For tests marked with @pytest.mark.requires_local_node, node_url is required.
 
@@ -63,14 +62,7 @@ async def client(request):
     """
     logger = logging.getLogger(__name__)
     logger.info("Creating new test client instance")
-    
-    # Check if test requires local node
-    requires_local_node = request.node.get_closest_marker("requires_local_node") is not None
-    api_only = request.node.get_closest_marker("api_only") is not None
-    
-    # For api_only tests, we can use a dummy node_url since it won't be used
-    # For requires_local_node tests, we need the actual NODE_URL
-    # The client always requires a node_url parameter, but for api_only tests it won't be used
+
     node_url = NODE_URL
 
     client = KaleidoClient(
@@ -97,11 +89,12 @@ def pytest_configure(config):
     """Configure pytest-asyncio settings and register custom markers."""
     config.option.asyncio_mode = "strict"
     config.option.asyncio_default_fixture_loop_scope = "function"
-    
+
     # Register custom markers
     config.addinivalue_line(
         "markers", "requires_local_node: mark test as requiring a local node to run"
     )
     config.addinivalue_line(
-        "markers", "api_only: mark test as only requiring the API (maker URL), no local node needed"
+        "markers",
+        "api_only: mark test as only requiring the API (maker URL), no local node needed",
     )
