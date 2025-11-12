@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_complete_swap(client: KaleidoClient):
     """Test the complete maker swap flow."""
     logger.info("Starting maker swap flow test")
@@ -70,6 +71,7 @@ async def test_complete_swap(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_complete_swap_in_one_call(client: KaleidoClient):
     """Test the complete maker swap flow in one call."""
     logger.info("Starting maker swap flow test")
@@ -92,6 +94,7 @@ async def test_complete_swap_in_one_call(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_connect_peer(client: KaleidoClient):
     """Test connecting to a peer."""
     to_connect_peer = await test_lsp_connection_url(client)
@@ -102,6 +105,7 @@ async def test_connect_peer(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_create_order(client: KaleidoClient):
     """Test creating an order."""
     pubkey = await client.get_node_pubkey()
@@ -124,6 +128,7 @@ async def test_create_order(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_create_swap_order(client: KaleidoClient):
     """Test creating a swap order."""
     # Get a quote first
@@ -151,6 +156,7 @@ async def test_create_swap_order(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_estimate_fees(client: KaleidoClient):
     """Test estimating fees for an order."""
     pubkey = await client.get_node_pubkey()
@@ -177,6 +183,7 @@ async def test_estimate_fees(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_get_asset_metadata(client: KaleidoClient):
     """Test getting asset metadata."""
     assets = await client.list_assets()
@@ -190,6 +197,7 @@ async def test_get_asset_metadata(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_get_onchain_address(client: KaleidoClient):
     """Test getting onchain address."""
     onchain_address = await client.get_onchain_address()
@@ -198,6 +206,7 @@ async def test_get_onchain_address(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_get_order(client: KaleidoClient):
     """Test getting an order."""
     order_result = await test_create_order(client)
@@ -209,6 +218,7 @@ async def test_get_order(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_get_order_analytics(client: KaleidoClient):
     """Test getting order analytics."""
     analytics = await client.get_order_analytics()
@@ -221,6 +231,7 @@ async def test_get_order_analytics(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_get_order_history(client: KaleidoClient):
     """Test getting order history."""
     # Get order history without filter
@@ -242,6 +253,7 @@ async def test_get_order_history(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_get_pair_by_assets(client: KaleidoClient):
     """Test getting a pair by assets."""
     assets = await client.list_assets()
@@ -249,15 +261,12 @@ async def test_get_pair_by_assets(client: KaleidoClient):
 
     first_asset = assets.assets[0].asset_id
     second_asset = assets.assets[1].asset_id
-    logger.info("First asset: %s", first_asset)
-    logger.info("Second asset: %s", second_asset)
-
     pair = await client.get_pair_by_assets(first_asset, second_asset)
-    logger.info("Retrieved pair: %s", pair)
     assert pair is not None
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_get_quote(client: KaleidoClient):
     assets = await client.list_assets()
     assert assets is not None
@@ -275,6 +284,7 @@ async def test_get_quote(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_get_quote_websocket(client: KaleidoClient):
     """Test getting a quote using WebSocket."""
     # Get assets for testing
@@ -306,6 +316,7 @@ async def test_get_quote_websocket(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_get_swap_order_status(client: KaleidoClient):
     """Test getting swap order status."""
     # First create a swap order
@@ -323,6 +334,7 @@ async def test_get_swap_order_status(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_init_maker_swap(client: KaleidoClient):
     logger.info("Getting quote for maker swap")
     quote = await test_get_quote_websocket(client)
@@ -343,6 +355,7 @@ async def test_init_maker_swap(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_list_assets(client: KaleidoClient):
     """Test asset-related operations."""
     # List assets
@@ -352,6 +365,7 @@ async def test_list_assets(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_list_pairs(client: KaleidoClient):
     """Test trading pair operations."""
     # List pairs
@@ -361,6 +375,7 @@ async def test_list_pairs(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_list_peers(client: KaleidoClient):
     """Test listing peers."""
     peers = await client.list_peers()
@@ -369,6 +384,7 @@ async def test_list_peers(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_lsp_connection_url(client: KaleidoClient):
     """Test LSP connection URL."""
     lsp_connection_url = await client.get_lsp_connection_url()
@@ -378,6 +394,7 @@ async def test_lsp_connection_url(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_lsp_info(client: KaleidoClient):
     """Test LSP information."""
     lsp_info = await client.get_lsp_info()
@@ -387,6 +404,7 @@ async def test_lsp_info(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_lsp_network_info(client: KaleidoClient):
     """Test LSP network information."""
     lsp_network_info = await client.get_lsp_network_info()
@@ -396,6 +414,7 @@ async def test_lsp_network_info(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_node_info(client: KaleidoClient):
     """Test full node information."""
     node_info = await client.get_node_info()
@@ -406,6 +425,7 @@ async def test_node_info(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_node_pubkey(client: KaleidoClient):
     """Test getting node public key."""
     pubkey = await client.get_node_pubkey()
@@ -414,6 +434,7 @@ async def test_node_pubkey(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_retry_delivery(client: KaleidoClient):
     """Test retrying asset delivery for an order."""
     # First create an order
@@ -430,6 +451,7 @@ async def test_retry_delivery(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_swap_node_info(client: KaleidoClient):
     """Test simplified swap node information."""
     swap_node_info = await client.get_swap_node_info()
@@ -442,6 +464,7 @@ async def test_swap_node_info(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.api_only
 async def test_swap_order_rate_decision(client: KaleidoClient):
     """Test swap order rate decision (accept new rate)."""
     # This test would require a swap order in PENDING_RATE_DECISION state
@@ -468,6 +491,7 @@ async def test_swap_order_rate_decision(client: KaleidoClient):
 
 
 @pytest.mark.asyncio
+@pytest.mark.requires_local_node
 async def test_whitelist_trade(client: KaleidoClient):
     """Test whitelisting a trade."""
     logger.info("Whitelisting trade")

@@ -770,7 +770,13 @@ class SwapOrder(BaseModel):
         default=None, description="Last payment check timestamp"
     )
     email: Optional[str] = Field(default=None, description="Email for notifications")
-
+    failure_reason: Optional[str] = Field(default=None, description="Failure reason if order failed")
+    base_fee: Optional[int] = Field(default=None, description="Base fee")
+    variable_fee: Optional[int] = Field(default=None, description="Variable fee")
+    fee_rate: Optional[float] = Field(default=None, description="Fee rate")
+    final_fee: Optional[int] = Field(default=None, description="Final fee")
+    fee_asset: Optional[str] = Field(default=None, description="Fee asset")
+    fee_asset_precision: Optional[int] = Field(default=None, description="Fee asset precision")
 
 class SwapOrderRateDecisionRequest(BaseModel):
     """Request for user to accept new rate or request refund for a swap order."""

@@ -160,7 +160,7 @@ test:npm:
     expire_in: 1 week
   allow_failure: true
 
-# Test Python SDK
+# Test Python SDK (API-only tests - no local node required)
 test:pip:
   stage: test
   image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
@@ -172,7 +172,7 @@ test:pip:
       else
         uv sync --extra dev
       fi
-    - uv run pytest tests/ --cov=kaleidoswap_sdk --cov-report=xml --cov-report=html --cov-report=term
+    - uv run pytest tests/ -m api_only --cov=kaleidoswap_sdk --cov-report=xml --cov-report=html --cov-report=term
   dependencies: []
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
