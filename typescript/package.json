@@ -1,6 +1,6 @@
 {
   "name": "kaleidoswap-sdk",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "TypeScript SDK for KaleidoSwap - A decentralized exchange for Bitcoin and RGB assets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

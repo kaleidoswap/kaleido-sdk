@@ -1,6 +1,6 @@
 [project]
 name = "kaleidoswap-sdk"
-version = "0.1.0"
+version = "0.1.5"
 description = "Python SDK for KaleidoSwap - A decentralized exchange for Bitcoin and RGB assets"
 authors = [
     {name = "Kaleidoswap Team", email = "dev@kaleidoswap.com"}
