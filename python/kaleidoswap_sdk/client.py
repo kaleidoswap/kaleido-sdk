@@ -7,26 +7,74 @@ from typing import Any, Dict, Optional
 from .http import HttpClient
 from .models import (
     AddressResponse,
+    AssetBalanceRequest,
+    AssetBalanceResponse,
     AssetMetadataResponse,
+    Assignment,
+    AssignmentFungible,
+    BackupRequest,
+    BtcBalanceResponse,
     ChannelFees,
+    ChangePasswordRequest,
+    CloseChannelRequest,
     ConnectPeerRequest,
     CreateOrderRequest,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
+    CreateUtxosRequest,
+    DecodeLNInvoiceRequest,
+    DecodeLNInvoiceResponse,
+    DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
+    DisconnectPeerRequest,
+    EmptyResponse,
+    EstimateFeeRequest,
+    EstimateFeeResponse,
     ExecuteMakerSwapRequest,
     ExecuteMakerSwapResponse,
     GetAssetMetadataRequest,
+    GetChannelIdRequest,
+    GetChannelIdResponse,
     GetLspInfoResponse,
     GetOrderRequest,
+    GetPaymentRequest,
+    GetPaymentResponse,
+    GetSwapRequest,
+    GetSwapResponse,
     GetSwapStatusRequest,
     GetSwapStatusResponse,
     InitMakerSwapRequest,
     InitMakerSwapResponse,
+    InitRequest,
+    InitResponse,
+    InvoiceStatusRequest,
+    InvoiceStatusResponse,
+    IssueAssetNIARequest,
+    IssueAssetNIAResponse,
+    KeysendRequest,
+    KeysendResponse,
+    ListAssetsRequest,
     ListAssetsResponse,
+    ListChannelsResponse,
+    ListNodeAssetsResponse,
     ListPairsResponse,
+    ListPaymentsResponse,
     ListPeersResponse,
+    ListSwapsResponse,
+    ListTransfersRequest,
+    ListTransfersResponse,
+    ListUnspentsRequest,
+    ListUnspentsResponse,
+    LNInvoiceRequest,
+    LNInvoiceResponse,
+    MakerExecuteRequest,
+    MakerExecuteResponse,
+    MakerInitRequest,
+    MakerInitResponse,
     NetworkInfoResponse,
     NodeInfoResponse,
+    OpenChannelRequest,
+    OpenChannelResponse,
     OrderHistoryRequest,
     OrderHistoryResponse,
     OrderResponse,
@@ -35,15 +83,29 @@ from .models import (
     QuoteResponse,
     RateDecisionRequest,
     RateDecisionResponse,
+    RefreshRequest,
+    RestoreRequest,
     RetryDeliveryRequest,
     RetryDeliveryResponse,
+    RgbInvoiceRequest,
+    RgbInvoiceResponse,
+    SendAssetRequest,
+    SendAssetResponse,
+    SendBtcRequest,
+    SendBtcResponse,
+    SendPaymentRequest,
+    SendPaymentResponse,
+    SignMessageRequest,
+    SignMessageResponse,
     SwapNodeInfo,
     SwapOrderRateDecisionRequest,
     SwapOrderRateDecisionResponse,
     SwapOrderStatusRequest,
     SwapOrderStatusResponse,
     SwapStatus,
+    TakerRequest,
     TradingPair,
+    UnlockRequest,
     WhitelistTradeRequest,
 )
 from .websocket import WebSocketClient
@@ -137,7 +199,7 @@ class KaleidoClient:
                 whitelist_request = WhitelistTradeRequest(
                     swapstring=init_result.swapstring
                 )
-                await self.whitelist_trade(whitelist_request)
+                whitelist_result = await self.whitelist_trade(whitelist_request)
             except Exception as e:
                 logger.error(f"Error whitelisting trade: {e}")
                 raise e
@@ -145,11 +207,13 @@ class KaleidoClient:
             # Execute swap from maker
             taker_pubkey = await self.get_node_pubkey()
             try:
-                await self.execute_maker_swap(
-                    request=ExecuteMakerSwapRequest(
-                        swapstring=init_result.swapstring,
-                        payment_hash=init_result.payment_hash,
-                        taker_pubkey=taker_pubkey,
+                execute_result: ExecuteMakerSwapResponse = (
+                    await self.execute_maker_swap(
+                        request=ExecuteMakerSwapRequest(
+                            swapstring=init_result.swapstring,
+                            payment_hash=init_result.payment_hash,
+                            taker_pubkey=taker_pubkey,
+                        )
                     )
                 )
             except Exception as e:
@@ -371,7 +435,7 @@ class KaleidoClient:
         Returns:
             OrderResponse containing order details
         """
-        response = await self.api_client.post("/lsps1/get_order", request.model_dump())
+        response = await self.api_client.post(f"/lsps1/get_order", request.model_dump())
         return OrderResponse.model_validate(response)
 
     async def get_order_analytics(self) -> OrderStatsResponse:
@@ -694,6 +758,623 @@ class KaleidoClient:
             Dict containing whitelist status
         """
         return await self.node_client.post("/taker", request.model_dump())
+
+    # ========================================================================
+    # RGB Node Wallet Management Methods
+    # ========================================================================
+
+    async def init_wallet(self, request: InitRequest) -> InitResponse:
+        """Initialize a new wallet.
+
+        Args:
+            request: InitRequest containing:
+                password: Password for the wallet
+
+        Returns:
+            InitResponse containing mnemonic phrase
+        """
+        response = await self.node_client.post("/init", request.model_dump())
+        return InitResponse.model_validate(response)
+
+    async def unlock_wallet(self, request: UnlockRequest) -> EmptyResponse:
+        """Unlock the wallet.
+
+        Args:
+            request: UnlockRequest containing:
+                password: Wallet password
+                bitcoind_rpc_username: Bitcoin RPC username
+                bitcoind_rpc_password: Bitcoin RPC password
+                bitcoind_rpc_host: Bitcoin RPC host
+                bitcoind_rpc_port: Bitcoin RPC port
+                indexer_url: Optional indexer URL
+                proxy_endpoint: Optional proxy endpoint
+                announce_addresses: List of announce addresses
+                announce_alias: Optional node alias
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/unlock", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def backup_wallet(self, request: BackupRequest) -> EmptyResponse:
+        """Backup the wallet.
+
+        Args:
+            request: BackupRequest containing:
+                backup_path: Path where to save the backup
+                password: Wallet password
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/backup", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def restore_wallet(self, request: RestoreRequest) -> EmptyResponse:
+        """Restore the wallet from backup.
+
+        Args:
+            request: RestoreRequest containing:
+                backup_path: Path to the backup file
+                password: Wallet password
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/restore", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def change_password(self, request: ChangePasswordRequest) -> EmptyResponse:
+        """Change the wallet password.
+
+        Args:
+            request: ChangePasswordRequest containing:
+                old_password: Current password
+                new_password: New password
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/changepassword", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def sync_wallet(self) -> EmptyResponse:
+        """Sync the wallet with the blockchain.
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/sync", {})
+        return EmptyResponse.model_validate(response)
+
+    # ========================================================================
+    # Balance and Address Methods
+    # ========================================================================
+
+    async def get_btc_balance(self, skip_sync: bool = False) -> BtcBalanceResponse:
+        """Get BTC balance information.
+
+        Args:
+            skip_sync: Whether to skip blockchain sync
+
+        Returns:
+            BtcBalanceResponse containing vanilla and colored balances
+        """
+        response = await self.node_client.post("/btcbalance", {"skip_sync": skip_sync})
+        return BtcBalanceResponse.model_validate(response)
+
+    async def get_asset_balance(
+        self, request: AssetBalanceRequest
+    ) -> AssetBalanceResponse:
+        """Get balance for a specific RGB asset.
+
+        Args:
+            request: AssetBalanceRequest containing:
+                asset_id: RGB asset ID
+
+        Returns:
+            AssetBalanceResponse containing asset balance
+        """
+        response = await self.node_client.post("/assetbalance", request.model_dump())
+        return AssetBalanceResponse.model_validate(response)
+
+    async def create_utxos(self, request: CreateUtxosRequest) -> EmptyResponse:
+        """Create new UTXOs for RGB assets.
+
+        Args:
+            request: CreateUtxosRequest containing:
+                up_to: Whether to create up to the specified number
+                num: Number of UTXOs to create
+                size: Size of each UTXO
+                fee_rate: Fee rate in sats/vbyte
+                skip_sync: Whether to skip blockchain sync
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/createutxos", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def estimate_fee(self, request: EstimateFeeRequest) -> EstimateFeeResponse:
+        """Estimate the fee rate for a transaction.
+
+        Args:
+            request: EstimateFeeRequest containing:
+                blocks: Target number of blocks for confirmation
+
+        Returns:
+            EstimateFeeResponse containing estimated fee rate
+        """
+        response = await self.node_client.post("/estimatefee", request.model_dump())
+        if "fee_rate" in response:
+            response["fee_rate"] = int(response["fee_rate"])
+        return EstimateFeeResponse.model_validate(response)
+
+    # ========================================================================
+    # Channel Management Methods
+    # ========================================================================
+
+    async def list_channels(self) -> ListChannelsResponse:
+        """Get a list of all Lightning channels.
+
+        Returns:
+            ListChannelsResponse containing list of channels
+        """
+        response = await self.node_client.get("/listchannels")
+        return ListChannelsResponse.model_validate(response)
+
+    async def open_channel(self, request: OpenChannelRequest) -> OpenChannelResponse:
+        """Open a new Lightning channel.
+
+        Args:
+            request: OpenChannelRequest containing:
+                peer_pubkey_and_opt_addr: Peer pubkey and optional address
+                capacity_sat: Channel capacity in satoshis
+                push_msat: Amount to push in millisatoshis
+                asset_amount: Optional RGB asset amount
+                asset_id: Optional RGB asset ID
+                public: Whether to announce the channel
+                with_anchors: Whether to use anchor outputs
+                fee_base_msat: Optional base fee in millisatoshis
+                fee_proportional_millionths: Optional proportional fee
+                temporary_channel_id: Optional temporary channel ID
+
+        Returns:
+            OpenChannelResponse containing temporary channel ID
+        """
+        response = await self.node_client.post(
+            "/openchannel", request.model_dump(exclude_none=True)
+        )
+        return OpenChannelResponse.model_validate(response)
+
+    async def close_channel(self, request: CloseChannelRequest) -> EmptyResponse:
+        """Close an existing Lightning channel.
+
+        Args:
+            request: CloseChannelRequest containing:
+                channel_id: Channel ID to close
+                peer_pubkey: Peer public key
+                force: Whether to force close
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/closechannel", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def get_channel_id(
+        self, request: GetChannelIdRequest
+    ) -> GetChannelIdResponse:
+        """Get channel ID from temporary channel ID.
+
+        Args:
+            request: GetChannelIdRequest containing:
+                temporary_channel_id: Temporary channel ID
+
+        Returns:
+            GetChannelIdResponse containing channel ID
+        """
+        response = await self.node_client.post("/getchannelid", request.model_dump())
+        return GetChannelIdResponse.model_validate(response)
+
+    # ========================================================================
+    # Payment Methods
+    # ========================================================================
+
+    async def generate_ln_invoice(self, request: LNInvoiceRequest) -> LNInvoiceResponse:
+        """Generate a Lightning invoice.
+
+        Args:
+            request: LNInvoiceRequest containing:
+                amt_msat: Optional amount in millisatoshis
+                expiry_sec: Expiry time in seconds
+                asset_id: Optional RGB asset ID
+                asset_amount: Optional RGB asset amount
+
+        Returns:
+            LNInvoiceResponse containing Lightning invoice
+        """
+        response = await self.node_client.post(
+            "/lninvoice", request.model_dump(exclude_none=True)
+        )
+        return LNInvoiceResponse.model_validate(response)
+
+    async def send_payment(self, request: SendPaymentRequest) -> SendPaymentResponse:
+        """Send a payment using a BOLT11 invoice.
+
+        Args:
+            request: SendPaymentRequest containing:
+                invoice: Lightning invoice
+                amt_msat: Optional amount in millisatoshis
+
+        Returns:
+            SendPaymentResponse containing payment details
+        """
+        response = await self.node_client.post(
+            "/sendpayment", request.model_dump(exclude_none=True)
+        )
+        return SendPaymentResponse.model_validate(response)
+
+    async def get_payment(self, request: GetPaymentRequest) -> GetPaymentResponse:
+        """Get a payment by payment hash.
+
+        Args:
+            request: GetPaymentRequest containing:
+                payment_hash: Payment hash
+
+        Returns:
+            GetPaymentResponse containing payment details
+        """
+        response = await self.node_client.post("/getpayment", request.model_dump())
+        return GetPaymentResponse.model_validate(response)
+
+    async def list_payments(self) -> ListPaymentsResponse:
+        """Get a list of all payments.
+
+        Returns:
+            ListPaymentsResponse containing list of payments
+        """
+        response = await self.node_client.get("/listpayments")
+        return ListPaymentsResponse.model_validate(response)
+
+    async def get_invoice_status(
+        self, request: InvoiceStatusRequest
+    ) -> InvoiceStatusResponse:
+        """Get the status of an invoice.
+
+        Args:
+            request: InvoiceStatusRequest containing:
+                invoice: Lightning invoice
+
+        Returns:
+            InvoiceStatusResponse containing invoice status
+        """
+        response = await self.node_client.post("/invoicestatus", request.model_dump())
+        return InvoiceStatusResponse.model_validate(response)
+
+    async def keysend(self, request: KeysendRequest) -> KeysendResponse:
+        """Send a keysend payment.
+
+        Args:
+            request: KeysendRequest containing:
+                dest_pubkey: Destination public key
+                amt_msat: Amount in millisatoshis
+                asset_id: Optional RGB asset ID
+                asset_amount: Optional RGB asset amount
+
+        Returns:
+            KeysendResponse containing payment details
+        """
+        response = await self.node_client.post(
+            "/keysend", request.model_dump(exclude_none=True)
+        )
+        return KeysendResponse.model_validate(response)
+
+    # ========================================================================
+    # RGB Asset Methods
+    # ========================================================================
+
+    async def list_node_assets(
+        self,
+        request: ListAssetsRequest = None,
+    ) -> ListNodeAssetsResponse:
+        """Get a list of all RGB assets from the node.
+
+        Args:
+            request: Optional ListAssetsRequest containing:
+                filter_asset_schemas: List of asset schemas to filter
+
+        Returns:
+            ListNodeAssetsResponse containing NIA, UDA, and CFA assets
+        """
+        if request is None:
+            from .models import AssetSchema
+
+            request = ListAssetsRequest(
+                filter_asset_schemas=[AssetSchema.Nia, AssetSchema.Uda, AssetSchema.Cfa]
+            )
+        response = await self.node_client.post(
+            "/listassets", request.model_dump(exclude_none=True)
+        )
+        return ListNodeAssetsResponse.model_validate(response)
+
+    async def issue_asset_nia(
+        self, request: IssueAssetNIARequest
+    ) -> IssueAssetNIAResponse:
+        """Issue a new RGB NIA asset.
+
+        Args:
+            request: IssueAssetNIARequest containing:
+                amounts: List of amounts to issue
+                ticker: Asset ticker
+                name: Asset name
+                precision: Asset precision
+
+        Returns:
+            IssueAssetNIAResponse containing issued asset details
+        """
+        response = await self.node_client.post("/issueassetnia", request.model_dump())
+        return IssueAssetNIAResponse.model_validate(response)
+
+    async def send_asset(self, request: SendAssetRequest) -> SendAssetResponse:
+        """Send an RGB asset.
+
+        Args:
+            request: SendAssetRequest containing:
+                asset_id: RGB asset ID
+                assignment: Assignment with amount
+                recipient_id: Recipient ID
+                donation: Whether this is a donation
+                fee_rate: Fee rate in sats/vbyte
+                min_confirmations: Minimum confirmations
+                transport_endpoints: List of transport endpoints
+                skip_sync: Whether to skip blockchain sync
+
+        Returns:
+            SendAssetResponse containing transaction ID
+        """
+        response = await self.node_client.post("/sendasset", request.model_dump())
+        return SendAssetResponse.model_validate(response)
+
+    async def list_transfers(
+        self, request: ListTransfersRequest
+    ) -> ListTransfersResponse:
+        """List RGB transfers for an asset.
+
+        Args:
+            request: ListTransfersRequest containing:
+                asset_id: RGB asset ID
+
+        Returns:
+            ListTransfersResponse containing list of transfers
+        """
+        response = await self.node_client.post("/listtransfers", request.model_dump())
+        return ListTransfersResponse.model_validate(response)
+
+    async def refresh(self, request: RefreshRequest = None) -> EmptyResponse:
+        """Refresh RGB transfers.
+
+        Args:
+            request: Optional RefreshRequest containing:
+                skip_sync: Whether to skip blockchain sync
+
+        Returns:
+            EmptyResponse
+        """
+        if request is None:
+            request = RefreshRequest(skip_sync=False)
+        response = await self.node_client.post(
+            "/refreshtransfers", request.model_dump()
+        )
+        return EmptyResponse.model_validate(response)
+
+    # ========================================================================
+    # RGB Invoice Methods
+    # ========================================================================
+
+    async def rgb_invoice(self, request: RgbInvoiceRequest) -> RgbInvoiceResponse:
+        """Generate an RGB invoice/recipient for onchain RGB settlements.
+
+        Args:
+            request: RgbInvoiceRequest containing:
+                asset_id: Optional RGB asset ID
+                duration_seconds: Optional duration in seconds
+                min_confirmations: Minimum confirmations
+                witness: Whether to use witness mode
+
+        Returns:
+            RgbInvoiceResponse containing RGB invoice details
+        """
+        response = await self.node_client.post("/rgbinvoice", request.model_dump())
+        return RgbInvoiceResponse.model_validate(response)
+
+    async def decode_rgb_invoice(
+        self, request: DecodeRGBInvoiceRequest
+    ) -> DecodeRGBInvoiceResponse:
+        """Decode an RGB invoice.
+
+        Args:
+            request: DecodeRGBInvoiceRequest containing:
+                invoice: RGB invoice to decode
+
+        Returns:
+            DecodeRGBInvoiceResponse containing decoded invoice details
+        """
+        response = await self.node_client.post(
+            "/decodergbinvoice", request.model_dump()
+        )
+        return DecodeRGBInvoiceResponse.model_validate(response)
+
+    async def decode_ln_invoice(
+        self, request: DecodeLNInvoiceRequest
+    ) -> DecodeLNInvoiceResponse:
+        """Decode a Lightning invoice.
+
+        Args:
+            request: DecodeLNInvoiceRequest containing:
+                invoice: Lightning invoice to decode
+
+        Returns:
+            DecodeLNInvoiceResponse containing decoded invoice details
+        """
+        response = await self.node_client.post("/decodelninvoice", request.model_dump())
+        return DecodeLNInvoiceResponse.model_validate(response)
+
+    # ========================================================================
+    # Swap Methods
+    # ========================================================================
+
+    async def list_swaps(self) -> ListSwapsResponse:
+        """Get a list of all RGB node swaps.
+
+        Returns:
+            ListSwapsResponse containing maker and taker swaps
+        """
+        response = await self.node_client.get("/listswaps")
+        return ListSwapsResponse.model_validate(response)
+
+    async def get_swap(self, request: GetSwapRequest) -> GetSwapResponse:
+        """Get a swap by payment hash.
+
+        Args:
+            request: GetSwapRequest containing:
+                payment_hash: Payment hash
+                taker: Whether this is a taker swap
+
+        Returns:
+            GetSwapResponse containing swap details
+        """
+        response = await self.node_client.post("/getswap", request.model_dump())
+        return GetSwapResponse.model_validate(response)
+
+    async def send_btc(self, request: SendBtcRequest) -> SendBtcResponse:
+        """Send BTC to an address.
+
+        Args:
+            request: SendBtcRequest containing:
+                amount: Amount in satoshis
+                address: Bitcoin address
+                fee_rate: Fee rate in sats/vbyte
+                skip_sync: Whether to skip blockchain sync
+
+        Returns:
+            SendBtcResponse containing transaction ID
+        """
+        response = await self.node_client.post("/sendbtc", request.model_dump())
+        return SendBtcResponse.model_validate(response)
+
+    async def list_unspents(
+        self, request: ListUnspentsRequest = None
+    ) -> ListUnspentsResponse:
+        """Get a list of unspent outputs.
+
+        Args:
+            request: Optional ListUnspentsRequest containing:
+                skip_sync: Whether to skip blockchain sync
+
+        Returns:
+            ListUnspentsResponse containing list of unspents
+        """
+        if request is None:
+            request = ListUnspentsRequest(skip_sync=False)
+        response = await self.node_client.post("/listunspents", request.model_dump())
+        return ListUnspentsResponse.model_validate(response)
+
+    # ========================================================================
+    # RGB Node Atomic Swap Methods
+    # ========================================================================
+
+    async def maker_init_swap(self, request: MakerInitRequest) -> MakerInitResponse:
+        """Initialize an RGB atomic swap as maker.
+
+        Args:
+            request: MakerInitRequest containing:
+                qty_from: Source quantity
+                qty_to: Destination quantity
+                from_asset: Optional source asset ID
+                to_asset: Optional destination asset ID
+                timeout_sec: Timeout in seconds
+
+        Returns:
+            MakerInitResponse containing swap details
+        """
+        response = await self.node_client.post(
+            "/makerinit", request.model_dump(exclude_none=True)
+        )
+        return MakerInitResponse.model_validate(response)
+
+    async def maker_execute_swap(
+        self, request: MakerExecuteRequest
+    ) -> MakerExecuteResponse:
+        """Execute an RGB atomic swap as maker.
+
+        Args:
+            request: MakerExecuteRequest containing:
+                swapstring: Swap string
+                payment_secret: Payment secret
+                taker_pubkey: Taker public key
+
+        Returns:
+            MakerExecuteResponse containing execution result
+        """
+        response = await self.node_client.post("/makerexecute", request.model_dump())
+        return MakerExecuteResponse.model_validate(response)
+
+    async def taker_swap(self, request: TakerRequest) -> Dict[str, Any]:
+        """Execute an RGB atomic swap as taker.
+
+        Args:
+            request: TakerRequest containing:
+                swapstring: Swap string from maker
+
+        Returns:
+            Dict containing swap execution result
+        """
+        result = await self.node_client.post("/taker", request.model_dump())
+        return result
+
+    # ========================================================================
+    # Peer and Utility Methods
+    # ========================================================================
+
+    async def disconnect_peer(self, request: DisconnectPeerRequest) -> EmptyResponse:
+        """Disconnect from a peer.
+
+        Args:
+            request: DisconnectPeerRequest containing:
+                peer_pubkey: Peer public key
+
+        Returns:
+            EmptyResponse
+        """
+        response = await self.node_client.post("/disconnectpeer", request.model_dump())
+        return EmptyResponse.model_validate(response)
+
+    async def is_peer_connected(self, peer_pubkey: str) -> bool:
+        """Check if a peer is connected.
+
+        Args:
+            peer_pubkey: Peer public key
+
+        Returns:
+            True if peer is connected, False otherwise
+        """
+        peers_response = await self.list_peers()
+        return any(peer.pubkey == peer_pubkey for peer in peers_response.peers)
+
+    async def sign_message(self, request: SignMessageRequest) -> SignMessageResponse:
+        """Sign a message with node's private key.
+
+        Args:
+            request: SignMessageRequest containing:
+                message: Message to sign
+
+        Returns:
+            SignMessageResponse containing signed message
+        """
+        response = await self.node_client.post("/signmessage", request.model_dump())
+        return SignMessageResponse.model_validate(response)
 
     # Context manager support
     async def __aenter__(self):
