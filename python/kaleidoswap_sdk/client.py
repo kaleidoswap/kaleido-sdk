@@ -10,8 +10,6 @@ from .models import (
     AssetBalanceRequest,
     AssetBalanceResponse,
     AssetMetadataResponse,
-    Assignment,
-    AssignmentFungible,
     BackupRequest,
     BtcBalanceResponse,
     ChannelFees,
@@ -200,6 +198,8 @@ class KaleidoClient:
                     swapstring=init_result.swapstring
                 )
                 whitelist_result = await self.whitelist_trade(whitelist_request)
+                if not whitelist_result:
+                    raise Exception("Failed to whitelist trade")
             except Exception as e:
                 logger.error(f"Error whitelisting trade: {e}")
                 raise e
@@ -216,6 +216,9 @@ class KaleidoClient:
                         )
                     )
                 )
+                if not execute_result:
+                    raise Exception("Failed to execute swap")
+                return execute_result
             except Exception as e:
                 logger.error(f"Error executing swap: {e}")
                 raise e
@@ -435,7 +438,7 @@ class KaleidoClient:
         Returns:
             OrderResponse containing order details
         """
-        response = await self.api_client.post(f"/lsps1/get_order", request.model_dump())
+        response = await self.api_client.post("/lsps1/get_order", request.model_dump())
         return OrderResponse.model_validate(response)
 
     async def get_order_analytics(self) -> OrderStatsResponse:
