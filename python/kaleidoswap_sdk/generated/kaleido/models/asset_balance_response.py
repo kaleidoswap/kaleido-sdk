@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+T = TypeVar("T", bound="AssetBalanceResponse")
+
+
+@_attrs_define
+class AssetBalanceResponse:
+    """
+    Attributes:
+        settled (int):  Example: 777.
+        future (int):  Example: 777.
+        spendable (int):  Example: 777.
+        offchain_outbound (int):  Example: 444.
+        offchain_inbound (int):
+    """
+
+    settled: int
+    future: int
+    spendable: int
+    offchain_outbound: int
+    offchain_inbound: int
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        settled = self.settled
+
+        future = self.future
+
+        spendable = self.spendable
+
+        offchain_outbound = self.offchain_outbound
+
+        offchain_inbound = self.offchain_inbound
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "settled": settled,
+                "future": future,
+                "spendable": spendable,
+                "offchain_outbound": offchain_outbound,
+                "offchain_inbound": offchain_inbound,
+            }
+        )
+
+        return field_dict
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        settled = d.pop("settled")
+
+        future = d.pop("future")
+
+        spendable = d.pop("spendable")
+
+        offchain_outbound = d.pop("offchain_outbound")
+
+        offchain_inbound = d.pop("offchain_inbound")
+
+        asset_balance_response = cls(
+            settled=settled,
+            future=future,
+            spendable=spendable,
+            offchain_outbound=offchain_outbound,
+            offchain_inbound=offchain_inbound,
+        )
+
+        asset_balance_response.additional_properties = d
+        return asset_balance_response
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

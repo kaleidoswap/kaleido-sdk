@@ -5,7 +5,7 @@ import { KaleidoClient, KaleidoConfig } from './client';
  */
 export function createTestClient(config?: Partial<KaleidoConfig>): KaleidoClient {
   const defaultConfig: KaleidoConfig = {
-    baseUrl: process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com/api/v1',
+    baseUrl: process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com',
     nodeUrl: process.env.KALEIDO_TEST_NODE_URL || process.env.KALEIDO_NODE_URL,
     apiKey: process.env.KALEIDO_API_KEY,
   };
@@ -17,11 +17,11 @@ export function createTestClient(config?: Partial<KaleidoConfig>): KaleidoClient
  * Helper function to get asset list response and extract trading pair information
  * Returns the first available trading pair for quote testing
  */
-export async function assetListResponse(
+export async function getAssetListResponse(
   client: KaleidoClient
 ): Promise<{ fromAsset: string; toAsset: string; fromAmount: number }> {
-  const assets = await client.assetList();
-  const pairs = await client.pairList();
+  const assets = await client.listAssets();
+  const pairs = await client.listPairs();
 
   if (!assets.assets || assets.assets.length === 0) {
     throw new Error('No assets available for testing');

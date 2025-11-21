@@ -1,6 +1,6 @@
 import { components } from './schema';
 
-export { components };
+export type { components };
 
 // Schema types
 export type PairResponse = components['schemas']['PairResponse'];

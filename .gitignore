@@ -100,3 +100,7 @@ docs/_build/
 *.log.*
 logs/
 log/ 
+
+*.pyc
+__pycache__/
+*.DS_Store

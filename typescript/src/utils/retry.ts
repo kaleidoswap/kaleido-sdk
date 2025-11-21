@@ -100,7 +100,7 @@ export async function retry<T>(
     }
   }
 
-  throw lastError;
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 /**

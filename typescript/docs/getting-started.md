@@ -43,7 +43,7 @@ const client = new KaleidoClient({
 
 ```typescript
 // Get available trading pairs
-const pairs = await client.pairList();
+const pairs = await client.listPairs();
 ```
 <details>
   <summary>
@@ -101,7 +101,7 @@ const pairs = await client.pairList();
 
 ```ts
 // Get available assets
-const assets = await client.assetList();
+const assets = await client.listAssets();
 ```
 
 <details>

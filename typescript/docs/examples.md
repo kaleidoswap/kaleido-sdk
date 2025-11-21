@@ -17,7 +17,7 @@ const client = new KaleidoClient({
 });
 
 // Get available trading pairs
-const pairs = await client.pairList();
+const pairs = await client.listPairs();
 const assetMapper = createAssetPairMapper(pairs);
 
 // Find the assets
@@ -32,7 +32,7 @@ if (!btc || !usdt) {
 const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
 const atomicAmount = precisionHandler.toAssetAmount(1, btc.asset_id);
 
-const quote = await client.quoteRequest(
+const quote = await client.getQuote(
   btc.asset_id,
   usdt.asset_id,
   atomicAmount
@@ -79,7 +79,7 @@ const client = new KaleidoClient({
 });
 
 // Step 1: Get trading pairs and setup helpers
-const pairs = await client.pairList();
+const pairs = await client.listPairs();
 const assetMapper = createAssetPairMapper(pairs);
 const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
 
@@ -115,7 +115,7 @@ if (!validation.valid) {
 
 ```ts
 // Step 4: Get a quote
-const quote = await client.quoteRequest(
+const quote = await client.getQuote(
   btc.asset_id,
   usdt.asset_id,
   validation.asset_amount

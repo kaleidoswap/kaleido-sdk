@@ -1,5 +1,5 @@
 import { KaleidoClient } from '../client';
-import { assetListResponse, createTestClient } from '../testUtils';
+import { getAssetListResponse, createTestClient } from '../testUtils';
 
 const itIf = (condition: boolean) => (condition ? it : it.skip);
 const hasNodeConfig = Boolean(process.env.KALEIDO_TEST_NODE_URL || process.env.KALEIDO_NODE_URL);
@@ -15,11 +15,11 @@ describe('KaleidoClient integration', () => {
 
   describe('public HTTP endpoints', () => {
     it('lists assets, pairs, and LSP network info', async () => {
-      const assets = await client.assetList();
+      const assets = await client.listAssets();
       expect(Array.isArray(assets.assets)).toBe(true);
       expect(assets.assets.length).toBeGreaterThan(0);
 
-      const pairs = await client.pairList();
+      const pairs = await client.listPairs();
       expect(Array.isArray(pairs.pairs)).toBe(true);
       expect(pairs.pairs.length).toBeGreaterThan(0);
 
@@ -37,13 +37,13 @@ describe('KaleidoClient integration', () => {
     it.skip('returns quote data consistently over HTTP and WebSocket', async () => {
       // Skipped: WebSocket requires authentication/credentials
       // Enable this test by providing proper API credentials
-      const { fromAsset, toAsset, fromAmount } = await assetListResponse(client);
+      const { fromAsset, toAsset, fromAmount } = await getAssetListResponse(client);
 
-      const httpQuote = await client.quoteRequest(fromAsset, toAsset, fromAmount);
+      const httpQuote = await client.getQuote(fromAsset, toAsset, fromAmount);
       expect(httpQuote.rfq_id).toBeTruthy();
       expect(httpQuote.to_amount).toBeGreaterThan(0);
 
-      const wsQuote = await client.quoteRequestWS(fromAsset, toAsset, fromAmount);
+      const wsQuote = await client.getQuoteWebSocket(fromAsset, toAsset, fromAmount);
       expect(wsQuote.rfq_id).toBeTruthy();
       expect(wsQuote.to_amount).toBeGreaterThan(0);
     });
@@ -52,9 +52,9 @@ describe('KaleidoClient integration', () => {
   describe('swap helpers', () => {
     it('requires node configuration before polling swap status', async () => {
       const noNodeClient = createTestClient({ nodeUrl: undefined });
-      await expect(noNodeClient.waitForSwapCompletion('non-existent', 1, 1)).rejects.toThrow(
-        'Node URL is required'
-      );
+      await expect(
+        noNodeClient.waitForSwapCompletion('non-existent', { timeout: 1, pollInterval: 1 })
+      ).rejects.toThrow('Node URL is required');
     });
   });
 
