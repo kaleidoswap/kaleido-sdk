@@ -30,9 +30,9 @@ const canTrade = assetMapper.canTrade(btc.asset_id, usdt.asset_id);
 ### Precision Handler
 **File:** `src/utils/precisionHandler.ts`
 
-Handles amount conversions between decimal and atomic units:
-- Convert decimal amounts to atomic units for API calls
-- Convert atomic amounts back to decimal for display
+Handles amount conversions between display and raw units:
+- Convert display amounts to raw units for API calls
+- Convert raw amounts back to display for display
 - Validate order size limits
 - Format amounts with proper precision
 
@@ -42,8 +42,8 @@ import { createPrecisionHandler } from '../src/utils';
 const allAssets = assetMapper.getAllAssets();
 const precisionHandler = createPrecisionHandler(allAssets);
 
-// Convert 0.001 BTC to atomic units (satoshis)
-const atomicAmount = precisionHandler.toAtomicAmount(0.001, btc.asset_id);
+// Convert 0.001 BTC to raw units (satoshis)
+const rawAmount = precisionHandler.toRawAmount(0.001, btc.asset_id);
 
 // Validate order size
 const validation = precisionHandler.validateOrderSize(0.001, btc);
@@ -61,7 +61,7 @@ Demonstrates selling BTC to receive USDT with proper precision handling:
 3. **Create precision handler** → `createPrecisionHandler(assets)`
 4. **Find assets** → `assetMapper.findByTicker('BTC')`
 5. **Validate amount** → `precisionHandler.validateOrderSize(0.001, btc)`
-6. **Get quote** → `client.getQuote()` with atomic amount
+6. **Get quote** → `client.getQuote()` with raw amount
 7. **Initialize swap** → `client.initMakerSwap()`
 8. **Monitor status** → `client.getSwapStatus()`
 
@@ -91,26 +91,26 @@ ts-node examples/usdt-to-btc-swap.ts
 
 ### Precision Handling
 The examples properly handle precision by:
-- **Converting decimal amounts to atomic units** before API calls
+- **Converting display amounts to raw units** before API calls
 - **Validating order sizes** against min/max limits
-- **Converting atomic responses back to decimal** for display
-- **Showing both atomic and decimal amounts** for transparency
+- **Converting raw responses back to display** for display
+- **Showing both raw and display amounts** for transparency
 
 Example precision handling:
 ```typescript
-// Input: 0.001 BTC (decimal)
-const decimalAmount = 0.001;
+// Input: 0.001 BTC (display)
+const displayAmount = 0.001;
 
 // Validate against order limits
-const validation = precisionHandler.validateOrderSize(decimalAmount, btc);
-// validation.atomicAmount = 100000 (for BTC with precision 11)
+const validation = precisionHandler.validateOrderSize(displayAmount, btc);
+// validation.rawAmount = 100000 (for BTC with precision 11)
 
-// Use atomic amount in API call
-const quote = await client.getQuote(btc.asset_id, usdt.asset_id, validation.atomicAmount, 'from');
+// Use raw amount in API call
+const quote = await client.getQuote(btc.asset_id, usdt.asset_id, validation.rawAmount, 'from');
 
-// Convert response back to decimal for display
-const fromDecimal = precisionHandler.toDecimalAmount(quote.from_amount, btc.asset_id);
-const toDecimal = precisionHandler.toDecimalAmount(quote.to_amount, usdt.asset_id);
+// Convert response back to display for display
+const fromDisplay = precisionHandler.toDisplayAmount(quote.from_amount, btc.asset_id);
+const toDisplay = precisionHandler.toDisplayAmount(quote.to_amount, usdt.asset_id);
 ```
 
 ### Asset Discovery
@@ -160,8 +160,8 @@ Found: BTC (BTC) and USDT (rgb:dqkv_MLl-iiN2WLU-DKAVEkN-tJVc1pR-YCOV184-mQiUCk4)
 
 Preparing to swap 0.001 BTC...
 Amount validation passed:
-- Decimal amount: 0.001 BTC
-- Atomic amount: 100000 units
+- Display amount: 0.001 BTC
+- Raw amount: 100000 units
 
 Getting quote...
 Quote received:
@@ -187,9 +187,9 @@ Final result: Swapped 0.001 BTC for 45.5 USDT
 ## Troubleshooting
 
 **Precision errors?**
-- Check that you're using the correct decimal amounts
+- Check that you're using the correct display amounts
 - Verify order size limits with `precisionHandler.getOrderSizeLimits(asset)`
-- Ensure atomic amounts are integers
+- Ensure raw amounts are integers
 
 **Asset not found?**
 - Check the available assets output

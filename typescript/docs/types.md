@@ -69,9 +69,9 @@ interface WebSocketConfig {
 | Interface | Description | Usage |
 |-----------|-------------|-------|
 | `ClientAsset` | Individual asset information | Asset listings and metadata |
-| `AssetResponse` | Asset list API response | Response from `assetList()` |
+| `AssetResponse` | Asset list API response | Response from `listAssets()` |
 | `Pair` | Trading pair definition | Pair information and configuration |
-| `PairResponse` | Trading pairs API response | Response from `pairList()` |
+| `PairResponse` | Trading pairs API response | Response from `listPairs()` |
 | `MappedAsset` | Enhanced asset with trading info | Used by AssetPairMapper utility |
 
 #### ClientAsset
@@ -131,7 +131,7 @@ interface MappedAsset {
 
 | Interface | Description | Usage |
 |-----------|-------------|-------|
-| `PairQuoteRequest` | Quote request parameters | Used with `quoteRequest()` |
+| `PairQuoteRequest` | Quote request parameters | Used with `getQuote()` |
 | `PairQuoteResponse` | Quote response data | Returned by quote methods |
 | `SwapRequest` | Swap initialization parameters | Used with `initMakerSwap()` |
 | `SwapResponse` | Swap initialization response | Returned by `initMakerSwap()` |
@@ -502,7 +502,7 @@ async function executeTypedSwap(
 ): Promise<SwapResponse> {
   try {
     // Get quote with proper typing
-    const quote: PairQuoteResponse = await client.quoteRequest(
+    const quote: PairQuoteResponse = await client.getQuote(
       fromAsset,
       toAsset,
       amount

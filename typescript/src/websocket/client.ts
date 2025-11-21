@@ -81,7 +81,7 @@ export class WebSocketClient {
     this.maxReconnectAttempts = config.maxReconnectAttempts || 5;
 
     // Set up headers
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+
     this.headers = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       'Content-Type': 'application/json',

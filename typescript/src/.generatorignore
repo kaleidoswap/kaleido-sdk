@@ -1,0 +1,27 @@
+# Files and directories to protect from code generation
+# (not overwritten when regenerating SDK code)
+
+# Hand-written client and wrappers
+client.ts
+http/
+utils/
+types/
+websocket/
+
+# Tests
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Examples and demos
+test-node.ts
+testUtils.ts
+
+# Build configuration
+*.config.js
+*.config.ts
+tsconfig*.json
+
+# Documentation
+*.md
+

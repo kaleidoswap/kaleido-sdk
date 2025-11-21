@@ -2,34 +2,126 @@
 export { KaleidoClient } from './client';
 export type { KaleidoConfig } from './client';
 
-// General Types
+// Re-export commonly used types from generated code
 export type {
-  // Request Types
-  SwapRequest,
-  ConfirmSwapRequest,
-
-  // Response Types
-  ConfirmSwapResponse,
-  AssetResponse,
+  // Kaleidoswap API types
+  AssetsResponse as AssetResponse,
   PairResponse,
-  PairQuoteResponse,
-  PairQuoteRequest,
-  // Order Types
-  CreateOrderRequest,
-  PaymentState,
-  // Other Types
-  Quote,
-  ClientAsset,
   Pair,
-  Swap,
+  PairQuoteRequest,
+  PairQuoteResponse,
+  SwapRequest,
   SwapResponse,
+  ConfirmSwapRequest,
+  ConfirmSwapResponse,
+  Swap,
   SwapStatus,
-  // LSP Types
+  SwapSettlement,
   GetInfoResponseModel,
   NetworkInfoResponse,
-} from './types/index';
+  NodeInfoResponse,
+  CreateOrderRequest,
+  OrderResponse,
+  OrderState,
+  PaymentState,
+  CreateSwapOrderRequest,
+  CreateSwapOrderResponse,
+  SwapOrderStatus,
+  SwapOrderStatusRequest,
+  SwapOrderStatusResponse,
+  ClientAsset,
+  Fee,
+  ChannelFees,
+} from './generated/kaleido';
 
-export * from './types/rln';
+export type {
+  // RGB Node types
+  ListChannelsResponse,
+  OpenChannelRequest,
+  OpenChannelResponse,
+  CloseChannelRequest,
+  GetChannelIdRequest,
+  GetChannelIdResponse,
+  ListPeersResponse,
+  ConnectPeerRequest,
+  DisconnectPeerRequest,
+  ListPaymentsResponse,
+  GetPaymentRequest,
+  GetPaymentResponse,
+  SendPaymentRequest,
+  SendPaymentResponse,
+  KeysendRequest,
+  KeysendResponse,
+  LNInvoiceRequest,
+  LNInvoiceResponse,
+  DecodeLNInvoiceRequest,
+  DecodeLNInvoiceResponse,
+  InvoiceStatusRequest,
+  InvoiceStatusResponse,
+  AddressResponse,
+  BtcBalanceRequest,
+  BtcBalanceResponse,
+  SendBtcRequest,
+  SendBtcResponse,
+  ListTransactionsRequest,
+  ListTransactionsResponse,
+  ListUnspentsRequest,
+  ListUnspentsResponse,
+  EstimateFeeRequest,
+  EstimateFeeResponse,
+  AssetBalanceRequest,
+  AssetBalanceResponse,
+  AssetMetadataRequest,
+  AssetMetadataResponse,
+  ListAssetsRequest,
+  ListAssetsResponse,
+  CreateUtxosRequest,
+  ListTransfersRequest,
+  ListTransfersResponse,
+  FailTransfersRequest,
+  FailTransfersResponse,
+  RefreshRequest,
+  RgbInvoiceRequest,
+  RgbInvoiceResponse,
+  DecodeRGBInvoiceRequest,
+  DecodeRGBInvoiceResponse,
+  SendAssetRequest,
+  SendAssetResponse,
+  IssueAssetNIARequest,
+  IssueAssetNIAResponse,
+  IssueAssetUDARequest,
+  IssueAssetUDAResponse,
+  IssueAssetCFARequest,
+  IssueAssetCFAResponse,
+  PostAssetMediaRequest,
+  PostAssetMediaResponse,
+  GetAssetMediaRequest,
+  GetAssetMediaResponse,
+  ListSwapsResponse,
+  GetSwapRequest,
+  GetSwapResponse,
+  MakerInitRequest,
+  MakerInitResponse,
+  MakerExecuteRequest,
+  TakerRequest,
+  InitRequest,
+  InitResponse,
+  UnlockRequest,
+  BackupRequest,
+  RestoreRequest,
+  ChangePasswordRequest,
+  CheckIndexerUrlRequest,
+  CheckIndexerUrlResponse,
+  CheckProxyEndpointRequest,
+  SignMessageRequest,
+  SignMessageResponse,
+  SendOnionMessageRequest,
+  RevokeTokenRequest,
+  EmptyResponse,
+} from './generated/rgb-node';
+
+// Custom/enhanced types (not in generated code)
+export type { Quote } from './types/index';
 
 // Enhanced error handling system
 export {
@@ -85,7 +177,7 @@ export { AssetPairMapper, createAssetPairMapper } from './utils/assetPairMapper'
 export type { MappedAsset } from './utils/assetPairMapper';
 export { PrecisionHandler, createPrecisionHandler } from './utils/precisionHandler';
 
-// Orders
+// Orders (enum for backward compatibility)
 export enum OrderSettlement {
   LIGHTNING = 'LIGHTNING',
   ONCHAIN = 'ONCHAIN',

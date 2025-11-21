@@ -1,15 +1,22 @@
 # Kaleidoswap SDK
 
-The official TypeScript SDK for interacting with the Kaleidoswap protocol - a decentralized exchange for Bitcoin and RGB assets.
+Official multi-language SDK for interacting with Kaleidoswap - a decentralized exchange for Bitcoin and RGB assets.
 
-## Features
+## 🌐 Multi-Language Support
+
+- **TypeScript/JavaScript** - Full async/await support with TypeScript types
+- **Python** - Async-first with type hints (Python 3.11+)
+- **Rust** - Work in progress
+
+## ✨ Features
 
 - 📊 **Asset Management** - Utilities for managing trading pairs and assets
 - 🔄 **Swap Operations** - Support for onchain and Lightning Network swaps
-- 🔒 **Type Safe** - Full TypeScript support with comprehensive type definitions
-- 🛡️ **Error Handling** - Comprehensive error types and handling
+- 🔒 **Type Safe** - Full TypeScript/Python typing from OpenAPI specs
+- 🛡️ **Error Handling** - Comprehensive error types and automatic retries
 - 🌐 **Real-time Data** - WebSocket support for live quotes and updates
 - 🔧 **Built-in Utilities** - Precision handling, retry mechanisms, and more
+- 🤖 **Auto-Generated** - Code generated from OpenAPI specs for API parity
 
 ## Installation
 
@@ -56,15 +63,23 @@ async function main() {
 main().catch(console.error);
 ```
 
-## Documentation
+## 📚 Documentation
 
-For detailed documentation, see:
+### General
+- **[Code Generation Guide](./docs/CODE_GENERATION.md)** - How SDK code is auto-generated
+- **[SDK Unification Proposal](./SDK_UNIFICATION_PROPOSAL.md)** - SDK architecture and design
+- **[Roadmap](./ROADMAP.md)** - Planned features and development
+- **[Contributing](./CONTRIBUTING.md)** - How to contribute
 
+### TypeScript
 - **[Getting Started](./typescript/docs/getting-started.md)** - Installation and configuration
 - **[API Documentation](./typescript/docs/index.md)** - Complete SDK reference
 - **[Examples](./typescript/docs/examples.md)** - Code examples and workflows
 - **[Types](./typescript/docs/types.md)** - TypeScript type definitions
 - **[Utilities](./typescript/docs/utilities.md)** - Helper functions and classes
+
+### Python
+- Coming soon
 
 ## Key Features
 
@@ -95,14 +110,80 @@ const assetMapper = createAssetPairMapper(pairs);
 const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
 ```
 
-## Contributing
+## 🔧 Development
+
+### Code Generation
+
+This SDK uses **auto-generation** from OpenAPI specs following industry best practices:
+
+```bash
+# Update OpenAPI specs from remote sources
+make update-specs
+
+# Generate SDK code (TypeScript + Python)
+make generate
+
+# Or generate individually
+make generate-typescript
+make generate-python
+```
+
+The SDK follows a **hybrid approach**:
+- **Generated code**: Base clients, models, types (in `/generated` folders)
+- **Hand-written code**: Convenience methods, utilities, error handling
+
+See [Code Generation Guide](./docs/CODE_GENERATION.md) for details.
+
+### Building
+
+```bash
+# Build both TypeScript and Python SDKs
+make build
+
+# Or build individually
+make build-npm
+make build-pip
+```
+
+### Testing
+
+```bash
+# Test both SDKs
+make test
+
+# Or test individually
+make test-npm
+make test-pip
+```
+
+### Linting and Formatting
+
+```bash
+# Format and lint all code
+make format-lint
+
+# Or individually
+make format-npm lint-npm
+make format-pip lint-pip
+```
+
+## 🤝 Contributing
 
 We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for more information.
 
-## Roadmap
+**Important**: Never edit files in `/generated` directories directly. All customizations should go in hand-written wrapper code.
+
+## 🗺️ Roadmap
 
 See our [ROADMAP.md](ROADMAP.md) for planned features and development timeline.
 
-## License
+## 📖 API Sources
+
+This SDK is generated from official OpenAPI specifications:
+
+- **Kaleidoswap API**: `https://api.staging.kaleidoswap.com/openapi.json`
+- **RGB Lightning Node**: `https://github.com/RGB-Tools/rgb-lightning-node/blob/master/openapi.yaml`
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 

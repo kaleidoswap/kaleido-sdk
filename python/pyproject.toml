@@ -1,6 +1,6 @@
 [project]
 name = "kaleidoswap-sdk"
-version = "0.1.5"
+version = "0.2.0"
 description = "Python SDK for KaleidoSwap - A decentralized exchange for Bitcoin and RGB assets"
 authors = [
     {name = "Kaleidoswap Team", email = "dev@kaleidoswap.com"}
@@ -22,6 +22,7 @@ dependencies = [
     "websockets>=12.0",
     "aiohttp>=3.9.0",
     "pydantic>=2.0.0",
+    "python-dateutil>=2.8.0",
 ]
 
 [project.optional-dependencies]

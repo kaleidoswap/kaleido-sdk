@@ -4,9 +4,9 @@ import pytest_asyncio
 from kaleidoswap_sdk.client import KaleidoClient
 
 # Test configuration
-API_URL = "https://api.staging.kaleidoswap.com/api/v1"
+API_URL = os.getenv("API_URL", "https://api.staging.kaleidoswap.com")
 NODE_URL = os.getenv("NODE_URL", "http://localhost:3001/")
-API_KEY = "test_api_key"
+API_KEY = os.getenv("API_KEY", "test_api_key")
 
 # Create logs directory if it doesn't exist
 os.makedirs("logs", exist_ok=True)
@@ -56,6 +56,7 @@ async def client(request):
 
     Usage:
         @pytest.mark.asyncio
+        @pytest.mark.api_only  # For tests that only need the Maker API
         async def test_something(client):
             result = await client.some_method()
             assert result
@@ -63,11 +64,16 @@ async def client(request):
     logger = logging.getLogger(__name__)
     logger.info("Creating new test client instance")
 
-    node_url = NODE_URL
+    # Check if test is marked as api_only (doesn't need RGB node)
+    api_only = request.node.get_closest_marker("api_only")
+
+    # Only pass node_url if test requires it (not api_only)
+    node_url = None if api_only else NODE_URL
 
     client = KaleidoClient(
-        api_url=API_URL,
+        base_url=API_URL,
         node_url=node_url,
+        api_key=API_KEY,
     )
 
     try:

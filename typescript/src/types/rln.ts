@@ -799,4 +799,4 @@ export interface RevokeTokenRequest {
   token: string;
 }
 
-export interface EmptyResponse {}
+export type EmptyResponse = Record<string, never>;

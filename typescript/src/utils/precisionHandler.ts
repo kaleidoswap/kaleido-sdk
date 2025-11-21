@@ -12,22 +12,22 @@ export class PrecisionHandler {
     });
   }
 
-  toAssetAmount(assetDecimalAmount: number, assetId: string): number {
+  toRawAmount(displayAmount: number, assetId: string): number {
     const assetPrecision = this.assetPrecisionMap.get(assetId);
     if (assetPrecision === undefined) {
       throw new Error(`Asset ${assetId} not found`);
     }
 
-    return Math.floor(assetDecimalAmount * Math.pow(10, assetPrecision));
+    return Math.floor(displayAmount * Math.pow(10, assetPrecision));
   }
 
-  toAssetDecimalAmount(assetAmount: number, assetId: string): number {
+  toDisplayAmount(rawAmount: number, assetId: string): number {
     const assetPrecision = this.assetPrecisionMap.get(assetId);
     if (assetPrecision === undefined) {
       throw new Error(`Asset ${assetId} not found`);
     }
 
-    return assetAmount / Math.pow(10, assetPrecision);
+    return rawAmount / Math.pow(10, assetPrecision);
   }
 
   getAssetPrecision(assetId: string): number {
@@ -38,66 +38,66 @@ export class PrecisionHandler {
     return assetPrecision;
   }
 
-  formatAssetDecimalAmount(assetDecimalAmount: number, assetId: string): string {
+  formatDisplayAmount(displayAmount: number, assetId: string): string {
     const assetPrecision = this.getAssetPrecision(assetId);
-    return assetDecimalAmount.toFixed(assetPrecision);
+    return displayAmount.toFixed(assetPrecision);
   }
 
   validateOrderSize(
-    assetDecimalAmount: number,
+    displayAmount: number,
     asset: MappedAsset
   ): {
     valid: boolean;
     error?: string;
-    assetAmount: number;
-    assetMinAmount: number;
-    assetMaxAmount: number;
+    rawAmount: number;
+    minRawAmount: number;
+    maxRawAmount: number;
   } {
-    const assetAmount = this.toAssetAmount(assetDecimalAmount, asset.asset_id);
-    const assetMinDecimalAmount = this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id);
-    const assetMaxDecimalAmount = this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id);
+    const rawAmount = this.toRawAmount(displayAmount, asset.asset_id);
+    const minDisplayAmount = this.toDisplayAmount(asset.min_order_size, asset.asset_id);
+    const maxDisplayAmount = this.toDisplayAmount(asset.max_order_size, asset.asset_id);
 
-    if (assetAmount < asset.min_order_size) {
+    if (rawAmount < asset.min_order_size) {
       return {
         valid: false,
-        error: `Amount ${assetDecimalAmount} ${asset.ticker} is below minimum order size of ${assetMinDecimalAmount} ${asset.ticker}`,
-        assetAmount,
-        assetMinAmount: asset.min_order_size,
-        assetMaxAmount: asset.max_order_size,
+        error: `Amount ${displayAmount} ${asset.ticker} is below minimum order size of ${minDisplayAmount} ${asset.ticker}`,
+        rawAmount,
+        minRawAmount: asset.min_order_size,
+        maxRawAmount: asset.max_order_size,
       };
     }
 
-    if (assetAmount > asset.max_order_size) {
+    if (rawAmount > asset.max_order_size) {
       return {
         valid: false,
-        error: `Amount ${assetDecimalAmount} ${asset.ticker} is above maximum order size of ${assetMaxDecimalAmount} ${asset.ticker}`,
-        assetAmount,
-        assetMinAmount: asset.min_order_size,
-        assetMaxAmount: asset.max_order_size,
+        error: `Amount ${displayAmount} ${asset.ticker} is above maximum order size of ${maxDisplayAmount} ${asset.ticker}`,
+        rawAmount,
+        minRawAmount: asset.min_order_size,
+        maxRawAmount: asset.max_order_size,
       };
     }
 
     return {
       valid: true,
-      assetAmount,
-      assetMinAmount: asset.min_order_size,
-      assetMaxAmount: asset.max_order_size,
+      rawAmount,
+      minRawAmount: asset.min_order_size,
+      maxRawAmount: asset.max_order_size,
     };
   }
 
   getOrderSizeLimits(asset: MappedAsset): {
-    assetMinDecimalAmount: number;
-    assetMaxDecimalAmount: number;
-    assetMinAmount: number;
-    assetMaxAmount: number;
-    assetPrecision: number;
+    minDisplayAmount: number;
+    maxDisplayAmount: number;
+    minRawAmount: number;
+    maxRawAmount: number;
+    precision: number;
   } {
     return {
-      assetMinDecimalAmount: this.toAssetDecimalAmount(asset.min_order_size, asset.asset_id),
-      assetMaxDecimalAmount: this.toAssetDecimalAmount(asset.max_order_size, asset.asset_id),
-      assetMinAmount: asset.min_order_size,
-      assetMaxAmount: asset.max_order_size,
-      assetPrecision: asset.precision,
+      minDisplayAmount: this.toDisplayAmount(asset.min_order_size, asset.asset_id),
+      maxDisplayAmount: this.toDisplayAmount(asset.max_order_size, asset.asset_id),
+      minRawAmount: asset.min_order_size,
+      maxRawAmount: asset.max_order_size,
+      precision: asset.precision,
     };
   }
 }

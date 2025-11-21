@@ -3,29 +3,57 @@
     "target": "es2020",
     "module": "commonjs",
     "lib": ["es2020", "dom"],
-    "types": ["jest"],
+    "types": ["node", "jest"],
     "declaration": true,
+    "declarationMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
+    
+    // Strict Type-Checking Options
     "strict": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    
+    // Additional Checks
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    
+    // Module Resolution
     "moduleResolution": "node",
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    
+    // Emit
     "sourceMap": true,
     "removeComments": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "incremental": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "examples/**/*",
+    "test-node.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ]
 }

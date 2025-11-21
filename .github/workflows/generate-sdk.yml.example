@@ -1,0 +1,212 @@
+name: Generate SDK from OpenAPI Specs
+
+# Example GitHub Actions workflow for automated SDK generation
+# Rename this file to .github/workflows/generate-sdk.yml to activate
+
+on:
+  # Run on schedule (e.g., daily)
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  
+  # Run on manual trigger
+  workflow_dispatch:
+  
+  # Run when OpenAPI specs change
+  push:
+    paths:
+      - 'specs/**'
+      - 'scripts/generate-*.sh'
+      - 'scripts/update-openapi-specs.sh'
+
+jobs:
+  check-specs:
+    name: Check for OpenAPI Spec Updates
+    runs-on: ubuntu-latest
+    outputs:
+      specs_changed: ${{ steps.check.outputs.changed }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Fetch latest OpenAPI specs
+        run: make update-specs
+      
+      - name: Check for changes
+        id: check
+        run: |
+          if git diff --quiet specs/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Upload specs for next job
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-specs
+          path: specs/
+
+  generate-typescript:
+    name: Generate TypeScript SDK
+    needs: check-specs
+    if: needs.check-specs.outputs.specs_changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download updated specs
+        if: needs.check-specs.outputs.specs_changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-specs
+          path: specs/
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: typescript/package-lock.json
+      
+      - name: Install TypeScript dependencies
+        run: |
+          cd typescript
+          npm ci
+      
+      - name: Generate TypeScript SDK
+        run: make generate-typescript
+      
+      - name: Build TypeScript SDK
+        run: make build-npm
+      
+      - name: Run TypeScript tests
+        run: make test-npm
+      
+      - name: Upload TypeScript generated code
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-generated
+          path: typescript/src/generated/
+
+  generate-python:
+    name: Generate Python SDK
+    needs: check-specs
+    if: needs.check-specs.outputs.specs_changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download updated specs
+        if: needs.check-specs.outputs.specs_changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-specs
+          path: specs/
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+      
+      - name: Install Python dependencies
+        run: |
+          cd python
+          uv sync --extra dev
+      
+      - name: Generate Python SDK
+        run: make generate-python
+      
+      - name: Build Python SDK
+        run: make build-pip
+      
+      - name: Run Python tests
+        run: make test-pip
+      
+      - name: Upload Python generated code
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-generated
+          path: python/kaleidoswap_sdk/generated/
+
+  create-pr:
+    name: Create Pull Request
+    needs: [check-specs, generate-typescript, generate-python]
+    if: needs.check-specs.outputs.specs_changed == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Download updated specs
+        uses: actions/download-artifact@v4
+        with:
+          name: updated-specs
+          path: specs/
+      
+      - name: Download TypeScript generated code
+        uses: actions/download-artifact@v4
+        with:
+          name: typescript-generated
+          path: typescript/src/generated/
+      
+      - name: Download Python generated code
+        uses: actions/download-artifact@v4
+        with:
+          name: python-generated
+          path: python/kaleidoswap_sdk/generated/
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: regenerate SDK from updated OpenAPI specs'
+          title: '🤖 Auto-generated SDK update from OpenAPI specs'
+          body: |
+            ## 🤖 Automated SDK Generation
+            
+            This PR was automatically created because the OpenAPI specifications have changed.
+            
+            ### Changes
+            - ✅ Updated OpenAPI specs
+            - ✅ Regenerated TypeScript SDK
+            - ✅ Regenerated Python SDK
+            - ✅ All tests passing
+            
+            ### Review Checklist
+            - [ ] Review changes to OpenAPI specs
+            - [ ] Check generated code looks correct
+            - [ ] Verify hand-written wrappers still work
+            - [ ] Check for breaking changes
+            - [ ] Update version numbers if needed
+            
+            **Note**: This is auto-generated code. If tests fail, manual intervention may be required.
+          branch: auto/sdk-generation
+          delete-branch: true
+          labels: |
+            automated
+            sdk-generation
+            dependencies
+
+  notify-failure:
+    name: Notify on Failure
+    needs: [generate-typescript, generate-python]
+    if: failure()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send notification
+        run: |
+          echo "⚠️ SDK generation failed!"
+          echo "Check the workflow logs for details."
+          # Add your notification logic here (Slack, Discord, email, etc.)
+
