@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { ErrorFactory } from '../types/errorFactory';
 import WebSocket, { MessageEvent as WSMessageEvent } from 'ws';
 
@@ -17,6 +18,8 @@ export interface WebSocketConfig {
   baseUrl: string;
   /** Optional API key for authentication */
   apiKey?: string;
+  /** Optional client identifier appended to the connection path */
+  clientId?: string;
   /** Interval between ping messages in milliseconds */
   pingInterval?: number;
   /** Timeout for ping responses in milliseconds */
@@ -47,6 +50,7 @@ export type MessageHandler = (data: any) => void;
  */
 export class WebSocketClient {
   private readonly baseUrl: string;
+  private readonly clientId: string;
   //private readonly apiKey?: string;
   private readonly pingInterval: number;
   private readonly pingTimeout: number;
@@ -74,7 +78,8 @@ export class WebSocketClient {
    * @param config - Configuration for the client
    */
   constructor(config: WebSocketConfig) {
-    this.baseUrl = config.baseUrl.replace(/^http/, 'ws');
+    this.clientId = config.clientId ?? randomUUID();
+    this.baseUrl = this.normalizeBaseUrl(config.baseUrl);
     this.pingInterval = config.pingInterval || 30000; // 30 seconds
     this.pingTimeout = config.pingTimeout || 10000; // 10 seconds
     this.reconnectInterval = config.reconnectInterval || 5000; // 5 seconds
@@ -101,6 +106,26 @@ export class WebSocketClient {
       }
     }
   }
+  private normalizeBaseUrl(urlString: string): string {
+    const url = new URL(urlString);
+    if (!url.protocol.startsWith('ws')) {
+      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    }
+
+    return url.toString().replace(/\/$/, '');
+  }
+
+  private buildConnectionUrl(): string {
+    const base = this.baseUrl.replace(/\/$/, '');
+    const url = new URL(`${base}/${this.clientId}`);
+
+    if (this.headers['Authorization']) {
+      url.searchParams.append('token', this.headers['Authorization'].replace('Bearer ', ''));
+    }
+
+    return url.toString();
+  }
+
 
   /**
    * Gets the headers for WebSocket connection
@@ -158,12 +183,7 @@ export class WebSocketClient {
 
     // If using an API key, add it to the URL as a query parameter
     // This is a common pattern when headers aren't supported
-    let wsUrl = this.baseUrl;
-    if (this.headers['Authorization']) {
-      const url = new URL(wsUrl);
-      url.searchParams.append('token', this.headers['Authorization'].replace('Bearer ', ''));
-      wsUrl = url.toString();
-    }
+    const wsUrl = this.buildConnectionUrl();
 
     debug(`Connecting to WebSocket: ${wsUrl}`);
     if (process.env.DEBUG_WS) {

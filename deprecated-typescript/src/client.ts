@@ -147,6 +147,7 @@ export interface KaleidoConfig extends Omit<HttpClientConfig, 'baseUrl'> {
   nodeUrl?: string;
   wsUrl?: string;
   apiKey?: string;
+  clientId?: string;
 }
 
 export class KaleidoClient {
@@ -162,7 +163,7 @@ export class KaleidoClient {
   private precisionHandler: PrecisionHandler | null = null;
 
   constructor(config: KaleidoConfig) {
-    const { nodeUrl, wsUrl, baseUrl, ...apiConfig } = config;
+    const { nodeUrl, wsUrl, baseUrl, clientId, ...apiConfig } = config;
     const finalBaseUrl =
       baseUrl || process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com';
 
@@ -179,18 +180,13 @@ export class KaleidoClient {
       : null;
 
     // Initialize WebSocket client
-    let wsBaseUrl: string;
-    if (wsUrl) {
-      wsBaseUrl = wsUrl;
-    } else {
-      const url = new URL(finalBaseUrl);
-      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-      wsBaseUrl = url.toString();
-    }
+
+    const wsBaseUrl = this.buildWebSocketBaseUrl(wsUrl ?? finalBaseUrl, Boolean(wsUrl));
 
     this.wsClient = new WebSocketClient({
       ...apiConfig,
       baseUrl: wsBaseUrl,
+      clientId,
     });
   }
 
@@ -200,6 +196,33 @@ export class KaleidoClient {
         'Node URL is required for this operation. Please provide nodeUrl in the client configuration.'
       );
     }
+  }
+
+  private buildWebSocketBaseUrl(baseUrl: string, isCustomUrl: boolean): string {
+    const url = new URL(baseUrl);
+
+    if (!url.protocol.startsWith('ws')) {
+      url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    }
+
+    if (!isCustomUrl) {
+      const trimmedPath = url.pathname.replace(/\/$/, '');
+      let wsPath: string;
+
+      if (trimmedPath.endsWith('/market/ws')) {
+        wsPath = trimmedPath;
+      } else if (trimmedPath.endsWith('/market')) {
+        wsPath = `${trimmedPath}/ws`;
+      } else if (trimmedPath && trimmedPath !== '') {
+        wsPath = `${trimmedPath}/market/ws`;
+      } else {
+        wsPath = '/api/v1/market/ws';
+      }
+
+      url.pathname = wsPath;
+    }
+
+    return url.toString().replace(/\/$/, '');
   }
 
   private async getUtilities(): Promise<{
