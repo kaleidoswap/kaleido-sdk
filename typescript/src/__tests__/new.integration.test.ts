@@ -17,8 +17,8 @@ jest.mock('../websocket/client');
 
 describe('Feature Coverage', () => {
   let client: KaleidoClient;
-  let mockKaleidoApi: jest.Mocked<KaleidoApiClient>;
-  let mockRgbNodeApi: jest.Mocked<RgbNodeClient>;
+  let mockKaleidoApi: KaleidoApiClient;
+  let mockRgbNodeApi: RgbNodeClient;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,7 +59,15 @@ describe('Feature Coverage', () => {
     client = new KaleidoClient({
       baseUrl: 'http://mock-api.com',
       nodeUrl: 'http://mock-node.com',
+      clientId: 'test-client-id',
     });
+
+    expect(WebSocketClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        baseUrl: 'ws://mock-api.com/api/v1/market/ws',
+        clientId: 'test-client-id',
+      })
+    );
 
     mockKaleidoApi = (client as any).kaleidoApi;
     mockRgbNodeApi = (client as any).rgbNodeApi;
