@@ -16,12 +16,12 @@ import { createAssetPairMapper, createPrecisionHandler } from '../src/utils';
 async function usdtToBtcSwap() {
   // Initialize the client
   const client = new KaleidoClient({
-    baseUrl: 'https://api.regtest.kaleidoswap.com/api/v1'
+    baseUrl: 'https://api.regtest.kaleidoswap.com'
   });
 
   try {
     // Step 1: Get trading pairs and setup helpers
-    const pairs = await client.pairList();
+    const pairs = await client.listPairs();
     const assetMapper = createAssetPairMapper(pairs);
     const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
 
@@ -42,22 +42,22 @@ async function usdtToBtcSwap() {
     }
 
     // Step 4: Get a quote
-    const quote = await client.quoteRequest(
+    const quote = await client.getQuote(
       btc.asset_id,
       usdt.asset_id,
-      validation.asset_amount
+      validation.rawAmount
     );
 
     console.log('Quote received:');
-    console.log(`  From: ${precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id)} BTC`);
-    console.log(`  To: ${precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id)} USDT`);
+    console.log(`  From: ${precisionHandler.toDisplayAmount(quote.from_amount, btc.asset_id)} BTC`);
+    console.log(`  To: ${precisionHandler.toDisplayAmount(quote.to_amount, usdt.asset_id)} USDT`);
     console.log(`  Price: ${quote.price}`);
 
     // Step 5: Create the swap order
-    const order = await client.createOrder({
+    const order = await client.createSwapOrder({
       rfq_id: quote.rfq_id,
-      from_type: 'ONCHAIN',
-      to_type: 'ONCHAIN',
+      from_type: 'ONCHAIN' as any,
+      to_type: 'ONCHAIN' as any,
       min_onchain_conf: 1,
       dest_rgb_invoice: 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ',
       refund_address: 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ',
@@ -69,7 +69,7 @@ async function usdtToBtcSwap() {
     console.log(`\nPayment Details:`);
     console.log(`  Address: ${order.onchain_address}`);
     console.log(`  Status: ${order.status}`);
-    console.log(`\nPlease send ${precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id)} BTC to the address above.`);
+    console.log(`\nPlease send ${precisionHandler.toDisplayAmount(quote.from_amount, btc.asset_id)} BTC to the address above.`);
 
     // Step 7: Monitor order status
     console.log('\nMonitoring order status...');
@@ -84,9 +84,9 @@ async function usdtToBtcSwap() {
 
         console.log(`[${attempts + 1}] Status: ${status.status}`);
         
-        if (status.status === 'COMPLETED') {
+        if (status.status === 'FILLED') {
           console.log('\n🎉 Swap completed successfully!');
-          console.log(`Received ${precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id)} USDT`);
+          console.log(`Received ${precisionHandler.toDisplayAmount(quote.to_amount, usdt.asset_id)} USDT`);
           break;
         } else if (status.status === 'FAILED') {
           console.log('\n❌ Swap failed');

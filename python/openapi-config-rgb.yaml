@@ -1,0 +1,11 @@
+# OpenAPI Generator configuration for RGB Lightning Node API (Python)
+# See: https://github.com/openapi-generators/openapi-python-client
+
+project_name_override: "rgb_lightning_node_client"
+package_name_override: "rgb_node"
+package_version_override: "0.1.5"
+
+# Use httpx for async support
+http_timeout: 30
+use_path_prefixes_for_title_model_names: false
+

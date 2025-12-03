@@ -63,11 +63,19 @@ class WebSocketClient:
 
         try:
             # Construct the full WebSocket URL with client ID
-            ws_url = f"{self.base_url}/market/ws/{self.client_id}"
+            ws_url = f"{self.base_url}/api/v1/market/ws/{self.client_id}"
+
+            # Get authentication headers from HTTP client (optional - WebSocket may not need auth)
+            headers = self.http_client._get_headers()
+            # Remove Content-Type header as it's not needed for WebSocket handshake
+            headers.pop("Content-Type", None)
+            # Remove Accept header as well
+            headers.pop("Accept", None)
 
             # Connect using the websockets library
             self._ws = await websockets.connect(
                 ws_url,
+                extra_headers=headers if self.http_client.api_key else None,
                 max_size=self.max_size,
                 max_queue=self.max_queue,
                 compression=self.compression,
@@ -172,6 +180,14 @@ class WebSocketClient:
         if action in self._handlers:
             self._handlers[action].discard(handler)
 
+    def is_connected(self) -> bool:
+        """Check if WebSocket is connected.
+
+        Returns:
+            True if WebSocket is connected, False otherwise
+        """
+        return self._ws is not None and self._running
+
     async def send(self, data: Dict[str, Any]) -> None:
         """Send message to WebSocket server.
 
@@ -187,4 +203,44 @@ class WebSocketClient:
 
         except Exception as e:
             logger.error(f"Error sending message: {e}")
+            raise
+
+    async def send_and_wait(
+        self, data: Dict[str, Any], response_action: str, timeout: float = 30.0
+    ) -> Dict[str, Any]:
+        """Send message and wait for response.
+
+        Args:
+            data: Message data to send
+            response_action: Action type to wait for in response
+            timeout: Timeout in seconds
+
+        Returns:
+            Response message data
+
+        Raises:
+            TimeoutError: If response not received within timeout
+        """
+        if not self._ws:
+            raise RuntimeError("WebSocket not connected")
+
+        # Create future for response
+        future = asyncio.Future()
+        self._response_futures[response_action] = future
+
+        try:
+            # Send message
+            await self.send(data)
+
+            # Wait for response
+            response = await asyncio.wait_for(future, timeout=timeout)
+            return response
+
+        except asyncio.TimeoutError:
+            self._response_futures.pop(response_action, None)
+            raise TimeoutError(
+                f"No response received for action '{response_action}' within {timeout} seconds"
+            )
+        except Exception:
+            self._response_futures.pop(response_action, None)
             raise

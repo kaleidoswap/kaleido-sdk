@@ -24,6 +24,7 @@
  */
 
 import { KaleidoClient } from '../../src/client';
+import { SwapStatus } from '../../src/generated/kaleido';
 import { createAssetPairMapper, createPrecisionHandler, retry } from '../../src/utils';
 
 async function atomicSwapLnToLn() {
@@ -44,7 +45,7 @@ async function atomicSwapLnToLn() {
   try {
     // Step 1: Get trading pairs and setup utility helpers
     console.log('📊 Fetching available trading pairs...');
-    const pairs = await client.pairList();
+    const pairs = await client.listPairs();
     const assetMapper = createAssetPairMapper(pairs);
     const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
     console.log(`Found ${pairs.pairs.length} trading pairs\n`);
@@ -78,16 +79,16 @@ async function atomicSwapLnToLn() {
     // Step 4: Get quote via WebSocket (faster for atomic swaps)
     console.log('💱 Requesting quote via WebSocket...');
     const quote = await retry(
-      async () => client.quoteRequestWS(
+      async () => client.getQuoteWebSocket(
         btc.asset_id,
         usdt.asset_id,
-        validation.asset_amount
+        validation.rawAmount
       ),
       { maxRetries: 3, initialDelay: 1000 }
     );
 
-    const btcToSwap = precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id);
-    const usdtToReceive = precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id);
+    const btcToSwap = precisionHandler.toDisplayAmount(quote.from_amount, btc.asset_id);
+    const usdtToReceive = precisionHandler.toDisplayAmount(quote.to_amount, usdt.asset_id);
 
     console.log('  Quote received:');
     console.log(`    From: ${btcToSwap} BTC`);
@@ -115,8 +116,7 @@ async function atomicSwapLnToLn() {
 
     console.log('  ✓ Maker swap initialized');
     console.log(`    Payment hash: ${initResult.payment_hash}`);
-    console.log(`    Swapstring: ${initResult.swapstring.substring(0, 50)}...`);
-    console.log(`    Expires at: ${new Date(initResult.expires_at * 1000).toLocaleString()}\n`);
+    console.log(`    Swapstring: ${initResult.swapstring.substring(0, 50)}...\n`);
 
     // Step 6: Whitelist the trade on taker node
     console.log('✅ Whitelisting trade on taker node...');
@@ -133,7 +133,7 @@ async function atomicSwapLnToLn() {
 
     // Step 8: Execute the maker swap
     console.log('⚡ Executing atomic swap...');
-    const executeResult = await retry(
+    await retry(
       async () => client.executeMakerSwap({
         swapstring: initResult.swapstring,
         payment_hash: initResult.payment_hash,
@@ -151,11 +151,13 @@ async function atomicSwapLnToLn() {
     try {
       const swapStatus = await client.waitForSwapCompletion(
         initResult.payment_hash,
-        300,  // timeout: 5 minutes
-        5     // poll interval: 5 seconds
+        {
+          timeout: 300000,  // timeout: 5 minutes
+          pollInterval: 5000,  // poll interval: 5 seconds
+        }
       );
 
-      if (swapStatus.status === 'Succeeded') {
+      if (swapStatus.status === SwapStatus.SUCCEEDED) {
         console.log('🎉 Atomic swap completed successfully!\n');
         console.log('📊 Swap Summary:');
         console.log(`  Swapped: ${btcToSwap} BTC`);
@@ -163,17 +165,14 @@ async function atomicSwapLnToLn() {
         console.log(`  Status: ${swapStatus.status}`);
         console.log(`  Payment hash: ${initResult.payment_hash}`);
 
-        if (swapStatus.created_at && swapStatus.updated_at) {
-          const duration = swapStatus.updated_at - swapStatus.created_at;
+        if (swapStatus.requested_at && swapStatus.completed_at) {
+          const duration = swapStatus.completed_at - swapStatus.requested_at;
           console.log(`  Duration: ${duration} seconds`);
         }
-      } else if (swapStatus.status === 'Failed') {
+      } else if (swapStatus.status === SwapStatus.FAILED) {
         console.log('❌ Atomic swap failed\n');
         console.log(`  Status: ${swapStatus.status}`);
-        if (swapStatus.error_message) {
-          console.log(`  Error: ${swapStatus.error_message}`);
-        }
-      } else if (swapStatus.status === 'Expired') {
+      } else if (swapStatus.status === SwapStatus.EXPIRED) {
         console.log('⏰ Atomic swap expired\n');
         console.log('  The swap expired before completion');
       }
@@ -181,7 +180,7 @@ async function atomicSwapLnToLn() {
       if (error instanceof Error && error.message.includes('did not complete')) {
         console.log('⏱️  Swap monitoring timed out');
         console.log('  The swap may still complete. Check status manually:\n');
-        console.log(`  await client.atomicSwapStatus('${initResult.payment_hash}')`);
+        console.log(`  await client.getSwapStatus('${initResult.payment_hash}')`);
       } else {
         throw error;
       }

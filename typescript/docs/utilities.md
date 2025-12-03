@@ -16,7 +16,7 @@ One handy method is `findByTicker('BTC')`, which lets you search for an asset by
 import { createAssetPairMapper } from 'kaleidoswap-sdk';
 
 // Fetch pairs and create the mapper
-const pairs = await client.pairList();
+const pairs = await client.listPairs();
 const assetMapper = createAssetPairMapper(pairs);
 ```
 
@@ -88,7 +88,7 @@ const amountToSwap = 100;
 const atomicAmount = precisionHandler.toAssetAmount(amountToSwap, usdt.asset_id);
 
 // Now use this in your API call
-const quote = await client.quoteRequest(btc.asset_id, usdt.asset_id, atomicAmount);
+const quote = await client.getQuote(btc.asset_id, usdt.asset_id, atomicAmount);
 ```
 
 **From atomic units back to decimal (for display):**
@@ -111,7 +111,7 @@ if (!validation.valid) {
 }
 
 // If valid, use the atomic amount
-const quote = await client.quoteRequest(btc.asset_id, usdt.asset_id, validation.asset_amount);
+const quote = await client.getQuote(btc.asset_id, usdt.asset_id, validation.asset_amount);
 ```
 
 ### Getting Order Limits
@@ -135,7 +135,7 @@ import { retry } from 'kaleidoswap-sdk';
 
 // Automatically retry on network failures
 const quote = await retry(async () => {
-  return await client.quoteRequest(btc.asset_id, usdt.asset_id, amount);
+  return await client.getQuote(btc.asset_id, usdt.asset_id, amount);
 });
 ```
 
@@ -145,7 +145,7 @@ Need more control? You can customize the retry behavior:
 
 ```typescript
 const quote = await retry(
-  async () => client.quoteRequest(btc.asset_id, usdt.asset_id, amount),
+  async () => client.getQuote(btc.asset_id, usdt.asset_id, amount),
   {
     maxRetries: 5,        // Try up to 5 times
     initialDelay: 2000,   // Wait 2 seconds between retries
@@ -174,7 +174,7 @@ async function swapExample() {
   });
 
   // Step 1: Setup utilities (do this once)
-  const pairs = await retry(() => client.pairList());
+  const pairs = await retry(() => client.listPairs());
   const assetMapper = createAssetPairMapper(pairs);
   const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
 
@@ -201,7 +201,7 @@ async function swapExample() {
 
   // Step 5: Get a quote with retry logic
   const quote = await retry(
-    () => client.quoteRequest(
+    () => client.getQuote(
       btc.asset_id,
       usdt.asset_id,
       validation.asset_amount

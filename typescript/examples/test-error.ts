@@ -1,6 +1,6 @@
 import { KaleidoClient } from '../src/client';
 
-const baseUrl = process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com/api/v1';
+const baseUrl = process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com';
 
 function logSection(title: string) {
   console.log(`\n=== ${title} ===`);
@@ -33,7 +33,7 @@ async function runInvalidQuote() {
   const client = new KaleidoClient({ baseUrl });
 
   try {
-    await client.quoteRequest('INVALID_ASSET', 'ANOTHER_INVALID', 100_000_000);
+    await client.getQuote('INVALID_ASSET', 'ANOTHER_INVALID', 100_000_000);
     console.log('Unexpected success: the quote should have failed.');
   } catch (error) {
     printError(error);

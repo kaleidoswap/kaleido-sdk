@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint lint-fix format-lint deploy-npm deploy-pip deploy-all version-bump-npm version-bump-pip version-bump-all
+.PHONY: help build test clean format lint lint-fix format-lint examples deploy-npm deploy-pip deploy-all version-bump-npm version-bump-pip version-bump-all generate generate-typescript generate-python update-specs
 
 # Default target
 help:
@@ -6,12 +6,17 @@ help:
 	@echo ""
 	@echo "Available targets:"
 	@echo "  help              - Show this help message"
+	@echo "  generate          - Generate SDK code from OpenAPI specs (both TS & Python)"
+	@echo "  generate-typescript - Generate TypeScript SDK from OpenAPI specs"
+	@echo "  generate-python   - Generate Python SDK from OpenAPI specs"
+	@echo "  update-specs      - Download/update OpenAPI specs from remote sources"
 	@echo "  build             - Build both TypeScript and Python SDKs"
 	@echo "  build-npm         - Build TypeScript SDK only"
 	@echo "  build-pip         - Build Python SDK only"
 	@echo "  test              - Run tests for both SDKs"
 	@echo "  test-npm          - Run TypeScript SDK tests"
 	@echo "  test-pip          - Run Python SDK tests"
+	@echo "  examples          - Run SDK examples and demos"
 	@echo "  clean             - Clean build artifacts for both SDKs"
 	@echo "  clean-npm         - Clean TypeScript SDK build artifacts"
 	@echo "  clean-pip         - Clean Python SDK build artifacts"
@@ -51,6 +56,21 @@ PYTHON_DIR := python
 RUST_DIR := rust
 SCRIPTS_DIR := scripts
 
+# Code Generation targets
+generate: generate-typescript generate-python
+
+generate-typescript:
+	@echo "🔄 Generating TypeScript SDK from OpenAPI specs..."
+	@bash $(SCRIPTS_DIR)/generate-typescript.sh
+
+generate-python:
+	@echo "🔄 Generating Python SDK from OpenAPI specs..."
+	@bash $(SCRIPTS_DIR)/generate-python.sh
+
+update-specs:
+	@echo "📥 Updating OpenAPI specifications from remote sources..."
+	@bash $(SCRIPTS_DIR)/update-openapi-specs.sh
+
 # Build targets
 build: build-npm build-pip
 
@@ -82,6 +102,20 @@ test-pip:
 		else \
 			uv sync --extra dev && uv run pytest tests/; \
 		fi
+
+test-python-api-only:
+	@echo "🧪 Running Python SDK API-only tests..."
+	cd $(PYTHON_DIR) && \
+		if [ -f uv.lock ]; then \
+			uv sync --frozen --extra dev && uv run pytest tests/ -m api_only; \
+		else \
+			uv sync --extra dev && uv run pytest tests/ -m api_only; \
+		fi
+
+# Examples target
+examples:
+	@echo "🚀 Running KaleidoSwap SDK examples..."
+	@bash $(SCRIPTS_DIR)/run-examples.sh examples
 
 # Clean targets
 clean: clean-npm clean-pip

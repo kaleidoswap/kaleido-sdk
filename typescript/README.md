@@ -35,9 +35,47 @@ const quote = await client.getQuote('BTC/USDT', 1.5, true);
 console.log('Quote:', quote);
 ```
 
+## Enhanced SDK Methods (New!)
+
+The TypeScript SDK now includes enhanced utility methods that make it much easier to work with assets and execute swaps:
+
+```typescript
+import { KaleidoClient } from 'kaleidoswap-sdk';
+
+const client = new KaleidoClient({
+  baseUrl: 'https://api.kaleidoswap.com',
+  nodeUrl: 'https://node.kaleidoswap.com' // Required for swap execution
+});
+
+// 1. Easy asset lookup by ticker
+const btc = await client.getAssetByTicker('BTC');
+const usdt = await client.getAssetByTicker('USDT');
+
+// 2. Trading pair validation
+const pair = await client.getPairByTicker('BTC', 'USDT');
+console.log(`Can trade: ${pair?.canTrade}`);
+
+// 3. Enhanced quotes with decimal amounts (no manual conversion!)
+const quote = await client.getQuoteByAssets('BTC', 'USDT', 0.001); // 0.001 BTC
+console.log(`${quote.fromDecimalAmount} BTC → ${quote.toDecimalAmount} USDT`);
+
+// 4. One-call swap execution (like Python SDK)
+const result = await client.executeSwap('BTC', 'USDT', 0.001);
+console.log(`Swap completed: ${result.status}`);
+```
+
+### Key Benefits:
+- **No manual unit conversion** - work with decimal amounts directly
+- **Automatic validation** - helpful error messages for invalid amounts/pairs
+- **One-call execution** - complete swaps without managing individual steps
+- **Type safety** - full TypeScript support with enhanced return types
+
 ## Features
 
 - Full TypeScript support with type definitions
+- **Enhanced utility methods for easier asset and pair management**
+- **One-call swap execution (similar to Python SDK)**
+- **Automatic decimal amount handling and validation**
 - Automatic retry mechanism for failed requests
 - WebSocket support for real-time updates
 - Comprehensive error handling

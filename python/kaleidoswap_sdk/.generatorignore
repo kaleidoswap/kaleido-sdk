@@ -1,0 +1,28 @@
+# Files and directories to protect from code generation
+# (not overwritten when regenerating SDK code)
+
+# Hand-written client and wrappers
+client.py
+http.py
+retry.py
+models.py
+exceptions.py
+websocket.py
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# Configuration
+*.toml
+*.ini
+*.cfg
+
+# Documentation
+*.md
+
+# Package metadata
+__init__.py
+py.typed
+

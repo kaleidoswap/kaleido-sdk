@@ -1,112 +1,50 @@
 /**
- * Sell BTC for RGB20 (Onchain to Onchain)
- *
- * This example demonstrates selling BTC to receive RGB20 assets (like USDT)
- * with both assets settled onchain. This is the simplest swap type and does
- * NOT require an RLN (RGB Lightning Node).
- *
- * Scenario: You have BTC onchain and want to receive USDT onchain
- * Settlement: Onchain → Onchain
- * RLN Node Required: ❌ No
- *
- * Flow:
- * 1. Get available trading pairs and assets
- * 2. Find BTC and USDT (or other RGB20) assets
- * 3. Validate the swap amount
- * 4. Get a quote for the swap
- * 5. Create the swap order
- * 6. Display payment address
- * 7. Monitor order status
+ * Sell BTC for USDT (Onchain to Onchain)
  */
 
+import { SwapSettlement } from '../../src/generated/kaleido/models/SwapSettlement';
 import { KaleidoClient } from '../../src/client';
-import { createAssetPairMapper, createPrecisionHandler } from '../../src/utils';
+
+const client = new KaleidoClient({
+  baseUrl: process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1'
+});
 
 async function sellBtcOnchain() {
-  console.log('=== Sell BTC for USDT (Onchain to Onchain) ===\n');
-
-  // Initialize the client (no nodeUrl required for onchain-only swaps)
-  const client = new KaleidoClient({
-    baseUrl: process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com/api/v1'
-  });
-
-  // These are example addresses - replace with your actual RGB addresses
-  const destRgbInvoice = 'your_usdt_destination_rgb_invoice_here';
-  const refundAddress = 'your_refund_btc_address_here';
-  
-
   try {
-    // Step 1: Get trading pairs and setup utility helpers
-    console.log('📊 Fetching available trading pairs...');
-    const pairs = await client.pairList();
-    const assetMapper = createAssetPairMapper(pairs);
-    const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
-    console.log(`Found ${pairs.pairs.length} trading pairs\n`);
-
-    // Step 2: Find the assets we want to trade
-    console.log('🔍 Finding assets...');
-    const btc = assetMapper.findByTicker('BTC');
-    const usdt = assetMapper.findByTicker('USDT');
-
-    if (!btc || !usdt) {
-      throw new Error('Required assets not found. Make sure BTC and USDT pairs are available.');
-    }
-
-    console.log(`  ✓ Found BTC: ${btc.asset_id}`);
-    console.log(`  ✓ Found USDT: ${usdt.asset_id}\n`);
-
-    // Step 3: Define and validate the amount to swap
+    console.log('=== Sell BTC for USDT (Simplified) ===');
+    
     const btcAmountToSell = 0.0001; // Sell 0.0001 BTC (10,000 satoshis)
     console.log(`💰 Amount to swap: ${btcAmountToSell} BTC`);
 
-    const validation = precisionHandler.validateOrderSize(btcAmountToSell, btc);
+    const quote = await client.getQuoteByPair('BTC/USDT', btcAmountToSell);
+    
+    console.log(`>> Sell: ${btcAmountToSell} BTC → ${quote.to_amount} USDT (raw)`);
+    console.log(`>> Price: ${quote.price}`);
+    console.log(`>> RFQ ID: ${quote.rfq_id}`);
+    
+    //TODO: Replace with a valid RGB invoice
+    const dest_rgb_invoice = 'rgb:2whK8s5O-b1LG4rR-OhXpDq1-SjyHvKx-OhTEFjQ-aba0V_o/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/cR/bc:utxob:x8H6O_~H-7RyndJZ-CAUUAcF-RJfWg7H-9hew6Zo-pacK97w-gaGhQ';
+    const refund_address = await client.getAddress();
 
-    if (!validation.valid) {
-      throw new Error(`Amount validation failed: ${validation.error}`);
-    }
-
-    console.log(`  ✓ Validation passed`);
-    console.log(`  ✓ Atomic amount: ${validation.asset_amount} satoshis\n`);
-
-    // Step 4: Get a quote for the swap
-    // We're selling BTC, so: from BTC → to USDT, with the BTC amount we want to sell
-    console.log('💱 Requesting quote...');
-    const quote = await client.quoteRequest(
-      btc.asset_id,      // from_asset (what we're selling)
-      usdt.asset_id,     // to_asset (what we're receiving)
-      validation.asset_amount  // from_amount (how much BTC we're selling)
-    );
-
-    const btcToSell = precisionHandler.toAssetDecimalAmount(quote.from_amount, btc.asset_id);
-    const usdtToReceive = precisionHandler.toAssetDecimalAmount(quote.to_amount, usdt.asset_id);
-
-    console.log('  Quote received:');
-    console.log(`    You sell: ${btcToSell} BTC`);
-    console.log(`    You receive: ${usdtToReceive} USDT`);
-    console.log(`    Price: ${quote.price}`);
-    console.log(`    RFQ ID: ${quote.rfq_id}`);
-    console.log(`    Expires at: ${new Date(quote.expires_at * 1000).toLocaleString()}\n`);
-
-    // Step 5: Create the swap order
-    // Note: You need to provide valid RGB invoices/addresses for your destination and refund
-    console.log('📝 Creating swap order...');
-
-    const order = await client.createOrder({
+    const order = await client.createSwapOrder({
       rfq_id: quote.rfq_id,
-      from_type: 'ONCHAIN',  // Paying with BTC onchain
-      to_type: 'ONCHAIN',    // Receiving USDT onchain
-      min_onchain_conf: 1,   // Minimum confirmations required
-      dest_rgb_invoice: destRgbInvoice,
-      refund_address: refundAddress,
+      from_type: SwapSettlement.ONCHAIN,
+      to_type: SwapSettlement.ONCHAIN,
+      min_onchain_conf: 3,
+      dest_rgb_invoice: dest_rgb_invoice,
+      refund_address: refund_address.address,
     });
-
-    // Step 6: Display payment information
+    
+    console.log(`>> Order ID: ${order.id}`);
+    console.log(`>> Send BTC to: ${order.onchain_address}`);
+    
+  // Step 6: Display payment information
     console.log('  ✓ Order created successfully!\n');
     console.log('📋 Order Details:');
     console.log(`  Order ID: ${order.id}`);
     console.log(`  Status: ${order.status}\n`);
     console.log('💳 Payment Instructions:');
-    console.log(`  Send ${btcToSell} BTC to:`);
+    console.log(`  Send ${btcAmountToSell} BTC to:`);
     console.log(`  ${order.onchain_address}\n`);
     console.log('⚠️  Important: Send exactly the amount specified above');
     console.log('    Sending more or less may result in a failed swap\n');
@@ -125,17 +63,14 @@ async function sellBtcOnchain() {
         const status = await client.swapOrderStatus(order.id);
         console.log(`  [${attempts + 1}/${maxAttempts}] Status: ${status.status}`);
 
-        if (status.status === 'COMPLETED') {
+        if (status.status === 'FILLED') {
           console.log('\n🎉 Swap completed successfully!');
-          console.log(`   You sold: ${btcToSell} BTC`);
-          console.log(`   You received: ${usdtToReceive} USDT`);
-          console.log(`   Destination: ${destRgbInvoice}`);
+          console.log(`   You sold: ${btcAmountToSell} BTC`);
+          console.log(`   You received: ${quote.to_amount} USDT`);
+          console.log(`   Destination: ${dest_rgb_invoice}`);
           break;
         } else if (status.status === 'FAILED') {
           console.log('\n❌ Swap failed');
-          if (status.error_message) {
-            console.log(`   Error: ${status.error_message}`);
-          }
           break;
         } else if (status.status === 'EXPIRED') {
           console.log('\n⏰ Swap expired');
@@ -162,23 +97,10 @@ async function sellBtcOnchain() {
     console.log('   3. Sufficient BTC balance to complete the swap\n');
 
   } catch (error) {
-    console.error('\n❌ Error:', error instanceof Error ? error.message : error);
-
-    if (error instanceof Error) {
-      if (error.message.includes('insufficient liquidity')) {
-        console.log('\n💡 Tip: Try a smaller amount or different asset pair');
-      } else if (error.message.includes('Asset') && error.message.includes('not found')) {
-        console.log('\n💡 Tip: Use client.assetList() to see available assets');
-      } else if (error.message.includes('order size')) {
-        console.log('\n💡 Tip: Check min/max order sizes with precisionHandler.getOrderSizeLimits()');
-      }
-    }
-
-    process.exit(1);
+    console.error('Error:', error instanceof Error ? error.message : error);
   }
 }
 
-// Run if called directly
 if (require.main === module) {
   sellBtcOnchain()
     .then(() => process.exit(0))
