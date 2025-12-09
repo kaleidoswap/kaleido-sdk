@@ -1,0 +1,11 @@
+target/
+**/*.rs.bk
+*.swp
+*.pyc
+__pycache__/
+.venv/
+node_modules/
+dist/
+build/
+*.egg-info/
+.DS_Store

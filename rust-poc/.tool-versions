@@ -1,0 +1,6 @@
+# Tool versions for the PoC
+# This file can be used with asdf or mise for version management
+
+python 3.11.0
+nodejs 20.0.0
+rust 1.75.0

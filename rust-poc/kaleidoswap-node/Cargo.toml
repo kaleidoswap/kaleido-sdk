@@ -1,0 +1,16 @@
+[package]
+name = "kaleidoswap-node"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+kaleidoswap-core = { path = "../kaleidoswap-core" }
+napi = { version = "2", features = ["async", "tokio_rt"] }
+napi-derive = "2"
+tokio = { workspace = true }
+
+[build-dependencies]
+napi-build = "2"

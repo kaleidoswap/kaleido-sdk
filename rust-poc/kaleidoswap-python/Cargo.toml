@@ -1,0 +1,17 @@
+[package]
+name = "kaleidoswap-python"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "kaleidoswap_sdk"
+crate-type = ["cdylib"]
+
+[dependencies]
+kaleidoswap-core = { path = "../kaleidoswap-core" }
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py311"] }
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"] }
+tokio = { workspace = true }
+
+[build-dependencies]
+pyo3-build-config = "0.20"

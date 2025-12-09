@@ -1,0 +1,19 @@
+[package]
+name = "kaleidoswap-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core Kaleidoswap SDK library in Rust"
+license = "MIT"
+
+[dependencies]
+tokio = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+async-trait = "0.1"
+url = "2.5"
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockito = "1.2"
