@@ -49,10 +49,12 @@ test:core:
 
 build:python:
   stage: build
-  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+  image: rust:${RUST_VERSION}
+  before_script:
+    - apt-get update && apt-get install -y python3 python3-pip python3-venv
+    - pip install maturin --break-system-packages
   script:
     - echo "🐍 Building Python Bindings (Maturin)..."
-    - pip install maturin
     - cd ${POC_DIR}/kaleidoswap-python
     - maturin build --release --strip
   artifacts:
@@ -63,7 +65,8 @@ build:python:
     paths:
       - ${POC_DIR}/target/
 
-build:node:
+# TODO: Enable when kaleidoswap-node/package.json is created
+.build:node:
   stage: build
   image: node:${NODE_VERSION}
   script:
@@ -101,7 +104,8 @@ deploy:pypi:
     name: pypi
     url: https://pypi.org/project/kaleidoswap-sdk/
 
-deploy:npm:
+# TODO: Enable when kaleidoswap-node/package.json is created
+.deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
   needs:
