@@ -2,7 +2,7 @@
 typescript/node_modules
 typescript/dist
 typescript/coverage
-
+target/
 typescript/*.js
 typescript/*.js.map
 typescript/*.d.ts
@@ -16,8 +16,10 @@ typescript/package-lock.json
 node_modules
 package.json
 package-lock.json
-# Allow typescript package.json to be tracked
+# Allow package.json in specific directories
 !typescript/package.json
+!typescript/packages/*/package.json
+!crates/*/package.json
 
 # Python
 __pycache__/
@@ -37,6 +39,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+!typescript/packages/*/src/lib/
 parts/
 sdist/
 var/

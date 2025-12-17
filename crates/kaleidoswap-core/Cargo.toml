@@ -1,0 +1,48 @@
+[package]
+name = "kaleidoswap-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Core Rust library for the Kaleidoswap SDK"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# HTTP client
+reqwest.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+
+# Async utilities
+async-trait.workspace = true
+futures.workspace = true
+
+# WebSocket
+tokio-tungstenite.workspace = true
+
+# Utilities
+url.workspace = true
+log.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+
+# Retry logic
+backoff = { version = "0.4", features = ["tokio"] }
+
+# Random for jitter
+rand = "0.8"
+
+[dev-dependencies]
+tokio-test.workspace = true
+wiremock.workspace = true

@@ -1,0 +1,170 @@
+// UniFFI interface definition for Kaleidoswap SDK
+// This file defines the types and functions exposed to other languages
+
+namespace kaleidoswap {
+  // Helper functions for amount conversion
+  i64 to_smallest_units(f64 amount, u8 precision);
+  f64 to_display_units(i64 amount, u8 precision);
+};
+
+// Error types
+[Error]
+enum KaleidoError {
+  "NetworkError",
+  "ApiError", 
+  "ValidationError",
+  "TimeoutError",
+  "WebSocketError",
+  "NotFoundError",
+  "NodeNotConfigured",
+  "InternalError",
+};
+
+// Configuration for the SDK client
+dictionary KaleidoConfig {
+  string base_url;
+  string? node_url;
+  string? api_key;
+  f64 timeout;
+  u32 max_retries;
+  u64 cache_ttl;
+};
+
+// Generic JSON value wrapper for flexibility
+dictionary JsonValue {
+  string json;
+};
+
+// Main SDK client interface
+interface KaleidoClient {
+  // Constructor
+  [Throws=KaleidoError]
+  constructor(KaleidoConfig config);
+  
+  // Check if RGB Lightning Node is configured
+  boolean has_node();
+  
+  // === Market Operations ===
+  
+  [Throws=KaleidoError]
+  JsonValue list_assets();
+  
+  [Throws=KaleidoError]
+  JsonValue list_pairs();
+  
+  [Throws=KaleidoError]
+  JsonValue get_quote_by_pair(string ticker, i64? from_amount, i64? to_amount);
+  
+  // === Swap Operations ===
+  
+  [Throws=KaleidoError]
+  JsonValue get_node_info();
+  
+  [Throws=KaleidoError]
+  JsonValue get_swap_status(string payment_hash);
+  
+  [Throws=KaleidoError]
+  JsonValue wait_for_swap_completion(string payment_hash, f64 timeout_secs, f64 poll_interval_secs);
+  
+  // === Swap Order Operations ===
+  
+  [Throws=KaleidoError]
+  JsonValue get_swap_order_status(string order_id);
+  
+  [Throws=KaleidoError]
+  JsonValue get_order_history(string? status, i32 limit, i32 skip);
+  
+  [Throws=KaleidoError]
+  JsonValue get_order_analytics();
+  
+  [Throws=KaleidoError]
+  JsonValue swap_order_rate_decision(string order_id, boolean accept);
+  
+  // === LSP Operations ===
+  
+  [Throws=KaleidoError]
+  JsonValue get_lsp_info();
+  
+  [Throws=KaleidoError]
+  JsonValue get_lsp_network_info();
+  
+  [Throws=KaleidoError]
+  JsonValue get_lsp_order(string order_id);
+  
+  [Throws=KaleidoError]
+  JsonValue estimate_lsp_fees(i64 channel_size);
+  
+  // === RGB Lightning Node Operations ===
+  
+  [Throws=KaleidoError]
+  JsonValue get_rgb_node_info();
+  
+  [Throws=KaleidoError]
+  JsonValue list_channels();
+  
+  [Throws=KaleidoError]
+  JsonValue list_peers();
+  
+  [Throws=KaleidoError]
+  JsonValue list_node_assets();
+  
+  [Throws=KaleidoError]
+  JsonValue get_asset_balance(string asset_id);
+  
+  [Throws=KaleidoError]
+  JsonValue get_onchain_address();
+  
+  [Throws=KaleidoError]
+  JsonValue get_btc_balance();
+  
+  [Throws=KaleidoError]
+  JsonValue whitelist_trade(string swapstring);
+  
+  [Throws=KaleidoError]
+  JsonValue decode_ln_invoice(string invoice);
+  
+  [Throws=KaleidoError]
+  JsonValue list_payments();
+  
+  [Throws=KaleidoError]
+  JsonValue init_wallet(string password);
+  
+  [Throws=KaleidoError]
+  JsonValue unlock_wallet(string password);
+  
+  [Throws=KaleidoError]
+  JsonValue lock_wallet();
+  
+  // === Convenience Methods ===
+  
+  [Throws=KaleidoError]
+  JsonValue get_asset_by_ticker(string ticker);
+  
+  [Throws=KaleidoError]
+  JsonValue get_quote_by_assets(string from_ticker, string to_ticker, i64? from_amount, i64? to_amount);
+  
+  [Throws=KaleidoError]
+  JsonValue complete_swap(string rfq_id, string from_asset, string to_asset, i64 from_amount, i64 to_amount);
+  
+  [Throws=KaleidoError]
+  JsonValue get_pair_by_ticker(string ticker);
+  
+  // === WebSocket Streaming ===
+  
+  [Throws=KaleidoError]
+  QuoteStream create_quote_stream(string pair_ticker);
+};
+
+// Real-time quote stream interface
+interface QuoteStream {
+  // Receive the next quote update (blocking with timeout)
+  // Returns null if timeout expires without receiving a quote
+  string? recv(f64 timeout_secs);
+  
+  // Check if the stream is still connected
+  boolean is_connected();
+  
+  // Close the stream and clean up resources
+  void close();
+};
+

@@ -1,189 +1,210 @@
 # Kaleidoswap SDK
 
-Official multi-language SDK for interacting with Kaleidoswap - a decentralized exchange for Bitcoin and RGB assets.
+Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidoswap.com) - a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
 
-## 🌐 Multi-Language Support
+## 🌐 Unified Architecture
 
-- **TypeScript/JavaScript** - Full async/await support with TypeScript types
-- **Python** - Async-first with type hints (Python 3.11+)
-- **Rust** - Work in progress
+The SDK is built in **Rust** with bindings for multiple languages:
+
+| Language | Status | Package |
+|----------|--------|---------|
+| **Rust** | ✅ Ready | `kaleidoswap-core` |
+| **Python** | ✅ Ready | `kaleidoswap` |
+| **TypeScript** | ✅ Ready | `@kaleidoswap/sdk` |
+| **Swift** | 🚧 Planned | - |
 
 ## ✨ Features
 
-- 📊 **Asset Management** - Utilities for managing trading pairs and assets
-- 🔄 **Swap Operations** - Support for onchain and Lightning Network swaps
-- 🔒 **Type Safe** - Full TypeScript/Python typing from OpenAPI specs
-- 🛡️ **Error Handling** - Comprehensive error types and automatic retries
-- 🌐 **Real-time Data** - WebSocket support for live quotes and updates
-- 🔧 **Built-in Utilities** - Precision handling, retry mechanisms, and more
-- 🤖 **Auto-Generated** - Code generated from OpenAPI specs for API parity
+- 📊 **Market Data** - Assets, trading pairs, and real-time quotes
+- 🔄 **Swap Operations** - Atomic swaps on Lightning and on-chain
+- 📦 **Swap Orders** - Order management and history
+- ⚡ **LSPS1 Channels** - Lightning channel creation via LSP
+- 🔗 **RGB Lightning Node** - Full RGB node integration
+- 🛡️ **Type Safe** - Auto-generated models from OpenAPI specs
+- 🔧 **Built-in Retry** - Exponential backoff for reliability
+- 📡 **WebSocket** - Real-time updates (coming soon)
 
 ## Installation
 
-Install via npm:
+### Rust
 
-```bash
-npm install @kaleidoswap/kaleidoswap-sdk
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+kaleidoswap-core = "0.2"
 ```
 
-Or with yarn:
+### Python
 
 ```bash
-yarn add @kaleidoswap/kaleidoswap-sdk
+pip install kaleidoswap
+```
+
+### TypeScript/Node.js
+
+```bash
+npm install @kaleidoswap/sdk
+# or
+yarn add @kaleidoswap/sdk
 ```
 
 ## Quick Start
 
-```typescript
-import { KaleidoClient } from '@kaleidoswap/kaleidoswap-sdk';
+### Rust
 
-async function main() {
-    // Initialize client
-    const client = new KaleidoClient({
-        baseUrl: 'https://api.staging.kaleidoswap.com/api/v1'
-    });
+```rust
+use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
 
-    // Get available trading pairs
-    const pairs = await client.pairList();
-    console.log('Available pairs:', pairs);
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = KaleidoConfig::new("https://api.regtest.kaleidoswap.com");
+    let client = KaleidoClient::new(config)?;
 
     // Get available assets
-    const assets = await client.assetList();
-    console.log('Available assets:', assets);
+    let assets = client.list_assets().await?;
+    println!("Found {} assets", assets.len());
 
     // Get a quote
-    const quote = await client.quoteRequest(
-        'BTC',
-        'rgb:q1O5Mn5y-7EoxdTy-xu3ChkP-HmhgGvJ-vQ3ryQ9-CcMxkfg', // USDT
-        100000000 // 1 BTC in satoshis
-    );
-    console.log('Quote:', quote);
+    let quote = client.get_quote_by_pair("BTC/USDT", Some(100000), None).await?;
+    println!("Quote: {} -> {}", quote.from_amount, quote.to_amount);
+
+    Ok(())
+}
+```
+
+### Python
+
+```python
+import asyncio
+from kaleidoswap import KaleidoClient, KaleidoConfig
+
+async def main():
+    config = KaleidoConfig(base_url="https://api.regtest.kaleidoswap.com")
+    client = KaleidoClient(config)
+
+    # Get available assets
+    assets = await client.list_assets()
+    print(f"Found {len(assets)} assets")
+
+    # Get a quote
+    quote = await client.get_quote_by_pair("BTC/USDT", from_amount=100000)
+    print(f"Quote: {quote.from_amount} -> {quote.to_amount}")
+
+asyncio.run(main())
+```
+
+### TypeScript
+
+```typescript
+import { KaleidoClient, KaleidoConfig } from '@kaleidoswap/sdk';
+
+async function main() {
+    const config = new KaleidoConfig({ baseUrl: 'https://api.regtest.kaleidoswap.com' });
+    const client = new KaleidoClient(config);
+
+    // Get available assets
+    const assets = await client.listAssets();
+    console.log(`Found ${assets.length} assets`);
+
+    // Get a quote
+    const quote = await client.getQuoteByPair('BTC/USDT', { fromAmount: 100000 });
+    console.log(`Quote: ${quote.fromAmount} -> ${quote.toAmount}`);
 }
 
-main().catch(console.error);
+main();
 ```
 
 ## 📚 Documentation
 
-### General
-- **[Code Generation Guide](./docs/CODE_GENERATION.md)** - How SDK code is auto-generated
-- **[SDK Unification Proposal](./SDK_UNIFICATION_PROPOSAL.md)** - SDK architecture and design
-- **[Roadmap](./ROADMAP.md)** - Planned features and development
-- **[Contributing](./CONTRIBUTING.md)** - How to contribute
-
-### TypeScript
-- **[Getting Started](./typescript/docs/getting-started.md)** - Installation and configuration
-- **[API Documentation](./typescript/docs/index.md)** - Complete SDK reference
-- **[Examples](./typescript/docs/examples.md)** - Code examples and workflows
-- **[Types](./typescript/docs/types.md)** - TypeScript type definitions
-- **[Utilities](./typescript/docs/utilities.md)** - Helper functions and classes
-
-### Python
-- Coming soon
-
-## Key Features
-
-### Asset Management
-Work with Bitcoin and RGB assets seamlessly:
-```typescript
-const pairs = await client.pairList();
-const assets = await client.assetList();
-```
-
-### Swap Operations
-Execute onchain and offchain swaps:
-```typescript
-const order = await client.createOrder({
-    rfq_id: quote.rfq_id,
-    from_type: 'ONCHAIN',
-    to_type: 'ONCHAIN',
-    // ... other parameters
-});
-```
-
-### Utilities
-Built-in helpers for precision handling and asset mapping:
-```typescript
-import { createAssetPairMapper, createPrecisionHandler } from '@kaleidoswap/kaleidoswap-sdk';
-
-const assetMapper = createAssetPairMapper(pairs);
-const precisionHandler = createPrecisionHandler(assetMapper.getAllAssets());
-```
+- **[Architecture](./docs/ARCHITECTURE.md)** - SDK design and structure
+- **[API Reference](./docs/API_REFERENCE.md)** - Complete API documentation
+- **[Examples](./docs/EXAMPLES.md)** - Code examples and workflows
+- **[Error Handling](./docs/ERROR_HANDLING.md)** - Error types and handling
+- **[WebSocket](./docs/WEBSOCKET.md)** - Real-time updates
 
 ## 🔧 Development
 
-### Code Generation
+### Prerequisites
 
-This SDK uses **auto-generation** from OpenAPI specs following industry best practices:
-
-```bash
-# Update OpenAPI specs from remote sources
-make update-specs
-
-# Generate SDK code (TypeScript + Python)
-make generate
-
-# Or generate individually
-make generate-typescript
-make generate-python
-```
-
-The SDK follows a **hybrid approach**:
-- **Generated code**: Base clients, models, types (in `/generated` folders)
-- **Hand-written code**: Convenience methods, utilities, error handling
-
-See [Code Generation Guide](./docs/CODE_GENERATION.md) for details.
+- Rust 1.75+
+- Python 3.11+ (for Python bindings)
+- Node.js 18+ (for TypeScript bindings)
 
 ### Building
 
 ```bash
-# Build both TypeScript and Python SDKs
+# Build everything
 make build
 
-# Or build individually
-make build-npm
-make build-pip
+# Build individual components
+make build-rust
+make build-python
+make build-typescript
 ```
 
 ### Testing
 
 ```bash
-# Test both SDKs
+# Run all tests
 make test
 
-# Or test individually
-make test-npm
-make test-pip
+# Test specific language
+cargo test                    # Rust
+make test-python              # Python
+make test-typescript          # TypeScript
 ```
 
-### Linting and Formatting
+### Regenerating Models
+
+Models are auto-generated from OpenAPI specs:
 
 ```bash
-# Format and lint all code
-make format-lint
-
-# Or individually
-make format-npm lint-npm
-make format-pip lint-pip
+# Update specs and regenerate
+make update-specs
+make generate-models
 ```
 
-## 🤝 Contributing
+See [Architecture](./docs/ARCHITECTURE.md) for details on the code generation workflow.
 
-We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for more information.
+## 📖 API Coverage
 
-**Important**: Never edit files in `/generated` directories directly. All customizations should go in hand-written wrapper code.
+| API | Description | Status |
+|-----|-------------|--------|
+| Market | Assets, pairs, quotes | ✅ |
+| Swaps | Atomic swap operations | ✅ |
+| Swap Orders | Order creation and management | ✅ |
+| LSPS1 | Lightning channel service | ✅ |
+| RGB Node | Full RGB Lightning Node API | ✅ |
 
 ## 🗺️ Roadmap
 
-See our [ROADMAP.md](ROADMAP.md) for planned features and development timeline.
+- [x] Core Rust library
+- [x] Python bindings
+- [x] TypeScript bindings
+- [x] Auto-generated models from OpenAPI
+- [ ] WebSocket support for real-time updates
+- [ ] Swift bindings for iOS/macOS
+- [ ] Kotlin bindings for Android
+- [ ] CLI tool
 
-## 📖 API Sources
+See [ROADMAP.md](./ROADMAP.md) for the complete development timeline.
 
-This SDK is generated from official OpenAPI specifications:
+## 🤝 Contributing
 
-- **Kaleidoswap API**: `https://api.staging.kaleidoswap.com/openapi.json`
-- **RGB Lightning Node**: `https://github.com/RGB-Tools/rgb-lightning-node/blob/master/openapi.yaml`
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+Key points:
+- Never edit files in `models/` directly - regenerate from OpenAPI
+- All changes should include tests
+- Format code with `make format` before committing
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Resources
+
+- **API Specs**: [Kaleidoswap OpenAPI](./specs/kaleidoswap.json)
+- **RGB Node**: [rgb-lightning-node](https://github.com/RGB-Tools/rgb-lightning-node)
+- **Website**: [kaleidoswap.com](https://kaleidoswap.com)

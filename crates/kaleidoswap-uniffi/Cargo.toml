@@ -1,0 +1,26 @@
+[package]
+name = "kaleidoswap-uniffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "UniFFI bindings for the Kaleidoswap SDK"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "kaleidoswap_uniffi"
+
+[dependencies]
+kaleidoswap-core = { path = "../kaleidoswap-core" }
+uniffi = { workspace = true }
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio-tungstenite.workspace = true
+futures.workspace = true
+log.workspace = true
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build", "cli"] }

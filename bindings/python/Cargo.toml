@@ -1,0 +1,20 @@
+[package]
+name = "kaleidoswap-python"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Python bindings for the Kaleidoswap SDK"
+
+[lib]
+crate-type = ["cdylib"]
+name = "kaleidoswap"
+
+[dependencies]
+kaleidoswap-uniffi = { path = "../../crates/kaleidoswap-uniffi" }
+uniffi.workspace = true
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
