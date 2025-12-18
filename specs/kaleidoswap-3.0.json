@@ -1,5 +1,5 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.3",
   "info": {
     "title": "Kaleidoswap RGB-LSP API",
     "description": "API for managing swaps and channels",
@@ -7,7 +7,7 @@
     "x-build-info": {
       "version": "v0.4.0-rc1-108-g5f7d0f28",
       "commit": "5f7d0f28707f0cce835e69b049ce9d8b9dfe1364",
-      "buildDate": "2025-12-18T00:39:11.058182+00:00",
+      "buildDate": "2025-12-17T22:12:43.106367+00:00",
       "generator": "kaleidoswap-maker/scripts/generate_openapi.py"
     }
   },
@@ -1217,124 +1217,8 @@
   "components": {
     "schemas": {
       "Asset": {
-        "properties": {
-          "ticker": {
-            "type": "string",
-            "title": "Ticker",
-            "description": "Display ticker (e.g., 'BTC', 'USDT')"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Full name"
-          },
-          "precision": {
-            "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
-          },
-          "protocol_ids": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Protocol Ids",
-            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
-          },
-          "media": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Media"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Logo/media"
-          },
-          "issued_supply": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Issued Supply",
-            "description": "Total issued supply"
-          },
-          "timestamp": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Timestamp",
-            "description": "Creation timestamp"
-          },
-          "endpoints": {
-            "items": {
-              "$ref": "#/components/schemas/TradingLimits"
-            },
-            "type": "array",
-            "title": "Endpoints",
-            "description": "Layer endpoints with trading limits"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "description": "Active for trading",
-            "default": true
-          },
-          "added_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Added At",
-            "description": "When added to wallet"
-          },
-          "supported_layers": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Supported Layers",
-            "description": "Supported settlement layers (e.g., 'BTC/LN', 'RGB/L1')"
-          },
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id",
-            "description": "Backward-compatible property that returns the primary asset ID.\n\nUse get_id(protocol) for protocol-specific IDs, or protocol_ids dict\nfor full access to all protocol-specific identifiers.",
-            "readOnly": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "ticker",
-          "name",
-          "precision",
-          "asset_id"
-        ],
-        "title": "Asset",
-        "description": "Extended asset definition for the trading system.\n\nExtends TradableAsset with:\n- Trading status (is_active)\n- Supported layers (protocol/network combinations as strings)\n- RGB-specific fields for node API compatibility\n- Methods to convert to TradableAsset for specific settlements\n\nSupported Layers Format: PROTOCOL/NETWORK\n- BTC/L1, BTC/LN, BTC/SPARK, BTC/ARKADE, BTC/LIQUID, BTC/CASHU\n- RGB/L1, RGB/LN\n- TAPASS/L1, TAPASS/LN\n- LIQUID/LIQUID, ARKADE/ARKADE, SPARK/SPARK"
+        "additionalProperties": true,
+        "type": "object"
       },
       "AssetDeliveryStatus": {
         "type": "string",
@@ -3541,7 +3425,7 @@
             "title": "Created At",
             "description": "Creation timestamp (seconds since epoch)",
             "examples": [
-              1766018350
+              1766009562
             ]
           },
           "expires_at": {
@@ -3853,21 +3737,8 @@
         "title": "SwapResponse"
       },
       "SwapRoute": {
-        "properties": {
-          "from_layer": {
-            "type": "string"
-          },
-          "to_layer": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": [
-          "from_layer",
-          "to_layer"
-        ],
-        "title": "SwapRoute",
-        "description": "Pre-computed valid swap route between two layers.\n\nRepresents a specific path for swapping: from_layer -> to_layer.\nFrozen for immutability and hashability (enables use in sets, dict keys)."
+        "additionalProperties": true,
+        "type": "object"
       },
       "SwapStatus": {
         "type": "string",
@@ -3913,123 +3784,12 @@
         "title": "SwapStatusResponse"
       },
       "TradableAsset": {
-        "properties": {
-          "ticker": {
-            "type": "string",
-            "title": "Ticker",
-            "description": "Display ticker (e.g., 'BTC', 'USDT')"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Full name"
-          },
-          "precision": {
-            "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
-          },
-          "protocol_ids": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Protocol Ids",
-            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
-          },
-          "media": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Media"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Logo/media"
-          },
-          "issued_supply": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Issued Supply",
-            "description": "Total issued supply"
-          },
-          "timestamp": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Timestamp",
-            "description": "Creation timestamp"
-          },
-          "endpoints": {
-            "items": {
-              "$ref": "#/components/schemas/TradingLimits"
-            },
-            "type": "array",
-            "title": "Endpoints",
-            "description": "Layer endpoints with trading limits"
-          },
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id",
-            "description": "Backward-compatible property that returns the primary asset ID.\n\nUse get_id(protocol) for protocol-specific IDs, or protocol_ids dict\nfor full access to all protocol-specific identifiers.",
-            "readOnly": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "ticker",
-          "name",
-          "precision",
-          "asset_id"
-        ],
-        "title": "TradableAsset",
-        "description": "Asset with layer context(s) for trading operations.\n\nSupports both:\n- Single-layer use cases (swap execution): use layer property\n- Multi-layer use cases (trading pairs): use endpoints list"
+        "additionalProperties": true,
+        "type": "object"
       },
       "TradingLimits": {
-        "properties": {
-          "layer": {
-            "type": "string",
-            "description": "Settlement layer (e.g., 'BTC/LN', 'RGB/LN')"
-          },
-          "min_amount": {
-            "type": "integer",
-            "title": "Min Amount",
-            "description": "Minimum amount for trading (in smallest unit)"
-          },
-          "max_amount": {
-            "type": "integer",
-            "title": "Max Amount",
-            "description": "Maximum amount for trading (in smallest unit)"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "description": "Whether this layer is active for trading",
-            "default": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "layer",
-          "min_amount",
-          "max_amount"
-        ],
-        "title": "TradingLimits",
-        "description": "Trading limits for a layer.\n\nCombines a Layer (protocol/network) with min/max amount limits for trading."
+        "additionalProperties": true,
+        "type": "object"
       },
       "TradingPair": {
         "properties": {

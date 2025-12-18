@@ -64,10 +64,11 @@ kaleido-sdk/
 ├── crates/                    # Rust crates
 │   ├── kaleidoswap-core/      # Core library
 │   │   ├── src/
-│   │   │   ├── models/        # Auto-generated from OpenAPI
-│   │   │   │   ├── mod.rs     # Type aliases & utilities
-│   │   │   │   ├── kaleidoswap.rs   # Kaleidoswap API models
-│   │   │   │   └── rgb_node.rs      # RGB Node API models
+│   │   │   ├── generated/     # Auto-generated from OpenAPI (Docker)
+│   │   │   │   ├── mod.rs     # Re-exports
+│   │   │   │   ├── kaleidoswap/  # Kaleidoswap API models
+│   │   │   │   └── rgb_node/     # RGB Node API models
+│   │   │   ├── models/        # Legacy models (deprecated)
 │   │   │   ├── api/           # API modules
 │   │   │   │   ├── market.rs  # Assets, pairs, quotes
 │   │   │   │   ├── swaps.rs   # Atomic swaps
@@ -85,7 +86,7 @@ kaleido-sdk/
 │       │   ├── kaleidoswap.udl  # Interface definition
 │       │   └── lib.rs           # FFI wrapper
 │       └── Cargo.toml
-├── bindings/                  # Language-specific bindings
+├── bindings/                  # UniFFI-generated bindings (ACTIVE)
 │   ├── python/                # Python SDK (maturin + PyO3)
 │   │   ├── src/lib.rs
 │   │   ├── pyproject.toml
@@ -94,31 +95,43 @@ kaleido-sdk/
 │       ├── src/lib.rs
 │       ├── package.json
 │       └── tests/
+├── python/                    # ⚠️ DEPRECATED - Legacy standalone SDK
+├── typescript/                # ⚠️ DEPRECATED - Legacy standalone SDK
 ├── specs/                     # OpenAPI specifications
-│   ├── kaleidoswap.json
+│   ├── kaleidoswap.json       # v0.4.0 Kaleidoswap Maker API
 │   └── rgb-lightning-node.yaml
 └── scripts/                   # Build and utility scripts
-    └── generate_models.py     # Model generation from OpenAPI
+    ├── generate-rust-models.sh  # Docker-based model generation
+    └── update-openapi-specs.sh  # Spec download script
 ```
 
 ## Key Components
 
-### 1. Model Generation (`scripts/generate_models.py`)
+### 1. Model Generation (Docker-based)
 
-Models are auto-generated from OpenAPI specifications to ensure API parity:
+Models are auto-generated from OpenAPI specs using `openapi-generator-cli` via Docker:
 
 ```bash
-python scripts/generate_models.py
+# Generate models (requires Docker)
+./scripts/generate-rust-models.sh
+
+# Or via Make
+make generate-models
+
+# Full workflow: fetch specs + generate + verify
+make regenerate
 ```
 
 This generates:
-- `models/kaleidoswap.rs` - Types from Kaleidoswap Maker API
-- `models/rgb_node.rs` - Types from RGB Lightning Node API
+- `generated/kaleidoswap/` - 66 models from Kaleidoswap Maker API
+- `generated/rgb_node/` - 121 models from RGB Lightning Node API
 
-Type aliases in `mod.rs` provide ergonomic naming:
+Re-exports in `generated/mod.rs`:
 ```rust
-pub type Asset = kaleidoswap::Clientasset;
-pub type Quote = kaleidoswap::Pairquoteresponse;
+pub mod kaleidoswap;
+pub mod rgb_node;
+pub use kaleidoswap::models as kaleido;
+pub use rgb_node::models as rgb;
 ```
 
 ### 2. Core Client (`client.rs`)
@@ -233,15 +246,17 @@ make test-typescript # TypeScript binding tests
 When the API changes:
 
 ```bash
-# Download latest OpenAPI specs
-make update-specs
+# Full regeneration workflow (recommended)
+make regenerate
 
-# Regenerate Rust models
-make generate-models
-
-# Rebuild bindings
-make build
+# Or step by step:
+make update-specs      # Download latest OpenAPI specs
+make generate-models   # Run Docker-based generator
+cargo check            # Verify compilation
+make build             # Rebuild bindings
 ```
+
+> **Note**: Model generation requires Docker to be installed and running.
 
 ## API Coverage
 

@@ -157,12 +157,15 @@ make test-typescript          # TypeScript
 
 ### Regenerating Models
 
-Models are auto-generated from OpenAPI specs:
+Models are auto-generated from OpenAPI specs using Docker:
 
 ```bash
-# Update specs and regenerate
-make update-specs
-make generate-models
+# Full regeneration: fetch specs, generate models, verify
+make regenerate
+
+# Or step by step:
+make update-specs      # Download latest OpenAPI specs
+make generate-models   # Generate Rust code (requires Docker)
 ```
 
 See [Architecture](./docs/ARCHITECTURE.md) for details on the code generation workflow.

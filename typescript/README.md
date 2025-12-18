@@ -1,4 +1,12 @@
-# KaleidoSwap TypeScript SDK
+# ⚠️ DEPRECATED: KaleidoSwap TypeScript SDK
+
+> **This SDK is deprecated.** Please use the new UniFFI-based SDK in [`bindings/typescript/`](../bindings/typescript/) instead.
+>
+> The legacy code below is kept for reference but will not receive updates.
+
+---
+
+# KaleidoSwap TypeScript SDK (Legacy)
 
 A TypeScript SDK for interacting with the KaleidoSwap protocol, providing a simple and type-safe interface for trading assets.
 

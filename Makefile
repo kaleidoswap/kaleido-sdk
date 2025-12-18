@@ -23,7 +23,8 @@ help:
 	@echo "  clippy             - Run Rust clippy"
 	@echo ""
 	@echo "Code Generation:"
-	@echo "  generate-models    - Generate Rust models from OpenAPI specs"
+	@echo "  generate-models    - Generate Rust models from OpenAPI specs (Docker)"
+	@echo "  regenerate         - Full regen: update-specs + generate-models + check"
 	@echo "  update-specs       - Download latest OpenAPI specs"
 	@echo ""
 	@echo "Deployment:"
@@ -117,9 +118,12 @@ clippy:
 # ============================================================================
 
 generate-models:
-	@echo "🔄 Generating Rust models from OpenAPI specs..."
-	uv run python scripts/generate_models.py
+	@echo "🔄 Generating Rust models from OpenAPI specs (Docker)..."
+	./scripts/generate-rust-models.sh
 	@echo "✅ Models generated. Run 'cargo check' to verify."
+
+regenerate: update-specs generate-models check
+	@echo "✅ Full regeneration complete!"
 
 update-specs:
 	@echo "📥 Updating OpenAPI specifications..."
