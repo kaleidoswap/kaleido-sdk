@@ -43,6 +43,9 @@ backoff = { version = "0.4", features = ["tokio"] }
 # Random for jitter
 rand = "0.8"
 
+# For openapi-generator generated code
+serde_with = "3"
+
 [dev-dependencies]
 tokio-test.workspace = true
 wiremock.workspace = true
