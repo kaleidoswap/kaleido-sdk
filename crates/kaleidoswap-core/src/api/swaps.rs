@@ -3,9 +3,10 @@
 use crate::error::Result;
 use crate::http::HttpClient;
 use crate::models::{
-    NodeInfo, SwapConfirmRequest, SwapConfirmResponse, SwapInitResponse, SwapRequest,
-    SwapStatusResponse, TakerRequest,
+    ConfirmSwapRequest, ConfirmSwapResponse, NodeInfoResponse, SwapRequest,
+    SwapResponse, SwapStatusResponse,
 };
+use crate::models::rgb_node::TakerRequest;
 use std::sync::Arc;
 
 /// Swaps API client.
@@ -20,17 +21,17 @@ impl SwapsApi {
     }
 
     /// Get node information from the swap service.
-    pub async fn get_node_info(&self) -> Result<NodeInfo> {
+    pub async fn get_node_info(&self) -> Result<NodeInfoResponse> {
         self.http.get("/api/v1/swaps/nodeinfo").await
     }
 
     /// Initialize a swap.
-    pub async fn init_swap(&self, request: &SwapRequest) -> Result<SwapInitResponse> {
+    pub async fn init_swap(&self, request: &SwapRequest) -> Result<SwapResponse> {
         self.http.post("/api/v1/swaps/init", request).await
     }
 
     /// Execute/confirm a swap.
-    pub async fn execute_swap(&self, request: &SwapConfirmRequest) -> Result<SwapConfirmResponse> {
+    pub async fn execute_swap(&self, request: &ConfirmSwapRequest) -> Result<ConfirmSwapResponse> {
         self.http.post("/api/v1/swaps/execute", request).await
     }
 

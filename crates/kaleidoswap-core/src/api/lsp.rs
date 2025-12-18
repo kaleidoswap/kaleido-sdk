@@ -2,63 +2,12 @@
 
 use crate::error::Result;
 use crate::http::HttpClient;
-use serde::{Deserialize, Serialize};
+use crate::models::{
+    ChannelFees, ChannelOrderResponse, CreateOrderRequest, GetInfoResponseModel,
+    NetworkInfoResponse,
+};
+use serde::Serialize;
 use std::sync::Arc;
-
-/// LSP information response.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LspInfo {
-    #[serde(default)]
-    pub pubkey: String,
-    #[serde(default)]
-    pub network: String,
-    #[serde(default)]
-    pub min_channel_size: i64,
-    #[serde(default)]
-    pub max_channel_size: i64,
-}
-
-/// LSP network information response.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LspNetworkInfo {
-    #[serde(default)]
-    pub network: String,
-    #[serde(default)]
-    pub block_height: i64,
-}
-
-/// LSPS1 order request.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Lsps1OrderRequest {
-    pub channel_size: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub client_pubkey: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub announce_channel: Option<bool>,
-}
-
-/// LSPS1 order response.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Lsps1OrderResponse {
-    pub order_id: String,
-    #[serde(default)]
-    pub status: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ln_invoice: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub onchain_address: Option<String>,
-}
-
-/// Fee estimate response.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FeeEstimateResponse {
-    #[serde(default)]
-    pub total_fee: i64,
-    #[serde(default)]
-    pub opening_fee: i64,
-    #[serde(default)]
-    pub service_fee: i64,
-}
 
 /// LSP API client.
 pub struct LspApi {
@@ -72,22 +21,22 @@ impl LspApi {
     }
 
     /// Get LSP information.
-    pub async fn get_info(&self) -> Result<LspInfo> {
+    pub async fn get_info(&self) -> Result<GetInfoResponseModel> {
         self.http.get("/api/v1/lsps1/get_info").await
     }
 
     /// Get network information.
-    pub async fn get_network_info(&self) -> Result<LspNetworkInfo> {
+    pub async fn get_network_info(&self) -> Result<NetworkInfoResponse> {
         self.http.get("/api/v1/lsps1/network_info").await
     }
 
     /// Create an LSPS1 order.
-    pub async fn create_order(&self, request: &Lsps1OrderRequest) -> Result<Lsps1OrderResponse> {
+    pub async fn create_order(&self, request: &CreateOrderRequest) -> Result<ChannelOrderResponse> {
         self.http.post("/api/v1/lsps1/create_order", request).await
     }
 
     /// Get an LSPS1 order.
-    pub async fn get_order(&self, order_id: &str) -> Result<Lsps1OrderResponse> {
+    pub async fn get_order(&self, order_id: &str) -> Result<ChannelOrderResponse> {
         #[derive(Serialize)]
         struct Request<'a> {
             order_id: &'a str,
@@ -97,7 +46,7 @@ impl LspApi {
     }
 
     /// Estimate fees for an order.
-    pub async fn estimate_fees(&self, channel_size: i64) -> Result<FeeEstimateResponse> {
+    pub async fn estimate_fees(&self, channel_size: i64) -> Result<ChannelFees> {
         #[derive(Serialize)]
         struct Request {
             channel_size: i64,

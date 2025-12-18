@@ -3,7 +3,8 @@
 use crate::error::{KaleidoError, Result};
 use crate::http::HttpClient;
 use crate::models::{
-    Asset, AssetsResponse, PairsResponse, Quote, QuoteRequest, TradingPair, ValidationResult,
+    Asset, AssetsResponse, PairQuoteRequest, PairQuoteResponse, TradingPair,
+    TradingPairsResponse, ValidationResult,
 };
 use std::sync::Arc;
 
@@ -26,7 +27,7 @@ impl MarketApi {
 
     /// List all available trading pairs.
     pub async fn list_pairs(&self) -> Result<Vec<TradingPair>> {
-        let response: PairsResponse = self.http.get("/api/v1/market/pairs").await?;
+        let response: TradingPairsResponse = self.http.get("/api/v1/market/pairs").await?;
         Ok(response.pairs)
     }
 
@@ -34,15 +35,15 @@ impl MarketApi {
     /// 
     /// With the new model, amounts are specified inside the SwapLegInput.
     /// Exactly one of from_asset.amount or to_asset.amount must be specified.
-    pub async fn get_quote(&self, request: &QuoteRequest) -> Result<Quote> {
+    pub async fn get_quote(&self, request: &PairQuoteRequest) -> Result<PairQuoteResponse> {
         // Validate that exactly one of the amounts is set
-        match (request.from_asset.amount, request.to_asset.amount) {
-            (Some(_), Some(_)) => {
+        match (&request.from_asset.amount, &request.to_asset.amount) {
+            (Some(Some(_)), Some(Some(_))) => {
                 return Err(KaleidoError::validation(
                     "Cannot specify both from_asset.amount and to_asset.amount",
                 ));
             }
-            (None, None) => {
+            (None, None) | (Some(None), Some(None)) | (Some(None), None) | (None, Some(None)) => {
                 return Err(KaleidoError::validation(
                     "Must specify either from_asset.amount or to_asset.amount",
                 ));
@@ -132,28 +133,28 @@ impl MarketHelper {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::kaleidoswap::{Tradableasset, Tradingpair};
+    use crate::models::TradableAsset;
 
-    fn sample_tradable_asset(ticker: &str, asset_id: &str) -> Tradableasset {
-        Tradableasset {
+    fn sample_tradable_asset(ticker: &str, asset_id: &str) -> TradableAsset {
+        TradableAsset {
             asset_id: asset_id.to_string(),
             ticker: ticker.to_string(),
             name: format!("{} Token", ticker),
             precision: 8,
-            details: None,
             media: None,
             issued_supply: None,
             timestamp: None,
             endpoints: None,
+            protocol_ids: None,
         }
     }
 
-    fn sample_pairs() -> Vec<Tradingpair> {
-        vec![Tradingpair {
+    fn sample_pairs() -> Vec<TradingPair> {
+        vec![TradingPair {
             id: Some("btc-usdt".to_string()),
-            base: sample_tradable_asset("BTC", "btc-id"),
-            quote: sample_tradable_asset("USDT", "usdt-id"),
-            price: Some("50000".to_string()),
+            base: Box::new(sample_tradable_asset("BTC", "btc-id")),
+            quote: Box::new(sample_tradable_asset("USDT", "usdt-id")),
+            price: Some(Some("50000".to_string())),
             routes: None,
             is_active: Some(true),
         }]

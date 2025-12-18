@@ -3,23 +3,21 @@
 //! The main entry point for interacting with the Kaleidoswap protocol.
 
 use crate::api::{
-    lsp::{FeeEstimateResponse, LspApi, LspInfo, LspNetworkInfo, Lsps1OrderRequest, Lsps1OrderResponse},
+    lsp::LspApi,
     market::{MarketApi, MarketHelper},
-    node::{
-        AddressResponse, BtcBalance, Channel, CloseChannelRequest, ConnectPeerRequest,
-        CreateInvoiceRequest, Invoice, KeysendRequest, NodeApi, OpenChannelRequest, Payment,
-        Peer, RgbAsset, RgbAssetBalance, RgbNodeInfo,
-    },
+    node::NodeApi,
     orders::OrdersApi,
     swaps::SwapsApi,
 };
 use crate::error::{KaleidoError, Result};
 use crate::http::HttpClient;
 use crate::models::{
-    Asset, CreateSwapOrderRequest, CreateSwapOrderResponse, NodeInfo, OrderHistoryResponse,
-    OrderStats, Quote, QuoteRequest, Swap, SwapConfirmRequest, SwapConfirmResponse,
-    SwapInitResponse, SwapOrderRateDecisionResponse, SwapOrderStatusResponse, SwapRequest, 
-    SwapStatusResponse, TradingPair, SwapLegInput, NetworkLayer, AssetProtocol,
+    Asset, ChannelFees, ChannelOrderResponse, CreateOrderRequest, CreateSwapOrderRequest,
+    CreateSwapOrderResponse, ConfirmSwapRequest, ConfirmSwapResponse, GetInfoResponseModel,
+    Layer, NetworkInfoResponse, NodeInfoResponse, OrderHistoryResponse, OrderStatsResponse,
+    PairQuoteRequest, PairQuoteResponse, Swap, SwapLegInput, SwapOrderRateDecisionResponse,
+    SwapOrderStatusResponse, SwapRequest, SwapResponse, SwapStatusResponse, TradingPair,
+    rgb_node,
 };
 use crate::retry::RetryConfig;
 use crate::websocket::WebSocketClient;
@@ -35,26 +33,6 @@ struct CacheEntry<T> {
 }
 
 /// The main Kaleidoswap SDK client.
-///
-/// This client provides access to all Kaleidoswap and RGB Lightning Node APIs
-/// with built-in caching, retry logic, and error handling.
-///
-/// # Example
-///
-/// ```rust,no_run
-/// use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let config = KaleidoConfig::new("https://api.regtest.kaleidoswap.com");
-///     let client = KaleidoClient::new(config)?;
-///
-///     let assets = client.list_assets().await?;
-///     println!("Found {} assets", assets.len());
-///
-///     Ok(())
-/// }
-/// ```
 pub struct KaleidoClient {
     #[allow(dead_code)]
     config: KaleidoConfig,
@@ -151,7 +129,6 @@ impl KaleidoClient {
 
     /// List all available assets.
     pub async fn list_assets(&self) -> Result<Vec<Asset>> {
-        // Check cache
         {
             let cache = self.assets_cache.read().await;
             if let Some(entry) = &*cache {
@@ -160,14 +137,11 @@ impl KaleidoClient {
                 }
             }
         }
-
         self.list_assets_uncached().await
     }
 
     async fn list_assets_uncached(&self) -> Result<Vec<Asset>> {
         let assets = self.market.list_assets().await?;
-
-        // Update cache
         {
             let mut cache = self.assets_cache.write().await;
             *cache = Some(CacheEntry {
@@ -175,13 +149,11 @@ impl KaleidoClient {
                 timestamp: Instant::now(),
             });
         }
-
         Ok(assets)
     }
 
     /// List all available trading pairs.
     pub async fn list_pairs(&self) -> Result<Vec<TradingPair>> {
-        // Check cache
         {
             let cache = self.pairs_cache.read().await;
             if let Some(entry) = &*cache {
@@ -190,14 +162,11 @@ impl KaleidoClient {
                 }
             }
         }
-
         self.list_pairs_uncached().await
     }
 
     async fn list_pairs_uncached(&self) -> Result<Vec<TradingPair>> {
         let pairs = self.market.list_pairs().await?;
-
-        // Update cache
         {
             let mut cache = self.pairs_cache.write().await;
             *cache = Some(CacheEntry {
@@ -205,42 +174,30 @@ impl KaleidoClient {
                 timestamp: Instant::now(),
             });
         }
-
         Ok(pairs)
     }
 
     /// Get a quote for a swap.
-    pub async fn get_quote(&self, request: &QuoteRequest) -> Result<Quote> {
+    pub async fn get_quote(&self, request: &PairQuoteRequest) -> Result<PairQuoteResponse> {
         self.market.get_quote(request).await
     }
 
     /// Get a quote by ticker pair (e.g., "BTC/USDT").
-    ///
-    /// # Arguments
-    /// * `ticker` - Pair ticker in format "BASE/QUOTE" (e.g., "USDT/BTC")
-    /// * `from_amount` - Amount to convert from (in smallest units)
-    /// * `to_amount` - Desired amount to receive (in smallest units)
-    /// * `network` - Network layer for the transaction
-    /// * `protocol` - Asset protocol to use
-    ///
-    /// Note: Exactly one of from_amount or to_amount must be Some.
     pub async fn get_quote_by_pair(
         &self,
         ticker: &str,
-        from_amount: Option<i64>,
-        to_amount: Option<i64>,
-        network: NetworkLayer,
-        protocol: AssetProtocol,
-    ) -> Result<Quote> {
+        from_amount: Option<i32>,
+        to_amount: Option<i32>,
+        layer: Layer,
+    ) -> Result<PairQuoteResponse> {
         let parts: Vec<&str> = ticker.split('/').collect();
         if parts.len() != 2 {
             return Err(KaleidoError::validation(format!(
-                "Invalid ticker format: '{}'. Expected format: 'BASE/QUOTE' (e.g., 'BTC/USDT')",
+                "Invalid ticker format: '{}'. Expected format: 'BASE/QUOTE'",
                 ticker
             )));
         }
 
-        // Get assets to resolve tickers to IDs
         let assets = self.list_assets().await?;
 
         let find_asset_id = |ticker: &str| -> Result<String> {
@@ -255,24 +212,21 @@ impl KaleidoClient {
         let from_id = find_asset_id(parts[0])?;
         let to_id = find_asset_id(parts[1])?;
 
-        // Create SwapLegInput for each side
         let from_asset = SwapLegInput {
             asset_id: from_id,
-            network: network.clone(),
-            protocol: protocol.clone(),
-            amount: from_amount,
+            layer: layer.clone(),
+            amount: from_amount.map(Some),
         };
 
         let to_asset = SwapLegInput {
             asset_id: to_id,
-            network,
-            protocol,
-            amount: to_amount,
+            layer,
+            amount: to_amount.map(Some),
         };
 
-        let request = QuoteRequest {
-            from_asset,
-            to_asset,
+        let request = PairQuoteRequest {
+            from_asset: Box::new(from_asset),
+            to_asset: Box::new(to_asset),
         };
 
         if from_amount.is_none() && to_amount.is_none() {
@@ -287,17 +241,17 @@ impl KaleidoClient {
     // === Swap Operations ===
 
     /// Get node information from the swap service.
-    pub async fn get_node_info(&self) -> Result<NodeInfo> {
+    pub async fn get_node_info(&self) -> Result<NodeInfoResponse> {
         self.swaps.get_node_info().await
     }
 
     /// Initialize a swap.
-    pub async fn init_swap(&self, request: &SwapRequest) -> Result<SwapInitResponse> {
+    pub async fn init_swap(&self, request: &SwapRequest) -> Result<SwapResponse> {
         self.swaps.init_swap(request).await
     }
 
     /// Execute/confirm a swap.
-    pub async fn execute_swap(&self, request: &SwapConfirmRequest) -> Result<SwapConfirmResponse> {
+    pub async fn execute_swap(&self, request: &ConfirmSwapRequest) -> Result<ConfirmSwapResponse> {
         self.swaps.execute_swap(request).await
     }
 
@@ -318,17 +272,17 @@ impl KaleidoClient {
         loop {
             let response = self.get_swap_status(payment_hash).await?;
 
-            if let Some(swap) = response.swap {
-                // Check if status is terminal (Succeeded, Expired, or Failed)
+            // Handle double Option from serde_with
+            if let Some(Some(swap)) = response.swap {
+                // status is not Option, it's SwapStatus directly
                 match swap.status {
                     crate::models::SwapStatus::Succeeded
                     | crate::models::SwapStatus::Expired
-                    | crate::models::SwapStatus::Failed => return Ok(swap),
+                    | crate::models::SwapStatus::Failed => return Ok(*swap),
                     _ => {}
                 }
             }
 
-            // Check timeout
             if start.elapsed() >= timeout {
                 return Err(KaleidoError::timeout(timeout.as_secs_f64()));
             }
@@ -338,8 +292,7 @@ impl KaleidoClient {
     }
 
     /// Complete a full swap from quote to execution.
-    pub async fn complete_swap(&self, quote: &Quote) -> Result<SwapConfirmResponse> {
-        // Initialize the swap using asset_id and amount from SwapLeg
+    pub async fn complete_swap(&self, quote: &PairQuoteResponse) -> Result<ConfirmSwapResponse> {
         let swap_request = SwapRequest {
             rfq_id: quote.rfq_id.clone(),
             from_asset: quote.from_asset.asset_id.clone(),
@@ -349,19 +302,16 @@ impl KaleidoClient {
         };
         let init_response = self.init_swap(&swap_request).await?;
 
-        // Get node pubkey for taker
         let node_info = self.get_node_info().await?;
         let taker_pubkey = node_info.pubkey.ok_or_else(|| {
             KaleidoError::config("Node pubkey not available")
         })?;
 
-        // If we have a node configured, whitelist the trade
         if self.has_node() {
             self.swaps.whitelist_trade(&init_response.swapstring).await?;
         }
 
-        // Execute the swap
-        let confirm_request = SwapConfirmRequest {
+        let confirm_request = ConfirmSwapRequest {
             swapstring: init_response.swapstring,
             taker_pubkey,
             payment_hash: init_response.payment_hash,
@@ -396,7 +346,7 @@ impl KaleidoClient {
     }
 
     /// Get order analytics.
-    pub async fn get_order_analytics(&self) -> Result<OrderStats> {
+    pub async fn get_order_analytics(&self) -> Result<OrderStatsResponse> {
         self.orders.get_order_analytics().await
     }
 
@@ -412,27 +362,27 @@ impl KaleidoClient {
     // === LSP Operations ===
 
     /// Get LSP information.
-    pub async fn get_lsp_info(&self) -> Result<LspInfo> {
+    pub async fn get_lsp_info(&self) -> Result<GetInfoResponseModel> {
         self.lsp.get_info().await
     }
 
     /// Get LSP network information.
-    pub async fn get_lsp_network_info(&self) -> Result<LspNetworkInfo> {
+    pub async fn get_lsp_network_info(&self) -> Result<NetworkInfoResponse> {
         self.lsp.get_network_info().await
     }
 
     /// Create an LSPS1 channel order.
-    pub async fn create_lsp_order(&self, request: &Lsps1OrderRequest) -> Result<Lsps1OrderResponse> {
+    pub async fn create_lsp_order(&self, request: &CreateOrderRequest) -> Result<ChannelOrderResponse> {
         self.lsp.create_order(request).await
     }
 
     /// Get an LSPS1 order.
-    pub async fn get_lsp_order(&self, order_id: &str) -> Result<Lsps1OrderResponse> {
+    pub async fn get_lsp_order(&self, order_id: &str) -> Result<ChannelOrderResponse> {
         self.lsp.get_order(order_id).await
     }
 
     /// Estimate fees for an LSPS1 order.
-    pub async fn estimate_lsp_fees(&self, channel_size: i64) -> Result<FeeEstimateResponse> {
+    pub async fn estimate_lsp_fees(&self, channel_size: i64) -> Result<ChannelFees> {
         self.lsp.estimate_fees(channel_size).await
     }
 
@@ -443,52 +393,52 @@ impl KaleidoClient {
     }
 
     /// Get RGB node information.
-    pub async fn get_rgb_node_info(&self) -> Result<RgbNodeInfo> {
+    pub async fn get_rgb_node_info(&self) -> Result<crate::api::node::RgbNodeInfo> {
         self.ensure_node()?.get_info().await
     }
 
     /// List channels on the RGB node.
-    pub async fn list_channels(&self) -> Result<Vec<Channel>> {
+    pub async fn list_channels(&self) -> Result<Vec<crate::api::node::Channel>> {
         self.ensure_node()?.list_channels().await
     }
 
     /// Open a channel on the RGB node.
-    pub async fn open_channel(&self, request: &OpenChannelRequest) -> Result<serde_json::Value> {
+    pub async fn open_channel(&self, request: &crate::api::node::OpenChannelRequest) -> Result<serde_json::Value> {
         self.ensure_node()?.open_channel(request).await
     }
 
     /// Close a channel on the RGB node.
-    pub async fn close_channel(&self, request: &CloseChannelRequest) -> Result<serde_json::Value> {
+    pub async fn close_channel(&self, request: &crate::api::node::CloseChannelRequest) -> Result<serde_json::Value> {
         self.ensure_node()?.close_channel(request).await
     }
 
     /// List peers on the RGB node.
-    pub async fn list_peers(&self) -> Result<Vec<Peer>> {
+    pub async fn list_peers(&self) -> Result<Vec<crate::api::node::Peer>> {
         self.ensure_node()?.list_peers().await
     }
 
     /// Connect to a peer on the RGB node.
-    pub async fn connect_peer(&self, request: &ConnectPeerRequest) -> Result<serde_json::Value> {
+    pub async fn connect_peer(&self, request: &crate::api::node::ConnectPeerRequest) -> Result<serde_json::Value> {
         self.ensure_node()?.connect_peer(request).await
     }
 
     /// List RGB assets on the node.
-    pub async fn list_node_assets(&self) -> Result<Vec<RgbAsset>> {
+    pub async fn list_node_assets(&self) -> Result<Vec<crate::api::node::RgbAsset>> {
         self.ensure_node()?.list_assets().await
     }
 
     /// Get asset balance from the node.
-    pub async fn get_asset_balance(&self, asset_id: &str) -> Result<RgbAssetBalance> {
+    pub async fn get_asset_balance(&self, asset_id: &str) -> Result<crate::api::node::RgbAssetBalance> {
         self.ensure_node()?.get_asset_balance(asset_id).await
     }
 
     /// Get a Bitcoin address from the node.
-    pub async fn get_onchain_address(&self) -> Result<AddressResponse> {
+    pub async fn get_onchain_address(&self) -> Result<crate::api::node::AddressResponse> {
         self.ensure_node()?.get_address().await
     }
 
     /// Get BTC balance from the node.
-    pub async fn get_btc_balance(&self) -> Result<BtcBalance> {
+    pub async fn get_btc_balance(&self) -> Result<crate::api::node::BtcBalance> {
         self.ensure_node()?.get_btc_balance().await
     }
 
@@ -498,7 +448,7 @@ impl KaleidoClient {
     }
 
     /// Create a Lightning invoice on the node.
-    pub async fn create_ln_invoice(&self, request: &CreateInvoiceRequest) -> Result<Invoice> {
+    pub async fn create_ln_invoice(&self, request: &crate::api::node::CreateInvoiceRequest) -> Result<crate::api::node::Invoice> {
         self.ensure_node()?.create_invoice(request).await
     }
 
@@ -508,12 +458,12 @@ impl KaleidoClient {
     }
 
     /// Send a keysend payment.
-    pub async fn keysend(&self, request: &KeysendRequest) -> Result<Payment> {
+    pub async fn keysend(&self, request: &crate::api::node::KeysendRequest) -> Result<crate::api::node::Payment> {
         self.ensure_node()?.keysend(request).await
     }
 
     /// List payments on the node.
-    pub async fn list_payments(&self) -> Result<Vec<Payment>> {
+    pub async fn list_payments(&self) -> Result<Vec<crate::api::node::Payment>> {
         self.ensure_node()?.list_payments().await
     }
 

@@ -3,7 +3,7 @@
 use crate::error::Result;
 use crate::http::HttpClient;
 use crate::models::{
-    CreateSwapOrderRequest, CreateSwapOrderResponse, OrderHistoryResponse, OrderStats,
+    CreateSwapOrderRequest, CreateSwapOrderResponse, OrderHistoryResponse, OrderStatsResponse,
     SwapOrderRateDecisionRequest, SwapOrderRateDecisionResponse, SwapOrderStatusResponse,
 };
 use std::sync::Arc;
@@ -50,7 +50,7 @@ impl OrdersApi {
     }
 
     /// Get order analytics.
-    pub async fn get_order_analytics(&self) -> Result<OrderStats> {
+    pub async fn get_order_analytics(&self) -> Result<OrderStatsResponse> {
         self.http.get("/api/v1/swaps/orders/analytics").await
     }
 
