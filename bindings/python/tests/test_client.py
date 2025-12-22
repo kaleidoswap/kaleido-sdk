@@ -158,8 +158,17 @@ class TestClientMethodSignatures:
         """Test that convenience methods exist."""
         assert hasattr(client, 'get_asset_by_ticker')
         assert hasattr(client, 'get_quote_by_assets')
-        assert hasattr(client, 'complete_swap')
+        assert hasattr(client, 'complete_swap_from_quote')
         assert hasattr(client, 'get_pair_by_ticker')
+
+    def test_has_new_convenience_methods(self, client):
+        """Test that new convenience methods exist."""
+        assert hasattr(client, 'list_active_assets')
+        assert hasattr(client, 'list_active_pairs')
+        assert hasattr(client, 'estimate_swap_fees')
+        assert hasattr(client, 'get_best_quote')
+        assert hasattr(client, 'find_asset_by_ticker')
+        assert hasattr(client, 'find_pair_by_ticker')
 
     def test_has_websocket_methods(self, client):
         """Test that WebSocket streaming methods exist."""
@@ -368,9 +377,9 @@ class TestSwapFlowOperations:
         """Test that wait_for_swap_completion method exists."""
         assert hasattr(client, 'wait_for_swap_completion')
 
-    def test_has_complete_swap_method(self, client):
-        """Test that complete_swap method exists."""
-        assert hasattr(client, 'complete_swap')
+    def test_has_complete_swap_from_quote_method(self, client):
+        """Test that complete_swap_from_quote method exists."""
+        assert hasattr(client, 'complete_swap_from_quote')
 
     def test_has_whitelist_trade_method(self, client):
         """Test that whitelist_trade method exists."""
@@ -760,7 +769,7 @@ class TestMethodCount:
             'lock_wallet',
             'get_asset_by_ticker',
             'get_quote_by_assets',
-            'complete_swap',
+            'complete_swap_from_quote',
             'get_pair_by_ticker',
             'create_quote_stream',
         ]

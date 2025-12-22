@@ -441,18 +441,14 @@ impl PyKaleidoClient {
         .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
-    /// Complete a swap in one call
-    fn complete_swap(
+    /// Complete a swap using a quote JSON string
+    fn complete_swap_from_quote(
         &self,
-        rfq_id: String,
-        from_asset: String,
-        to_asset: String,
-        from_amount: i64,
-        to_amount: i64,
+        quote_json: String,
     ) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.complete_swap(rfq_id, from_asset, to_asset, from_amount, to_amount)
+            inner.complete_swap_from_quote(quote_json)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -465,6 +461,84 @@ impl PyKaleidoClient {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
             inner.get_pair_by_ticker(ticker)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    // === New Convenience Methods ===
+
+    /// List only active assets
+    fn list_active_assets(&self) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner.list_active_assets()
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// List only active trading pairs
+    fn list_active_pairs(&self) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner.list_active_pairs()
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Estimate swap fees for a given pair and amount
+    fn estimate_swap_fees(&self, ticker: String, amount: i64) -> PyResult<i64> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner.estimate_swap_fees(ticker, amount)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Get the best quote by trying multiple layers
+    fn get_best_quote(
+        &self,
+        ticker: String,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+    ) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner.get_best_quote(ticker, from_amount, to_amount)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Find an asset by ticker
+    fn find_asset_by_ticker(&self, ticker: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner.find_asset_by_ticker(ticker)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Find a trading pair by ticker
+    fn find_pair_by_ticker(&self, ticker: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner.find_pair_by_ticker(ticker)
                 .map(|json_value| json_value.json)
         })
         .join()

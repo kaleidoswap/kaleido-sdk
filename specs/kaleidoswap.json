@@ -4,11 +4,14 @@
     "title": "Kaleidoswap RGB-LSP API",
     "description": "API for managing swaps and channels",
     "version": "0.1.0",
-    "x-build-info": {
-      "version": "v0.4.0-rc1-108-g5f7d0f28",
-      "commit": "5f7d0f28707f0cce835e69b049ce9d8b9dfe1364",
-      "buildDate": "2025-12-18T00:39:11.058182+00:00",
-      "generator": "kaleidoswap-maker/scripts/generate_openapi.py"
+    "contact": {
+      "name": "Kaleidoswap Team",
+      "email": "info@kaleidoswap.com",
+      "url": "https://kaleidoswap.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
     }
   },
   "paths": {
@@ -19,24 +22,7 @@
         ],
         "summary": "Get Info",
         "operationId": "get_info_api_v1_lsps1_get_info_get",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -90,24 +76,7 @@
         ],
         "summary": "Create Order",
         "operationId": "create_order_api_v1_lsps1_create_order_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -124,7 +93,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChannelOrderResponse"
+                  "$ref": "#/components/schemas/OrderResponse"
                 }
               }
             }
@@ -150,24 +119,7 @@
         "summary": "Estimate Fees",
         "description": "Estimate channel fees based on the provided parameters without creating an order.\nFor asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.",
         "operationId": "estimate_fees_api_v1_lsps1_estimate_fees_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -209,15 +161,16 @@
         ],
         "summary": "Get Order",
         "operationId": "get_order_api_v1_lsps1_get_order_post",
+        "parameters": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/GetOrderRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -225,7 +178,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChannelOrderResponse"
+                  "$ref": "#/components/schemas/OrderResponse"
                 }
               }
             }
@@ -251,15 +204,16 @@
         "summary": "Handle Rate Decision",
         "description": "Handle user decision on rate change for LSPS1 orders.\nUser can either accept the new market rate or request a refund.",
         "operationId": "handle_rate_decision_api_v1_lsps1_rate_decision_post",
+        "parameters": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RateDecisionRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -355,33 +309,15 @@
         ],
         "summary": "Initiate Swap",
         "operationId": "initiate_swap_api_v1_swaps_init_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SwapRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -414,33 +350,15 @@
         ],
         "summary": "Confirm Swap",
         "operationId": "confirm_swap_api_v1_swaps_execute_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ConfirmSwapRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -473,33 +391,15 @@
         ],
         "summary": "Get Swap Status",
         "operationId": "get_swap_status_api_v1_swaps_atomic_status_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SwapStatusRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -531,118 +431,7 @@
           "market"
         ],
         "summary": "List Assets",
-        "description": "List assets with optional filters.\n\nAll filters are AND-combined. Examples:\n- GET /assets                           \u2192 All active assets\n- GET /assets?asset_id=rgb:2dkSTbr-...  \u2192 Single asset by ID\n- GET /assets?ticker=BTC                \u2192 Single asset by ticker\n- GET /assets?layer=BTC/LN              \u2192 Assets supporting BTC on Lightning\n- GET /assets?network=LN                \u2192 Assets on Lightning Network\n- GET /assets?protocol=RGB              \u2192 All RGB assets\n- GET /assets?is_active=true            \u2192 Only active assets (default behavior)\n- GET /assets?protocol=RGB&network=LN   \u2192 RGB assets on Lightning",
         "operationId": "list_assets_api_v1_market_assets_get",
-        "parameters": [
-          {
-            "name": "asset_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by asset UUID (e.g., 'rgb:2dkSTbr-...')",
-              "title": "Asset Id"
-            },
-            "description": "Filter by asset UUID (e.g., 'rgb:2dkSTbr-...')"
-          },
-          {
-            "name": "ticker",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by ticker (e.g., 'BTC', 'USDT')",
-              "title": "Ticker"
-            },
-            "description": "Filter by ticker (e.g., 'BTC', 'USDT')"
-          },
-          {
-            "name": "layer",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by layer (e.g., 'BTC/LN', 'RGB/L1')",
-              "title": "Layer"
-            },
-            "description": "Filter by layer (e.g., 'BTC/LN', 'RGB/L1')"
-          },
-          {
-            "name": "network",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by network (e.g., 'LN', 'L1')",
-              "title": "Network"
-            },
-            "description": "Filter by network (e.g., 'LN', 'L1')"
-          },
-          {
-            "name": "protocol",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by protocol (e.g., 'BTC', 'RGB')",
-              "title": "Protocol"
-            },
-            "description": "Filter by protocol (e.g., 'BTC', 'RGB')"
-          },
-          {
-            "name": "is_active",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by active status",
-              "title": "Is Active"
-            },
-            "description": "Filter by active status"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -650,16 +439,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetsResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -673,227 +452,14 @@
           "market"
         ],
         "summary": "Get Pairs",
-        "description": "Get all trading pairs with full asset information.\n\nReturns cached trading pairs with:\n- Full asset details (id, ticker, name, precision)\n- Supported layers with min/max amounts\n- Pre-computed swap routes as strings (e.g., \"BTC/LN:RGB/LN\")\n- Latest price (if available)\n\nFilters:\n- layer: Filter by layer (e.g., BTC/LN, RGB/LN) - returns pairs where either asset supports this layer\n- asset: Filter by asset ticker or ID (returns pairs involving this asset)\n- active_only: Only return active trading pairs (default: true)",
         "operationId": "get_pairs_api_v1_market_pairs_get",
-        "parameters": [
-          {
-            "name": "layer",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by layer (e.g., BTC/LN, RGB/LN, BTC/L1)",
-              "title": "Layer"
-            },
-            "description": "Filter by layer (e.g., BTC/LN, RGB/LN, BTC/L1)"
-          },
-          {
-            "name": "asset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by asset ticker or ID",
-              "title": "Asset"
-            },
-            "description": "Filter by asset ticker or ID"
-          },
-          {
-            "name": "active_only",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "boolean",
-              "description": "Only return active pairs",
-              "default": true,
-              "title": "Active Only"
-            },
-            "description": "Only return active pairs"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TradingPairsResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/market/pairs/": {
-      "post": {
-        "tags": [
-          "market"
-        ],
-        "summary": "Get Pair",
-        "description": "Get a single trading pair using one of the following identification methods:\n\n1. By pair_id: {\"pair_id\": \"2c188c7b-a823-4e5b-a82f-4d9fcb5e80ba\"}\n2. By asset IDs: {\"from_asset_id\": \"BTC\", \"quote_asset_id\": \"rgb:...\"}\n3. By pair ticker: {\"pair_ticker\": \"BTC/USDT\"}\n4. By separate tickers: {\"base_ticker\": \"BTC\", \"quote_ticker\": \"USDT\"}\n\nExactly one identification method must be provided.\n\nReturns full trading pair information including:\n- Asset details (id, ticker, name, precision)\n- Supported networks and protocols with min/max amounts\n- Pre-computed swap routes\n- Latest price (if available)",
-        "operationId": "get_pair_api_v1_market_pairs__post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetPairRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TradingPair"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/market/pairs/routes": {
-      "post": {
-        "tags": [
-          "market"
-        ],
-        "summary": "Get Pair Routes",
-        "description": "Get available swap routes for a trading pair.\n\nSupports multiple identification methods:\n1. By pair_id: {\"pair_id\": \"2c188c7b-a823-4e5b-a82f-4d9fcb5e80ba\"}\n2. By asset IDs: {\"from_asset_id\": \"BTC\", \"quote_asset_id\": \"rgb:...\"}\n3. By pair ticker: {\"pair_ticker\": \"BTC/USDT\"}\n4. By separate tickers: {\"base_ticker\": \"BTC\", \"quote_ticker\": \"USDT\"}\n\nExactly one identification method must be provided.\n\nReturns list of pre-computed routes with:\n- Source network and protocol\n- Destination network and protocol\n- Submarine swap indicator (same asset, different networks)",
-        "operationId": "get_pair_routes_api_v1_market_pairs_routes_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GetPairRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/SwapRoute"
-                  },
-                  "type": "array",
-                  "title": "Response Get Pair Routes Api V1 Market Pairs Routes Post"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/market/routes": {
-      "post": {
-        "tags": [
-          "market"
-        ],
-        "summary": "Discover Routes",
-        "description": "Discover all possible routes from source to destination.\n\nSupports multi-hop routing up to max_hops (default: 2).\n\nRequest body:\n- from_asset: Source asset ticker (required)\n- from_layer: Filter by source layer (optional)\n- to_asset: Destination asset ticker (if None, returns all reachable assets)\n- to_layer: Filter by destination layer (optional)\n- max_hops: Maximum number of hops (1-5, default: 2)\n\nReturns list of routes, each with:\n- steps: List of RouteStep objects with asset, layer, and indicative price\n- total_hops: Number of hops in the route",
-        "operationId": "discover_routes_api_v1_market_routes_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RoutesRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RoutesResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/market/routes/matrix": {
-      "get": {
-        "tags": [
-          "market"
-        ],
-        "summary": "Get Route Matrix",
-        "description": "Get full reachability matrix for all assets.\n\nReturns a matrix showing which assets can reach which,\nwith available layer combinations and minimum hops required.",
-        "operationId": "get_route_matrix_api_v1_market_routes_matrix_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReachabilityMatrixResponse"
+                  "$ref": "#/components/schemas/PairResponse"
                 }
               }
             }
@@ -907,35 +473,16 @@
           "market"
         ],
         "summary": "Get Quote",
-        "description": "Get a quote for a swap between two assets.\n\nRequest body contains SwapLegInput for both from_asset and to_asset,\nspecifying asset_id, layer, and amount (on one side).\n\nReturns a quote with full SwapLeg details including:\n- Complete asset information (ticker, name, precision)\n- Layer configuration\n- Calculated amounts and fees\n- Submarine swap indicator (if same asset on different networks)",
         "operationId": "get_quote_api_v1_market_quote_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/PairQuoteRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -968,33 +515,15 @@
         ],
         "summary": "Create Swap Order",
         "operationId": "create_swap_order_api_v1_swaps_orders_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateSwapOrderRequest"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -1071,32 +600,42 @@
         "operationId": "get_order_history_api_v1_swaps_orders_history_get",
         "parameters": [
           {
-            "name": "args",
+            "name": "status",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "title": "Args"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/SwapOrderStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
             }
           },
           {
-            "name": "kwargs",
+            "name": "limit",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "title": "Kwargs"
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OrderHistoryRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1129,24 +668,7 @@
         "summary": "Get Order Stats",
         "description": "Get order statistics including counts by status and volume information",
         "operationId": "get_order_stats_api_v1_swaps_orders_analytics_get",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1216,125 +738,48 @@
   },
   "components": {
     "schemas": {
-      "Asset": {
+      "AssetBalanceResponse": {
         "properties": {
-          "ticker": {
-            "type": "string",
-            "title": "Ticker",
-            "description": "Display ticker (e.g., 'BTC', 'USDT')"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Full name"
-          },
-          "precision": {
+          "settled": {
             "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
+            "format": "int64",
+            "title": "Settled",
+            "example": 777
           },
-          "protocol_ids": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Protocol Ids",
-            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
+          "future": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Future",
+            "example": 777
           },
-          "media": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Media"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Logo/media"
+          "spendable": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Spendable",
+            "example": 777
           },
-          "issued_supply": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Issued Supply",
-            "description": "Total issued supply"
+          "offchain_outbound": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Offchain Outbound",
+            "example": 444
           },
-          "timestamp": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Timestamp",
-            "description": "Creation timestamp"
-          },
-          "endpoints": {
-            "items": {
-              "$ref": "#/components/schemas/TradingLimits"
-            },
-            "type": "array",
-            "title": "Endpoints",
-            "description": "Layer endpoints with trading limits"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "description": "Active for trading",
-            "default": true
-          },
-          "added_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Added At",
-            "description": "When added to wallet"
-          },
-          "supported_layers": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Supported Layers",
-            "description": "Supported settlement layers (e.g., 'BTC/LN', 'RGB/L1')"
-          },
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id",
-            "description": "Backward-compatible property that returns the primary asset ID.\n\nUse get_id(protocol) for protocol-specific IDs, or protocol_ids dict\nfor full access to all protocol-specific identifiers.",
-            "readOnly": true
+          "offchain_inbound": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Offchain Inbound",
+            "example": 0
           }
         },
         "type": "object",
         "required": [
-          "ticker",
-          "name",
-          "precision",
-          "asset_id"
+          "settled",
+          "future",
+          "spendable",
+          "offchain_outbound",
+          "offchain_inbound"
         ],
-        "title": "Asset",
-        "description": "Extended asset definition for the trading system.\n\nExtends TradableAsset with:\n- Trading status (is_active)\n- Supported layers (protocol/network combinations as strings)\n- RGB-specific fields for node API compatibility\n- Methods to convert to TradableAsset for specific settlements\n\nSupported Layers Format: PROTOCOL/NETWORK\n- BTC/L1, BTC/LN, BTC/SPARK, BTC/ARKADE, BTC/LIQUID, BTC/CASHU\n- RGB/L1, RGB/LN\n- TAPASS/L1, TAPASS/LN\n- LIQUID/LIQUID, ARKADE/ARKADE, SPARK/SPARK"
+        "title": "AssetBalanceResponse"
       },
       "AssetDeliveryStatus": {
         "type": "string",
@@ -1348,6 +793,15 @@
         ],
         "title": "AssetDeliveryStatus",
         "description": "Status of asset delivery via keysend after channel opening"
+      },
+      "AssetIface": {
+        "type": "string",
+        "enum": [
+          "RGB20",
+          "RGB21",
+          "RGB25"
+        ],
+        "title": "AssetIface"
       },
       "AssetsOptions": {
         "properties": {
@@ -1380,41 +834,48 @@
           },
           "issued_supply": {
             "type": "integer",
+            "format": "int64",
             "title": "Issued Supply",
             "default": 0
           },
           "min_initial_client_amount": {
             "type": "integer",
+            "format": "int64",
             "minimum": 0.0,
             "title": "Min Initial Client Amount",
             "default": 0
           },
           "max_initial_client_amount": {
             "type": "integer",
+            "format": "int64",
             "minimum": 0.0,
             "title": "Max Initial Client Amount",
             "default": 0
           },
           "min_initial_lsp_amount": {
             "type": "integer",
+            "format": "int64",
             "minimum": 0.0,
             "title": "Min Initial Lsp Amount",
             "default": 0
           },
           "max_initial_lsp_amount": {
             "type": "integer",
+            "format": "int64",
             "minimum": 0.0,
             "title": "Max Initial Lsp Amount",
             "default": 10000
           },
           "min_channel_amount": {
             "type": "integer",
+            "format": "int64",
             "minimum": 0.0,
             "title": "Min Channel Amount",
             "default": 0
           },
           "max_channel_amount": {
             "type": "integer",
+            "format": "int64",
             "minimum": 0.0,
             "title": "Max Channel Amount",
             "default": 10000
@@ -1428,7 +889,7 @@
         "properties": {
           "assets": {
             "items": {
-              "$ref": "#/components/schemas/Asset"
+              "$ref": "#/components/schemas/ClientAsset"
             },
             "type": "array",
             "title": "Assets"
@@ -1454,8 +915,7 @@
         "required": [
           "assets"
         ],
-        "title": "AssetsResponse",
-        "description": "Response model for asset listing endpoints."
+        "title": "AssetsResponse"
       },
       "BitcoinNetwork": {
         "type": "string",
@@ -1580,7 +1040,751 @@
         ],
         "title": "ChannelFees"
       },
-      "ChannelOrderResponse": {
+      "ClientAsset": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id",
+            "example": "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+          },
+          "ticker": {
+            "type": "string",
+            "title": "Ticker",
+            "example": "USDT"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "example": "Tether"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details",
+            "example": "asset details"
+          },
+          "precision": {
+            "type": "integer",
+            "title": "Precision",
+            "example": 0
+          },
+          "issued_supply": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Issued Supply",
+            "example": 777
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Timestamp",
+            "example": 1691160565
+          },
+          "added_at": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Added At",
+            "example": 1691161979
+          },
+          "balance": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Balance",
+            "example": 0
+          },
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Media"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "asset_iface": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetIface"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "ticker",
+          "name",
+          "precision"
+        ],
+        "title": "ClientAsset"
+      },
+      "ConfirmSwapRequest": {
+        "properties": {
+          "swapstring": {
+            "type": "string",
+            "title": "Swapstring",
+            "example": "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+          },
+          "taker_pubkey": {
+            "type": "string",
+            "title": "Taker Pubkey",
+            "example": "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
+          },
+          "payment_hash": {
+            "type": "string",
+            "title": "Payment Hash",
+            "example": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+          }
+        },
+        "type": "object",
+        "required": [
+          "swapstring",
+          "taker_pubkey",
+          "payment_hash"
+        ],
+        "title": "ConfirmSwapRequest"
+      },
+      "ConfirmSwapResponse": {
+        "properties": {
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "example": "Swap executed successfully."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "title": "ConfirmSwapResponse"
+      },
+      "CreateOrderRequest": {
+        "properties": {
+          "client_pubkey": {
+            "type": "string",
+            "title": "Client Pubkey"
+          },
+          "lsp_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Lsp Balance Sat"
+          },
+          "client_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Client Balance Sat"
+          },
+          "required_channel_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Required Channel Confirmations"
+          },
+          "funding_confirms_within_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Funding Confirms Within Blocks"
+          },
+          "channel_expiry_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Channel Expiry Blocks"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "refund_onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Onchain Address"
+          },
+          "announce_channel": {
+            "type": "boolean",
+            "title": "Announce Channel",
+            "default": true
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "lsp_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lsp Asset Amount"
+          },
+          "client_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Asset Amount"
+          },
+          "rfq_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rfq Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "Optional email for notifications"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_pubkey",
+          "lsp_balance_sat",
+          "client_balance_sat",
+          "required_channel_confirmations",
+          "funding_confirms_within_blocks",
+          "channel_expiry_blocks"
+        ],
+        "title": "CreateOrderRequest"
+      },
+      "CreateSwapOrderRequest": {
+        "properties": {
+          "rfq_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rfq Id",
+            "description": "RFQ ID cannot be empty"
+          },
+          "from_type": {
+            "$ref": "#/components/schemas/SwapSettlement",
+            "description": "Input type: ONCHAIN or LIGHTNING"
+          },
+          "to_type": {
+            "$ref": "#/components/schemas/SwapSettlement",
+            "description": "Output type: ONCHAIN or LIGHTNING"
+          },
+          "min_onchain_conf": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Conf",
+            "default": 1
+          },
+          "dest_bolt11": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Bolt11"
+          },
+          "dest_onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Onchain Address"
+          },
+          "dest_rgb_invoice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Rgb Invoice"
+          },
+          "refund_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Address"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "Optional email for notifications"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rfq_id",
+          "from_type",
+          "to_type"
+        ],
+        "title": "CreateSwapOrderRequest"
+      },
+      "CreateSwapOrderResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "rfq_id": {
+            "type": "string",
+            "title": "Rfq Id"
+          },
+          "pay_in": {
+            "$ref": "#/components/schemas/SwapSettlement"
+          },
+          "ln_invoice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ln Invoice"
+          },
+          "onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Onchain Address"
+          },
+          "rgb_recipient_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rgb Recipient Id"
+          },
+          "rgb_invoice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rgb Invoice"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SwapOrderStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "rfq_id",
+          "pay_in",
+          "status"
+        ],
+        "title": "CreateSwapOrderResponse"
+      },
+      "Fee": {
+        "properties": {
+          "base_fee": {
+            "type": "integer",
+            "title": "Base Fee",
+            "example": 1000000
+          },
+          "variable_fee": {
+            "type": "integer",
+            "title": "Variable Fee",
+            "example": 1000000
+          },
+          "fee_rate": {
+            "type": "number",
+            "title": "Fee Rate",
+            "example": 0.0001
+          },
+          "final_fee": {
+            "type": "integer",
+            "title": "Final Fee",
+            "example": 2000000
+          },
+          "fee_asset": {
+            "type": "string",
+            "title": "Fee Asset",
+            "example": "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+          },
+          "fee_asset_precision": {
+            "type": "integer",
+            "title": "Fee Asset Precision",
+            "example": 6
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_fee",
+          "variable_fee",
+          "fee_rate",
+          "final_fee",
+          "fee_asset",
+          "fee_asset_precision"
+        ],
+        "title": "Fee"
+      },
+      "GetInfoResponseModel": {
+        "properties": {
+          "lsp_connection_url": {
+            "type": "string",
+            "title": "Lsp Connection Url"
+          },
+          "options": {
+            "$ref": "#/components/schemas/OrderOptions"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetsOptions"
+            },
+            "type": "array",
+            "title": "Assets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lsp_connection_url",
+          "options",
+          "assets"
+        ],
+        "title": "GetInfoResponseModel"
+      },
+      "GetOrderRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id"
+        ],
+        "title": "GetOrderRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Media": {
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "example": "/path/to/media"
+          },
+          "digest": {
+            "type": "string",
+            "title": "Digest",
+            "example": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
+          },
+          "mime": {
+            "type": "string",
+            "title": "Mime",
+            "example": "text/plain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_path",
+          "digest",
+          "mime"
+        ],
+        "title": "Media"
+      },
+      "NetworkInfoResponse": {
+        "properties": {
+          "network": {
+            "$ref": "#/components/schemas/BitcoinNetwork"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height",
+            "example": 805434
+          }
+        },
+        "type": "object",
+        "required": [
+          "network",
+          "height"
+        ],
+        "title": "NetworkInfoResponse"
+      },
+      "NodeInfoResponse": {
+        "properties": {
+          "pubkey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pubkey",
+            "example": "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
+          },
+          "network": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network",
+            "example": "Signet"
+          },
+          "block_height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block Height",
+            "example": 805434
+          }
+        },
+        "type": "object",
+        "required": [
+          "pubkey",
+          "network",
+          "block_height"
+        ],
+        "title": "NodeInfoResponse"
+      },
+      "OrderHistoryResponse": {
+        "properties": {
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/SwapOrder"
+            },
+            "type": "array",
+            "title": "Orders",
+            "description": "List of orders"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count",
+            "description": "Total number of orders matching the filter"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "description": "Whether there are more orders available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "orders",
+          "total_count",
+          "has_more"
+        ],
+        "title": "OrderHistoryResponse"
+      },
+      "OrderOptions": {
+        "properties": {
+          "min_required_channel_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Required Channel Confirmations",
+            "default": 0
+          },
+          "min_funding_confirms_within_blocks": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Funding Confirms Within Blocks",
+            "default": 0
+          },
+          "min_onchain_payment_confirmations": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Payment Confirmations"
+          },
+          "supports_zero_channel_reserve": {
+            "type": "boolean",
+            "title": "Supports Zero Channel Reserve",
+            "default": true
+          },
+          "min_onchain_payment_size_sat": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Payment Size Sat"
+          },
+          "max_channel_expiry_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Max Channel Expiry Blocks",
+            "default": 20160
+          },
+          "min_initial_client_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Min Initial Client Balance Sat",
+            "default": 0
+          },
+          "max_initial_client_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Max Initial Client Balance Sat",
+            "default": 1000000
+          },
+          "min_initial_lsp_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Min Initial Lsp Balance Sat",
+            "default": 0
+          },
+          "max_initial_lsp_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Max Initial Lsp Balance Sat",
+            "default": 16777215
+          },
+          "min_channel_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Min Channel Balance Sat",
+            "default": 50000
+          },
+          "max_channel_balance_sat": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0.0,
+            "title": "Max Channel Balance Sat",
+            "default": 16777215
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "OrderOptions"
+      },
+      "OrderResponse": {
         "properties": {
           "order_id": {
             "type": "string",
@@ -1592,10 +1796,12 @@
           },
           "lsp_balance_sat": {
             "type": "integer",
+            "format": "int64",
             "title": "Lsp Balance Sat"
           },
           "client_balance_sat": {
             "type": "integer",
+            "format": "int64",
             "title": "Client Balance Sat"
           },
           "required_channel_confirmations": {
@@ -1661,7 +1867,8 @@
           "lsp_asset_amount": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               {
                 "type": "null"
@@ -1672,7 +1879,8 @@
           "client_asset_amount": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               {
                 "type": "null"
@@ -1694,7 +1902,8 @@
           "asset_price_sat": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               {
                 "type": "null"
@@ -1745,17 +1954,6 @@
               }
             ],
             "title": "Asset Delivery Error"
-          },
-          "failure_reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Failure Reason"
           }
         },
         "type": "object",
@@ -1771,827 +1969,7 @@
           "order_state",
           "payment"
         ],
-        "title": "ChannelOrderResponse"
-      },
-      "ConfirmSwapRequest": {
-        "properties": {
-          "swapstring": {
-            "type": "string",
-            "title": "Swapstring",
-            "examples": [
-              "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-            ]
-          },
-          "taker_pubkey": {
-            "type": "string",
-            "title": "Taker Pubkey",
-            "examples": [
-              "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
-            ]
-          },
-          "payment_hash": {
-            "type": "string",
-            "title": "Payment Hash",
-            "examples": [
-              "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "swapstring",
-          "taker_pubkey",
-          "payment_hash"
-        ],
-        "title": "ConfirmSwapRequest"
-      },
-      "ConfirmSwapResponse": {
-        "properties": {
-          "status": {
-            "type": "integer",
-            "title": "Status",
-            "examples": [
-              200
-            ]
-          },
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "examples": [
-              "Swap executed successfully."
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "message"
-        ],
-        "title": "ConfirmSwapResponse"
-      },
-      "CreateOrderRequest": {
-        "properties": {
-          "client_pubkey": {
-            "type": "string",
-            "title": "Client Pubkey"
-          },
-          "lsp_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Lsp Balance Sat"
-          },
-          "client_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Client Balance Sat"
-          },
-          "required_channel_confirmations": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Required Channel Confirmations"
-          },
-          "funding_confirms_within_blocks": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Funding Confirms Within Blocks"
-          },
-          "channel_expiry_blocks": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Channel Expiry Blocks"
-          },
-          "token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Token"
-          },
-          "refund_onchain_address": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Refund Onchain Address"
-          },
-          "announce_channel": {
-            "type": "boolean",
-            "title": "Announce Channel",
-            "default": true
-          },
-          "asset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Asset Id"
-          },
-          "lsp_asset_amount": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lsp Asset Amount"
-          },
-          "client_asset_amount": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Client Asset Amount"
-          },
-          "rfq_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rfq Id"
-          },
-          "email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Email",
-            "description": "Optional email for notifications"
-          }
-        },
-        "type": "object",
-        "required": [
-          "client_pubkey",
-          "lsp_balance_sat",
-          "client_balance_sat",
-          "required_channel_confirmations",
-          "funding_confirms_within_blocks",
-          "channel_expiry_blocks"
-        ],
-        "title": "CreateOrderRequest"
-      },
-      "CreateSwapOrderRequest": {
-        "properties": {
-          "rfq_id": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Rfq Id",
-            "description": "RFQ ID cannot be empty"
-          },
-          "from_asset": {
-            "$ref": "#/components/schemas/SwapLeg",
-            "description": "Complete input specification: asset, ticker, network, protocol, and amount"
-          },
-          "to_asset": {
-            "$ref": "#/components/schemas/SwapLeg",
-            "description": "Complete output specification: asset, ticker, network, protocol, and amount"
-          },
-          "receiver_address": {
-            "$ref": "#/components/schemas/ReceiverAddress",
-            "description": "Destination address/invoice for receiving the to_asset payout"
-          },
-          "min_onchain_conf": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Min Onchain Conf",
-            "default": 1
-          },
-          "refund_address": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Refund Address"
-          },
-          "email": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "email"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Email",
-            "description": "Optional email for notifications"
-          }
-        },
-        "type": "object",
-        "required": [
-          "rfq_id",
-          "from_asset",
-          "to_asset",
-          "receiver_address"
-        ],
-        "title": "CreateSwapOrderRequest"
-      },
-      "CreateSwapOrderResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "rfq_id": {
-            "type": "string",
-            "title": "Rfq Id"
-          },
-          "deposit_address": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReceiverAddress"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "status": {
-            "$ref": "#/components/schemas/SwapOrderStatus"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "rfq_id",
-          "status"
-        ],
-        "title": "CreateSwapOrderResponse"
-      },
-      "Fee": {
-        "properties": {
-          "base_fee": {
-            "type": "integer",
-            "title": "Base Fee",
-            "examples": [
-              1000000
-            ]
-          },
-          "variable_fee": {
-            "type": "integer",
-            "title": "Variable Fee",
-            "examples": [
-              1000000
-            ]
-          },
-          "fee_rate": {
-            "type": "number",
-            "title": "Fee Rate",
-            "examples": [
-              0.0001
-            ]
-          },
-          "final_fee": {
-            "type": "integer",
-            "title": "Final Fee",
-            "examples": [
-              2000000
-            ]
-          },
-          "fee_asset": {
-            "type": "string",
-            "title": "Fee Asset",
-            "examples": [
-              "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
-            ]
-          },
-          "fee_asset_precision": {
-            "type": "integer",
-            "title": "Fee Asset Precision",
-            "examples": [
-              6
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "base_fee",
-          "variable_fee",
-          "fee_rate",
-          "final_fee",
-          "fee_asset",
-          "fee_asset_precision"
-        ],
-        "title": "Fee"
-      },
-      "GetInfoResponseModel": {
-        "properties": {
-          "lsp_connection_url": {
-            "type": "string",
-            "title": "Lsp Connection Url"
-          },
-          "options": {
-            "$ref": "#/components/schemas/OrderOptions"
-          },
-          "assets": {
-            "items": {
-              "$ref": "#/components/schemas/AssetsOptions"
-            },
-            "type": "array",
-            "title": "Assets"
-          }
-        },
-        "type": "object",
-        "required": [
-          "lsp_connection_url",
-          "options",
-          "assets"
-        ],
-        "title": "GetInfoResponseModel"
-      },
-      "GetOrderRequest": {
-        "properties": {
-          "order_id": {
-            "type": "string",
-            "title": "Order Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "order_id"
-        ],
-        "title": "GetOrderRequest"
-      },
-      "GetPairRequest": {
-        "properties": {
-          "pair_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pair Id",
-            "description": "Pair ID (UUID)"
-          },
-          "from_asset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Asset Id",
-            "description": "Base asset ID"
-          },
-          "quote_asset_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quote Asset Id",
-            "description": "Quote asset ID"
-          },
-          "pair_ticker": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pair Ticker",
-            "description": "Pair ticker 'BASE/QUOTE'"
-          },
-          "base_ticker": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Base Ticker",
-            "description": "Base asset ticker"
-          },
-          "quote_ticker": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quote Ticker",
-            "description": "Quote asset ticker"
-          }
-        },
-        "type": "object",
-        "title": "GetPairRequest",
-        "description": "Request model for retrieving a trading pair.\n\nSupports multiple identification methods:\n1. By pair_id (UUID)\n2. By asset IDs (from_asset_id and quote_asset_id)\n3. By tickers (pair_ticker like \"USDT/XAUT\" or base_ticker and quote_ticker)"
-      },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
-      "Layer": {
-        "type": "string",
-        "enum": [
-          "BTC/L1",
-          "BTC/LN",
-          "BTC/SPARK",
-          "BTC/ARKADE",
-          "BTC/LIQUID",
-          "BTC/CASHU",
-          "RGB/L1",
-          "RGB/LN",
-          "TAPASS/L1",
-          "TAPASS/LN",
-          "LIQUID/LIQUID",
-          "ARKADE/ARKADE",
-          "SPARK/SPARK"
-        ],
-        "title": "Layer",
-        "description": "Settlement layer combining protocol and network as a single string.\n\nFormat: PROTOCOL/NETWORK\n\nEach layer represents a valid combination where assets can exist and be transacted.\nThe layer encodes both WHAT protocol the asset uses and WHERE it settles."
-      },
-      "Media": {
-        "properties": {
-          "file_path": {
-            "type": "string",
-            "title": "File Path",
-            "examples": [
-              "/path/to/media"
-            ]
-          },
-          "digest": {
-            "type": "string",
-            "title": "Digest",
-            "examples": [
-              "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
-            ]
-          },
-          "mime": {
-            "type": "string",
-            "title": "Mime",
-            "examples": [
-              "text/plain"
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "file_path",
-          "digest",
-          "mime"
-        ],
-        "title": "Media"
-      },
-      "MultiHopRoute": {
-        "properties": {
-          "steps": {
-            "items": {
-              "$ref": "#/components/schemas/RouteStep"
-            },
-            "type": "array",
-            "title": "Steps",
-            "description": "Ordered list of route steps"
-          },
-          "total_hops": {
-            "type": "integer",
-            "title": "Total Hops",
-            "description": "Number of hops in the route"
-          }
-        },
-        "type": "object",
-        "required": [
-          "steps",
-          "total_hops"
-        ],
-        "title": "MultiHopRoute",
-        "description": "Complete route with one or more steps."
-      },
-      "NetworkInfoResponse": {
-        "properties": {
-          "network": {
-            "$ref": "#/components/schemas/BitcoinNetwork"
-          },
-          "height": {
-            "type": "integer",
-            "title": "Height",
-            "examples": [
-              805434
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "network",
-          "height"
-        ],
-        "title": "NetworkInfoResponse"
-      },
-      "NodeInfoResponse": {
-        "properties": {
-          "pubkey": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pubkey",
-            "examples": [
-              "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
-            ]
-          },
-          "network": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Network",
-            "examples": [
-              "Signet"
-            ]
-          },
-          "block_height": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Block Height",
-            "examples": [
-              805434
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "pubkey",
-          "network",
-          "block_height"
-        ],
-        "title": "NodeInfoResponse"
-      },
-      "OrderHistoryRequest": {
-        "properties": {
-          "status": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SwapOrderStatus"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Filter by order status. If not provided, returns filled orders"
-          },
-          "limit": {
-            "type": "integer",
-            "maximum": 100.0,
-            "minimum": 1.0,
-            "title": "Limit",
-            "description": "Maximum number of orders to return",
-            "default": 50
-          },
-          "skip": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Skip",
-            "description": "Number of orders to skip for pagination",
-            "default": 0
-          }
-        },
-        "type": "object",
-        "title": "OrderHistoryRequest"
-      },
-      "OrderHistoryResponse": {
-        "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/OrderHistorySummary"
-            },
-            "type": "array",
-            "title": "Data",
-            "description": "List of orders"
-          },
-          "pagination": {
-            "$ref": "#/components/schemas/PaginationMeta"
-          }
-        },
-        "type": "object",
-        "required": [
-          "data",
-          "pagination"
-        ],
-        "title": "OrderHistoryResponse"
-      },
-      "OrderHistorySummary": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id",
-            "description": "Order ID"
-          },
-          "status": {
-            "$ref": "#/components/schemas/SwapOrderStatus",
-            "description": "Order status"
-          },
-          "from_asset": {
-            "type": "string",
-            "title": "From Asset",
-            "description": "Asset being swapped from"
-          },
-          "from_amount": {
-            "type": "integer",
-            "title": "From Amount",
-            "description": "Amount of from_asset"
-          },
-          "to_asset": {
-            "type": "string",
-            "title": "To Asset",
-            "description": "Asset being swapped to"
-          },
-          "to_amount": {
-            "type": "integer",
-            "title": "To Amount",
-            "description": "Amount of to_asset"
-          },
-          "created_at": {
-            "type": "integer",
-            "title": "Created At",
-            "description": "Order creation timestamp"
-          },
-          "filled_at": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Filled At",
-            "description": "Order completion timestamp"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "status",
-          "from_asset",
-          "from_amount",
-          "to_asset",
-          "to_amount",
-          "created_at"
-        ],
-        "title": "OrderHistorySummary",
-        "description": "Simplified order information for history listing"
-      },
-      "OrderOptions": {
-        "properties": {
-          "min_required_channel_confirmations": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Min Required Channel Confirmations",
-            "default": 0
-          },
-          "min_funding_confirms_within_blocks": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Min Funding Confirms Within Blocks",
-            "default": 0
-          },
-          "min_onchain_payment_confirmations": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Min Onchain Payment Confirmations"
-          },
-          "supports_zero_channel_reserve": {
-            "type": "boolean",
-            "title": "Supports Zero Channel Reserve",
-            "default": true
-          },
-          "min_onchain_payment_size_sat": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Min Onchain Payment Size Sat"
-          },
-          "max_channel_expiry_blocks": {
-            "type": "integer",
-            "minimum": 1.0,
-            "title": "Max Channel Expiry Blocks",
-            "default": 20160
-          },
-          "min_initial_client_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Min Initial Client Balance Sat",
-            "default": 0
-          },
-          "max_initial_client_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Initial Client Balance Sat",
-            "default": 1000000
-          },
-          "min_initial_lsp_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Min Initial Lsp Balance Sat",
-            "default": 0
-          },
-          "max_initial_lsp_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Initial Lsp Balance Sat",
-            "default": 16777215
-          },
-          "min_channel_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Min Channel Balance Sat",
-            "default": 50000
-          },
-          "max_channel_balance_sat": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Max Channel Balance Sat",
-            "default": 16777215
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "OrderOptions"
+        "title": "OrderResponse"
       },
       "OrderState": {
         "type": "string",
@@ -2633,66 +2011,116 @@
         ],
         "title": "OrderStatsResponse"
       },
-      "PaginationMeta": {
+      "Pair": {
         "properties": {
-          "total": {
-            "type": "integer",
-            "title": "Total",
-            "description": "Total number of items matching the filter"
+          "id": {
+            "type": "string",
+            "title": "Id"
           },
-          "limit": {
-            "type": "integer",
-            "title": "Limit",
-            "description": "Number of items per page"
+          "base_asset": {
+            "type": "string",
+            "title": "Base Asset"
           },
-          "skip": {
-            "type": "integer",
-            "title": "Skip",
-            "description": "Number of items skipped"
+          "base_asset_id": {
+            "type": "string",
+            "title": "Base Asset Id"
           },
-          "current_page": {
+          "base_precision": {
             "type": "integer",
-            "title": "Current Page",
-            "description": "Current page number (1-indexed)"
+            "title": "Base Precision"
           },
-          "total_pages": {
+          "quote_asset": {
+            "type": "string",
+            "title": "Quote Asset"
+          },
+          "quote_asset_id": {
+            "type": "string",
+            "title": "Quote Asset Id"
+          },
+          "quote_precision": {
             "type": "integer",
-            "title": "Total Pages",
-            "description": "Total number of pages"
+            "title": "Quote Precision"
           },
-          "has_next": {
+          "is_active": {
             "type": "boolean",
-            "title": "Has Next",
-            "description": "Whether there is a next page"
+            "title": "Is Active"
           },
-          "has_previous": {
-            "type": "boolean",
-            "title": "Has Previous",
-            "description": "Whether there is a previous page"
+          "min_base_order_size": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Min Base Order Size"
+          },
+          "max_base_order_size": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Max Base Order Size"
+          },
+          "min_quote_order_size": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Min Quote Order Size"
+          },
+          "max_quote_order_size": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Max Quote Order Size"
           }
         },
         "type": "object",
         "required": [
-          "total",
-          "limit",
-          "skip",
-          "current_page",
-          "total_pages",
-          "has_next",
-          "has_previous"
+          "base_asset",
+          "base_asset_id",
+          "base_precision",
+          "quote_asset",
+          "quote_asset_id",
+          "quote_precision",
+          "is_active",
+          "min_base_order_size",
+          "max_base_order_size",
+          "min_quote_order_size",
+          "max_quote_order_size"
         ],
-        "title": "PaginationMeta",
-        "description": "Pagination metadata"
+        "title": "Pair"
       },
       "PairQuoteRequest": {
         "properties": {
           "from_asset": {
-            "$ref": "#/components/schemas/SwapLegInput",
-            "description": "Source leg specification (asset_id, layer, amount)"
+            "type": "string",
+            "title": "From Asset",
+            "example": "BTC"
+          },
+          "from_amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Amount",
+            "description": "Amount of from_asset to convert. Either from_amount or to_amount must be provided, but not both.",
+            "example": 1000000
           },
           "to_asset": {
-            "$ref": "#/components/schemas/SwapLegInput",
-            "description": "Destination leg specification (asset_id, layer, amount)"
+            "type": "string",
+            "title": "To Asset",
+            "example": "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+          },
+          "to_amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Amount",
+            "description": "Desired amount of to_asset to receive. Either from_amount or to_amount must be provided, but not both.",
+            "example": 1000000
           }
         },
         "type": "object",
@@ -2700,60 +2128,88 @@
           "from_asset",
           "to_asset"
         ],
-        "title": "PairQuoteRequest",
-        "description": "Request for a quote on a trading pair using SwapLegInput."
+        "title": "PairQuoteRequest"
       },
       "PairQuoteResponse": {
         "properties": {
           "rfq_id": {
             "type": "string",
             "title": "Rfq Id",
-            "examples": [
-              "1234567890"
-            ]
+            "example": "1234567890"
           },
           "from_asset": {
-            "$ref": "#/components/schemas/SwapLeg",
-            "description": "Complete source leg specification with amount and details"
+            "type": "string",
+            "title": "From Asset",
+            "example": "BTC"
+          },
+          "from_amount": {
+            "type": "integer",
+            "format": "int64",
+            "title": "From Amount",
+            "description": "Amount of from_asset in its smallest unit (e.g., millisatoshis for BTC if precision is 11)",
+            "example": 100000000000
           },
           "to_asset": {
-            "$ref": "#/components/schemas/SwapLeg",
-            "description": "Complete destination leg specification with amount and details"
+            "type": "string",
+            "title": "To Asset",
+            "example": "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+          },
+          "to_amount": {
+            "type": "integer",
+            "format": "int64",
+            "title": "To Amount",
+            "description": "Amount of to_asset in its smallest unit, after applying price and fees.",
+            "example": 49900123
           },
           "price": {
             "type": "integer",
+            "format": "int64",
             "title": "Price",
             "description": "Price of 1 whole unit of from_asset (e.g., 1 BTC) in terms of the smallest unit of to_asset (e.g., USDT with precision 6). Matches PriceData.price for the given rfq_id.",
-            "examples": [
-              50000123456
-            ]
+            "example": 50000123456
           },
           "fee": {
             "$ref": "#/components/schemas/Fee"
           },
           "timestamp": {
             "type": "integer",
-            "title": "Timestamp",
-            "description": "Quote creation timestamp (seconds since epoch)"
+            "format": "int64",
+            "title": "Timestamp"
           },
           "expires_at": {
             "type": "integer",
-            "title": "Expires At",
-            "description": "Quote expiry timestamp (seconds since epoch)"
+            "title": "Expires At"
           }
         },
         "type": "object",
         "required": [
           "rfq_id",
           "from_asset",
+          "from_amount",
           "to_asset",
+          "to_amount",
           "price",
           "fee",
           "timestamp",
           "expires_at"
         ],
-        "title": "PairQuoteResponse",
-        "description": "Response containing a quote for a trading pair.\n\nUses full SwapLeg for both sides, providing complete asset details\nincluding ticker, name, precision, layer, and amount."
+        "title": "PairQuoteResponse"
+      },
+      "PairResponse": {
+        "properties": {
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/Pair"
+            },
+            "type": "array",
+            "title": "Pairs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pairs"
+        ],
+        "title": "PairResponse"
       },
       "PaymentBolt11": {
         "properties": {
@@ -2767,10 +2223,12 @@
           },
           "fee_total_sat": {
             "type": "integer",
+            "format": "int64",
             "title": "Fee Total Sat"
           },
           "order_total_sat": {
             "type": "integer",
+            "format": "int64",
             "title": "Order Total Sat"
           },
           "invoice": {
@@ -2816,10 +2274,12 @@
           },
           "fee_total_sat": {
             "type": "integer",
+            "format": "int64",
             "title": "Fee Total Sat"
           },
           "order_total_sat": {
             "type": "integer",
+            "format": "int64",
             "title": "Order Total Sat"
           },
           "address": {
@@ -2828,6 +2288,7 @@
           },
           "min_fee_for_0conf": {
             "type": "integer",
+            "format": "int64",
             "title": "Min Fee For 0Conf"
           },
           "min_onchain_payment_confirmations": {
@@ -2859,7 +2320,8 @@
           "payment_difference": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               {
                 "type": "null"
@@ -2871,7 +2333,8 @@
           "last_payment_check": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               {
                 "type": "null"
@@ -2888,7 +2351,8 @@
           "order_total_sat",
           "address",
           "min_fee_for_0conf",
-          "min_onchain_payment_confirmations"
+          "min_onchain_payment_confirmations",
+          "refund_onchain_address"
         ],
         "title": "PaymentOnchain"
       },
@@ -2968,114 +2432,6 @@
         "title": "RateDecisionResponse",
         "description": "Response after user makes rate decision"
       },
-      "ReachabilityCell": {
-        "properties": {
-          "from_asset": {
-            "type": "string",
-            "title": "From Asset",
-            "description": "Source asset ticker"
-          },
-          "to_asset": {
-            "type": "string",
-            "title": "To Asset",
-            "description": "Destination asset ticker"
-          },
-          "layers": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Layers",
-            "description": "Available layer combinations (e.g., 'RGB/LN->BTC/SPARK')"
-          },
-          "min_hops": {
-            "type": "integer",
-            "title": "Min Hops",
-            "description": "Minimum number of hops required"
-          }
-        },
-        "type": "object",
-        "required": [
-          "from_asset",
-          "to_asset",
-          "layers",
-          "min_hops"
-        ],
-        "title": "ReachabilityCell",
-        "description": "Single cell in reachability matrix."
-      },
-      "ReachabilityMatrixResponse": {
-        "properties": {
-          "matrix": {
-            "items": {
-              "$ref": "#/components/schemas/ReachabilityCell"
-            },
-            "type": "array",
-            "title": "Matrix",
-            "description": "Reachability cells"
-          },
-          "assets": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Assets",
-            "description": "All assets in the matrix"
-          },
-          "timestamp": {
-            "type": "integer",
-            "title": "Timestamp",
-            "description": "Response timestamp"
-          }
-        },
-        "type": "object",
-        "required": [
-          "matrix",
-          "assets",
-          "timestamp"
-        ],
-        "title": "ReachabilityMatrixResponse",
-        "description": "Full reachability matrix response."
-      },
-      "ReceiverAddress": {
-        "properties": {
-          "address": {
-            "type": "string",
-            "title": "Address",
-            "description": "The actual address, invoice, or token string"
-          },
-          "format": {
-            "$ref": "#/components/schemas/ReceiverAddressFormat",
-            "description": "Format of the receiver address"
-          }
-        },
-        "type": "object",
-        "required": [
-          "address",
-          "format"
-        ],
-        "title": "ReceiverAddress",
-        "description": "Receiver address or invoice with its format.\n\nEncapsulates the destination for receiving funds along with\nmetadata about what format it uses."
-      },
-      "ReceiverAddressFormat": {
-        "type": "string",
-        "enum": [
-          "BTC_ADDRESS",
-          "BOLT11",
-          "BOLT12",
-          "LN_ADDRESS",
-          "RGB_INVOICE",
-          "LIQUID_ADDRESS",
-          "LIQUID_INVOICE",
-          "SPARK_ADDRESS",
-          "SPARK_INVOICE",
-          "ARKADE_ADDRESS",
-          "ARKADE_INVOICE",
-          "CASHU_TOKEN"
-        ],
-        "title": "ReceiverAddressFormat",
-        "description": "Supported receiver address and invoice formats.\n\nDifferent networks and protocols use different address/invoice formats\nfor receiving payments."
-      },
       "RetryDeliveryRequest": {
         "properties": {
           "order_id": {
@@ -3122,152 +2478,17 @@
         "title": "RetryDeliveryStatus",
         "description": "Status codes for /retry_delivery endpoint responses"
       },
-      "RouteStep": {
-        "properties": {
-          "from_asset": {
-            "type": "string",
-            "title": "From Asset",
-            "description": "Source asset ticker"
-          },
-          "from_layer": {
-            "$ref": "#/components/schemas/Layer",
-            "description": "Source layer"
-          },
-          "to_asset": {
-            "type": "string",
-            "title": "To Asset",
-            "description": "Destination asset ticker"
-          },
-          "to_layer": {
-            "$ref": "#/components/schemas/Layer",
-            "description": "Destination layer"
-          },
-          "pair_ticker": {
-            "type": "string",
-            "title": "Pair Ticker",
-            "description": "Trading pair ticker (e.g., 'USDT/BTC')"
-          },
-          "indicative_price": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Indicative Price",
-            "description": "Indicative price from cached pair data"
-          }
-        },
-        "type": "object",
-        "required": [
-          "from_asset",
-          "from_layer",
-          "to_asset",
-          "to_layer",
-          "pair_ticker"
-        ],
-        "title": "RouteStep",
-        "description": "Single step in a route (one swap within a trading pair)."
-      },
-      "RoutesRequest": {
-        "properties": {
-          "from_asset": {
-            "type": "string",
-            "title": "From Asset",
-            "description": "Source asset ticker or ID"
-          },
-          "from_layer": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Layer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Filter by source layer (optional)"
-          },
-          "to_asset": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Asset",
-            "description": "Destination asset (if None, returns all reachable assets)"
-          },
-          "to_layer": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Layer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Filter by destination layer (optional)"
-          },
-          "max_hops": {
-            "type": "integer",
-            "maximum": 5.0,
-            "minimum": 1.0,
-            "title": "Max Hops",
-            "description": "Maximum number of hops (1-5)",
-            "default": 2
-          }
-        },
-        "type": "object",
-        "required": [
-          "from_asset"
-        ],
-        "title": "RoutesRequest",
-        "description": "Request for route discovery."
-      },
-      "RoutesResponse": {
-        "properties": {
-          "routes": {
-            "items": {
-              "$ref": "#/components/schemas/MultiHopRoute"
-            },
-            "type": "array",
-            "title": "Routes",
-            "description": "List of discovered routes"
-          },
-          "timestamp": {
-            "type": "integer",
-            "title": "Timestamp",
-            "description": "Response timestamp"
-          }
-        },
-        "type": "object",
-        "required": [
-          "routes",
-          "timestamp"
-        ],
-        "title": "RoutesResponse",
-        "description": "Response with discovered routes."
-      },
       "Swap": {
         "properties": {
           "qty_from": {
             "type": "integer",
             "title": "Qty From",
-            "examples": [
-              30
-            ]
+            "example": 30
           },
           "qty_to": {
             "type": "integer",
             "title": "Qty To",
-            "examples": [
-              10
-            ]
+            "example": 10
           },
           "from_asset": {
             "anyOf": [
@@ -3279,9 +2500,7 @@
               }
             ],
             "title": "From Asset",
-            "examples": [
-              "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
-            ]
+            "example": "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
           },
           "to_asset": {
             "anyOf": [
@@ -3293,16 +2512,12 @@
               }
             ],
             "title": "To Asset",
-            "examples": [
-              "rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"
-            ]
+            "example": "rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"
           },
           "payment_hash": {
             "type": "string",
             "title": "Payment Hash",
-            "examples": [
-              "7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"
-            ]
+            "example": "7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"
           },
           "status": {
             "$ref": "#/components/schemas/SwapStatus"
@@ -3310,9 +2525,7 @@
           "requested_at": {
             "type": "integer",
             "title": "Requested At",
-            "examples": [
-              1691160765
-            ]
+            "example": 1691160765
           },
           "initiated_at": {
             "anyOf": [
@@ -3324,16 +2537,12 @@
               }
             ],
             "title": "Initiated At",
-            "examples": [
-              1691168512
-            ]
+            "example": 1691168512
           },
           "expires_at": {
             "type": "integer",
             "title": "Expires At",
-            "examples": [
-              1691172703
-            ]
+            "example": 1691172703
           },
           "completed_at": {
             "anyOf": [
@@ -3345,9 +2554,7 @@
               }
             ],
             "title": "Completed At",
-            "examples": [
-              1691171075
-            ]
+            "example": 1691171075
           }
         },
         "type": "object",
@@ -3361,117 +2568,17 @@
         ],
         "title": "Swap"
       },
-      "SwapLeg": {
-        "properties": {
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id",
-            "description": "Unique identifier for the asset (e.g., 'BTC', RGB contract ID, etc.)"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Full name of the asset",
-            "examples": [
-              "Bitcoin"
-            ]
-          },
-          "ticker": {
-            "type": "string",
-            "title": "Ticker",
-            "description": "Asset ticker symbol for display (e.g., 'BTC', 'USDT', 'EURX')",
-            "examples": [
-              "BTC"
-            ]
-          },
-          "layer": {
-            "$ref": "#/components/schemas/Layer",
-            "description": "Settlement layer (e.g., 'BTC/LN', 'RGB/L1')"
-          },
-          "amount": {
-            "type": "integer",
-            "minimum": 0.0,
-            "title": "Amount",
-            "description": "Amount of the asset in smallest unit. Must be greater than or equal to zero.",
-            "examples": [
-              100000
-            ]
-          },
-          "precision": {
-            "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Number of decimal places for this asset (e.g., 8 for BTC, 6 or 8 for stablecoins)",
-            "examples": [
-              8
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "asset_id",
-          "name",
-          "ticker",
-          "layer",
-          "amount",
-          "precision"
-        ],
-        "title": "SwapLeg",
-        "description": "Swap Leg: Complete asset specification for one side of a swap.\n\nRepresents a specific asset on a specific settlement layer with an amount.\nThis is the fundamental unit for swap orders - each side (leg) of a swap\nspecifies an asset on a particular network with a specific amount."
-      },
-      "SwapLegInput": {
-        "properties": {
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id",
-            "description": "Asset identifier (e.g., 'BTC', RGB contract ID)",
-            "examples": [
-              "BTC"
-            ]
-          },
-          "layer": {
-            "$ref": "#/components/schemas/Layer",
-            "description": "Settlement layer (e.g., 'BTC/LN', 'RGB/L1')",
-            "examples": [
-              "BTC/LN"
-            ]
-          },
-          "amount": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Amount",
-            "description": "Amount in smallest unit (optional - one side must have amount)",
-            "examples": [
-              1000000
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "asset_id",
-          "layer"
-        ],
-        "title": "SwapLegInput",
-        "description": "Lightweight input model for specifying one leg of a swap request.\n\nOnly contains the fields the client needs to provide. The service will\nlook up additional details (name, ticker, precision) from the asset registry."
-      },
       "SwapOrder": {
         "properties": {
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "Order identifier"
+            "description": "Order ID"
           },
           "rfq_id": {
             "type": "string",
             "title": "Rfq Id",
-            "description": "Quote identifier used to create the order"
+            "description": "RFQ that produced the quote"
           },
           "maker_pubkey": {
             "anyOf": [
@@ -3482,42 +2589,138 @@
                 "type": "null"
               }
             ],
-            "title": "Maker Pubkey",
-            "description": "Maker node public key"
+            "title": "Maker Pubkey"
+          },
+          "side": {
+            "$ref": "#/components/schemas/SwapOrderSide"
+          },
+          "from_type": {
+            "$ref": "#/components/schemas/SwapSettlement",
+            "description": "Input settlement type: ONCHAIN or LIGHTNING"
           },
           "from_asset": {
-            "$ref": "#/components/schemas/SwapLeg",
-            "description": "Complete specification for input: asset, ticker, network, protocol, and amount"
+            "type": "string",
+            "title": "From Asset"
+          },
+          "from_amount": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "From Amount",
+            "description": "Amount of the asset to swap from. Must be greater than zero.",
+            "example": 100000
+          },
+          "to_type": {
+            "$ref": "#/components/schemas/SwapSettlement",
+            "description": "Output settlement type: ONCHAIN or LIGHTNING"
           },
           "to_asset": {
-            "$ref": "#/components/schemas/SwapLeg",
-            "description": "Complete specification for output: asset, ticker, network, protocol, and amount"
+            "type": "string",
+            "title": "To Asset"
+          },
+          "to_amount": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "To Amount",
+            "description": "Amount of the asset to swap to. Must be greater than zero.",
+            "example": 100000
           },
           "price": {
             "type": "integer",
             "title": "Price"
           },
-          "deposit_address": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ReceiverAddress"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Address/Invoice for the user to deposit funds into"
+          "pay_in": {
+            "$ref": "#/components/schemas/SwapSettlement"
           },
-          "payout_address": {
+          "pay_out": {
+            "$ref": "#/components/schemas/SwapSettlement"
+          },
+          "ln_invoice": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ReceiverAddress"
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "description": "Destination address/invoice for receiving the to_asset payout"
+            "title": "Ln Invoice"
+          },
+          "onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Onchain Address"
+          },
+          "min_onchain_conf": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Conf"
+          },
+          "rgb_recipient_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rgb Recipient Id"
+          },
+          "rgb_invoice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rgb Invoice"
+          },
+          "dest_bolt11": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Bolt11"
+          },
+          "dest_onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Onchain Address"
+          },
+          "dest_rgb_invoice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Rgb Invoice"
           },
           "refund_address": {
             "anyOf": [
@@ -3528,21 +2731,48 @@
                 "type": "null"
               }
             ],
-            "title": "Refund Address",
-            "description": "Onchain refund address if provided"
+            "title": "Refund Address"
+          },
+          "payment_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Hash"
+          },
+          "payment_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Secret"
+          },
+          "swapstring": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Swapstring"
           },
           "status": {
             "$ref": "#/components/schemas/SwapOrderStatus",
-            "description": "Current order status",
             "default": "OPEN"
           },
           "created_at": {
             "type": "integer",
-            "title": "Created At",
-            "description": "Creation timestamp (seconds since epoch)",
-            "examples": [
-              1766018350
-            ]
+            "title": "Created At"
           },
           "expires_at": {
             "anyOf": [
@@ -3553,8 +2783,7 @@
                 "type": "null"
               }
             ],
-            "title": "Expires At",
-            "description": "Expiry timestamp (seconds since epoch)"
+            "title": "Expires At"
           },
           "filled_at": {
             "anyOf": [
@@ -3565,8 +2794,7 @@
                 "type": "null"
               }
             ],
-            "title": "Filled At",
-            "description": "Timestamp when the order was filled"
+            "title": "Filled At"
           },
           "refund_txid": {
             "anyOf": [
@@ -3577,8 +2805,7 @@
                 "type": "null"
               }
             ],
-            "title": "Refund Txid",
-            "description": "Transaction ID of any refund sent"
+            "title": "Refund Txid"
           },
           "requires_manual_refund": {
             "anyOf": [
@@ -3590,11 +2817,7 @@
               }
             ],
             "title": "Requires Manual Refund",
-            "description": "Whether the order requires manual refund handling",
-            "default": false,
-            "examples": [
-              false
-            ]
+            "default": false
           },
           "payment_status": {
             "anyOf": [
@@ -3604,8 +2827,7 @@
               {
                 "type": "null"
               }
-            ],
-            "description": "Status of onchain payment verification"
+            ]
           },
           "payment_difference": {
             "anyOf": [
@@ -3617,19 +2839,19 @@
               }
             ],
             "title": "Payment Difference",
-            "description": "Payment difference in satoshis (positive for overpayment, negative for underpayment)"
+            "description": "Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment"
           },
           "last_payment_check": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "integer",
+                "format": "int64"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Last Payment Check",
-            "description": "Timestamp of the last payment verification"
+            "title": "Last Payment Check"
           },
           "email": {
             "anyOf": [
@@ -3640,11 +2862,7 @@
                 "type": "null"
               }
             ],
-            "title": "Email",
-            "description": "Notification email address",
-            "examples": [
-              "swap@example.com"
-            ]
+            "title": "Email"
           },
           "failure_reason": {
             "anyOf": [
@@ -3655,22 +2873,89 @@
                 "type": "null"
               }
             ],
-            "title": "Failure Reason",
-            "description": "Reason the order failed, if applicable"
+            "title": "Failure Reason"
           },
-          "fee": {
-            "$ref": "#/components/schemas/Fee",
-            "description": "Fee information from the quote"
+          "base_fee": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Fee"
+          },
+          "variable_fee": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Variable Fee"
+          },
+          "fee_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee Rate"
+          },
+          "final_fee": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Fee"
+          },
+          "fee_asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee Asset"
+          },
+          "fee_asset_precision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee Asset Precision"
           }
         },
         "type": "object",
         "required": [
           "id",
           "rfq_id",
+          "side",
+          "from_type",
           "from_asset",
+          "from_amount",
+          "to_type",
           "to_asset",
+          "to_amount",
           "price",
-          "fee"
+          "pay_in",
+          "pay_out"
         ],
         "title": "SwapOrder"
       },
@@ -3731,6 +3016,14 @@
         "title": "SwapOrderRateDecisionResponse",
         "description": "Response after user makes rate decision for a swap order"
       },
+      "SwapOrderSide": {
+        "type": "string",
+        "enum": [
+          "BUY",
+          "SELL"
+        ],
+        "title": "SwapOrderSide"
+      },
       "SwapOrderStatus": {
         "type": "string",
         "enum": [
@@ -3785,37 +3078,29 @@
           "rfq_id": {
             "type": "string",
             "title": "Rfq Id",
-            "examples": [
-              "1234567890"
-            ]
+            "example": "1234567890"
           },
           "from_asset": {
             "type": "string",
             "title": "From Asset",
-            "examples": [
-              "BTC"
-            ]
+            "example": "BTC"
           },
           "from_amount": {
             "type": "integer",
+            "format": "int64",
             "title": "From Amount",
-            "examples": [
-              1000000
-            ]
+            "example": 1000000
           },
           "to_asset": {
             "type": "string",
             "title": "To Asset",
-            "examples": [
-              "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
-            ]
+            "example": "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
           },
           "to_amount": {
             "type": "integer",
+            "format": "int64",
             "title": "To Amount",
-            "examples": [
-              1000000
-            ]
+            "example": 1000000
           }
         },
         "type": "object",
@@ -3833,16 +3118,12 @@
           "swapstring": {
             "type": "string",
             "title": "Swapstring",
-            "examples": [
-              "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-            ]
+            "example": "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
           },
           "payment_hash": {
             "type": "string",
             "title": "Payment Hash",
-            "examples": [
-              "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-            ]
+            "example": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
           }
         },
         "type": "object",
@@ -3852,22 +3133,13 @@
         ],
         "title": "SwapResponse"
       },
-      "SwapRoute": {
-        "properties": {
-          "from_layer": {
-            "type": "string"
-          },
-          "to_layer": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": [
-          "from_layer",
-          "to_layer"
+      "SwapSettlement": {
+        "type": "string",
+        "enum": [
+          "LIGHTNING",
+          "ONCHAIN"
         ],
-        "title": "SwapRoute",
-        "description": "Pre-computed valid swap route between two layers.\n\nRepresents a specific path for swapping: from_layer -> to_layer.\nFrozen for immutability and hashability (enables use in sets, dict keys)."
+        "title": "SwapSettlement"
       },
       "SwapStatus": {
         "type": "string",
@@ -3884,10 +3156,7 @@
         "properties": {
           "payment_hash": {
             "type": "string",
-            "title": "Payment Hash",
-            "examples": [
-              "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-            ]
+            "title": "Payment Hash"
           }
         },
         "type": "object",
@@ -3911,197 +3180,6 @@
         },
         "type": "object",
         "title": "SwapStatusResponse"
-      },
-      "TradableAsset": {
-        "properties": {
-          "ticker": {
-            "type": "string",
-            "title": "Ticker",
-            "description": "Display ticker (e.g., 'BTC', 'USDT')"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "description": "Full name"
-          },
-          "precision": {
-            "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
-          },
-          "protocol_ids": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "type": "object",
-            "title": "Protocol Ids",
-            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
-          },
-          "media": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Media"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Logo/media"
-          },
-          "issued_supply": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Issued Supply",
-            "description": "Total issued supply"
-          },
-          "timestamp": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Timestamp",
-            "description": "Creation timestamp"
-          },
-          "endpoints": {
-            "items": {
-              "$ref": "#/components/schemas/TradingLimits"
-            },
-            "type": "array",
-            "title": "Endpoints",
-            "description": "Layer endpoints with trading limits"
-          },
-          "asset_id": {
-            "type": "string",
-            "title": "Asset Id",
-            "description": "Backward-compatible property that returns the primary asset ID.\n\nUse get_id(protocol) for protocol-specific IDs, or protocol_ids dict\nfor full access to all protocol-specific identifiers.",
-            "readOnly": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "ticker",
-          "name",
-          "precision",
-          "asset_id"
-        ],
-        "title": "TradableAsset",
-        "description": "Asset with layer context(s) for trading operations.\n\nSupports both:\n- Single-layer use cases (swap execution): use layer property\n- Multi-layer use cases (trading pairs): use endpoints list"
-      },
-      "TradingLimits": {
-        "properties": {
-          "layer": {
-            "type": "string",
-            "description": "Settlement layer (e.g., 'BTC/LN', 'RGB/LN')"
-          },
-          "min_amount": {
-            "type": "integer",
-            "title": "Min Amount",
-            "description": "Minimum amount for trading (in smallest unit)"
-          },
-          "max_amount": {
-            "type": "integer",
-            "title": "Max Amount",
-            "description": "Maximum amount for trading (in smallest unit)"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "description": "Whether this layer is active for trading",
-            "default": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "layer",
-          "min_amount",
-          "max_amount"
-        ],
-        "title": "TradingLimits",
-        "description": "Trading limits for a layer.\n\nCombines a Layer (protocol/network) with min/max amount limits for trading."
-      },
-      "TradingPair": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "base": {
-            "$ref": "#/components/schemas/TradableAsset"
-          },
-          "quote": {
-            "$ref": "#/components/schemas/TradableAsset"
-          },
-          "price": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Price"
-          },
-          "routes": {
-            "items": {
-              "$ref": "#/components/schemas/SwapRoute"
-            },
-            "type": "array",
-            "title": "Routes"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "default": true
-          }
-        },
-        "type": "object",
-        "required": [
-          "base",
-          "quote"
-        ],
-        "title": "TradingPair",
-        "description": "Complete trading pair with full asset details, routes, and price.\n\nThis is the unified model used for both:\n- API responses (Pairs API)\n- Database storage\n\nContains all pre-computed information needed to display and validate swaps."
-      },
-      "TradingPairsResponse": {
-        "properties": {
-          "pairs": {
-            "items": {
-              "$ref": "#/components/schemas/TradingPair"
-            },
-            "type": "array",
-            "title": "Pairs"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total"
-          },
-          "timestamp": {
-            "type": "integer",
-            "title": "Timestamp"
-          }
-        },
-        "type": "object",
-        "required": [
-          "pairs",
-          "total",
-          "timestamp"
-        ],
-        "title": "TradingPairsResponse",
-        "description": "Response containing list of trading pairs."
       },
       "ValidationError": {
         "properties": {
@@ -4137,5 +3215,41 @@
         "title": "ValidationError"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "https://api.signet.kaleidoswap.com",
+      "description": "Signet Server"
+    },
+    {
+      "url": "https://api.regtest.kaleidoswap.com",
+      "description": "Regtest Server"
+    },
+    {
+      "url": "https://api.staging.kaleidoswap.com",
+      "description": "Staging Server"
+    },
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "LSPS1",
+      "description": "LSP Specification v1 endpoints for channel opening and management"
+    },
+    {
+      "name": "Swaps",
+      "description": "Atomic swap operations (Submarine Swaps)"
+    },
+    {
+      "name": "Market",
+      "description": "Market data, pairs, and quotes"
+    },
+    {
+      "name": "SwapOrders",
+      "description": "Order management for swaps"
+    }
+  ]
 }

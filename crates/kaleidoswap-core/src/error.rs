@@ -40,6 +40,10 @@ pub enum KaleidoError {
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     },
 
+    /// Not implemented error
+    #[error("Not implemented")]
+    NotImplemented,
+
     /// JSON serialization/deserialization error
     #[error("JSON error: {0}")]
     JsonError(#[from] serde_json::Error),

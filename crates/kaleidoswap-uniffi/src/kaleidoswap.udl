@@ -144,10 +144,30 @@ interface KaleidoClient {
   JsonValue get_quote_by_assets(string from_ticker, string to_ticker, i64? from_amount, i64? to_amount);
   
   [Throws=KaleidoError]
-  JsonValue complete_swap(string rfq_id, string from_asset, string to_asset, i64 from_amount, i64 to_amount);
+  JsonValue complete_swap_from_quote(string quote_json);
   
   [Throws=KaleidoError]
   JsonValue get_pair_by_ticker(string ticker);
+  
+  // === New Convenience Methods ===
+  
+  [Throws=KaleidoError]
+  JsonValue list_active_assets();
+  
+  [Throws=KaleidoError]
+  JsonValue list_active_pairs();
+  
+  [Throws=KaleidoError]
+  i64 estimate_swap_fees(string ticker, i64 amount);
+  
+  [Throws=KaleidoError]
+  JsonValue get_best_quote(string ticker, i64? from_amount, i64? to_amount);
+  
+  [Throws=KaleidoError]
+  JsonValue find_asset_by_ticker(string ticker);
+  
+  [Throws=KaleidoError]
+  JsonValue find_pair_by_ticker(string ticker);
   
   // === WebSocket Streaming ===
   
@@ -167,4 +187,3 @@ interface QuoteStream {
   // Close the stream and clean up resources
   void close();
 };
-

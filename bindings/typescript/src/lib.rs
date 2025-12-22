@@ -498,19 +498,15 @@ impl KaleidoClient {
         .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
-    /// Complete a swap in one call
+    /// Complete a swap using a quote JSON string
     #[napi]
-    pub async fn complete_swap(
+    pub async fn complete_swap_from_quote(
         &self,
-        rfq_id: String,
-        from_asset: String,
-        to_asset: String,
-        from_amount: i64,
-        to_amount: i64,
+        quote_json: String,
     ) -> Result<String> {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || {
-            inner.complete_swap(rfq_id, from_asset, to_asset, from_amount, to_amount).map(|v| v.json)
+            inner.complete_swap_from_quote(quote_json).map(|v| v.json)
         }).await
         .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
         .map_err(|e| Error::from_reason(format!("{:?}", e)))
@@ -522,6 +518,79 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || {
             inner.get_pair_by_ticker(ticker).map(|v| v.json)
+        }).await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    // === New Convenience Methods ===
+
+    /// List only active assets
+    #[napi]
+    pub async fn list_active_assets(&self) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.list_active_assets().map(|v| v.json)
+        }).await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// List only active trading pairs
+    #[napi]
+    pub async fn list_active_pairs(&self) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.list_active_pairs().map(|v| v.json)
+        }).await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Estimate swap fees for a given pair and amount
+    #[napi]
+    pub async fn estimate_swap_fees(&self, ticker: String, amount: i64) -> Result<i64> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.estimate_swap_fees(ticker, amount)
+        }).await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Get the best quote by trying multiple layers
+    #[napi]
+    pub async fn get_best_quote(
+        &self,
+        ticker: String,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+    ) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.get_best_quote(ticker, from_amount, to_amount).map(|v| v.json)
+        }).await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Find an asset by ticker
+    #[napi]
+    pub async fn find_asset_by_ticker(&self, ticker: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.find_asset_by_ticker(ticker).map(|v| v.json)
+        }).await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Find a trading pair by ticker
+    #[napi]
+    pub async fn find_pair_by_ticker(&self, ticker: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.find_pair_by_ticker(ticker).map(|v| v.json)
         }).await
         .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
         .map_err(|e| Error::from_reason(format!("{:?}", e)))

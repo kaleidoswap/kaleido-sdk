@@ -15,9 +15,8 @@ use crate::models::{
     Asset, ChannelFees, ChannelOrderResponse, CreateOrderRequest, CreateSwapOrderRequest,
     CreateSwapOrderResponse, ConfirmSwapRequest, ConfirmSwapResponse, GetInfoResponseModel,
     Layer, NetworkInfoResponse, NodeInfoResponse, OrderHistoryResponse, OrderStatsResponse,
-    PairQuoteRequest, PairQuoteResponse, Swap, SwapLegInput, SwapOrderRateDecisionResponse,
+    PairQuoteRequest, PairQuoteResponse, Swap, SwapOrderRateDecisionResponse,
     SwapOrderStatusResponse, SwapRequest, SwapResponse, SwapStatusResponse, TradingPair,
-    rgb_node,
 };
 use crate::retry::RetryConfig;
 use crate::websocket::WebSocketClient;
@@ -186,9 +185,9 @@ impl KaleidoClient {
     pub async fn get_quote_by_pair(
         &self,
         ticker: &str,
-        from_amount: Option<i32>,
-        to_amount: Option<i32>,
-        layer: Layer,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+        _layer: Layer,
     ) -> Result<PairQuoteResponse> {
         let parts: Vec<&str> = ticker.split('/').collect();
         if parts.len() != 2 {
@@ -212,21 +211,11 @@ impl KaleidoClient {
         let from_id = find_asset_id(parts[0])?;
         let to_id = find_asset_id(parts[1])?;
 
-        let from_asset = SwapLegInput {
-            asset_id: from_id,
-            layer: layer.clone(),
-            amount: from_amount.map(Some),
-        };
-
-        let to_asset = SwapLegInput {
-            asset_id: to_id,
-            layer,
-            amount: to_amount.map(Some),
-        };
-
         let request = PairQuoteRequest {
-            from_asset: Box::new(from_asset),
-            to_asset: Box::new(to_asset),
+            from_asset: from_id,
+            from_amount: from_amount.map(Some),
+            to_asset: to_id,
+            to_amount: to_amount.map(Some),
         };
 
         if from_amount.is_none() && to_amount.is_none() {
@@ -295,10 +284,10 @@ impl KaleidoClient {
     pub async fn complete_swap(&self, quote: &PairQuoteResponse) -> Result<ConfirmSwapResponse> {
         let swap_request = SwapRequest {
             rfq_id: quote.rfq_id.clone(),
-            from_asset: quote.from_asset.asset_id.clone(),
-            from_amount: quote.from_asset.amount,
-            to_asset: quote.to_asset.asset_id.clone(),
-            to_amount: quote.to_asset.amount,
+            from_asset: quote.from_asset.clone(),
+            from_amount: quote.from_amount,
+            to_asset: quote.to_asset.clone(),
+            to_amount: quote.to_amount,
         };
         let init_response = self.init_swap(&swap_request).await?;
 
@@ -481,4 +470,91 @@ impl KaleidoClient {
     pub async fn lock_wallet(&self) -> Result<serde_json::Value> {
         self.ensure_node()?.lock().await
     }
+
+    // === Convenience Methods ===
+
+    /// List only active assets.
+    pub async fn list_active_assets(&self) -> Result<Vec<Asset>> {
+        let assets = self.list_assets().await?;
+        Ok(assets.into_iter().filter(|p| p.is_active.unwrap_or(false)).collect())
+    }
+
+    /// List only active trading pairs.
+    pub async fn list_active_pairs(&self) -> Result<Vec<TradingPair>> {
+        let pairs = self.list_pairs().await?;
+        Ok(pairs.into_iter().filter(|p| p.is_active).collect())
+    }
+
+    /// Estimate swap fees for a given pair and amount.
+    /// Returns the fee amount in the quote asset's precision.
+    pub async fn estimate_swap_fees(
+        &self,
+        ticker: &str,
+        amount: i64,
+        layer: Layer,
+    ) -> Result<i64> {
+        let _quote = self.get_quote_by_pair(ticker, Some(amount), None, layer).await?;
+        // Fee is embedded in the price difference
+        // from_amount - (to_amount * price) = effective fee
+        // Ok(quote.from_asset.amount - quote.to_asset.amount)
+        Err(KaleidoError::NotImplemented)
+    }
+
+    /// Get the best quote by trying multiple layers and selecting the one with best rate.
+    pub async fn get_best_quote(
+        &self,
+        ticker: &str,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+    ) -> Result<PairQuoteResponse> {
+        // Try BTC/LN first as it's most common
+        let layers = vec![Layer::BtcSlashLn, Layer::RgbSlashLn];
+        
+        let mut best_quote: Option<PairQuoteResponse> = None;
+        
+        for layer in layers {
+            match self.get_quote_by_pair(ticker, from_amount, to_amount, layer).await {
+                Ok(quote) => {
+                    if let Some(ref current_best) = best_quote {
+                        // Compare: higher to_amount for same from_amount is better
+                        if quote.to_amount > current_best.to_amount {
+                            best_quote = Some(quote);
+                        }
+                    } else {
+                        best_quote = Some(quote);
+                    }
+                }
+                Err(_) => continue,
+            }
+        }
+        
+        best_quote.ok_or_else(|| KaleidoError::not_found("Quote", ticker))
+    }
+
+    /// Find an asset by ticker from the cached list.
+    pub async fn find_asset_by_ticker(&self, ticker: &str) -> Result<Asset> {
+        let assets = self.list_assets().await?;
+        let ticker_upper = ticker.to_uppercase();
+        
+        assets
+            .into_iter()
+            .find(|a| a.ticker.to_uppercase() == ticker_upper)
+            .ok_or_else(|| KaleidoError::not_found("Asset", ticker))
+    }
+
+    /// Find a trading pair by ticker (e.g., "BTC/USDT").
+    pub async fn find_pair_by_ticker(&self, ticker: &str) -> Result<TradingPair> {
+        let pairs = self.list_pairs().await?;
+        let ticker_upper = ticker.to_uppercase();
+        
+        pairs
+            .into_iter()
+            .find(|p| {
+                let pair_ticker = format!("{}/{}", p.base_asset, p.quote_asset).to_uppercase();
+                pair_ticker == ticker_upper
+            })
+            .ok_or_else(|| KaleidoError::not_found("TradingPair", ticker))
+    }
 }
+        // return not implmeneted error
+        

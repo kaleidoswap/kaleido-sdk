@@ -8,7 +8,7 @@ use tokio::runtime::Runtime;
 use kaleidoswap_core::{
     KaleidoClient as CoreClient,
     KaleidoConfig as CoreConfig,
-    models::kaleidoswap::{Networklayer, Assetprotocol},
+    models::Layer,
 };
 
 /// JSON value wrapper for passing complex data across FFI boundary.
@@ -205,7 +205,7 @@ impl KaleidoClient {
     }
 
     /// Get a quote for a swap.
-    /// Uses Lightning network and NativeBtc protocol as defaults.
+    /// Uses BTC/LN layer as default.
     pub fn get_quote_by_pair(
         &self,
         ticker: String,
@@ -218,8 +218,7 @@ impl KaleidoClient {
                 &ticker,
                 from_amount,
                 to_amount,
-                Networklayer::Lightning,
-                Assetprotocol::NativeBtc,
+                Layer::BtcSlashLn,
             ))?;
         Ok(JsonValue::new(result))
     }
@@ -432,7 +431,7 @@ impl KaleidoClient {
 
     /// Get a quote by asset tickers (e.g., "BTC", "USDT").
     /// Automatically resolves asset IDs from tickers.
-    /// Uses Lightning network and NativeBtc protocol as defaults.
+    /// Uses BTC/LN layer as default.
     pub fn get_quote_by_assets(
         &self,
         from_ticker: String,
@@ -447,63 +446,21 @@ impl KaleidoClient {
                 &ticker,
                 from_amount,
                 to_amount,
-                Networklayer::Lightning,
-                Assetprotocol::NativeBtc,
+                Layer::BtcSlashLn,
             ))?;
         Ok(JsonValue::new(result))
     }
 
-    /// Complete a swap in one call using an RFQ ID.
+    /// Complete a swap in one call using a quote response.
     /// This initializes and executes the swap atomically.
-    /// 
-    /// Note: This method constructs a minimal Quote with the provided parameters.
-    /// For full control, get a quote first using get_quote_by_pair and pass it to the core SDK.
-    pub fn complete_swap(
+    pub fn complete_swap_from_quote(
         &self,
-        rfq_id: String,
-        from_asset_id: String,
-        to_asset_id: String,
-        from_amount: i64,
-        to_amount: i64,
+        quote_json: String,
     ) -> Result<JsonValue, KaleidoError> {
-        // Build SwapLeg structures for the new Quote type
-        let from_leg = kaleidoswap_core::models::kaleidoswap::Swapleg {
-            asset_id: from_asset_id,
-            name: String::new(),
-            ticker: String::new(),
-            network: Networklayer::Lightning,
-            protocol: Assetprotocol::NativeBtc,
-            amount: from_amount,
-            precision: 8,
-        };
-        
-        let to_leg = kaleidoswap_core::models::kaleidoswap::Swapleg {
-            asset_id: to_asset_id,
-            name: String::new(),
-            ticker: String::new(),
-            network: Networklayer::Lightning,
-            protocol: Assetprotocol::NativeBtc,
-            amount: to_amount,
-            precision: 8,
-        };
-        
-        let quote = kaleidoswap_core::Quote {
-            rfq_id,
-            from_asset: from_leg,
-            to_asset: to_leg,
-            price: 0,  // Not used for swap execution
-            fee: kaleidoswap_core::models::Fee {
-                base_fee: 0,
-                variable_fee: 0,
-                fee_rate: 0.0,
-                final_fee: 0,
-                fee_asset: String::new(),
-                fee_asset_precision: 0,
-            },
-            timestamp: 0,
-            expires_at: 0,
-            is_submarine_swap: None,
-        };
+        let quote: kaleidoswap_core::models::PairQuoteResponse = 
+            serde_json::from_str(&quote_json).map_err(|e| KaleidoError::ValidationError {
+                message: format!("Invalid quote JSON: {}", e),
+            })?;
         
         let result = self.runtime.block_on(self.inner.complete_swap(&quote))?;
         Ok(JsonValue::new(result))
@@ -518,7 +475,7 @@ impl KaleidoClient {
         let pair = pairs
             .into_iter()
             .find(|p| {
-                let pair_ticker = format!("{}/{}", p.base.ticker, p.quote.ticker).to_uppercase();
+                let pair_ticker = format!("{}/{}", p.base_asset, p.quote_asset).to_uppercase();
                 pair_ticker == ticker_upper
             })
             .ok_or_else(|| KaleidoError::NotFoundError {
@@ -526,6 +483,57 @@ impl KaleidoClient {
             })?;
         
         Ok(JsonValue::new(pair))
+    }
+
+    // === Convenience Methods ===
+
+    /// List only active assets.
+    pub fn list_active_assets(&self) -> Result<JsonValue, KaleidoError> {
+        let result = self.runtime.block_on(self.inner.list_active_assets())?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// List only active trading pairs.
+    pub fn list_active_pairs(&self) -> Result<JsonValue, KaleidoError> {
+        let result = self.runtime.block_on(self.inner.list_active_pairs())?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Estimate swap fees for a given pair and amount.
+    pub fn estimate_swap_fees(
+        &self,
+        ticker: String,
+        amount: i64,
+    ) -> Result<i64, KaleidoError> {
+        let result = self.runtime.block_on(
+            self.inner.estimate_swap_fees(&ticker, amount, Layer::BtcSlashLn)
+        )?;
+        Ok(result)
+    }
+
+    /// Get the best quote by trying multiple layers.
+    pub fn get_best_quote(
+        &self,
+        ticker: String,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+    ) -> Result<JsonValue, KaleidoError> {
+        let result = self.runtime.block_on(
+            self.inner.get_best_quote(&ticker, from_amount, to_amount)
+        )?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Find an asset by ticker.
+    pub fn find_asset_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
+        let result = self.runtime.block_on(self.inner.find_asset_by_ticker(&ticker))?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Find a trading pair by ticker.
+    pub fn find_pair_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
+        let result = self.runtime.block_on(self.inner.find_pair_by_ticker(&ticker))?;
+        Ok(JsonValue::new(result))
     }
 
 }

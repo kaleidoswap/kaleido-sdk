@@ -23,18 +23,35 @@ cargo check            # Verify compilation
 Models are auto-generated from OpenAPI specs using `openapi-generator-cli` in Docker.
 
 ### Source Files
-- `specs/kaleidoswap.json` - Kaleidoswap Maker API (v0.4.0)
+- `specs/kaleidoswap.json` - Kaleidoswap Maker API
 - `specs/rgb-lightning-node.yaml` - RGB Lightning Node API
 
 ### Output
 ```
 crates/kaleidoswap-core/src/generated/
-├── mod.rs           # Re-exports
-├── kaleidoswap/     # 66 Kaleidoswap models
-│   └── src/models/
-└── rgb_node/        # 121 RGB Node models
-    └── src/models/
+├── mod.rs               # Re-exports: pub mod kaleidoswap; pub mod rgb_node;
+├── kaleidoswap/
+│   ├── mod.rs           # pub mod models; pub use models::*;
+│   └── models/
+│       ├── mod.rs       # pub mod asset; pub use asset::*; ...
+│       ├── asset.rs     # Asset struct
+│       ├── layer.rs     # Layer enum (BTC/LN, RGB/LN, etc.)
+│       ├── swap_request.rs
+│       └── ... (70 models)
+└── rgb_node/
+    ├── mod.rs
+    └── models/
+        ├── mod.rs
+        ├── channel.rs
+        ├── peer.rs
+        └── ... (121 models)
 ```
+
+### Generated Model Count
+| API | Models | Examples |
+|-----|--------|----------|
+| Kaleidoswap | 70 | `Asset`, `TradingPair`, `Layer`, `SwapRequest`, `PairQuoteResponse` |
+| RGB Node | 121 | `Channel`, `Peer`, `Payment`, `Invoice`, `KeysendRequest` |
 
 ### Script
 The generation script uses Docker to avoid Java dependency:
@@ -48,9 +65,33 @@ Uses `openapitools/openapi-generator-cli:latest` Docker image with options:
 - `--global-property=models` - Models only, no API clients
 - `--additional-properties=library=reqwest,supportAsync=true`
 
+The script also:
+1. Fixes up module structure (creates `mod.rs` files)
+2. Fixes imports (`use crate::models;` → `use super::*;`)
+3. Removes `models::` prefixes from type references
+
 ---
 
-## 2. Binding Generation (Rust → Python/TypeScript)
+## 2. Model Re-exports
+
+The `src/models/mod.rs` re-exports all generated types:
+
+```rust
+//! Model re-exports from generated OpenAPI types.
+
+pub use crate::generated::kaleidoswap::models::*;
+pub use crate::generated::rgb_node::models as rgb_node;
+```
+
+This allows imports like:
+```rust
+use kaleidoswap_core::models::{Asset, Layer, TradingPair};
+use kaleidoswap_core::models::rgb_node::Channel;
+```
+
+---
+
+## 3. Binding Generation (Rust → Python/TypeScript)
 
 UniFFI generates language bindings from Rust core.
 
@@ -74,7 +115,7 @@ make build-typescript
 
 ---
 
-## 3. Deprecated: Standalone SDKs
+## 4. Deprecated: Standalone SDKs
 
 The `python/` and `typescript/` directories contain legacy standalone SDKs that are **deprecated**.
 
@@ -82,7 +123,7 @@ Use `bindings/python` and `bindings/typescript` instead.
 
 ---
 
-## 4. Development Workflow
+## 5. Development Workflow
 
 | Command | Description |
 |---------|-------------|
@@ -91,3 +132,27 @@ Use `bindings/python` and `bindings/typescript` instead.
 | `make update-specs` | Download latest OpenAPI specs |
 | `make build` | Build all components |
 | `make test` | Run all tests |
+| `cargo test --all` | Run full Rust test suite (19 tests) |
+
+---
+
+## 6. Troubleshooting
+
+### Docker not found
+```
+❌ Docker not found. Please install Docker to continue.
+```
+Solution: Install Docker Desktop or Docker Engine.
+
+### Import errors after regeneration
+If you see `use crate::models;` errors, the script's fixup step may have failed.
+Manually run:
+```bash
+# Check that mod.rs files exist
+ls crates/kaleidoswap-core/src/generated/kaleidoswap/models/mod.rs
+ls crates/kaleidoswap-core/src/generated/rgb_node/models/mod.rs
+```
+
+### Type mismatches
+Generated models use `i32` for amounts (from OpenAPI integer spec).
+Ensure your API calls use `i32` not `i64` for amount fields.

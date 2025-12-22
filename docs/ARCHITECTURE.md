@@ -28,17 +28,17 @@ The SDK follows a **Rust-first architecture** with language bindings generated v
 │                      Core Rust Library                          │
 │                   crates/kaleidoswap-core                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   Models    │  │  API Layer  │  │        Client           │  │
-│  │  (OpenAPI)  │  │             │  │    KaleidoClient        │  │
-│  │ ┌─────────┐ │  │  market.rs  │  │  • Caching              │  │
-│  │ │kaleido- │ │  │  swaps.rs   │  │  • Retry logic          │  │
-│  │ │swap.rs  │ │  │  orders.rs  │  │  • Convenience methods  │  │
-│  │ ├─────────┤ │  │  lsp.rs     │  │                         │  │
-│  │ │rgb_node │ │  │  node.rs    │  │                         │  │
-│  │ │.rs      │ │  │             │  │                         │  │
-│  │ └─────────┘ │  └─────────────┘  └─────────────────────────┘  │
-│  └─────────────┘                                                 │
+│  ┌─────────────────┐  ┌─────────────┐  ┌───────────────────────┐│
+│  │ Generated Models│  │  API Layer  │  │        Client         ││
+│  │   (OpenAPI)     │  │             │  │    KaleidoClient      ││
+│  │ ┌─────────────┐ │  │  market.rs  │  │  • Caching            ││
+│  │ │ kaleidoswap │ │  │  swaps.rs   │  │  • Retry logic        ││
+│  │ │ (70 models) │ │  │  orders.rs  │  │  • Convenience methods││
+│  │ ├─────────────┤ │  │  lsp.rs     │  │                       ││
+│  │ │  rgb_node   │ │  │  node.rs    │  │                       ││
+│  │ │(121 models) │ │  │             │  │                       ││
+│  │ └─────────────┘ │  └─────────────┘  └───────────────────────┘│
+│  └─────────────────┘                                             │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │    HTTP     │  │  WebSocket  │  │        Retry            │  │
@@ -66,9 +66,13 @@ kaleido-sdk/
 │   │   ├── src/
 │   │   │   ├── generated/     # Auto-generated from OpenAPI (Docker)
 │   │   │   │   ├── mod.rs     # Re-exports
-│   │   │   │   ├── kaleidoswap/  # Kaleidoswap API models
-│   │   │   │   └── rgb_node/     # RGB Node API models
-│   │   │   ├── models/        # Legacy models (deprecated)
+│   │   │   │   ├── kaleidoswap/  # 70 Kaleidoswap API models
+│   │   │   │   │   ├── mod.rs
+│   │   │   │   │   └── models/   # Layer, SwapRequest, Asset, etc.
+│   │   │   │   └── rgb_node/     # 121 RGB Node API models
+│   │   │   │       ├── mod.rs
+│   │   │   │       └── models/   # Channel, Peer, Payment, etc.
+│   │   │   ├── models/        # Re-exports from generated/
 │   │   │   ├── api/           # API modules
 │   │   │   │   ├── market.rs  # Assets, pairs, quotes
 │   │   │   │   ├── swaps.rs   # Atomic swaps
@@ -98,7 +102,7 @@ kaleido-sdk/
 ├── python/                    # ⚠️ DEPRECATED - Legacy standalone SDK
 ├── typescript/                # ⚠️ DEPRECATED - Legacy standalone SDK
 ├── specs/                     # OpenAPI specifications
-│   ├── kaleidoswap.json       # v0.4.0 Kaleidoswap Maker API
+│   ├── kaleidoswap.json       # Kaleidoswap Maker API
 │   └── rgb-lightning-node.yaml
 └── scripts/                   # Build and utility scripts
     ├── generate-rust-models.sh  # Docker-based model generation
@@ -109,7 +113,7 @@ kaleido-sdk/
 
 ### 1. Model Generation (Docker-based)
 
-Models are auto-generated from OpenAPI specs using `openapi-generator-cli` via Docker:
+All models are **auto-generated** from OpenAPI specs using `openapi-generator-cli` via Docker:
 
 ```bash
 # Generate models (requires Docker)
@@ -122,16 +126,15 @@ make generate-models
 make regenerate
 ```
 
-This generates:
-- `generated/kaleidoswap/` - 66 models from Kaleidoswap Maker API
-- `generated/rgb_node/` - 121 models from RGB Lightning Node API
+This generates **191 total models**:
+- `generated/kaleidoswap/models/` - 70 models (Layer, Asset, TradingPair, SwapRequest, etc.)
+- `generated/rgb_node/models/` - 121 models (Channel, Peer, Payment, Invoice, etc.)
 
-Re-exports in `generated/mod.rs`:
+The `models/mod.rs` re-exports from generated:
 ```rust
-pub mod kaleidoswap;
-pub mod rgb_node;
-pub use kaleidoswap::models as kaleido;
-pub use rgb_node::models as rgb;
+// src/models/mod.rs
+pub use crate::generated::kaleidoswap::models::*;
+pub use crate::generated::rgb_node::models as rgb_node;
 ```
 
 ### 2. Core Client (`client.rs`)
@@ -140,6 +143,7 @@ The `KaleidoClient` is the main entry point:
 
 ```rust
 use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
+use kaleidoswap_core::models::Layer;
 
 let config = KaleidoConfig::new("https://api.kaleidoswap.com")
     .with_node_url("http://localhost:3000");
@@ -149,7 +153,7 @@ let client = KaleidoClient::new(config)?;
 // Market operations
 let assets = client.list_assets().await?;
 let pairs = client.list_pairs().await?;
-let quote = client.get_quote_by_pair("BTC/USDT", Some(100000), None).await?;
+let quote = client.get_quote_by_pair("BTC/USDT", Some(100000), None, Layer::BtcSlashLn).await?;
 
 // Swap operations
 let swap = client.complete_swap(&quote).await?;
@@ -197,8 +201,8 @@ from kaleidoswap import KaleidoClient, KaleidoConfig
 config = KaleidoConfig(base_url="https://api.kaleidoswap.com")
 client = KaleidoClient(config)
 
-assets = client.list_assets()
-print(f"Found {len(assets)} assets")
+assets = client.list_assets()  # Returns JSON string
+print(f"Found assets: {assets}")
 ```
 
 #### TypeScript (`bindings/typescript/`)
@@ -211,8 +215,8 @@ import { KaleidoClient, KaleidoConfig } from '@kaleidoswap/sdk';
 const config = new KaleidoConfig({ baseUrl: 'https://api.kaleidoswap.com' });
 const client = new KaleidoClient(config);
 
-const assets = await client.listAssets();
-console.log(`Found ${assets.length} assets`);
+const assets = await client.listAssets();  // Returns JSON string
+console.log(`Found assets: ${assets}`);
 ```
 
 ## Development Workflow
@@ -236,9 +240,8 @@ make build-typescript # TypeScript bindings
 make test
 
 # Run specific tests
-make test-rust       # Rust unit tests
-make test-python     # Python binding tests
-make test-typescript # TypeScript binding tests
+make test-rust       # Rust unit tests (12 core + 6 UniFFI)
+cargo test --all     # Full test suite
 ```
 
 ### Regenerating Models

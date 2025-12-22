@@ -55,6 +55,7 @@ yarn add @kaleidoswap/sdk
 
 ```rust
 use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
+use kaleidoswap_core::models::Layer;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -65,13 +66,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let assets = client.list_assets().await?;
     println!("Found {} assets", assets.len());
 
-    // Get a quote
-    let quote = client.get_quote_by_pair("BTC/USDT", Some(100000), None).await?;
-    println!("Quote: {} -> {}", quote.from_amount, quote.to_amount);
+    // Get a quote (amounts are i32)
+    let quote = client.get_quote_by_pair(
+        "BTC/USDT", 
+        Some(100000), 
+        None, 
+        Layer::BtcSlashLn
+    ).await?;
+    println!("Quote: {} -> {}", quote.from_asset.amount, quote.to_asset.amount);
 
     Ok(())
 }
 ```
+
 
 ### Python
 

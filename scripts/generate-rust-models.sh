@@ -89,7 +89,10 @@ EOF
     # Create models/mod.rs
     local models_dir="$module_dir/models"
     if [[ -d "$models_dir" ]]; then
+        # Add allow attribute to suppress ambiguous glob re-export warnings
+        # Use inner attribute syntax (#!) to apply to the whole module
         echo "//! Generated ${module_name} API models." > "$models_dir/mod.rs"
+        echo "#![allow(ambiguous_glob_reexports)]" >> "$models_dir/mod.rs"
         echo "" >> "$models_dir/mod.rs"
         
         # Add mod declarations and re-exports for each file
@@ -101,12 +104,13 @@ EOF
             fi
         done
         
-        # Fix imports: replace 'use crate::models;' with 'use super::*;'
+        # Fix imports: replace 'use crate::models;' with '#[allow(unused_imports)] use super::*;'
         # and remove 'models::' prefixes
         for f in "$models_dir"/*.rs; do
             if [[ "$(basename "$f")" != "mod.rs" ]]; then
-                sed -i '' 's/use crate::models;/use super::*;/' "$f" 2>/dev/null || \
-                sed -i 's/use crate::models;/use super::*;/' "$f"
+                # Replace import with allow attribute to suppress warnings
+                sed -i '' 's/use crate::models;/#[allow(unused_imports)]\nuse super::*;/' "$f" 2>/dev/null || \
+                sed -i 's/use crate::models;/#[allow(unused_imports)]\nuse super::*;/' "$f"
                 sed -i '' 's/models:://g' "$f" 2>/dev/null || \
                 sed -i 's/models:://g' "$f"
             fi

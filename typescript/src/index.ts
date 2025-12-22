@@ -2,6 +2,10 @@
 export { KaleidoClient } from './client';
 export type { KaleidoConfig } from './client';
 
+// Generated Clients
+export { KaleidoApiClient } from './generated/kaleido/KaleidoApiClient';
+export { RgbNodeClient } from './generated/rgb-node/RgbNodeClient';
+
 // Re-export commonly used types from generated code
 export type {
   // Kaleidoswap API types
@@ -32,6 +36,11 @@ export type {
   ClientAsset,
   Fee,
   ChannelFees,
+  GetOrderRequest,
+  RetryDeliveryRequest,
+  RetryDeliveryResponse,
+  SwapStatusRequest,
+  SwapStatusResponse,
 } from './generated/kaleido';
 
 export type {
@@ -118,6 +127,7 @@ export type {
   SendOnionMessageRequest,
   RevokeTokenRequest,
   EmptyResponse,
+  NodeInfoResponse as RgbNodeInfoResponse,
 } from './generated/rgb-node';
 
 // Custom/enhanced types (not in generated code)

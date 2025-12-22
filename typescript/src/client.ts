@@ -147,6 +147,7 @@ export interface KaleidoConfig extends Omit<HttpClientConfig, 'baseUrl'> {
   nodeUrl?: string;
   wsUrl?: string;
   apiKey?: string;
+  authToken?: string;
 }
 
 export class KaleidoClient {
@@ -162,7 +163,7 @@ export class KaleidoClient {
   private precisionHandler: PrecisionHandler | null = null;
 
   constructor(config: KaleidoConfig) {
-    const { nodeUrl, wsUrl, baseUrl, ...apiConfig } = config;
+    const { nodeUrl, wsUrl, baseUrl, authToken, ...apiConfig } = config;
     const finalBaseUrl =
       baseUrl || process.env.KALEIDO_API_URL || 'https://api.regtest.kaleidoswap.com';
 
@@ -174,8 +175,9 @@ export class KaleidoClient {
 
     this.rgbNodeApi = nodeUrl
       ? new RgbNodeClient({
-          BASE: nodeUrl,
-        })
+        BASE: nodeUrl,
+        HEADERS: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+      })
       : null;
 
     // Initialize WebSocket client
@@ -192,6 +194,15 @@ export class KaleidoClient {
       ...apiConfig,
       baseUrl: wsBaseUrl,
     });
+  }
+
+  public get node(): RgbNodeClient {
+    this.ensureNodeClient();
+    return this.rgbNodeApi!;
+  }
+
+  public get maker(): KaleidoApiClient {
+    return this.kaleidoApi;
   }
 
   private ensureNodeClient(): void {
@@ -544,15 +555,15 @@ export class KaleidoClient {
     const requestBody: PairQuoteRequest =
       fromAmount !== undefined
         ? {
-            from_asset: fromAsset,
-            to_asset: toAsset,
-            from_amount: fromAmount,
-          }
+          from_asset: fromAsset,
+          to_asset: toAsset,
+          from_amount: fromAmount,
+        }
         : {
-            from_asset: fromAsset,
-            to_asset: toAsset,
-            to_amount: toAmount,
-          };
+          from_asset: fromAsset,
+          to_asset: toAsset,
+          to_amount: toAmount,
+        };
 
     return await this.kaleidoApi.market.getQuoteApiV1MarketQuotePost(requestBody);
   }
@@ -571,19 +582,19 @@ export class KaleidoClient {
       const quoteMessage =
         fromAmount !== undefined
           ? {
-              action: 'quote_request',
-              from_asset: fromAsset,
-              to_asset: toAsset,
-              from_amount: fromAmount,
-              timestamp: Math.floor(Date.now() / 1000),
-            }
+            action: 'quote_request',
+            from_asset: fromAsset,
+            to_asset: toAsset,
+            from_amount: fromAmount,
+            timestamp: Math.floor(Date.now() / 1000),
+          }
           : {
-              action: 'quote_request',
-              from_asset: fromAsset,
-              to_asset: toAsset,
-              to_amount: toAmount,
-              timestamp: Math.floor(Date.now() / 1000),
-            };
+            action: 'quote_request',
+            from_asset: fromAsset,
+            to_asset: toAsset,
+            to_amount: toAmount,
+            timestamp: Math.floor(Date.now() / 1000),
+          };
 
       const timeoutId = setTimeout(() => {
         this.wsClient.off('quote_response', quoteHandler);
@@ -612,8 +623,7 @@ export class KaleidoClient {
         this.wsClient.off('quote_response', quoteHandler);
         reject(
           new Error(
-            `Failed to send quote request: ${
-              error instanceof Error ? error.message : String(error)
+            `Failed to send quote request: ${error instanceof Error ? error.message : String(error)
             }`
           )
         );

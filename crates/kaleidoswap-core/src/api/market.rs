@@ -37,15 +37,15 @@ impl MarketApi {
     /// Exactly one of from_asset.amount or to_asset.amount must be specified.
     pub async fn get_quote(&self, request: &PairQuoteRequest) -> Result<PairQuoteResponse> {
         // Validate that exactly one of the amounts is set
-        match (&request.from_asset.amount, &request.to_asset.amount) {
+        match (&request.from_amount, &request.to_amount) {
             (Some(Some(_)), Some(Some(_))) => {
                 return Err(KaleidoError::validation(
-                    "Cannot specify both from_asset.amount and to_asset.amount",
+                    "Cannot specify both from_amount and to_amount",
                 ));
             }
             (None, None) | (Some(None), Some(None)) | (Some(None), None) | (None, Some(None)) => {
                 return Err(KaleidoError::validation(
-                    "Must specify either from_asset.amount or to_asset.amount",
+                    "Must specify either from_amount or to_amount",
                 ));
             }
             _ => {}
@@ -92,7 +92,7 @@ impl MarketHelper {
         let (base, quote) = (parts[0].to_uppercase(), parts[1].to_uppercase());
 
         self.pairs.iter().find(|p| {
-            p.base.ticker.to_uppercase() == base && p.quote.ticker.to_uppercase() == quote
+            p.base_asset.to_uppercase() == base && p.quote_asset.to_uppercase() == quote
         })
     }
 
@@ -100,7 +100,7 @@ impl MarketHelper {
     pub fn find_pair_by_asset_ids(&self, base_id: &str, quote_id: &str) -> Option<&TradingPair> {
         self.pairs
             .iter()
-            .find(|p| p.base.asset_id == base_id && p.quote.asset_id == quote_id)
+            .find(|p| p.base_asset_id == base_id && p.quote_asset_id == quote_id)
     }
 
     /// Get all active assets.
@@ -110,7 +110,7 @@ impl MarketHelper {
 
     /// Get all active pairs.
     pub fn active_pairs(&self) -> Vec<&TradingPair> {
-        self.pairs.iter().filter(|p| p.is_active.unwrap_or(false)).collect()
+        self.pairs.iter().filter(|p| p.is_active).collect()
     }
 
     /// Validate an amount against pair constraints.
@@ -133,30 +133,21 @@ impl MarketHelper {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::TradableAsset;
-
-    fn sample_tradable_asset(ticker: &str, asset_id: &str) -> TradableAsset {
-        TradableAsset {
-            asset_id: asset_id.to_string(),
-            ticker: ticker.to_string(),
-            name: format!("{} Token", ticker),
-            precision: 8,
-            media: None,
-            issued_supply: None,
-            timestamp: None,
-            endpoints: None,
-            protocol_ids: None,
-        }
-    }
 
     fn sample_pairs() -> Vec<TradingPair> {
         vec![TradingPair {
             id: Some("btc-usdt".to_string()),
-            base: Box::new(sample_tradable_asset("BTC", "btc-id")),
-            quote: Box::new(sample_tradable_asset("USDT", "usdt-id")),
-            price: Some(Some("50000".to_string())),
-            routes: None,
-            is_active: Some(true),
+            base_asset: "BTC".to_string(),
+            base_asset_id: "btc-id".to_string(),
+            base_precision: 8,
+            quote_asset: "USDT".to_string(),
+            quote_asset_id: "usdt-id".to_string(),
+            quote_precision: 6,
+            is_active: true,
+            min_base_order_size: 1000,
+            max_base_order_size: 100000000,
+            min_quote_order_size: 1000,
+            max_quote_order_size: 100000000,
         }]
     }
 
@@ -166,7 +157,7 @@ mod tests {
         
         let pair = helper.find_pair_by_ticker("BTC/USDT");
         assert!(pair.is_some());
-        assert_eq!(pair.unwrap().base.ticker, "BTC");
+        assert_eq!(pair.unwrap().base_asset, "BTC");
         
         let missing = helper.find_pair_by_ticker("ETH/USDT");
         assert!(missing.is_none());
