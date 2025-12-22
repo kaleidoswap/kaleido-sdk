@@ -11,33 +11,50 @@ pip install kaleidoswap
 ## Quick Start
 
 ```python
-from kaleidoswap import KaleidoClient
+from kaleidoswap import KaleidoClient, KaleidoConfig
+import json
 
 # Create a client
-client = KaleidoClient.new(
+config = KaleidoConfig(
     base_url="https://api.regtest.kaleidoswap.com",
     node_url=None,  # Optional RGB node URL
     timeout=30.0,
     max_retries=3,
     cache_ttl=60,
 )
+client = KaleidoClient(config)
 
 # List available assets
-assets = client.list_assets()
-print(assets)
+assets_json = client.list_assets()
+assets = json.loads(assets_json)
+print(f"Found {len(assets)} assets")
 
 # List trading pairs
-pairs = client.list_pairs()
-print(pairs)
+pairs_json = client.list_pairs()
+print(pairs_json)
 
-# Get a quote
-quote = client.get_quote(
-    from_asset="BTC",
-    to_asset="USDT",
-    from_amount=100000,  # satoshis
-    to_amount=None,
+# Get a quote (returns JSON string)
+# Use get_best_quote for optimal routing (supports cross-protocol)
+quote_json = client.get_best_quote(
+    "BTC/USDT",
+    1_000_000,  # 0.01 BTC (satoshis)
+    None,       # to_amount
 )
-print(quote)
+quote = json.loads(quote_json)
+print(f"Quote Price: {quote.get('price')}")
+
+# Legacy operations (Strongly Typed)
+# These methods accept dictionaries or Pydantic models instead of JSON strings
+init_request = {
+    "rfq_id": quote["rfq_id"],
+    "from_asset": quote["from_asset"]["asset_id"],
+    "to_asset": quote["to_asset"]["asset_id"],
+    "from_amount": quote["from_asset"]["amount"],
+    "to_amount": quote["to_asset"]["amount"]
+}
+init_result_json = client.init_swap(init_request)
+init_result = json.loads(init_result_json)
+print(f"Payment Hash: {init_result['payment_hash']}")
 ```
 
 ## Development

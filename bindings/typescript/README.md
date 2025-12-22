@@ -31,9 +31,29 @@ console.log(JSON.parse(assets));
 const pairs = await client.listPairs();
 console.log(JSON.parse(pairs));
 
-// Get a quote
-const quote = await client.getQuoteByPair('BTC/USDT', 100000);
-console.log(JSON.parse(quote));
+// Get a quote (returns JSON string)
+// Use getBestQuote for optimal routing (supports cross-protocol)
+const quoteJson = await client.getBestQuote('BTC/USDT', 1000000); // 1M sats
+const quote = JSON.parse(quoteJson);
+
+// Access nested fields
+const fromAmt = quote.from_asset?.amount || 0;
+const toAmt = quote.to_asset?.amount || 0;
+console.log(`Quote: ${fromAmt} -> ${toAmt}`);
+
+// Legacy operations (Strongly Typed)
+// Methods accept objects matching defined interfaces (e.g., CreateOrderRequest)
+const initRequest = {
+  rfq_id: quote.rfq_id,
+  from_asset: quote.from_asset.asset_id,
+  to_asset: quote.to_asset.asset_id,
+  from_amount: quote.from_asset.amount,
+  to_amount: quote.to_asset.amount,
+};
+
+const initResultJson = await client.initSwap(initRequest);
+const initResult = JSON.parse(initResultJson);
+console.log(`Swap Initiated: ${initResult.payment_hash}`);
 ```
 
 ## Configuration

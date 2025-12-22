@@ -578,6 +578,68 @@ impl KaleidoClient {
             .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
+    // === Legacy Support Methods ===
+
+    /// Create an LSPS1 order (Legacy)
+    #[napi]
+    pub async fn create_lsp_order(&self, request_json: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.create_lsp_order(request_json).map(|v| v.json))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Create a swap order (Legacy)
+    #[napi]
+    pub async fn create_swap_order(&self, request_json: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.create_swap_order(request_json).map(|v| v.json))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Initialize a swap (Legacy)
+    #[napi]
+    pub async fn init_swap(&self, request_json: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.init_swap(request_json).map(|v| v.json))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Execute a swap (Legacy)
+    #[napi]
+    pub async fn execute_swap(&self, request_json: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.execute_swap(request_json).map(|v| v.json))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Retry asset delivery (Legacy)
+    #[napi]
+    pub async fn retry_delivery(&self, order_id: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.retry_delivery(order_id).map(|v| v.json))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Connect to a peer
+    #[napi]
+    pub async fn connect_peer(&self, request_json: String) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.connect_peer(request_json).map(|v| v.json))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
     /// Create a real-time quote stream for a trading pair
     /// The pair_ticker should be in format "BTC/USDT"
     #[napi]

@@ -20,7 +20,7 @@ def main():
     """Execute a complete atomic swap flow."""
 
     # Configuration from environment or defaults
-    api_url = os.getenv("KALEIDO_API_URL", "https://api.regtest.kaleidoswap.com")
+    api_url = os.getenv("KALEIDO_API_URL", "http://localhost:8000")
     node_url = os.getenv("KALEIDO_NODE_URL", "http://localhost:3001")
 
     print("=" * 60)
@@ -57,14 +57,17 @@ def main():
     # Step 2: Get a quote
     print(f"\n📊 Step 2: Getting quote for {ticker}...")
     try:
-        quote_json = client.get_quote_by_pair(ticker, 100000, None)
+        # 1M sats (> min 500k)
+        quote_json = client.get_best_quote(ticker, 1_000_000, None)
         quote = json.loads(quote_json)
 
         print("   ✓ Quote received:")
-        print(f"     From Amount: {quote.get('from_amount', 'N/A')}")
-        print(f"     To Amount: {quote.get('to_amount', 'N/A')}")
+        from_amt = quote.get("from_asset", {}).get("amount", "N/A")
+        to_amt = quote.get("to_asset", {}).get("amount", "N/A")
+        print(f"     From Amount: {from_amt}")
+        print(f"     To Amount: {to_amt}")
         print(f"     Price: {quote.get('price', 'N/A')}")
-        print(f"     Expires: {quote.get('expires_at', 'N/A')}")
+        print(f"     Expires: {quote.get('expiration_ts', 'N/A')}")
     except Exception as e:
         print(f"   ❌ Could not get quote: {e}")
         return

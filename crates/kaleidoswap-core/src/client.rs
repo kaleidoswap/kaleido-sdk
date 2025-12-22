@@ -14,8 +14,8 @@ use crate::http::HttpClient;
 use crate::models::{
     Asset, ChannelFees, ChannelOrderResponse, ConfirmSwapRequest, ConfirmSwapResponse,
     CreateOrderRequest, CreateSwapOrderRequest, CreateSwapOrderResponse, GetInfoResponseModel,
-    Layer, NetworkInfoResponse, SwapNodeInfoResponse, OrderHistoryResponse, OrderStatsResponse,
-    PairQuoteRequest, PairQuoteResponse, Swap, SwapLegInput, SwapOrderRateDecisionResponse,
+    Layer, NetworkInfoResponse, OrderHistoryResponse, OrderStatsResponse, PairQuoteRequest,
+    PairQuoteResponse, Swap, SwapLegInput, SwapNodeInfoResponse, SwapOrderRateDecisionResponse,
     SwapOrderStatusResponse, SwapRequest, SwapResponse, SwapStatusResponse, TradingPair,
 };
 use crate::retry::RetryConfig;
@@ -227,7 +227,6 @@ impl KaleidoClient {
         self.get_quote(&request).await
     }
 
-
     // === Swap Operations ===
 
     /// Get node information from the swap service.
@@ -381,6 +380,11 @@ impl KaleidoClient {
         self.lsp.estimate_fees(channel_size).await
     }
 
+    /// Retry asset delivery for an order.
+    pub async fn retry_delivery(&self, order_id: &str) -> Result<serde_json::Value> {
+        self.lsp.retry_delivery(order_id).await
+    }
+
     // === RGB Lightning Node Operations ===
 
     fn ensure_node(&self) -> Result<&NodeApi> {
@@ -509,7 +513,10 @@ impl KaleidoClient {
     /// List only active trading pairs.
     pub async fn list_active_pairs(&self) -> Result<Vec<TradingPair>> {
         let pairs = self.list_pairs().await?;
-        Ok(pairs.into_iter().filter(|p| p.is_active.unwrap_or(false)).collect())
+        Ok(pairs
+            .into_iter()
+            .filter(|p| p.is_active.unwrap_or(false))
+            .collect())
     }
 
     /// Estimate swap fees for a given pair and amount.
@@ -536,7 +543,7 @@ impl KaleidoClient {
         let parts: Vec<&str> = ticker.split('/').collect();
         if parts.len() != 2 {
             return Err(KaleidoError::validation(
-                "Ticker must be in format ASSET/ASSET"
+                "Ticker must be in format ASSET/ASSET",
             ));
         }
 
@@ -561,19 +568,19 @@ impl KaleidoClient {
                     "LIQUID_LIQUID" => Some(Layer::LiquidLiquid),
                     "ARKADE_ARKADE" => Some(Layer::ArkadeArkade),
                     "SPARK_SPARK" => Some(Layer::SparkSpark),
-                     _ => None,
+                    _ => None,
                 })
                 .collect()
         };
 
         let mut from_layers = parse_layers(from_asset.supported_layers.flatten());
         if from_layers.is_empty() {
-             from_layers = vec![Layer::BtcLn, Layer::RgbLn];
+            from_layers = vec![Layer::BtcLn, Layer::RgbLn];
         }
 
         let mut to_layers = parse_layers(to_asset.supported_layers.flatten());
         if to_layers.is_empty() {
-             to_layers = vec![Layer::BtcLn, Layer::RgbLn];
+            to_layers = vec![Layer::BtcLn, Layer::RgbLn];
         }
 
         let mut best_quote: Option<PairQuoteResponse> = None;
@@ -601,7 +608,7 @@ impl KaleidoClient {
                             // Access nested SwapLeg amount (direct i64)
                             let current_out = current_best.to_asset.amount;
                             let new_out = quote.to_asset.amount;
-                            
+
                             if new_out > current_out {
                                 best_quote = Some(quote);
                             }

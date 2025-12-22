@@ -6,9 +6,7 @@
 // Re-export generated models directly
 pub use crate::generated::kaleidoswap::models::*;
 
-
 pub use crate::generated::rgb_node::models as rgb_node;
-
 
 // ============================================================================
 // Utility types (not from OpenAPI)

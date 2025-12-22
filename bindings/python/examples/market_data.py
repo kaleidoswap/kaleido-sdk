@@ -55,7 +55,9 @@ def main():
     pairs = json.loads(pairs_json)
 
     for pair in pairs[:5]:  # Show first 5
-        ticker = pair.get("ticker", "???")
+        base = pair.get("base", {}).get("ticker", "?")
+        quote = pair.get("quote", {}).get("ticker", "?")
+        ticker = f"{base}/{quote}"
         price = pair.get("price", 0)
         print(f"  • {ticker} - Price: {price}")
 
@@ -71,11 +73,12 @@ def main():
         print("-" * 40)
 
         try:
-            quote_json = client.get_quote_by_pair(ticker, 100000, None)
+            # 1M sats (> min 500k)
+            quote_json = client.get_best_quote(ticker, 1_000_000, None)
             quote = json.loads(quote_json)
 
-            from_amount = quote.get("from_amount", 0)
-            to_amount = quote.get("to_amount", 0)
+            from_amount = quote.get("from_asset", {}).get("amount", 0)
+            to_amount = quote.get("to_asset", {}).get("amount", 0)
 
             print(f"  From Amount: {from_amount}")
             print(f"  To Amount: {to_amount}")

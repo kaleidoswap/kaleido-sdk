@@ -338,6 +338,16 @@ impl KaleidoClient {
         Ok(JsonValue::new(result))
     }
 
+    /// Connect to a peer.
+    pub fn connect_peer(&self, request_json: String) -> Result<JsonValue, KaleidoError> {
+        let request: kaleidoswap_core::api::node::ConnectPeerRequest =
+            serde_json::from_str(&request_json).map_err(|e| KaleidoError::ValidationError {
+                message: format!("Invalid request JSON: {}", e),
+            })?;
+        let result = self.runtime.block_on(self.inner.connect_peer(&request))?;
+        Ok(JsonValue::from_value(result))
+    }
+
     /// List node assets.
     pub fn list_node_assets(&self) -> Result<JsonValue, KaleidoError> {
         let result = self.runtime.block_on(self.inner.list_node_assets())?;
@@ -489,11 +499,9 @@ impl KaleidoClient {
 
     /// Estimate swap fees for a given pair and amount.
     pub fn estimate_swap_fees(&self, ticker: String, amount: i64) -> Result<i64, KaleidoError> {
-        let result = self.runtime.block_on(self.inner.estimate_swap_fees(
-            &ticker,
-            amount,
-            Layer::BtcLn,
-        ))?;
+        let result =
+            self.runtime
+                .block_on(self.inner.estimate_swap_fees(&ticker, amount, Layer::BtcLn))?;
         Ok(result)
     }
 
@@ -524,6 +532,60 @@ impl KaleidoClient {
             .runtime
             .block_on(self.inner.find_pair_by_ticker(&ticker))?;
         Ok(JsonValue::new(result))
+    }
+
+    // === Legacy Support Methods ===
+
+    /// Create an LSPS1 order (Legacy).
+    pub fn create_lsp_order(&self, request_json: String) -> Result<JsonValue, KaleidoError> {
+        let request: kaleidoswap_core::models::CreateOrderRequest =
+            serde_json::from_str(&request_json).map_err(|e| KaleidoError::ValidationError {
+                message: format!("Invalid request JSON: {}", e),
+            })?;
+        let result = self
+            .runtime
+            .block_on(self.inner.create_lsp_order(&request))?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Create a swap order (Legacy).
+    pub fn create_swap_order(&self, request_json: String) -> Result<JsonValue, KaleidoError> {
+        let request: kaleidoswap_core::models::CreateSwapOrderRequest =
+            serde_json::from_str(&request_json).map_err(|e| KaleidoError::ValidationError {
+                message: format!("Invalid request JSON: {}", e),
+            })?;
+        let result = self
+            .runtime
+            .block_on(self.inner.create_swap_order(&request))?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Initialize a swap (Legacy).
+    pub fn init_swap(&self, request_json: String) -> Result<JsonValue, KaleidoError> {
+        let request: kaleidoswap_core::models::SwapRequest = serde_json::from_str(&request_json)
+            .map_err(|e| KaleidoError::ValidationError {
+                message: format!("Invalid request JSON: {}", e),
+            })?;
+        let result = self.runtime.block_on(self.inner.init_swap(&request))?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Execute a swap (Legacy).
+    pub fn execute_swap(&self, request_json: String) -> Result<JsonValue, KaleidoError> {
+        let request: kaleidoswap_core::models::ConfirmSwapRequest =
+            serde_json::from_str(&request_json).map_err(|e| KaleidoError::ValidationError {
+                message: format!("Invalid request JSON: {}", e),
+            })?;
+        let result = self.runtime.block_on(self.inner.execute_swap(&request))?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Retry asset delivery (Legacy).
+    pub fn retry_delivery(&self, order_id: String) -> Result<JsonValue, KaleidoError> {
+        let result = self
+            .runtime
+            .block_on(self.inner.retry_delivery(&order_id))?;
+        Ok(JsonValue::from_value(result))
     }
 }
 

@@ -55,7 +55,6 @@ yarn add @kaleidoswap/sdk
 
 ```rust
 use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
-use kaleidoswap_core::models::Layer;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -66,14 +65,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let assets = client.list_assets().await?;
     println!("Found {} assets", assets.len());
 
-    // Get a quote (amounts are i32)
-    let quote = client.get_quote_by_pair(
+    // Get a quote (amounts are i64)
+    let quote = client.get_best_quote(
         "BTC/USDT", 
-        Some(100000), 
-        None, 
-        Layer::BtcSlashLn
+        Some(1000000), // 0.01 BTC
+        None
     ).await?;
-    println!("Quote: {} -> {}", quote.from_asset.amount, quote.to_asset.amount);
+    
+    println!("Quote: {} -> {}", 
+        quote.from_asset.amount, 
+        quote.to_asset.amount
+    );
 
     Ok(())
 }
@@ -91,12 +93,19 @@ async def main():
     client = KaleidoClient(config)
 
     # Get available assets
-    assets = await client.list_assets()
-    print(f"Found {len(assets)} assets")
+    assets = client.list_assets() # Blocking (JSON string) or object? 
+    # Current bindings return JSON strings for list_* methods
+    import json
+    print(f"Found {len(json.loads(assets))} assets")
 
     # Get a quote
-    quote = await client.get_quote_by_pair("BTC/USDT", from_amount=100000)
-    print(f"Quote: {quote.from_amount} -> {quote.to_amount}")
+    quote_json = client.get_best_quote("BTC/USDT", 1000000, None)
+    quote = json.loads(quote_json)
+    
+    # Access nested fields correctly
+    from_amt = quote.get("from_asset", {}).get("amount", 0)
+    to_amt = quote.get("to_asset", {}).get("amount", 0)
+    print(f"Quote: {from_amt} -> {to_amt}")
 
 asyncio.run(main())
 ```
@@ -111,12 +120,18 @@ async function main() {
     const client = new KaleidoClient(config);
 
     // Get available assets
-    const assets = await client.listAssets();
+    const assetsJson = await client.listAssets();
+    const assets = JSON.parse(assetsJson);
     console.log(`Found ${assets.length} assets`);
 
     // Get a quote
-    const quote = await client.getQuoteByPair('BTC/USDT', { fromAmount: 100000 });
-    console.log(`Quote: ${quote.fromAmount} -> ${quote.toAmount}`);
+    const quoteJson = await client.getBestQuote('BTC/USDT', { fromAmount: 1000000 });
+    const quote = JSON.parse(quoteJson);
+    
+    // Access nested fields
+    const fromAmt = quote.from_asset?.amount || 0;
+    const toAmt = quote.to_asset?.amount || 0;
+    console.log(`Quote: ${fromAmt} -> ${toAmt}`);
 }
 
 main();
@@ -137,6 +152,7 @@ main();
 - Rust 1.75+
 - Python 3.11+ (for Python bindings)
 - Node.js 18+ (for TypeScript bindings)
+- Docker (for regenerating models)
 
 ### Building
 
@@ -164,15 +180,19 @@ make test-typescript          # TypeScript
 
 ### Regenerating Models
 
-Models are auto-generated from OpenAPI specs using Docker:
+Models are auto-generated from OpenAPI specs using Docker.
 
+**Using Remote Specs (CI/Default):**
 ```bash
-# Full regeneration: fetch specs, generate models, verify
 make regenerate
+```
 
-# Or step by step:
-make update-specs      # Download latest OpenAPI specs
-make generate-models   # Generate Rust code (requires Docker)
+**Using Local Spec (Development):**
+1. Generate `openapi.json` in `kaleidoswap-maker`.
+2. Copy it to `specs/kaleidoswap.json`.
+3. Run:
+```bash
+make generate-models
 ```
 
 See [Architecture](./docs/ARCHITECTURE.md) for details on the code generation workflow.

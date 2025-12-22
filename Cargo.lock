@@ -1080,6 +1080,8 @@ version = "0.2.0"
 dependencies = [
  "kaleidoswap-uniffi",
  "pyo3",
+ "serde",
+ "serde_json",
  "uniffi",
 ]
 

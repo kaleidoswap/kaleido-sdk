@@ -273,6 +273,19 @@ impl PyKaleidoClient {
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
+    /// Connect to a peer
+    fn connect_peer(&self, request_json: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .connect_peer(request_json)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
     /// List node assets
     fn list_node_assets(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
@@ -429,6 +442,71 @@ impl PyKaleidoClient {
         std::thread::spawn(move || {
             inner
                 .complete_swap_from_quote(quote_json)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Create a new LSPS1 order (LEGACY)
+    fn create_order(&self, request_json: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .create_lsp_order(request_json)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Create a new swap order (LEGACY)
+    fn create_swap_order(&self, request_json: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .create_swap_order(request_json)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Initialize a maker swap (LEGACY)
+    fn init_maker_swap(&self, request_json: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .init_swap(request_json)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Execute a maker swap (LEGACY)
+    fn execute_maker_swap(&self, request_json: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .execute_swap(request_json)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Retry asset delivery for an order (LEGACY)
+    fn retry_delivery(&self, order_id: String) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .retry_delivery(order_id)
                 .map(|json_value| json_value.json)
         })
         .join()

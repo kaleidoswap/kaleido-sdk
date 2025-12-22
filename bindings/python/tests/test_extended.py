@@ -183,13 +183,8 @@ class TestModuleMetadata:
 
     def test_imports_work(self):
         """Test that all main imports work."""
-        from kaleidoswap import (
-            KaleidoClient,
-            KaleidoConfig,
-            KaleidoError,
-            to_display_units,
-            to_smallest_units,
-        )
+        from kaleidoswap import (KaleidoClient, KaleidoConfig, KaleidoError,
+                                 to_display_units, to_smallest_units)
 
         assert KaleidoClient is not None
         assert KaleidoConfig is not None

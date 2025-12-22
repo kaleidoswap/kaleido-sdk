@@ -37,8 +37,10 @@ impl MarketApi {
     /// Exactly one of from_asset.amount or to_asset.amount must be specified.
     pub async fn get_quote(&self, request: &PairQuoteRequest) -> Result<PairQuoteResponse> {
         // Validate that exactly one of the amounts is set
-        let from_has_amount = request.from_asset.amount.is_some() && request.from_asset.amount.as_ref().unwrap().is_some();
-        let to_has_amount = request.to_asset.amount.is_some() && request.to_asset.amount.as_ref().unwrap().is_some();
+        let from_has_amount = request.from_asset.amount.is_some()
+            && request.from_asset.amount.as_ref().unwrap().is_some();
+        let to_has_amount = request.to_asset.amount.is_some()
+            && request.to_asset.amount.as_ref().unwrap().is_some();
 
         match (from_has_amount, to_has_amount) {
             (true, true) => {
@@ -56,7 +58,6 @@ impl MarketApi {
 
         self.http.post("/api/v1/market/quote", request).await
     }
-
 }
 
 /// Helper functions for working with assets and pairs.
@@ -95,9 +96,9 @@ impl MarketHelper {
 
         let (base, quote) = (parts[0].to_uppercase(), parts[1].to_uppercase());
 
-        self.pairs
-            .iter()
-            .find(|p| p.base.ticker.to_uppercase() == base && p.quote.ticker.to_uppercase() == quote)
+        self.pairs.iter().find(|p| {
+            p.base.ticker.to_uppercase() == base && p.quote.ticker.to_uppercase() == quote
+        })
     }
 
     /// Find a trading pair by base and quote asset IDs.
@@ -117,7 +118,10 @@ impl MarketHelper {
 
     /// Get all active pairs.
     pub fn active_pairs(&self) -> Vec<&TradingPair> {
-        self.pairs.iter().filter(|p| p.is_active.unwrap_or(false)).collect()
+        self.pairs
+            .iter()
+            .filter(|p| p.is_active.unwrap_or(false))
+            .collect()
     }
 
     /// Validate an amount against pair constraints.

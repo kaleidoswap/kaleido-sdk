@@ -82,10 +82,10 @@ pub struct Peer {
 }
 
 /// Connect peer request.
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectPeerRequest {
-    pub pubkey: String,
-    pub address: String,
+    pub peer_pubkey_and_addr: String,
 }
 
 // ============================================================================

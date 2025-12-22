@@ -7,23 +7,21 @@ Bitcoin and RGB assets on the Lightning Network.
 This package uses PyO Python bindings to the Rust core library.
 
 Example:
-    >>> from kaleidoswap import PyKaleidoClient, PyKaleidoConfig
-    >>> config = PyKaleidoConfig(
+    >>> from kaleidoswap import KaleidoClient, KaleidoConfig
+    >>> config = KaleidoConfig(
     ...     base_url="https://api.regtest.kaleidoswap.com",
     ...     node_url=None,
-    ...     api_key=None,
-    ...     timeout=30.0,
-    ...     max_retries=3,
-    ...     cache_ttl=300
+    ...     api_key=None
     ... )
-    >>> client = PyKaleidoClient(config)
+    >>> client = KaleidoClient(config)
     >>> result = client.list_assets()
     >>> print(result)
 """
 
+from .client import KaleidoClient
 # Import the PyO3-generated bindings
 from .kaleidoswap import PyJsonValue as JsonValue
-from .kaleidoswap import PyKaleidoClient as KaleidoClient
+from .kaleidoswap import PyKaleidoClient
 from .kaleidoswap import PyKaleidoConfig as KaleidoConfig
 from .kaleidoswap import PyQuoteStream
 from .kaleidoswap import to_display_units_py as to_display_units
