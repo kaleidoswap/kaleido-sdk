@@ -5,9 +5,9 @@
 
 #![allow(non_local_definitions)] // Suppress PyO3 macro warning - this is a known issue with older pyo3_macros
 
-use std::sync::Arc;
-use kaleidoswap_uniffi::{KaleidoClient, KaleidoConfig, JsonValue};
+use kaleidoswap_uniffi::{JsonValue, KaleidoClient, KaleidoConfig};
 use pyo3::prelude::*;
+use std::sync::Arc;
 
 // Re-export core types for Python
 #[pyclass]
@@ -51,7 +51,9 @@ impl PyKaleidoClient {
     #[new]
     fn new(config: PyKaleidoConfig) -> PyResult<Self> {
         KaleidoClient::new(config.inner)
-            .map(|client| PyKaleidoClient { inner: Arc::new(client) })
+            .map(|client| PyKaleidoClient {
+                inner: Arc::new(client),
+            })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
@@ -62,25 +64,19 @@ impl PyKaleidoClient {
     /// List all available assets - runs on blocking thread to avoid runtime nesting
     fn list_assets(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_assets()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_assets().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// List all available trading pairs - runs on blocking thread to avoid runtime nesting
     fn list_pairs(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_pairs()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_pairs().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Get a quote by trading pair ticker - runs on blocking thread
@@ -92,7 +88,8 @@ impl PyKaleidoClient {
     ) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_quote_by_pair(ticker, from_amount, to_amount)
+            inner
+                .get_quote_by_pair(ticker, from_amount, to_amount)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -105,20 +102,18 @@ impl PyKaleidoClient {
     /// Get node information
     fn get_node_info(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.get_node_info()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.get_node_info().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Get swap status by payment hash
     fn get_swap_status(&self, payment_hash: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_swap_status(payment_hash)
+            inner
+                .get_swap_status(payment_hash)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -135,7 +130,8 @@ impl PyKaleidoClient {
     ) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.wait_for_swap_completion(payment_hash, timeout_secs, poll_interval_secs)
+            inner
+                .wait_for_swap_completion(payment_hash, timeout_secs, poll_interval_secs)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -149,7 +145,8 @@ impl PyKaleidoClient {
     fn get_swap_order_status(&self, order_id: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_swap_order_status(order_id)
+            inner
+                .get_swap_order_status(order_id)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -159,15 +156,11 @@ impl PyKaleidoClient {
 
     /// Get order history
     #[pyo3(signature = (status=None, limit=10, skip=0))]
-    fn get_order_history(
-        &self,
-        status: Option<String>,
-        limit: i32,
-        skip: i32,
-    ) -> PyResult<String> {
+    fn get_order_history(&self, status: Option<String>, limit: i32, skip: i32) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_order_history(status, limit, skip)
+            inner
+                .get_order_history(status, limit, skip)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -179,7 +172,8 @@ impl PyKaleidoClient {
     fn get_order_analytics(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_order_analytics()
+            inner
+                .get_order_analytics()
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -191,7 +185,8 @@ impl PyKaleidoClient {
     fn swap_order_rate_decision(&self, order_id: String, accept: bool) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.swap_order_rate_decision(order_id, accept)
+            inner
+                .swap_order_rate_decision(order_id, accept)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -204,20 +199,18 @@ impl PyKaleidoClient {
     /// Get LSP information
     fn get_lsp_info(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.get_lsp_info()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.get_lsp_info().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Get LSP network information
     fn get_lsp_network_info(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_lsp_network_info()
+            inner
+                .get_lsp_network_info()
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -229,7 +222,8 @@ impl PyKaleidoClient {
     fn get_lsp_order(&self, order_id: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_lsp_order(order_id)
+            inner
+                .get_lsp_order(order_id)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -241,7 +235,8 @@ impl PyKaleidoClient {
     fn estimate_lsp_fees(&self, channel_size: i64) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.estimate_lsp_fees(channel_size)
+            inner
+                .estimate_lsp_fees(channel_size)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -254,56 +249,45 @@ impl PyKaleidoClient {
     /// Get RGB node information
     fn get_rgb_node_info(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.get_rgb_node_info()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.get_rgb_node_info().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// List channels
     fn list_channels(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_channels()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_channels().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// List peers
     fn list_peers(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_peers()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_peers().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// List node assets
     fn list_node_assets(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_node_assets()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_node_assets().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Get asset balance
     fn get_asset_balance(&self, asset_id: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_asset_balance(asset_id)
+            inner
+                .get_asset_balance(asset_id)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -315,7 +299,8 @@ impl PyKaleidoClient {
     fn get_onchain_address(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_onchain_address()
+            inner
+                .get_onchain_address()
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -326,20 +311,18 @@ impl PyKaleidoClient {
     /// Get BTC balance
     fn get_btc_balance(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.get_btc_balance()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.get_btc_balance().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Whitelist a trade
     fn whitelist_trade(&self, swapstring: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.whitelist_trade(swapstring)
+            inner
+                .whitelist_trade(swapstring)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -351,7 +334,8 @@ impl PyKaleidoClient {
     fn decode_ln_invoice(&self, invoice: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.decode_ln_invoice(invoice)
+            inner
+                .decode_ln_invoice(invoice)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -362,13 +346,10 @@ impl PyKaleidoClient {
     /// List payments
     fn list_payments(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_payments()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_payments().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     // === Wallet Operations ===
@@ -377,7 +358,8 @@ impl PyKaleidoClient {
     fn init_wallet(&self, password: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.init_wallet(password)
+            inner
+                .init_wallet(password)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -389,7 +371,8 @@ impl PyKaleidoClient {
     fn unlock_wallet(&self, password: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.unlock_wallet(password)
+            inner
+                .unlock_wallet(password)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -400,13 +383,10 @@ impl PyKaleidoClient {
     /// Lock wallet
     fn lock_wallet(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.lock_wallet()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.lock_wallet().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     // === Convenience Methods ===
@@ -415,7 +395,8 @@ impl PyKaleidoClient {
     fn get_asset_by_ticker(&self, ticker: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_asset_by_ticker(ticker)
+            inner
+                .get_asset_by_ticker(ticker)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -433,7 +414,8 @@ impl PyKaleidoClient {
     ) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_quote_by_assets(from_ticker, to_ticker, from_amount, to_amount)
+            inner
+                .get_quote_by_assets(from_ticker, to_ticker, from_amount, to_amount)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -442,13 +424,11 @@ impl PyKaleidoClient {
     }
 
     /// Complete a swap using a quote JSON string
-    fn complete_swap_from_quote(
-        &self,
-        quote_json: String,
-    ) -> PyResult<String> {
+    fn complete_swap_from_quote(&self, quote_json: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.complete_swap_from_quote(quote_json)
+            inner
+                .complete_swap_from_quote(quote_json)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -460,7 +440,8 @@ impl PyKaleidoClient {
     fn get_pair_by_ticker(&self, ticker: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_pair_by_ticker(ticker)
+            inner
+                .get_pair_by_ticker(ticker)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -473,36 +454,28 @@ impl PyKaleidoClient {
     /// List only active assets
     fn list_active_assets(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_active_assets()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_active_assets().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// List only active trading pairs
     fn list_active_pairs(&self) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.list_active_pairs()
-                .map(|json_value| json_value.json)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.list_active_pairs().map(|json_value| json_value.json))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Estimate swap fees for a given pair and amount
     fn estimate_swap_fees(&self, ticker: String, amount: i64) -> PyResult<i64> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.estimate_swap_fees(ticker, amount)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.estimate_swap_fees(ticker, amount))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 
     /// Get the best quote by trying multiple layers
@@ -514,7 +487,8 @@ impl PyKaleidoClient {
     ) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.get_best_quote(ticker, from_amount, to_amount)
+            inner
+                .get_best_quote(ticker, from_amount, to_amount)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -526,7 +500,8 @@ impl PyKaleidoClient {
     fn find_asset_by_ticker(&self, ticker: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.find_asset_by_ticker(ticker)
+            inner
+                .find_asset_by_ticker(ticker)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -538,7 +513,8 @@ impl PyKaleidoClient {
     fn find_pair_by_ticker(&self, ticker: String) -> PyResult<String> {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
-            inner.find_pair_by_ticker(ticker)
+            inner
+                .find_pair_by_ticker(ticker)
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -550,13 +526,11 @@ impl PyKaleidoClient {
     /// The pair_ticker should be in format "BTC/USDT"
     fn create_quote_stream(&self, pair_ticker: String) -> PyResult<PyQuoteStream> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.create_quote_stream(pair_ticker)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
-        .map(|stream| PyQuoteStream { inner: stream })
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+        std::thread::spawn(move || inner.create_quote_stream(pair_ticker))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map(|stream| PyQuoteStream { inner: stream })
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
 }
 
@@ -578,11 +552,9 @@ impl PyQuoteStream {
     /// Returns None if timeout expires without receiving a quote
     fn recv(&self, timeout_secs: f64) -> PyResult<Option<String>> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.recv(timeout_secs)
-        })
-        .join()
-        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))
+        std::thread::spawn(move || inner.recv(timeout_secs))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))
     }
 
     /// Check if the stream is still connected
@@ -595,7 +567,6 @@ impl PyQuoteStream {
         self.inner.close()
     }
 }
-
 
 #[pyclass]
 #[derive(Clone)]
@@ -617,11 +588,11 @@ fn kaleidoswap(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyKaleidoClient>()?;
     m.add_class::<PyJsonValue>()?;
     m.add_class::<PyQuoteStream>()?;
-    
+
     // Add utility functions
     m.add_function(wrap_pyfunction!(to_smallest_units_py, m)?)?;
     m.add_function(wrap_pyfunction!(to_display_units_py, m)?)?;
-    
+
     Ok(())
 }
 

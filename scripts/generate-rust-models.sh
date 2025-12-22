@@ -89,10 +89,13 @@ EOF
     # Create models/mod.rs
     local models_dir="$module_dir/models"
     if [[ -d "$models_dir" ]]; then
-        # Add allow attribute to suppress ambiguous glob re-export warnings
+        # Add allow attributes to suppress warnings in generated code
         # Use inner attribute syntax (#!) to apply to the whole module
         echo "//! Generated ${module_name} API models." > "$models_dir/mod.rs"
         echo "#![allow(ambiguous_glob_reexports)]" >> "$models_dir/mod.rs"
+        echo "#![allow(clippy::empty_docs)]" >> "$models_dir/mod.rs"
+        echo "#![allow(clippy::derivable_impls)]" >> "$models_dir/mod.rs"
+        echo "#![allow(clippy::too_many_arguments)]" >> "$models_dir/mod.rs"
         echo "" >> "$models_dir/mod.rs"
         
         # Add mod declarations and re-exports for each file

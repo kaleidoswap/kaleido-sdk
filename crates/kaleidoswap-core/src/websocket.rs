@@ -45,7 +45,7 @@ impl WebSocketClient {
         let ws_url = base_url
             .replace("https://", "wss://")
             .replace("http://", "ws://");
-        
+
         let url = Url::parse(&format!("{}/ws", ws_url))
             .map_err(|e| KaleidoError::config(format!("Invalid WebSocket URL: {}", e)))?;
 
@@ -91,18 +91,16 @@ impl WebSocketClient {
         tokio::spawn(async move {
             while let Some(msg_result) = read.next().await {
                 match msg_result {
-                    Ok(Message::Text(text)) => {
-                        match serde_json::from_str::<WsMessage>(&text) {
-                            Ok(ws_msg) => {
-                                if tx_to_client_clone.send(ws_msg).await.is_err() {
-                                    break;
-                                }
-                            }
-                            Err(e) => {
-                                log::warn!("Failed to parse WebSocket message: {}", e);
+                    Ok(Message::Text(text)) => match serde_json::from_str::<WsMessage>(&text) {
+                        Ok(ws_msg) => {
+                            if tx_to_client_clone.send(ws_msg).await.is_err() {
+                                break;
                             }
                         }
-                    }
+                        Err(e) => {
+                            log::warn!("Failed to parse WebSocket message: {}", e);
+                        }
+                    },
                     Ok(Message::Ping(data)) => {
                         log::debug!("Received ping: {:?}", data);
                     }
@@ -130,9 +128,10 @@ impl WebSocketClient {
 
     /// Subscribe to a trading pair.
     pub async fn subscribe(&mut self, pair_id: &str) -> Result<()> {
-        let sender = self.sender.as_ref().ok_or_else(|| {
-            KaleidoError::websocket("Not connected")
-        })?;
+        let sender = self
+            .sender
+            .as_ref()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
 
         sender
             .send(WsMessage::Subscribe {
@@ -146,9 +145,10 @@ impl WebSocketClient {
 
     /// Unsubscribe from a trading pair.
     pub async fn unsubscribe(&mut self, pair_id: &str) -> Result<()> {
-        let sender = self.sender.as_ref().ok_or_else(|| {
-            KaleidoError::websocket("Not connected")
-        })?;
+        let sender = self
+            .sender
+            .as_ref()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
 
         sender
             .send(WsMessage::Unsubscribe {

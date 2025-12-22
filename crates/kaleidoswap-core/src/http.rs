@@ -16,7 +16,11 @@ pub struct HttpClient {
 
 impl HttpClient {
     /// Create a new HTTP client.
-    pub fn new(base_url: impl Into<String>, timeout: Duration, retry_config: RetryConfig) -> Result<Self> {
+    pub fn new(
+        base_url: impl Into<String>,
+        timeout: Duration,
+        retry_config: RetryConfig,
+    ) -> Result<Self> {
         let client = Client::builder()
             .timeout(timeout)
             .build()
@@ -41,12 +45,14 @@ impl HttpClient {
 
     /// Execute a GET request.
     pub async fn get<T: DeserializeOwned>(&self, path: &str) -> Result<T> {
-        self.request_with_retry(Method::GET, path, None::<&()>).await
+        self.request_with_retry(Method::GET, path, None::<&()>)
+            .await
     }
 
     /// Execute a POST request with a JSON body.
     pub async fn post<B: Serialize, T: DeserializeOwned>(&self, path: &str, body: &B) -> Result<T> {
-        self.request_with_retry(Method::POST, path, Some(body)).await
+        self.request_with_retry(Method::POST, path, Some(body))
+            .await
     }
 
     /// Execute a request with retry logic.
@@ -74,7 +80,7 @@ impl HttpClient {
             }
 
             let mut request = self.client.request(method.clone(), &url);
-            
+
             if let Some(b) = body {
                 request = request.json(b);
             }
@@ -103,7 +109,7 @@ impl HttpClient {
     /// Execute a single request without retry.
     async fn execute_request(&self, request: RequestBuilder) -> Result<Response> {
         let response = request.send().await?;
-        
+
         let status = response.status();
         if status.is_success() {
             Ok(response)
@@ -141,7 +147,7 @@ mod tests {
             RetryConfig::default(),
         )
         .unwrap();
-        
+
         assert_eq!(
             client.build_url("/api/v1/assets"),
             "https://api.example.com/api/v1/assets"
@@ -156,7 +162,7 @@ mod tests {
             RetryConfig::default(),
         )
         .unwrap();
-        
+
         assert_eq!(
             client.build_url("/api/v1/assets"),
             "https://api.example.com/api/v1/assets"

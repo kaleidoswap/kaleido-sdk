@@ -16,33 +16,36 @@ UDL_FILE = REPO_ROOT / "crates" / "kaleidoswap-uniffi" / "src" / "kaleidoswap.ud
 OUT_DIR = REPO_ROOT / "bindings" / "python" / "python" / "kaleidoswap"
 LIB_FILE = OUT_DIR / "kaleidoswap.abi3.so"  # macOS, Linux would be .so
 
+
 def main():
     """Generate Python bindings using uniffi-bindgen"""
-    
+
     print(f"Generating Python bindings from {UDL_FILE}")
     print(f"Output directory: {OUT_DIR}")
-    
+
     # Check if UDL file exists
     if not UDL_FILE.exists():
         print(f"Error: UDL file not found at {UDL_FILE}", file=sys.stderr)
         return 1
-    
+
     # Try using uniffi_bindgen Python package if available
     try:
         cmd = [
             "uniffi-bindgen",
             "generate",
             str(UDL_FILE),
-            "--language", "python",
-            "--out-dir", str(OUT_DIR),
+            "--language",
+            "python",
+            "--out-dir",
+            str(OUT_DIR),
         ]
-        
+
         if LIB_FILE.exists():
             cmd.extend(["--lib-file", str(LIB_FILE)])
-        
+
         print(f"Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True)
-        
+
         if result.returncode != 0:
             print("uniffi-bindgen not found, trying Python-based generation...")
             # Fall back to Python-based generation
@@ -51,12 +54,13 @@ def main():
             print("✅ Successfully generated Python bindings!")
             print(result.stdout)
             return 0
-            
+
     except FileNotFoundError:
         print("uniffi-bindgen not found, using Python-based generation...")
         return generate_python_bindings()
-    
+
     return 0
+
 
 def generate_python_bindings():
     """Generate bindings using Python if uniffi-bindgen binary isn't available"""
@@ -92,13 +96,14 @@ print("Recommended approach:")
 print("1. Use the maturin + uniffi integration by ensuring the correct build setup")
 print("2. Or manually run: uniffi-bindgen generate ... --language python")
 """
-    
+
     try:
         subprocess.run([sys.executable, "-c", python_code], check=True)
         return 0
     except subprocess.CalledProcessError as e:
         print(f"Error generating Python bindings: {e}", file=sys.stderr)
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

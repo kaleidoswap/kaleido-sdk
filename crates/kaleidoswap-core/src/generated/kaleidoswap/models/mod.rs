@@ -1,5 +1,8 @@
 //! Generated Kaleidoswap API models.
 #![allow(ambiguous_glob_reexports)]
+#![allow(clippy::empty_docs)]
+#![allow(clippy::derivable_impls)]
+#![allow(clippy::too_many_arguments)]
 
 pub mod asset_balance_response;
 pub use asset_balance_response::*;

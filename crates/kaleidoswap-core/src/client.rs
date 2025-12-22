@@ -12,8 +12,8 @@ use crate::api::{
 use crate::error::{KaleidoError, Result};
 use crate::http::HttpClient;
 use crate::models::{
-    Asset, ChannelFees, ChannelOrderResponse, CreateOrderRequest, CreateSwapOrderRequest,
-    CreateSwapOrderResponse, ConfirmSwapRequest, ConfirmSwapResponse, GetInfoResponseModel,
+    Asset, ChannelFees, ChannelOrderResponse, ConfirmSwapRequest, ConfirmSwapResponse,
+    CreateOrderRequest, CreateSwapOrderRequest, CreateSwapOrderResponse, GetInfoResponseModel,
     Layer, NetworkInfoResponse, NodeInfoResponse, OrderHistoryResponse, OrderStatsResponse,
     PairQuoteRequest, PairQuoteResponse, Swap, SwapOrderRateDecisionResponse,
     SwapOrderStatusResponse, SwapRequest, SwapResponse, SwapStatusResponse, TradingPair,
@@ -63,7 +63,11 @@ impl KaleidoClient {
         let retry_config = RetryConfig::new(config.max_retries);
         let timeout = Duration::from_secs_f64(config.timeout);
 
-        let api_http = Arc::new(HttpClient::new(&config.base_url, timeout, retry_config.clone())?);
+        let api_http = Arc::new(HttpClient::new(
+            &config.base_url,
+            timeout,
+            retry_config.clone(),
+        )?);
 
         let node_http = config
             .node_url
@@ -292,12 +296,14 @@ impl KaleidoClient {
         let init_response = self.init_swap(&swap_request).await?;
 
         let node_info = self.get_node_info().await?;
-        let taker_pubkey = node_info.pubkey.ok_or_else(|| {
-            KaleidoError::config("Node pubkey not available")
-        })?;
+        let taker_pubkey = node_info
+            .pubkey
+            .ok_or_else(|| KaleidoError::config("Node pubkey not available"))?;
 
         if self.has_node() {
-            self.swaps.whitelist_trade(&init_response.swapstring).await?;
+            self.swaps
+                .whitelist_trade(&init_response.swapstring)
+                .await?;
         }
 
         let confirm_request = ConfirmSwapRequest {
@@ -361,7 +367,10 @@ impl KaleidoClient {
     }
 
     /// Create an LSPS1 channel order.
-    pub async fn create_lsp_order(&self, request: &CreateOrderRequest) -> Result<ChannelOrderResponse> {
+    pub async fn create_lsp_order(
+        &self,
+        request: &CreateOrderRequest,
+    ) -> Result<ChannelOrderResponse> {
         self.lsp.create_order(request).await
     }
 
@@ -392,12 +401,18 @@ impl KaleidoClient {
     }
 
     /// Open a channel on the RGB node.
-    pub async fn open_channel(&self, request: &crate::api::node::OpenChannelRequest) -> Result<serde_json::Value> {
+    pub async fn open_channel(
+        &self,
+        request: &crate::api::node::OpenChannelRequest,
+    ) -> Result<serde_json::Value> {
         self.ensure_node()?.open_channel(request).await
     }
 
     /// Close a channel on the RGB node.
-    pub async fn close_channel(&self, request: &crate::api::node::CloseChannelRequest) -> Result<serde_json::Value> {
+    pub async fn close_channel(
+        &self,
+        request: &crate::api::node::CloseChannelRequest,
+    ) -> Result<serde_json::Value> {
         self.ensure_node()?.close_channel(request).await
     }
 
@@ -407,7 +422,10 @@ impl KaleidoClient {
     }
 
     /// Connect to a peer on the RGB node.
-    pub async fn connect_peer(&self, request: &crate::api::node::ConnectPeerRequest) -> Result<serde_json::Value> {
+    pub async fn connect_peer(
+        &self,
+        request: &crate::api::node::ConnectPeerRequest,
+    ) -> Result<serde_json::Value> {
         self.ensure_node()?.connect_peer(request).await
     }
 
@@ -417,7 +435,10 @@ impl KaleidoClient {
     }
 
     /// Get asset balance from the node.
-    pub async fn get_asset_balance(&self, asset_id: &str) -> Result<crate::api::node::RgbAssetBalance> {
+    pub async fn get_asset_balance(
+        &self,
+        asset_id: &str,
+    ) -> Result<crate::api::node::RgbAssetBalance> {
         self.ensure_node()?.get_asset_balance(asset_id).await
     }
 
@@ -437,7 +458,10 @@ impl KaleidoClient {
     }
 
     /// Create a Lightning invoice on the node.
-    pub async fn create_ln_invoice(&self, request: &crate::api::node::CreateInvoiceRequest) -> Result<crate::api::node::Invoice> {
+    pub async fn create_ln_invoice(
+        &self,
+        request: &crate::api::node::CreateInvoiceRequest,
+    ) -> Result<crate::api::node::Invoice> {
         self.ensure_node()?.create_invoice(request).await
     }
 
@@ -447,7 +471,10 @@ impl KaleidoClient {
     }
 
     /// Send a keysend payment.
-    pub async fn keysend(&self, request: &crate::api::node::KeysendRequest) -> Result<crate::api::node::Payment> {
+    pub async fn keysend(
+        &self,
+        request: &crate::api::node::KeysendRequest,
+    ) -> Result<crate::api::node::Payment> {
         self.ensure_node()?.keysend(request).await
     }
 
@@ -476,7 +503,10 @@ impl KaleidoClient {
     /// List only active assets.
     pub async fn list_active_assets(&self) -> Result<Vec<Asset>> {
         let assets = self.list_assets().await?;
-        Ok(assets.into_iter().filter(|p| p.is_active.unwrap_or(false)).collect())
+        Ok(assets
+            .into_iter()
+            .filter(|p| p.is_active.unwrap_or(false))
+            .collect())
     }
 
     /// List only active trading pairs.
@@ -487,13 +517,10 @@ impl KaleidoClient {
 
     /// Estimate swap fees for a given pair and amount.
     /// Returns the fee amount in the quote asset's precision.
-    pub async fn estimate_swap_fees(
-        &self,
-        ticker: &str,
-        amount: i64,
-        layer: Layer,
-    ) -> Result<i64> {
-        let _quote = self.get_quote_by_pair(ticker, Some(amount), None, layer).await?;
+    pub async fn estimate_swap_fees(&self, ticker: &str, amount: i64, layer: Layer) -> Result<i64> {
+        let _quote = self
+            .get_quote_by_pair(ticker, Some(amount), None, layer)
+            .await?;
         // Fee is embedded in the price difference
         // from_amount - (to_amount * price) = effective fee
         // Ok(quote.from_asset.amount - quote.to_asset.amount)
@@ -509,11 +536,14 @@ impl KaleidoClient {
     ) -> Result<PairQuoteResponse> {
         // Try BTC/LN first as it's most common
         let layers = vec![Layer::BtcSlashLn, Layer::RgbSlashLn];
-        
+
         let mut best_quote: Option<PairQuoteResponse> = None;
-        
+
         for layer in layers {
-            match self.get_quote_by_pair(ticker, from_amount, to_amount, layer).await {
+            match self
+                .get_quote_by_pair(ticker, from_amount, to_amount, layer)
+                .await
+            {
                 Ok(quote) => {
                     if let Some(ref current_best) = best_quote {
                         // Compare: higher to_amount for same from_amount is better
@@ -527,7 +557,7 @@ impl KaleidoClient {
                 Err(_) => continue,
             }
         }
-        
+
         best_quote.ok_or_else(|| KaleidoError::not_found("Quote", ticker))
     }
 
@@ -535,7 +565,7 @@ impl KaleidoClient {
     pub async fn find_asset_by_ticker(&self, ticker: &str) -> Result<Asset> {
         let assets = self.list_assets().await?;
         let ticker_upper = ticker.to_uppercase();
-        
+
         assets
             .into_iter()
             .find(|a| a.ticker.to_uppercase() == ticker_upper)
@@ -546,7 +576,7 @@ impl KaleidoClient {
     pub async fn find_pair_by_ticker(&self, ticker: &str) -> Result<TradingPair> {
         let pairs = self.list_pairs().await?;
         let ticker_upper = ticker.to_uppercase();
-        
+
         pairs
             .into_iter()
             .find(|p| {
@@ -556,5 +586,4 @@ impl KaleidoClient {
             .ok_or_else(|| KaleidoError::not_found("TradingPair", ticker))
     }
 }
-        // return not implmeneted error
-        
+// return not implmeneted error

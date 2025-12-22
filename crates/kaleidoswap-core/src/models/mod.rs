@@ -4,13 +4,13 @@
 //! To regenerate: ./scripts/generate-rust-models.sh
 
 // Re-export generated models directly
-use serde::{Deserialize, Serialize};
 pub use crate::generated::kaleidoswap::models::*;
+use serde::{Deserialize, Serialize};
 // Compatibility aliases for renamed models
 pub use crate::generated::kaleidoswap::models::ClientAsset as Asset;
+pub use crate::generated::kaleidoswap::models::OrderResponse as ChannelOrderResponse;
 pub use crate::generated::kaleidoswap::models::Pair as TradingPair;
 pub use crate::generated::kaleidoswap::models::PairResponse as TradingPairsResponse;
-pub use crate::generated::kaleidoswap::models::OrderResponse as ChannelOrderResponse;
 
 pub use crate::generated::rgb_node::models as rgb_node;
 

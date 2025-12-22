@@ -2,11 +2,11 @@
 
 use crate::error::Result;
 use crate::http::HttpClient;
-use crate::models::{
-    ConfirmSwapRequest, ConfirmSwapResponse, NodeInfoResponse, SwapRequest,
-    SwapResponse, SwapStatusResponse,
-};
 use crate::models::rgb_node::TakerRequest;
+use crate::models::{
+    ConfirmSwapRequest, ConfirmSwapResponse, NodeInfoResponse, SwapRequest, SwapResponse,
+    SwapStatusResponse,
+};
 use std::sync::Arc;
 
 /// Swaps API client.
@@ -41,9 +41,11 @@ impl SwapsApi {
         struct StatusRequest<'a> {
             payment_hash: &'a str,
         }
-        
+
         let request = StatusRequest { payment_hash };
-        self.http.post("/api/v1/swaps/atomic/status", &request).await
+        self.http
+            .post("/api/v1/swaps/atomic/status", &request)
+            .await
     }
 
     /// Whitelist a trade on the taker side.

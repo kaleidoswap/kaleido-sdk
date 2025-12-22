@@ -3,8 +3,8 @@
 use crate::error::{KaleidoError, Result};
 use crate::http::HttpClient;
 use crate::models::{
-    Asset, AssetsResponse, PairQuoteRequest, PairQuoteResponse, TradingPair,
-    TradingPairsResponse, ValidationResult,
+    Asset, AssetsResponse, PairQuoteRequest, PairQuoteResponse, TradingPair, TradingPairsResponse,
+    ValidationResult,
 };
 use std::sync::Arc;
 
@@ -32,7 +32,7 @@ impl MarketApi {
     }
 
     /// Get a quote for a swap.
-    /// 
+    ///
     /// With the new model, amounts are specified inside the SwapLegInput.
     /// Exactly one of from_asset.amount or to_asset.amount must be specified.
     pub async fn get_quote(&self, request: &PairQuoteRequest) -> Result<PairQuoteResponse> {
@@ -81,7 +81,7 @@ impl MarketHelper {
     }
 
     /// Find a trading pair by ticker (e.g., "BTC/USDT").
-    /// 
+    ///
     /// Uses the new TradingPair structure with base/quote TradableAsset fields.
     pub fn find_pair_by_ticker(&self, ticker: &str) -> Option<&TradingPair> {
         let parts: Vec<&str> = ticker.split('/').collect();
@@ -91,9 +91,9 @@ impl MarketHelper {
 
         let (base, quote) = (parts[0].to_uppercase(), parts[1].to_uppercase());
 
-        self.pairs.iter().find(|p| {
-            p.base_asset.to_uppercase() == base && p.quote_asset.to_uppercase() == quote
-        })
+        self.pairs
+            .iter()
+            .find(|p| p.base_asset.to_uppercase() == base && p.quote_asset.to_uppercase() == quote)
     }
 
     /// Find a trading pair by base and quote asset IDs.
@@ -105,7 +105,10 @@ impl MarketHelper {
 
     /// Get all active assets.
     pub fn active_assets(&self) -> Vec<&Asset> {
-        self.assets.iter().filter(|a| a.is_active.unwrap_or(false)).collect()
+        self.assets
+            .iter()
+            .filter(|a| a.is_active.unwrap_or(false))
+            .collect()
     }
 
     /// Get all active pairs.
@@ -114,7 +117,7 @@ impl MarketHelper {
     }
 
     /// Validate an amount against pair constraints.
-    /// 
+    ///
     /// Note: Trading limits are now on the TradableAsset endpoints, not the pair directly.
     /// This method now returns valid for all amounts as limits should be checked
     /// at the endpoint level when known.
@@ -154,11 +157,11 @@ mod tests {
     #[test]
     fn test_find_pair_by_ticker() {
         let helper = MarketHelper::new(vec![], sample_pairs());
-        
+
         let pair = helper.find_pair_by_ticker("BTC/USDT");
         assert!(pair.is_some());
         assert_eq!(pair.unwrap().base_asset, "BTC");
-        
+
         let missing = helper.find_pair_by_ticker("ETH/USDT");
         assert!(missing.is_none());
     }
@@ -166,10 +169,10 @@ mod tests {
     #[test]
     fn test_find_pair_by_asset_ids() {
         let helper = MarketHelper::new(vec![], sample_pairs());
-        
+
         let pair = helper.find_pair_by_asset_ids("btc-id", "usdt-id");
         assert!(pair.is_some());
-        
+
         let missing = helper.find_pair_by_asset_ids("eth-id", "usdt-id");
         assert!(missing.is_none());
     }

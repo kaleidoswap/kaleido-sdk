@@ -65,7 +65,10 @@ pub enum KaleidoError {
 
     /// Swap-related errors
     #[error("Swap error: {message}")]
-    SwapError { message: String, swap_id: Option<String> },
+    SwapError {
+        message: String,
+        swap_id: Option<String>,
+    },
 
     /// Node operation requires node_url but it's not configured
     #[error("Node URL not configured. This operation requires a connected RGB Lightning Node.")]

@@ -78,7 +78,7 @@ impl RetryConfig {
 
         let base_delay = self.initial_delay.as_millis() as f64
             * self.multiplier.powi(attempt.saturating_sub(1) as i32);
-        
+
         let capped_delay = base_delay.min(self.max_delay.as_millis() as f64);
 
         let final_delay = if self.jitter {
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn test_delay_for_attempt() {
         let config = RetryConfig::default().with_jitter(false);
-        
+
         assert_eq!(config.delay_for_attempt(0), Duration::ZERO);
         assert_eq!(config.delay_for_attempt(1), Duration::from_millis(100));
         assert_eq!(config.delay_for_attempt(2), Duration::from_millis(200));
@@ -121,7 +121,7 @@ mod tests {
             .with_initial_delay(Duration::from_secs(1))
             .with_max_delay(Duration::from_secs(5))
             .with_jitter(false);
-        
+
         // After several retries, should cap at max_delay
         assert_eq!(config.delay_for_attempt(10), Duration::from_secs(5));
     }

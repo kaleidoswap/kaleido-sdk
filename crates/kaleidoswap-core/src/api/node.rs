@@ -291,7 +291,9 @@ impl NodeApi {
         struct Request<'a> {
             invoice: &'a str,
         }
-        self.http.post("/decodelninvoice", &Request { invoice }).await
+        self.http
+            .post("/decodelninvoice", &Request { invoice })
+            .await
     }
 
     // === RGB Operations ===
@@ -302,7 +304,10 @@ impl NodeApi {
         struct Response {
             assets: Vec<RgbAsset>,
         }
-        let resp: Response = self.http.post("/listassets", &serde_json::json!({})).await?;
+        let resp: Response = self
+            .http
+            .post("/listassets", &serde_json::json!({}))
+            .await?;
         Ok(resp.assets)
     }
 

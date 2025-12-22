@@ -22,28 +22,29 @@ Example:
 """
 
 # Import the PyO3-generated bindings
-from .kaleidoswap import (
-    PyKaleidoClient as KaleidoClient,
-    PyKaleidoConfig as KaleidoConfig,
-    PyJsonValue as JsonValue,
-    PyQuoteStream,
-    to_smallest_units_py as to_smallest_units,
-    to_display_units_py as to_display_units,
-)
+from .kaleidoswap import PyJsonValue as JsonValue
+from .kaleidoswap import PyKaleidoClient as KaleidoClient
+from .kaleidoswap import PyKaleidoConfig as KaleidoConfig
+from .kaleidoswap import PyQuoteStream
+from .kaleidoswap import to_display_units_py as to_display_units
+from .kaleidoswap import to_smallest_units_py as to_smallest_units
+
 
 # For compatibility, create a KaleidoError class
 class KaleidoError(Exception):
     """Base exception for Kaleidoswap SDK errors"""
+
     pass
 
+
 __all__ = [
-    'KaleidoClient',
-    'KaleidoConfig',
-    'KaleidoError',
-    'JsonValue',
-    'PyQuoteStream',
-    'to_smallest_units',
-    'to_display_units',
+    "KaleidoClient",
+    "KaleidoConfig",
+    "KaleidoError",
+    "JsonValue",
+    "PyQuoteStream",
+    "to_smallest_units",
+    "to_display_units",
 ]
 
 __version__ = "0.2.0"

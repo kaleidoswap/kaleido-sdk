@@ -52,7 +52,9 @@ impl LspApi {
             channel_size: i64,
         }
         let request = Request { channel_size };
-        self.http.post("/api/v1/lsps1/estimate_fees", &request).await
+        self.http
+            .post("/api/v1/lsps1/estimate_fees", &request)
+            .await
     }
 
     /// Submit rate decision.
@@ -62,8 +64,13 @@ impl LspApi {
             order_id: &'a str,
             accept_new_rate: bool,
         }
-        let request = Request { order_id, accept_new_rate: accept };
-        self.http.post("/api/v1/lsps1/rate_decision", &request).await
+        let request = Request {
+            order_id,
+            accept_new_rate: accept,
+        };
+        self.http
+            .post("/api/v1/lsps1/rate_decision", &request)
+            .await
     }
 
     /// Retry asset delivery for an order.
@@ -73,6 +80,8 @@ impl LspApi {
             order_id: &'a str,
         }
         let request = Request { order_id };
-        self.http.post("/api/v1/lsps1/retry_delivery", &request).await
+        self.http
+            .post("/api/v1/lsps1/retry_delivery", &request)
+            .await
     }
 }

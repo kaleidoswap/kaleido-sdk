@@ -2,14 +2,12 @@
 //!
 //! This crate provides language bindings through UniFFI for Python, Swift, and Kotlin.
 
+#![allow(clippy::empty_line_after_doc_comments)]
+
+use kaleidoswap_core::{models::Layer, KaleidoClient as CoreClient, KaleidoConfig as CoreConfig};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::runtime::Runtime;
-use kaleidoswap_core::{
-    KaleidoClient as CoreClient,
-    KaleidoConfig as CoreConfig,
-    models::Layer,
-};
 
 /// JSON value wrapper for passing complex data across FFI boundary.
 #[derive(Debug, Clone)]
@@ -160,7 +158,6 @@ impl KaleidoError {
     }
 }
 
-
 /// The main SDK client.
 /// Uses Arc internally for thread-safe sharing across async contexts.
 #[derive(Clone)]
@@ -179,9 +176,9 @@ impl KaleidoClient {
         let core_config: CoreConfig = config.into();
         let inner = CoreClient::new(core_config)?;
 
-        Ok(Self { 
-            inner: Arc::new(inner), 
-            runtime: Arc::new(runtime) 
+        Ok(Self {
+            inner: Arc::new(inner),
+            runtime: Arc::new(runtime),
         })
     }
 
@@ -212,14 +209,12 @@ impl KaleidoClient {
         from_amount: Option<i64>,
         to_amount: Option<i64>,
     ) -> Result<JsonValue, KaleidoError> {
-        let result = self
-            .runtime
-            .block_on(self.inner.get_quote_by_pair(
-                &ticker,
-                from_amount,
-                to_amount,
-                Layer::BtcSlashLn,
-            ))?;
+        let result = self.runtime.block_on(self.inner.get_quote_by_pair(
+            &ticker,
+            from_amount,
+            to_amount,
+            Layer::BtcSlashLn,
+        ))?;
         Ok(JsonValue::new(result))
     }
 
@@ -271,9 +266,9 @@ impl KaleidoClient {
         limit: i32,
         skip: i32,
     ) -> Result<JsonValue, KaleidoError> {
-        let result = self
-            .runtime
-            .block_on(self.inner.get_order_history(status.as_deref(), limit, skip))?;
+        let result =
+            self.runtime
+                .block_on(self.inner.get_order_history(status.as_deref(), limit, skip))?;
         Ok(JsonValue::new(result))
     }
 
@@ -311,9 +306,7 @@ impl KaleidoClient {
 
     /// Get an LSPS1 order.
     pub fn get_lsp_order(&self, order_id: String) -> Result<JsonValue, KaleidoError> {
-        let result = self
-            .runtime
-            .block_on(self.inner.get_lsp_order(&order_id))?;
+        let result = self.runtime.block_on(self.inner.get_lsp_order(&order_id))?;
         Ok(JsonValue::new(result))
     }
 
@@ -418,14 +411,14 @@ impl KaleidoClient {
     pub fn get_asset_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
         let assets = self.runtime.block_on(self.inner.list_assets())?;
         let ticker_upper = ticker.to_uppercase();
-        
+
         let asset = assets
             .into_iter()
             .find(|a| a.ticker.to_uppercase() == ticker_upper)
             .ok_or_else(|| KaleidoError::NotFoundError {
                 message: format!("Asset not found: {}", ticker),
             })?;
-        
+
         Ok(JsonValue::new(asset))
     }
 
@@ -440,28 +433,23 @@ impl KaleidoClient {
         to_amount: Option<i64>,
     ) -> Result<JsonValue, KaleidoError> {
         let ticker = format!("{}/{}", from_ticker, to_ticker);
-        let result = self
-            .runtime
-            .block_on(self.inner.get_quote_by_pair(
-                &ticker,
-                from_amount,
-                to_amount,
-                Layer::BtcSlashLn,
-            ))?;
+        let result = self.runtime.block_on(self.inner.get_quote_by_pair(
+            &ticker,
+            from_amount,
+            to_amount,
+            Layer::BtcSlashLn,
+        ))?;
         Ok(JsonValue::new(result))
     }
 
     /// Complete a swap in one call using a quote response.
     /// This initializes and executes the swap atomically.
-    pub fn complete_swap_from_quote(
-        &self,
-        quote_json: String,
-    ) -> Result<JsonValue, KaleidoError> {
-        let quote: kaleidoswap_core::models::PairQuoteResponse = 
-            serde_json::from_str(&quote_json).map_err(|e| KaleidoError::ValidationError {
+    pub fn complete_swap_from_quote(&self, quote_json: String) -> Result<JsonValue, KaleidoError> {
+        let quote: kaleidoswap_core::models::PairQuoteResponse = serde_json::from_str(&quote_json)
+            .map_err(|e| KaleidoError::ValidationError {
                 message: format!("Invalid quote JSON: {}", e),
             })?;
-        
+
         let result = self.runtime.block_on(self.inner.complete_swap(&quote))?;
         Ok(JsonValue::new(result))
     }
@@ -470,7 +458,7 @@ impl KaleidoClient {
     pub fn get_pair_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
         let pairs = self.runtime.block_on(self.inner.list_pairs())?;
         let ticker_upper = ticker.to_uppercase();
-        
+
         // With new model, pair has base/quote TradableAsset fields
         let pair = pairs
             .into_iter()
@@ -481,7 +469,7 @@ impl KaleidoClient {
             .ok_or_else(|| KaleidoError::NotFoundError {
                 message: format!("Trading pair not found: {}", ticker),
             })?;
-        
+
         Ok(JsonValue::new(pair))
     }
 
@@ -500,14 +488,12 @@ impl KaleidoClient {
     }
 
     /// Estimate swap fees for a given pair and amount.
-    pub fn estimate_swap_fees(
-        &self,
-        ticker: String,
-        amount: i64,
-    ) -> Result<i64, KaleidoError> {
-        let result = self.runtime.block_on(
-            self.inner.estimate_swap_fees(&ticker, amount, Layer::BtcSlashLn)
-        )?;
+    pub fn estimate_swap_fees(&self, ticker: String, amount: i64) -> Result<i64, KaleidoError> {
+        let result = self.runtime.block_on(self.inner.estimate_swap_fees(
+            &ticker,
+            amount,
+            Layer::BtcSlashLn,
+        ))?;
         Ok(result)
     }
 
@@ -518,26 +504,28 @@ impl KaleidoClient {
         from_amount: Option<i64>,
         to_amount: Option<i64>,
     ) -> Result<JsonValue, KaleidoError> {
-        let result = self.runtime.block_on(
-            self.inner.get_best_quote(&ticker, from_amount, to_amount)
-        )?;
+        let result =
+            self.runtime
+                .block_on(self.inner.get_best_quote(&ticker, from_amount, to_amount))?;
         Ok(JsonValue::new(result))
     }
 
     /// Find an asset by ticker.
     pub fn find_asset_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
-        let result = self.runtime.block_on(self.inner.find_asset_by_ticker(&ticker))?;
+        let result = self
+            .runtime
+            .block_on(self.inner.find_asset_by_ticker(&ticker))?;
         Ok(JsonValue::new(result))
     }
 
     /// Find a trading pair by ticker.
     pub fn find_pair_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
-        let result = self.runtime.block_on(self.inner.find_pair_by_ticker(&ticker))?;
+        let result = self
+            .runtime
+            .block_on(self.inner.find_pair_by_ticker(&ticker))?;
         Ok(JsonValue::new(result))
     }
-
 }
-
 
 // Helper functions
 /// Convert display units to smallest units.
@@ -571,16 +559,29 @@ impl QuoteStream {
     pub fn recv(&self, timeout_secs: f64) -> Option<String> {
         let receiver = self.receiver.clone();
         let timeout = Duration::from_secs_f64(timeout_secs);
-        
+
         self.runtime.block_on(async {
-            let mut guard = receiver.lock().ok()?;
-            let rx = guard.as_mut()?;
-            
-            match tokio::time::timeout(timeout, rx.recv()).await {
+            // Extract the receiver from the mutex before awaiting
+            // to avoid holding the lock across an await point
+            let mut rx = {
+                let mut guard = receiver.lock().ok()?;
+                guard.take()?
+            };
+
+            let result = match tokio::time::timeout(timeout, rx.recv()).await {
                 Ok(Some(quote)) => Some(quote),
                 Ok(None) => None, // Channel closed
                 Err(_) => None,   // Timeout
+            };
+
+            // Put the receiver back if we got a result
+            if result.is_some() {
+                if let Ok(mut guard) = receiver.lock() {
+                    *guard = Some(rx);
+                }
             }
+
+            result
         })
     }
 
@@ -591,7 +592,8 @@ impl QuoteStream {
 
     /// Close the stream and cleanup resources.
     pub fn close(&self) {
-        self.connected.store(false, std::sync::atomic::Ordering::SeqCst);
+        self.connected
+            .store(false, std::sync::atomic::Ordering::SeqCst);
         if let Ok(mut guard) = self.receiver.lock() {
             *guard = None;
         }
@@ -602,27 +604,30 @@ impl KaleidoClient {
     /// Create a real-time quote stream for a trading pair.
     /// The pair_ticker should be in format "BTC/USDT".
     /// Returns a QuoteStream that can be used to receive quote updates.
-    pub fn create_quote_stream(&self, pair_ticker: String) -> Result<Arc<QuoteStream>, KaleidoError> {
+    pub fn create_quote_stream(
+        &self,
+        pair_ticker: String,
+    ) -> Result<Arc<QuoteStream>, KaleidoError> {
         let base_url = self.inner.config().base_url.clone();
         let runtime = Arc::clone(&self.runtime);
-        
+
         // Create WebSocket URL
         let ws_url = base_url
             .replace("https://", "wss://")
             .replace("http://", "ws://");
         let ws_url = format!("{}/ws", ws_url);
-        
+
         // Create channel for quote updates
         let (tx, rx) = mpsc::channel::<String>(32);
         let connected = Arc::new(std::sync::atomic::AtomicBool::new(true));
         let connected_clone = Arc::clone(&connected);
-        
+
         // Spawn WebSocket connection task
         let pair = pair_ticker.clone();
         runtime.spawn(async move {
-            use tokio_tungstenite::connect_async;
             use futures::{SinkExt, StreamExt};
-            
+            use tokio_tungstenite::connect_async;
+
             // Connect to WebSocket
             let ws_result = connect_async(&ws_url).await;
             let (mut ws_stream, _) = match ws_result {
@@ -633,20 +638,23 @@ impl KaleidoClient {
                     return;
                 }
             };
-            
+
             // Subscribe to trading pair
             let subscribe_msg = serde_json::json!({
                 "type": "subscribe",
                 "data": { "pair_id": pair }
             });
-            if let Err(e) = ws_stream.send(tokio_tungstenite::tungstenite::Message::Text(
-                subscribe_msg.to_string()
-            )).await {
+            if let Err(e) = ws_stream
+                .send(tokio_tungstenite::tungstenite::Message::Text(
+                    subscribe_msg.to_string(),
+                ))
+                .await
+            {
                 log::error!("Failed to subscribe: {}", e);
                 connected_clone.store(false, std::sync::atomic::Ordering::SeqCst);
                 return;
             }
-            
+
             // Receive messages and forward to channel
             while connected_clone.load(std::sync::atomic::Ordering::SeqCst) {
                 match ws_stream.next().await {
@@ -673,10 +681,10 @@ impl KaleidoClient {
                     _ => {}
                 }
             }
-            
+
             connected_clone.store(false, std::sync::atomic::Ordering::SeqCst);
         });
-        
+
         Ok(Arc::new(QuoteStream {
             runtime,
             receiver: Arc::new(Mutex::new(Some(rx))),
@@ -686,7 +694,6 @@ impl KaleidoClient {
 }
 
 // Generate bindings from UDL
-
 
 uniffi::include_scaffolding!("kaleidoswap");
 
@@ -707,12 +714,12 @@ mod tests {
         let json_value = JsonValue {
             json: r#"{"count":42}"#.to_string(),
         };
-        
+
         #[derive(serde::Deserialize)]
         struct TestStruct {
             count: i32,
         }
-        
+
         let parsed: TestStruct = json_value.parse().expect("Failed to parse");
         assert_eq!(parsed.count, 42);
     }
@@ -743,7 +750,7 @@ mod tests {
     fn test_error_conversion() {
         let err = kaleidoswap_core::KaleidoError::validation("test error");
         let uniffi_err: KaleidoError = err.into();
-        
+
         match uniffi_err {
             KaleidoError::ValidationError { message } => {
                 assert!(message.contains("test error"));

@@ -20,7 +20,10 @@ impl OrdersApi {
     }
 
     /// Create a new swap order.
-    pub async fn create_order(&self, request: &CreateSwapOrderRequest) -> Result<CreateSwapOrderResponse> {
+    pub async fn create_order(
+        &self,
+        request: &CreateSwapOrderRequest,
+    ) -> Result<CreateSwapOrderResponse> {
         self.http.post("/api/v1/swaps/orders", request).await
     }
 
@@ -30,9 +33,11 @@ impl OrdersApi {
         struct StatusRequest<'a> {
             order_id: &'a str,
         }
-        
+
         let request = StatusRequest { order_id };
-        self.http.post("/api/v1/swaps/orders/status", &request).await
+        self.http
+            .post("/api/v1/swaps/orders/status", &request)
+            .await
     }
 
     /// Get order history.
@@ -55,11 +60,17 @@ impl OrdersApi {
     }
 
     /// Submit rate decision for an order.
-    pub async fn rate_decision(&self, order_id: &str, accept: bool) -> Result<SwapOrderRateDecisionResponse> {
+    pub async fn rate_decision(
+        &self,
+        order_id: &str,
+        accept: bool,
+    ) -> Result<SwapOrderRateDecisionResponse> {
         let request = SwapOrderRateDecisionRequest {
             order_id: order_id.to_string(),
             accept_new_rate: accept,
         };
-        self.http.post("/api/v1/swaps/orders/rate_decision", &request).await
+        self.http
+            .post("/api/v1/swaps/orders/rate_decision", &request)
+            .await
     }
 }
