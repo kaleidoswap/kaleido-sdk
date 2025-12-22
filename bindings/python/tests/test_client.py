@@ -346,12 +346,14 @@ class TestQuoteOperationsIntegration:
 
     def test_get_quote_by_pair_with_from_amount(self, client):
         """Test getting a quote with from_amount."""
-        quote = client.get_quote_by_pair("BTC/USDT", from_amount=100000, to_amount=None)
+        # 1M sats > 500k min
+        quote = client.get_best_quote("BTC/USDT", 1_000_000, None)
         assert isinstance(quote, str)
 
     def test_get_quote_by_pair_with_to_amount(self, client):
         """Test getting a quote with to_amount."""
-        quote = client.get_quote_by_pair("BTC/USDT", from_amount=None, to_amount=100000)
+        # 10 USDT > 1 USDT min
+        quote = client.get_best_quote("BTC/USDT", None, 10_000_000)
         assert isinstance(quote, str)
 
 

@@ -83,7 +83,7 @@ class TestClientMethods:
         from kaleidoswap import KaleidoClient, KaleidoConfig
 
         config = KaleidoConfig(
-            base_url="https://api.regtest.kaleidoswap.com",
+            base_url="http://localhost:8000",
             timeout=30.0,
             max_retries=3,
             cache_ttl=60,

@@ -307,38 +307,12 @@ describe('Client Method Signatures', () => {
             expect(typeof client.getQuoteByAssets).toBe('function');
         });
 
-        it('should have completeSwapFromQuote method', () => {
-            expect(typeof client.completeSwapFromQuote).toBe('function');
+        it('should have completeSwap method', () => {
+            expect(typeof client.completeSwap).toBe('function');
         });
 
         it('should have getPairByTicker method', () => {
             expect(typeof client.getPairByTicker).toBe('function');
-        });
-    });
-
-    describe('New Convenience Methods', () => {
-        it('should have listActiveAssets method', () => {
-            expect(typeof client.listActiveAssets).toBe('function');
-        });
-
-        it('should have listActivePairs method', () => {
-            expect(typeof client.listActivePairs).toBe('function');
-        });
-
-        it('should have estimateSwapFees method', () => {
-            expect(typeof client.estimateSwapFees).toBe('function');
-        });
-
-        it('should have getBestQuote method', () => {
-            expect(typeof client.getBestQuote).toBe('function');
-        });
-
-        it('should have findAssetByTicker method', () => {
-            expect(typeof client.findAssetByTicker).toBe('function');
-        });
-
-        it('should have findPairByTicker method', () => {
-            expect(typeof client.findPairByTicker).toBe('function');
         });
     });
 

@@ -213,7 +213,7 @@ impl KaleidoClient {
             &ticker,
             from_amount,
             to_amount,
-            Layer::BtcSlashLn,
+            Layer::BtcLn,
         ))?;
         Ok(JsonValue::new(result))
     }
@@ -437,7 +437,7 @@ impl KaleidoClient {
             &ticker,
             from_amount,
             to_amount,
-            Layer::BtcSlashLn,
+            Layer::BtcLn,
         ))?;
         Ok(JsonValue::new(result))
     }
@@ -463,7 +463,7 @@ impl KaleidoClient {
         let pair = pairs
             .into_iter()
             .find(|p| {
-                let pair_ticker = format!("{}/{}", p.base_asset, p.quote_asset).to_uppercase();
+                let pair_ticker = format!("{}/{}", p.base.ticker, p.quote.ticker).to_uppercase();
                 pair_ticker == ticker_upper
             })
             .ok_or_else(|| KaleidoError::NotFoundError {
@@ -492,7 +492,7 @@ impl KaleidoClient {
         let result = self.runtime.block_on(self.inner.estimate_swap_fees(
             &ticker,
             amount,
-            Layer::BtcSlashLn,
+            Layer::BtcLn,
         ))?;
         Ok(result)
     }
