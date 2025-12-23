@@ -16,11 +16,11 @@ SPECS_DIR="specs"
 BACKUP_DIR="specs/backup"
 
 # Default URLs
+# RGB Lightning Node spec (from upstream GitHub)
 RGB_NODE_URL="${RGB_NODE_URL:-https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/master/openapi.yaml}"
 
-# Kaleidoswap Maker spec URL (can be overridden by CI pipeline)
-# In CI, this is set to the GitLab artifacts download URL
-MAKER_SPEC_URL="${SPEC_DOWNLOAD_URL:-}"
+# Kaleidoswap Maker spec (from dedicated specs repository)
+MAKER_SPEC_URL="${MAKER_SPEC_URL:-https://raw.githubusercontent.com/kaleidoswap/specs/main/kaleidoswap.json}"
 
 # Parse arguments
 DO_BACKUP=true
@@ -129,52 +129,14 @@ download_spec "$RGB_NODE_URL" "$SPECS_DIR/rgb-lightning-node.yaml" "RGB Lightnin
 
 # Download Kaleidoswap Maker spec
 if [[ -n "$MAKER_SPEC_URL" ]]; then
-    # If we have a URL (from CI pipeline trigger or manual override), use it
-    if [[ "$MAKER_SPEC_URL" == *".zip"* ]] || [[ "$MAKER_SPEC_URL" == *"download"* ]]; then
-        # It's a GitLab artifacts URL - need to download and extract
-        echo ""
-        echo "📦 Fetching Kaleidoswap Maker API (from GitLab artifacts)..."
-        echo "   URL: $MAKER_SPEC_URL"
-        
-        TEMP_DIR=$(mktemp -d)
-        trap "rm -rf '$TEMP_DIR'" EXIT
-        
-        if curl -fsSL "$MAKER_SPEC_URL" -o "$TEMP_DIR/artifacts.zip"; then
-            if unzip -q "$TEMP_DIR/artifacts.zip" -d "$TEMP_DIR"; then
-                # Look for openapi.json in the extracted files
-                if [[ -f "$TEMP_DIR/specs/openapi.json" ]]; then
-                    if [[ "$DO_BACKUP" == true && -f "$SPECS_DIR/kaleidoswap.json" ]]; then
-                        local backup_name="${BACKUP_DIR}/kaleidoswap.json.$(date +%Y%m%d_%H%M%S)"
-                        cp "$SPECS_DIR/kaleidoswap.json" "$backup_name"
-                        echo "   Backed up to: $backup_name"
-                    fi
-                    cp "$TEMP_DIR/specs/openapi.json" "$SPECS_DIR/kaleidoswap.json"
-                    echo "   ✅ Extracted: $SPECS_DIR/kaleidoswap.json"
-                else
-                    echo "   ❌ openapi.json not found in artifacts"
-                fi
-            else
-                echo "   ❌ Failed to extract artifacts"
-            fi
-        else
-            echo "   ❌ Failed to download artifacts"
-        fi
-    else
-        # Direct URL to JSON file
-        download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
-    fi
+    # Use provided URL (from environment or command line)
+    download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
 else
+    # Use default GitHub specs repository
     echo ""
-    echo "⚠️  No MAKER_SPEC_URL provided."
-    echo "   To fetch Kaleidoswap Maker spec, either:"
-    echo "   1. Set SPEC_DOWNLOAD_URL environment variable (from CI trigger)"
-    echo "   2. Use --maker-url <url> argument"
-    echo "   3. Manually copy kaleidoswap.json to specs/"
-    
-    if [[ -f "$SPECS_DIR/kaleidoswap.json" ]]; then
-        echo ""
-        echo "   Using existing: $SPECS_DIR/kaleidoswap.json"
-    fi
+    echo "📦 Fetching Kaleidoswap Maker API from specs repository..."
+    download_spec "https://raw.githubusercontent.com/kaleidoswap/specs/main/kaleidoswap.json" \
+        "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
 fi
 
 echo ""

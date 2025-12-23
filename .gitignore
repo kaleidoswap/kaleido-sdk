@@ -1,5 +1,7 @@
-# Rust build artifacts
+# Rust build artifacts and toolchain
 target/
+.cargo/
+.rustup/
 
 # Node.js
 node_modules/

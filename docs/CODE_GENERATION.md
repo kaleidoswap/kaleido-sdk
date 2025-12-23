@@ -23,8 +23,8 @@ cargo check            # Verify compilation
 Models are auto-generated from OpenAPI specs using `openapi-generator-cli` in Docker.
 
 ### Source Files
-- `specs/kaleidoswap.json` - Kaleidoswap Maker API
-- `specs/rgb-lightning-node.yaml` - RGB Lightning Node API
+- `specs/kaleidoswap.json` - Kaleidoswap Maker API (from [kaleidoswap/specs](https://github.com/kaleidoswap/specs))
+- `specs/rgb-lightning-node.yaml` - RGB Lightning Node API (from RGB-Tools/rgb-lightning-node)
 
 ### Output
 ```

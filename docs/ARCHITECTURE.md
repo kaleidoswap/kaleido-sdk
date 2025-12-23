@@ -50,9 +50,9 @@ The SDK follows a **Rust-first architecture** with language bindings generated v
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      OpenAPI Specifications                      │
-│                           specs/                                 │
-│  • kaleidoswap.json (Kaleidoswap Maker API)                     │
-│  • rgb-lightning-node.yaml (RGB Lightning Node API)             │
+│                          (GitHub)                                │
+│  • kaleidoswap/specs - Kaleidoswap Maker API                    │
+│  • RGB-Tools/rgb-lightning-node - RGB Lightning Node API        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -260,6 +260,7 @@ make build             # Rebuild bindings
 ```
 
 > **Note**: Model generation requires Docker to be installed and running.
+> OpenAPI specifications are automatically fetched from the [kaleidoswap/specs](https://github.com/kaleidoswap/specs) repository.
 
 ## API Coverage
 
