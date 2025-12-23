@@ -206,12 +206,13 @@ build:typescript:
       artifacts: true
   before_script:
     - apt-get update && apt-get install -y nodejs npm
+    - npm install -g pnpm
   script:
     - echo "📦 Building TypeScript Bindings..."
     - cargo build -p kaleidoswap-typescript --release
     # Generate TypeScript types (requires uniffi-bindgen-ts when available)
     - cd bindings/typescript
-    - npm install || true
+    - pnpm install || true
   artifacts:
     paths:
       - bindings/typescript/
@@ -250,6 +251,8 @@ deploy:npm:
   needs:
     - job: build:typescript
       artifacts: true
+  before_script:
+    - npm install -g pnpm
   script:
     - echo "🚀 Publishing to npm..."
     - cd bindings/typescript
@@ -265,7 +268,7 @@ deploy:npm:
         TAG="latest"
       fi
       echo "Publishing with tag: $TAG"
-      npm publish --tag $TAG --access public
+      pnpm publish --tag $TAG --access public --no-git-checks
   rules:
     - if: $CI_COMMIT_TAG
     - if: $TRIGGER_SOURCE == "kaleidoswap-maker"

@@ -54,7 +54,7 @@ build-python:
 
 build-typescript:
 	@echo "📦 Building TypeScript bindings..."
-	cd $(BINDINGS_TYPESCRIPT) && npm install && npm run build
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
 
 # ============================================================================
 # Test targets
@@ -75,7 +75,7 @@ test-python:
 
 test-typescript:
 	@echo "🧪 Running TypeScript tests..."
-	cd $(BINDINGS_TYPESCRIPT) && npm test
+	cd $(BINDINGS_TYPESCRIPT) && pnpm test
 
 # ============================================================================
 # Code quality targets
@@ -139,7 +139,7 @@ deploy-python:
 
 deploy-typescript:
 	@echo "📤 Deploying TypeScript package to npm..."
-	cd $(BINDINGS_TYPESCRIPT) && npm publish
+	cd $(BINDINGS_TYPESCRIPT) && pnpm publish
 
 # ============================================================================
 # Clean targets
@@ -169,7 +169,7 @@ dev-python:
 
 dev-typescript:
 	@echo "📦 Installing TypeScript bindings in development mode..."
-	cd $(BINDINGS_TYPESCRIPT) && npm install && npm run build
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
 
 # Watch for changes and rebuild
 watch:

@@ -44,9 +44,7 @@ pip install kaleidoswap
 ### TypeScript/Node.js
 
 ```bash
-npm install @kaleidoswap/sdk
-# or
-yarn add @kaleidoswap/sdk
+pnpm add @kaleidoswap/sdk
 ```
 
 ## Quick Start
@@ -85,56 +83,87 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Python
 
 ```python
-import asyncio
 from kaleidoswap import KaleidoClient, KaleidoConfig
 
-async def main():
-    config = KaleidoConfig(base_url="https://api.regtest.kaleidoswap.com")
-    client = KaleidoClient(config)
+# Configure client
+config = KaleidoConfig(base_url="https://api.regtest.kaleidoswap.com")
+client = KaleidoClient(config)
 
-    # Get available assets
-    assets = client.list_assets() # Blocking (JSON string) or object? 
-    # Current bindings return JSON strings for list_* methods
-    import json
-    print(f"Found {len(json.loads(assets))} assets")
+# Market API - Returns typed Pydantic objects
+assets = client.market.list_assets()  # List[Asset]
+print(f"Found {len(assets)} assets")
 
-    # Get a quote
-    quote_json = client.get_best_quote("BTC/USDT", 1000000, None)
-    quote = json.loads(quote_json)
+for asset in assets:
+    print(f"  {asset.ticker}: {asset.name}")
+
+# Get typed quote
+quote = client.market.get_best_quote("BTC/USDT", 1_000_000)  # PairQuoteResponse
+print(f"Rate: {quote.price}")
+print(f"Fee: {quote.fee.amount} {quote.fee.asset_ticker}")
+
+# Order management
+history = client.orders.get_order_history()  # OrderHistoryResponse
+print(f"Total orders: {history.total}")
+
+# RGB Node operations (if configured)
+if client.node:
+    node_info = client.node.get_rgb_node_info()  # RgbNodeInfoResponse
+    print(f"Node pubkey: {node_info.pubkey}")
     
-    # Access nested fields correctly
-    from_amt = quote.get("from_asset", {}).get("amount", 0)
-    to_amt = quote.get("to_asset", {}).get("amount", 0)
-    print(f"Quote: {from_amt} -> {to_amt}")
-
-asyncio.run(main())
+    channels = client.node.list_channels()  # List[RgbChannel]
+    balance = client.node.get_btc_balance()  # BtcBalanceResponse
+    print(f"BTC Balance: {balance.vanilla.spendable} sats")
 ```
 
-### TypeScript
+**Error Handling:**
+```python
+from kaleidoswap import QuoteExpiredError, InsufficientBalanceError
+
+try:
+    quote = client.market.get_quote_by_pair("BTC/USDT", 1_000_000)
+except QuoteExpiredError:
+    # Refresh quote
+    quote = client.market.get_quote_by_pair("BTC/USDT", 1_000_000)
+except InsufficientBalanceError as e:
+    print(f"Need {e.required_amount - e.available_amount} more")
+```
+
+### TypeScript/Node.js
 
 ```typescript
-import { KaleidoClient, KaleidoConfig } from '@kaleidoswap/sdk';
+import { KaleidoClient } from '@kaleidoswap/sdk';
 
-async function main() {
-    const config = new KaleidoConfig({ baseUrl: 'https://api.regtest.kaleidoswap.com' });
-    const client = new KaleidoClient(config);
+const config = {
+    baseUrl: 'https://api.regtest.kaleidoswap.com',
+};
 
-    // Get available assets
-    const assetsJson = await client.listAssets();
-    const assets = JSON.parse(assetsJson);
-    console.log(`Found ${assets.length} assets`);
+const client = new KaleidoClient(config);
 
-    // Get a quote
-    const quoteJson = await client.getBestQuote('BTC/USDT', { fromAmount: 1000000 });
-    const quote = JSON.parse(quoteJson);
+// Market API - Returns typed objects
+const assets = await client.market.listAssets();
+console.log(`Found ${assets.length} assets`);
+
+assets.forEach(asset => {
+    console.log(`  ${asset.ticker}: ${asset.name}`);
+});
+
+// Get typed quote
+const quote = await client.market.getBestQuote("BTC/USDT", 1_000_000);
+console.log(`Rate: ${quote.price}`);
+console.log(`Fee: ${quote.fee.amount} ${quote.fee.assetTicker}`);
+
+// Order management
+const history = await client.orders.getOrderHistory();
+console.log(`Total orders: ${history.total}`);
+
+// RGB Node operations (if configured)
+if (client.node) {
+    const nodeInfo = await client.node.getRgbNodeInfo();
+    console.log(`Node pubkey: ${nodeInfo.pubkey}`);
     
-    // Access nested fields
-    const fromAmt = quote.from_asset?.amount || 0;
-    const toAmt = quote.to_asset?.amount || 0;
-    console.log(`Quote: ${fromAmt} -> ${toAmt}`);
+    const channels = await client.node.listChannels();
+    const balance = await client.node.getBtcBalance();
 }
-
-main();
 ```
 
 ## 📚 Documentation

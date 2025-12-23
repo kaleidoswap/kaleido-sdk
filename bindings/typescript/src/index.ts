@@ -15,6 +15,49 @@ export const QuoteStream = nativeBinding.QuoteStream;
 export const toSmallestUnits = nativeBinding.toSmallestUnits;
 export const toDisplayUnits = nativeBinding.toDisplayUnits;
 
+// Import sub-clients
+import {
+    MarketClient,
+    OrdersClient,
+    SwapsClient,
+    LspClient,
+    NodeClient,
+    IMarketClient,
+    IOrdersClient,
+    ISwapsClient,
+    ILspClient,
+    INodeClient,
+} from './sub-clients';
+
+// Re-export sub-client interfaces
+export {
+    IMarketClient,
+    IOrdersClient,
+    ISwapsClient,
+    ILspClient,
+    INodeClient,
+    MarketClient,
+    OrdersClient,
+    SwapsClient,
+    LspClient,
+    NodeClient,
+};
+
+// Import and re-export exceptions
+export {
+    KaleidoError,
+    APIError,
+    NetworkError,
+    ValidationError,
+    QuoteExpiredError,
+    InsufficientBalanceError,
+    NodeNotConfiguredError,
+    AuthenticationError,
+    RateLimitError,
+    ChannelNotFoundError,
+    OrderNotFoundError,
+} from './exceptions';
+
 // ============================================================================
 // TypeScript Interfaces
 // ============================================================================
@@ -185,44 +228,61 @@ export interface IQuoteStream {
 }
 
 /**
- * TypeScript interface for the KaleidoClient with async methods
+ * TypeScript interface for the KaleidoClient with async methods.
+ * 
+ * Access organized API clients via properties:
+ * - client.market: Market operations (assets, pairs, quotes)
+ * - client.orders: Order management
+ * - client.swaps: Swap operations
+ * - client.lsp: Lightning Service Provider operations
+ * - client.node: RGB Node operations (if configured)
+ * 
+ * By default, methods return parsed TypeScript objects for better DX.
+ * Pass `{ raw: true }` to get JSON strings for backwards compatibility.
  */
 export interface IKaleidoClient {
-    // Market Operations (async, returns JSON string)
-    listAssets(): Promise<string>;
-    listPairs(): Promise<string>;
-    getQuoteByPair(ticker: string, fromAmount?: number | null, toAmount?: number | null): Promise<string>;
-    getBestQuote(ticker: string, fromAmount?: number | null, toAmount?: number | null): Promise<string>;
+    // Sub-client properties
+    readonly market: IMarketClient;
+    readonly orders: IOrdersClient;
+    readonly swaps: ISwapsClient;
+    readonly lsp: ILspClient;
+    readonly node: INodeClient | null;
+
+    // Market Operations (legacy flat access)
+    listAssets(options?: { raw?: boolean }): Promise<Asset[] | string>;
+    listPairs(options?: { raw?: boolean }): Promise<TradingPair[] | string>;
+    getQuoteByPair(ticker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string>;
+    getBestQuote(ticker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string>;
 
     // Swap Operations
-    checkSwapStatus(paymentHash: string): Promise<string>;
+    checkSwapStatus(paymentHash: string, options?: { raw?: boolean }): Promise<any | string>;
 
     // LSP Operations
-    getLspInfo(): Promise<string>;
-    getLspNetworkInfo(): Promise<string>;
-    getLspOrder(orderId: string): Promise<string>;
+    getLspInfo(options?: { raw?: boolean }): Promise<any | string>;
+    getLspNetworkInfo(options?: { raw?: boolean }): Promise<NodeInfo | string>;
+    getLspOrder(orderId: string, options?: { raw?: boolean }): Promise<any | string>;
     estimateLspFees(channelSize: number): Promise<string>;
 
     // RGB Lightning Node Operations
-    getRgbNodeInfo(): Promise<string>;
-    listChannels(): Promise<string>;
-    listPeers(): Promise<string>;
-    listNodeAssets(): Promise<string>;
-    getAssetBalance(assetId: string): Promise<string>;
-    getOnchainAddress(): Promise<string>;
-    getBtcBalance(): Promise<string>;
+    getRgbNodeInfo(options?: { raw?: boolean }): Promise<NodeInfo | string>;
+    listChannels(options?: { raw?: boolean }): Promise<any[] | string>;
+    listPeers(options?: { raw?: boolean }): Promise<any[] | string>;
+    listNodeAssets(options?: { raw?: boolean }): Promise<Asset[] | string>;
+    getAssetBalance(assetId: string, options?: { raw?: boolean }): Promise<any | string>;
+    getOnchainAddress(options?: { raw?: boolean }): Promise<any | string>;
+    getBtcBalance(options?: { raw?: boolean }): Promise<any | string>;
     whitelistTrade(swapstring: string): Promise<string>;
-    decodeLnInvoice(invoice: string): Promise<string>;
-    listPayments(): Promise<string>;
+    decodeLnInvoice(invoice: string, options?: { raw?: boolean }): Promise<any | string>;
+    listPayments(options?: { raw?: boolean }): Promise<any[] | string>;
     initWallet(password: string): Promise<string>;
     unlockWallet(password: string): Promise<string>;
     lockWallet(): Promise<string>;
 
     // Convenience Methods
-    getAssetByTicker(ticker: string): Promise<string>;
-    getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null): Promise<string>;
+    getAssetByTicker(ticker: string, options?: { raw?: boolean }): Promise<Asset | string>;
+    getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string>;
     completeSwapFromQuote(quoteJson: string): Promise<string>;
-    getPairByTicker(ticker: string): Promise<string>;
+    getPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string>;
 
     // Legacy Support Methods (Strongly Typed)
     createLspOrder(request: CreateOrderRequest): Promise<string>;
@@ -243,42 +303,204 @@ export interface IKaleidoClient {
 // Wrapper class to match the interface and handle object serialization
 export class KaleidoClient implements IKaleidoClient {
     private inner: any;
+    private _marketClient: IMarketClient | null = null;
+    private _ordersClient: IOrdersClient | null = null;
+    private _swapsClient: ISwapsClient | null = null;
+    private _lspClient: ILspClient | null = null;
+    private _nodeClient: INodeClient | null = null;
 
     constructor(config: KaleidoConfig) {
         this.inner = new NativeKaleidoClient(config);
     }
 
-    async listAssets(): Promise<string> { return this.inner.listAssets(); }
-    async listPairs(): Promise<string> { return this.inner.listPairs(); }
-    async getQuoteByPair(ticker: string, fromAmount?: number | null, toAmount?: number | null): Promise<string> { return this.inner.getQuoteByPair(ticker, fromAmount, toAmount); }
-    async getBestQuote(ticker: string, fromAmount?: number | null, toAmount?: number | null): Promise<string> { return this.inner.getBestQuote(ticker, fromAmount, toAmount); }
+    // === Sub-Client Properties ===
 
-    async checkSwapStatus(paymentHash: string): Promise<string> { return this.inner.checkSwapStatus(paymentHash); }
+    get market(): IMarketClient {
+        if (!this._marketClient) {
+            this._marketClient = new MarketClient(this.inner, (json) => JSON.parse(json));
+        }
+        return this._marketClient;
+    }
 
-    async getLspInfo(): Promise<string> { return this.inner.getLspInfo(); }
-    async getLspNetworkInfo(): Promise<string> { return this.inner.getLspNetworkInfo(); }
-    async getLspOrder(orderId: string): Promise<string> { return this.inner.getLspOrder(orderId); }
-    async estimateLspFees(channelSize: number): Promise<string> { return this.inner.estimateLspFees(channelSize); }
+    get orders(): IOrdersClient {
+        if (!this._ordersClient) {
+            this._ordersClient = new OrdersClient(this.inner, (json) => JSON.parse(json));
+        }
+        return this._ordersClient;
+    }
 
-    async getRgbNodeInfo(): Promise<string> { return this.inner.getRgbNodeInfo(); }
-    async listChannels(): Promise<string> { return this.inner.listChannels(); }
-    async listPeers(): Promise<string> { return this.inner.listPeers(); }
-    async listNodeAssets(): Promise<string> { return this.inner.listNodeAssets(); }
-    async getAssetBalance(assetId: string): Promise<string> { return this.inner.getAssetBalance(assetId); }
-    async getOnchainAddress(): Promise<string> { return this.inner.getOnchainAddress(); }
-    async getBtcBalance(): Promise<string> { return this.inner.getBtcBalance(); }
-    async whitelistTrade(swapstring: string): Promise<string> { return this.inner.whitelistTrade(swapstring); }
-    async decodeLnInvoice(invoice: string): Promise<string> { return this.inner.decodeLnInvoice(invoice); }
-    async listPayments(): Promise<string> { return this.inner.listPayments(); }
+    get swaps(): ISwapsClient {
+        if (!this._swapsClient) {
+            this._swapsClient = new SwapsClient(this.inner, (json) => JSON.parse(json));
+        }
+        return this._swapsClient;
+    }
 
-    async initWallet(password: string): Promise<string> { return this.inner.initWallet(password); }
-    async unlockWallet(password: string): Promise<string> { return this.inner.unlockWallet(password); }
-    async lockWallet(): Promise<string> { return this.inner.lockWallet(); }
+    get lsp(): ILspClient {
+        if (!this._lspClient) {
+            this._lspClient = new LspClient(this.inner, (json) => JSON.parse(json));
+        }
+        return this._lspClient;
+    }
 
-    async getAssetByTicker(ticker: string): Promise<string> { return this.inner.getAssetByTicker(ticker); }
-    async getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null): Promise<string> { return this.inner.getQuoteByAssets(fromTicker, toTicker, fromAmount, toAmount); }
-    async completeSwapFromQuote(quoteJson: string): Promise<string> { return this.inner.completeSwapFromQuote(quoteJson); }
-    async getPairByTicker(ticker: string): Promise<string> { return this.inner.getPairByTicker(ticker); }
+    get node(): INodeClient | null {
+        // Check if node is configured
+        if (!this.inner.hasNode || !this.inner.hasNode()) {
+            return null;
+        }
+        if (!this._nodeClient) {
+            this._nodeClient = new NodeClient(this.inner, (json) => JSON.parse(json));
+        }
+        return this._nodeClient;
+    }
+
+    /**
+     * Helper to parse JSON response into typed object.
+     * @param jsonStr - JSON string from native binding
+     * @param raw - If true, return raw JSON string
+     */
+    private _parseResponse<T>(jsonStr: string, raw?: boolean): T | string {
+        if (raw) {
+            return jsonStr;
+        }
+        return JSON.parse(jsonStr) as T;
+    }
+
+    // === Market Operations ===
+
+    async listAssets(options?: { raw?: boolean }): Promise<Asset[] | string> {
+        const json = await this.inner.listAssets();
+        return this._parseResponse<Asset[]>(json, options?.raw);
+    }
+
+    async listPairs(options?: { raw?: boolean }): Promise<TradingPair[] | string> {
+        const json = await this.inner.listPairs();
+        return this._parseResponse<TradingPair[]>(json, options?.raw);
+    }
+
+    async getQuoteByPair(ticker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string> {
+        const json = await this.inner.getQuoteByPair(ticker, fromAmount, toAmount);
+        return this._parseResponse<Quote>(json, options?.raw);
+    }
+
+    async getBestQuote(ticker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string> {
+        const json = await this.inner.getBestQuote(ticker, fromAmount, toAmount);
+        return this._parseResponse<Quote>(json, options?.raw);
+    }
+
+    // === Swap Operations ===
+
+    async checkSwapStatus(paymentHash: string, options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.checkSwapStatus(paymentHash);
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    // === LSP Operations ===
+
+    async getLspInfo(options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.getLspInfo();
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async getLspNetworkInfo(options?: { raw?: boolean }): Promise<NodeInfo | string> {
+        const json = await this.inner.getLspNetworkInfo();
+        return this._parseResponse<NodeInfo>(json, options?.raw);
+    }
+
+    async getLspOrder(orderId: string, options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.getLspOrder(orderId);
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async estimateLspFees(channelSize: number): Promise<string> {
+        return this.inner.estimateLspFees(channelSize);
+    }
+
+    // === RGB Lightning Node Operations ===
+
+    async getRgbNodeInfo(options?: { raw?: boolean }): Promise<NodeInfo | string> {
+        const json = await this.inner.getRgbNodeInfo();
+        return this._parseResponse<NodeInfo>(json, options?.raw);
+    }
+
+    async listChannels(options?: { raw?: boolean }): Promise<any[] | string> {
+        const json = await this.inner.listChannels();
+        return this._parseResponse<any[]>(json, options?.raw);
+    }
+
+    async listPeers(options?: { raw?: boolean }): Promise<any[] | string> {
+        const json = await this.inner.listPeers();
+        return this._parseResponse<any[]>(json, options?.raw);
+    }
+
+    async listNodeAssets(options?: { raw?: boolean }): Promise<Asset[] | string> {
+        const json = await this.inner.listNodeAssets();
+        return this._parseResponse<Asset[]>(json, options?.raw);
+    }
+
+    async getAssetBalance(assetId: string, options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.getAssetBalance(assetId);
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async getOnchainAddress(options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.getOnchainAddress();
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async getBtcBalance(options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.getBtcBalance();
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async whitelistTrade(swapstring: string): Promise<string> {
+        return this.inner.whitelistTrade(swapstring);
+    }
+
+    async decodeLnInvoice(invoice: string, options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.decodeLnInvoice(invoice);
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async listPayments(options?: { raw?: boolean }): Promise<any[] | string> {
+        const json = await this.inner.listPayments();
+        return this._parseResponse<any[]>(json, options?.raw);
+    }
+
+    // === Wallet Operations ===
+
+    async initWallet(password: string): Promise<string> {
+        return this.inner.initWallet(password);
+    }
+
+    async unlockWallet(password: string): Promise<string> {
+        return this.inner.unlockWallet(password);
+    }
+
+    async lockWallet(): Promise<string> {
+        return this.inner.lockWallet();
+    }
+
+    // === Convenience Methods ===
+
+    async getAssetByTicker(ticker: string, options?: { raw?: boolean }): Promise<Asset | string> {
+        const json = await this.inner.getAssetByTicker(ticker);
+        return this._parseResponse<Asset>(json, options?.raw);
+    }
+
+    async getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string> {
+        const json = await this.inner.getQuoteByAssets(fromTicker, toTicker, fromAmount, toAmount);
+        return this._parseResponse<Quote>(json, options?.raw);
+    }
+
+    async completeSwapFromQuote(quoteJson: string): Promise<string> {
+        return this.inner.completeSwapFromQuote(quoteJson);
+    }
+
+    async getPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string> {
+        const json = await this.inner.getPairByTicker(ticker);
+        return this._parseResponse<TradingPair>(json, options?.raw);
+    }
 
     async createLspOrder(request: CreateOrderRequest): Promise<string> {
         return this.inner.createLspOrder(JSON.stringify(request));

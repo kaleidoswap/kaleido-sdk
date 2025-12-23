@@ -108,6 +108,33 @@ impl KaleidoClient {
         &self.config
     }
 
+    // === API Module Accessors ===
+
+    /// Get the Market API client for assets, pairs, and quotes.
+    pub fn market(&self) -> &MarketApi {
+        &self.market
+    }
+
+    /// Get the Swaps API client for swap operations.
+    pub fn swaps(&self) -> &SwapsApi {
+        &self.swaps
+    }
+
+    /// Get the Orders API client for order management.
+    pub fn orders(&self) -> &OrdersApi {
+        &self.orders
+    }
+
+    /// Get the LSP API client for Lightning Service Provider operations.
+    pub fn lsp(&self) -> &LspApi {
+        &self.lsp
+    }
+
+    /// Get the RGB Node API client (if configured).
+    pub fn node(&self) -> Option<&NodeApi> {
+        self.node.as_ref()
+    }
+
     // === Cache Management ===
 
     fn is_cache_valid(&self, timestamp: &Instant) -> bool {

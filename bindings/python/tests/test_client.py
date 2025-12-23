@@ -1,6 +1,12 @@
 """Tests for the Kaleidoswap Python SDK."""
 
 import pytest
+from kaleidoswap import (
+    PairQuoteResponse,
+    OrderHistoryResponse,
+    OrderStatsResponse,
+    NetworkInfoResponse,
+)
 
 API_URL = "http://localhost:8000"
 API_NODE_URL = "http://localhost:3001"
@@ -84,14 +90,20 @@ class TestIntegration:
     def test_list_assets(self, client):
         """Test listing assets from the API."""
         assets = client.list_assets()
-        assert isinstance(assets, str)  # Returns JSON
+        assert isinstance(assets, list)  # Returns List[Asset]
         assert len(assets) > 0
+        # Verify it's actually Asset objects
+        from kaleidoswap import Asset
+        assert isinstance(assets[0], Asset)
 
     def test_list_pairs(self, client):
         """Test listing trading pairs from the API."""
         pairs = client.list_pairs()
-        assert isinstance(pairs, str)  # Returns JSON
+        assert isinstance(pairs, list)  # Returns List[TradingPair]
         assert len(pairs) > 0
+        # Verify it's actually TradingPair objects
+        from kaleidoswap import TradingPair
+        assert isinstance(pairs[0], TradingPair)
 
 
 class TestClientMethodSignatures:
@@ -207,12 +219,12 @@ class TestExtendedIntegration:
     def test_get_order_history(self, client):
         """Test getting order history."""
         history = client.get_order_history()
-        assert isinstance(history, str)
+        assert isinstance(history, OrderHistoryResponse)
 
     def test_get_order_analytics(self, client):
         """Test getting order analytics."""
         analytics = client.get_order_analytics()
-        assert isinstance(analytics, str)
+        assert isinstance(analytics, OrderStatsResponse)
 
     def test_get_lsp_info(self, client):
         """Test getting LSP info."""
@@ -222,7 +234,7 @@ class TestExtendedIntegration:
     def test_get_lsp_network_info(self, client):
         """Test getting LSP network info."""
         info = client.get_lsp_network_info()
-        assert isinstance(info, str)
+        assert isinstance(info, NetworkInfoResponse)
 
 
 class TestQuoteStream:
@@ -348,13 +360,13 @@ class TestQuoteOperationsIntegration:
         """Test getting a quote with from_amount."""
         # 1M sats > 500k min
         quote = client.get_best_quote("BTC/USDT", 1_000_000, None)
-        assert isinstance(quote, str)
+        assert isinstance(quote, PairQuoteResponse)
 
     def test_get_quote_by_pair_with_to_amount(self, client):
         """Test getting a quote with to_amount."""
         # 10 USDT > 1 USDT min
         quote = client.get_best_quote("BTC/USDT", None, 10_000_000)
-        assert isinstance(quote, str)
+        assert isinstance(quote, PairQuoteResponse)
 
 
 # ============================================================================
@@ -448,12 +460,12 @@ class TestOrderManagementIntegration:
     def test_get_order_history(self, client):
         """Test getting order history."""
         history = client.get_order_history(None, 10, 0)
-        assert isinstance(history, str)
+        assert isinstance(history, OrderHistoryResponse)
 
     def test_get_order_analytics(self, client):
         """Test getting order analytics."""
         analytics = client.get_order_analytics()
-        assert isinstance(analytics, str)
+        assert isinstance(analytics, OrderStatsResponse)
 
 
 # ============================================================================
@@ -515,7 +527,7 @@ class TestLspOperationsIntegration:
     def test_get_lsp_network_info(self, client):
         """Test getting LSP network info."""
         info = client.get_lsp_network_info()
-        assert isinstance(info, str)
+        assert isinstance(info, NetworkInfoResponse)
 
 
 # ============================================================================
@@ -694,11 +706,9 @@ class TestErrorHandling:
 class TestJsonParsing:
     """Test cases for JSON parsing."""
 
-    def test_list_assets_returns_json(self):
-        """Test that list_assets returns JSON string."""
-        import json
-
-        from kaleidoswap import KaleidoClient, KaleidoConfig
+    def test_list_assets_returns_typed_objects(self):
+        """Test that list_assets returns typed Asset objects."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig, Asset
 
         config = KaleidoConfig(
             base_url=API_URL,
@@ -707,17 +717,13 @@ class TestJsonParsing:
         client = KaleidoClient(config)
 
         result = client.list_assets()
-        assert isinstance(result, str)
+        assert isinstance(result, list)
+        if len(result) > 0:
+            assert isinstance(result[0], Asset)
 
-        # Verify it's valid JSON
-        data = json.loads(result)
-        assert isinstance(data, (dict, list))
-
-    def test_list_pairs_returns_json(self):
-        """Test that list_pairs returns JSON string."""
-        import json
-
-        from kaleidoswap import KaleidoClient, KaleidoConfig
+    def test_list_pairs_returns_typed_objects(self):
+        """Test that list_pairs returns typed TradingPair objects."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig, TradingPair
 
         config = KaleidoConfig(
             base_url=API_URL,
@@ -726,11 +732,9 @@ class TestJsonParsing:
         client = KaleidoClient(config)
 
         result = client.list_pairs()
-        assert isinstance(result, str)
-
-        # Verify it's valid JSON
-        data = json.loads(result)
-        assert isinstance(data, (dict, list))
+        assert isinstance(result, list)
+        if len(result) > 0:
+            assert isinstance(result[0], TradingPair)
 
 
 class TestMethodCount:

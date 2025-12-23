@@ -42,6 +42,9 @@ pub use client::KaleidoClient;
 pub use error::{KaleidoError, Result};
 pub use models::*;
 
+// Export API modules for bindings
+pub use api::{LspApi, MarketApi, NodeApi, OrdersApi, SwapsApi};
+
 /// Configuration for the Kaleidoswap client.
 #[derive(Debug, Clone)]
 pub struct KaleidoConfig {

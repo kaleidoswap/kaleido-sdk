@@ -1,24 +1,34 @@
-# TypeScript
-typescript/node_modules
-typescript/dist
-typescript/coverage
+# Rust build artifacts
 target/
-typescript/*.js
-typescript/*.js.map
-typescript/*.d.ts
-!typescript/jest.config.js
-!typescript/.eslintrc.js
-# Byte-compiled / optimized / DLL files
 
-./typescript/package-lock.json
-typescript/package-lock.json
+# Node.js
+node_modules/
 
-node_modules
+# TypeScript build artifacts
+bindings/typescript/dist/
+bindings/typescript/coverage/
+bindings/typescript/*.js
+bindings/typescript/*.js.map
+bindings/typescript/*.d.ts
+!bindings/typescript/jest.config.js
+!bindings/typescript/.eslintrc.js
+
+# NAPI-RS build artifacts (Node.js native modules)
+*.node
+!node_modules/**/*.node
+
+# Lock files - only pnpm is used
+package-lock.json
+npm-shrinkwrap.json
+
+
+# Package.json filtering
 package.json
 package-lock.json
 # Allow package.json in specific directories
-!typescript/package.json
-!typescript/packages/*/package.json
+!bindings/typescript/package.json
+!bindings/typescript/packages/*/package.json
+!bindings/python/package.json
 !crates/*/package.json
 
 # Python

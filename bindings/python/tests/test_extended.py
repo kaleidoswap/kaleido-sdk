@@ -90,23 +90,25 @@ class TestClientMethods:
         )
         return KaleidoClient(config)
 
-    def test_list_assets_returns_json_string(self, client):
-        """Test that list_assets returns a valid JSON string."""
+    def test_list_assets_returns_typed_objects(self, client):
+        """Test that list_assets returns typed Asset objects."""
         result = client.list_assets()
-        assert isinstance(result, str)
+        assert isinstance(result, list)
+        
+        # Verify objects are Asset instances
+        from kaleidoswap import Asset
+        if len(result) > 0:
+            assert isinstance(result[0], Asset)
 
-        # Verify it's valid JSON
-        data = json.loads(result)
-        assert isinstance(data, (dict, list))
-
-    def test_list_pairs_returns_json_string(self, client):
-        """Test that list_pairs returns a valid JSON string."""
+    def test_list_pairs_returns_typed_objects(self, client):
+        """Test that list_pairs returns typed TradingPair objects."""
         result = client.list_pairs()
-        assert isinstance(result, str)
-
-        # Verify it's valid JSON
-        data = json.loads(result)
-        assert isinstance(data, (dict, list))
+        assert isinstance(result, list)
+        
+        # Verify objects are TradingPair instances
+        from kaleidoswap import TradingPair
+        if len(result) > 0:
+            assert isinstance(result[0], TradingPair)
 
     def test_has_node_consistency(self):
         """Test that has_node is consistent with node_url."""

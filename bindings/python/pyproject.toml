@@ -23,6 +23,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 keywords = ["bitcoin", "lightning", "rgb", "swap", "trading", "kaleidoswap"]
+dependencies = [
+    "pydantic[email]>=2.10.6",
+]
 
 [project.urls]
 Homepage = "https://kaleidoswap.com"
@@ -34,6 +37,11 @@ Documentation = "https://docs.kaleidoswap.com/python"
 python-source = "python"
 module-name = "kaleidoswap.kaleidoswap"
 
+[dependency-groups]
+dev = [
+    "datamodel-code-generator[http]>=0.27.3",
+]
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
@@ -41,4 +49,5 @@ dev = [
     "black>=23.0",
     "ruff>=0.1.0",
     "isort>=5.12",
+    "datamodel-code-generator[http]>=0.25.0",
 ]
