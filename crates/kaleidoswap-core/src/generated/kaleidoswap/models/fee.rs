@@ -25,11 +25,11 @@ pub struct Fee {
     #[serde(rename = "fee_asset")]
     pub fee_asset: String,
     #[serde(rename = "fee_asset_precision")]
-    pub fee_asset_precision: i32,
+    pub fee_asset_precision: i64,
 }
 
 impl Fee {
-    pub fn new(base_fee: i64, variable_fee: i64, fee_rate: f64, final_fee: i64, fee_asset: String, fee_asset_precision: i32) -> Fee {
+    pub fn new(base_fee: i64, variable_fee: i64, fee_rate: f64, final_fee: i64, fee_asset: String, fee_asset_precision: i64) -> Fee {
         Fee {
             base_fee,
             variable_fee,

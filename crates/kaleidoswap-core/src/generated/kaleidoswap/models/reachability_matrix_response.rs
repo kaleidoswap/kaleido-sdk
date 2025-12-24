@@ -23,12 +23,12 @@ pub struct ReachabilityMatrixResponse {
     pub assets: Vec<String>,
     /// Response timestamp
     #[serde(rename = "timestamp")]
-    pub timestamp: i32,
+    pub timestamp: i64,
 }
 
 impl ReachabilityMatrixResponse {
     /// Full reachability matrix response.
-    pub fn new(matrix: Vec<ReachabilityCell>, assets: Vec<String>, timestamp: i32) -> ReachabilityMatrixResponse {
+    pub fn new(matrix: Vec<ReachabilityCell>, assets: Vec<String>, timestamp: i64) -> ReachabilityMatrixResponse {
         ReachabilityMatrixResponse {
             matrix,
             assets,

@@ -559,8 +559,6 @@ impl KaleidoClient {
     }
 
     /// Get the best quote by trying multiple layers and selecting the one with best rate.
-    /// Get the best quote by trying multiple layers and selecting the one with best rate.
-    /// Get the best quote by trying multiple layers and selecting the one with best rate.
     pub async fn get_best_quote(
         &self,
         ticker: &str,

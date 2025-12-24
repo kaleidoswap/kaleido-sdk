@@ -15,9 +15,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Swap {
     #[serde(rename = "qty_from")]
-    pub qty_from: i32,
+    pub qty_from: i64,
     #[serde(rename = "qty_to")]
-    pub qty_to: i32,
+    pub qty_to: i64,
     #[serde(rename = "from_asset", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub from_asset: Option<Option<String>>,
     #[serde(rename = "to_asset", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
@@ -27,17 +27,17 @@ pub struct Swap {
     #[serde(rename = "status")]
     pub status: SwapStatus,
     #[serde(rename = "requested_at")]
-    pub requested_at: i32,
+    pub requested_at: i64,
     #[serde(rename = "initiated_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub initiated_at: Option<Option<i32>>,
+    pub initiated_at: Option<Option<i64>>,
     #[serde(rename = "expires_at")]
-    pub expires_at: i32,
+    pub expires_at: i64,
     #[serde(rename = "completed_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub completed_at: Option<Option<i32>>,
+    pub completed_at: Option<Option<i64>>,
 }
 
 impl Swap {
-    pub fn new(qty_from: i32, qty_to: i32, payment_hash: String, status: SwapStatus, requested_at: i32, expires_at: i32) -> Swap {
+    pub fn new(qty_from: i64, qty_to: i64, payment_hash: String, status: SwapStatus, requested_at: i64, expires_at: i64) -> Swap {
         Swap {
             qty_from,
             qty_to,

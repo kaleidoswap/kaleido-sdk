@@ -15,9 +15,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct BlockTime {
     #[serde(rename = "height", skip_serializing_if = "Option::is_none")]
-    pub height: Option<i32>,
+    pub height: Option<i64>,
     #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<i32>,
+    pub timestamp: Option<i64>,
 }
 
 impl BlockTime {

@@ -19,11 +19,11 @@ pub struct SwapNodeInfoResponse {
     #[serde(rename = "network", deserialize_with = "Option::deserialize")]
     pub network: Option<String>,
     #[serde(rename = "block_height", deserialize_with = "Option::deserialize")]
-    pub block_height: Option<i32>,
+    pub block_height: Option<i64>,
 }
 
 impl SwapNodeInfoResponse {
-    pub fn new(pubkey: Option<String>, network: Option<String>, block_height: Option<i32>) -> SwapNodeInfoResponse {
+    pub fn new(pubkey: Option<String>, network: Option<String>, block_height: Option<i64>) -> SwapNodeInfoResponse {
         SwapNodeInfoResponse {
             pubkey,
             network,

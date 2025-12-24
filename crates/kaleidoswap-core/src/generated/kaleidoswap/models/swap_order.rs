@@ -29,7 +29,7 @@ pub struct SwapOrder {
     #[serde(rename = "to_asset")]
     pub to_asset: Box<SwapLeg>,
     #[serde(rename = "price")]
-    pub price: i32,
+    pub price: i64,
     #[serde(rename = "deposit_address", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub deposit_address: Option<Option<Box<ReceiverAddress>>>,
     #[serde(rename = "payout_address", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
@@ -41,11 +41,11 @@ pub struct SwapOrder {
     pub status: Option<SwapOrderStatus>,
     /// Creation timestamp (seconds since epoch)
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<i32>,
+    pub created_at: Option<i64>,
     #[serde(rename = "expires_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub expires_at: Option<Option<i32>>,
+    pub expires_at: Option<Option<i64>>,
     #[serde(rename = "filled_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub filled_at: Option<Option<i32>>,
+    pub filled_at: Option<Option<i64>>,
     #[serde(rename = "refund_txid", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub refund_txid: Option<Option<String>>,
     #[serde(rename = "requires_manual_refund", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
@@ -53,9 +53,9 @@ pub struct SwapOrder {
     #[serde(rename = "payment_status", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub payment_status: Option<Option<PaymentStatus>>,
     #[serde(rename = "payment_difference", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub payment_difference: Option<Option<i32>>,
+    pub payment_difference: Option<Option<i64>>,
     #[serde(rename = "last_payment_check", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub last_payment_check: Option<Option<i32>>,
+    pub last_payment_check: Option<Option<i64>>,
     #[serde(rename = "email", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub email: Option<Option<String>>,
     #[serde(rename = "failure_reason", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
@@ -66,7 +66,7 @@ pub struct SwapOrder {
 }
 
 impl SwapOrder {
-    pub fn new(id: String, rfq_id: String, from_asset: SwapLeg, to_asset: SwapLeg, price: i32, fee: Fee) -> SwapOrder {
+    pub fn new(id: String, rfq_id: String, from_asset: SwapLeg, to_asset: SwapLeg, price: i64, fee: Fee) -> SwapOrder {
         SwapOrder {
             id,
             rfq_id,

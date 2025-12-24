@@ -15,9 +15,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Payment {
     #[serde(rename = "amt_msat", skip_serializing_if = "Option::is_none")]
-    pub amt_msat: Option<i32>,
+    pub amt_msat: Option<i64>,
     #[serde(rename = "asset_amount", skip_serializing_if = "Option::is_none")]
-    pub asset_amount: Option<i32>,
+    pub asset_amount: Option<i64>,
     #[serde(rename = "asset_id", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "payment_hash", skip_serializing_if = "Option::is_none")]
@@ -27,9 +27,9 @@ pub struct Payment {
     #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
     pub status: Option<HtlcStatus>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<i32>,
+    pub created_at: Option<i64>,
     #[serde(rename = "updated_at", skip_serializing_if = "Option::is_none")]
-    pub updated_at: Option<i32>,
+    pub updated_at: Option<i64>,
     #[serde(rename = "payee_pubkey", skip_serializing_if = "Option::is_none")]
     pub payee_pubkey: Option<String>,
 }

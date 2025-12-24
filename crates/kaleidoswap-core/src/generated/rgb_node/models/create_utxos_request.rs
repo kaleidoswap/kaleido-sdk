@@ -17,9 +17,9 @@ pub struct CreateUtxosRequest {
     #[serde(rename = "up_to", skip_serializing_if = "Option::is_none")]
     pub up_to: Option<bool>,
     #[serde(rename = "num", skip_serializing_if = "Option::is_none")]
-    pub num: Option<i32>,
+    pub num: Option<i64>,
     #[serde(rename = "size", skip_serializing_if = "Option::is_none")]
-    pub size: Option<i32>,
+    pub size: Option<i64>,
     #[serde(rename = "fee_rate", skip_serializing_if = "Option::is_none")]
     pub fee_rate: Option<f64>,
     #[serde(rename = "skip_sync", skip_serializing_if = "Option::is_none")]

@@ -15,13 +15,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct IssueAssetCfaRequest {
     #[serde(rename = "amounts", skip_serializing_if = "Option::is_none")]
-    pub amounts: Option<Vec<i32>>,
+    pub amounts: Option<Vec<i64>>,
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(rename = "details", skip_serializing_if = "Option::is_none")]
     pub details: Option<String>,
     #[serde(rename = "precision", skip_serializing_if = "Option::is_none")]
-    pub precision: Option<i32>,
+    pub precision: Option<i64>,
     #[serde(rename = "file_digest", skip_serializing_if = "Option::is_none")]
     pub file_digest: Option<String>,
 }

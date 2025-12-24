@@ -19,27 +19,27 @@ pub struct PaymentOnchain {
     #[serde(rename = "expires_at")]
     pub expires_at: String,
     #[serde(rename = "fee_total_sat")]
-    pub fee_total_sat: i32,
+    pub fee_total_sat: i64,
     #[serde(rename = "order_total_sat")]
-    pub order_total_sat: i32,
+    pub order_total_sat: i64,
     #[serde(rename = "address")]
     pub address: String,
     #[serde(rename = "min_fee_for_0conf")]
-    pub min_fee_for_0conf: i32,
+    pub min_fee_for_0conf: i64,
     #[serde(rename = "min_onchain_payment_confirmations")]
-    pub min_onchain_payment_confirmations: i32,
+    pub min_onchain_payment_confirmations: i64,
     #[serde(rename = "refund_onchain_address", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub refund_onchain_address: Option<Option<String>>,
     #[serde(rename = "payment_status", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub payment_status: Option<Option<String>>,
     #[serde(rename = "payment_difference", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub payment_difference: Option<Option<i32>>,
+    pub payment_difference: Option<Option<i64>>,
     #[serde(rename = "last_payment_check", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub last_payment_check: Option<Option<i32>>,
+    pub last_payment_check: Option<Option<i64>>,
 }
 
 impl PaymentOnchain {
-    pub fn new(state: PaymentState, expires_at: String, fee_total_sat: i32, order_total_sat: i32, address: String, min_fee_for_0conf: i32, min_onchain_payment_confirmations: i32) -> PaymentOnchain {
+    pub fn new(state: PaymentState, expires_at: String, fee_total_sat: i64, order_total_sat: i64, address: String, min_fee_for_0conf: i64, min_onchain_payment_confirmations: i64) -> PaymentOnchain {
         PaymentOnchain {
             state,
             expires_at,

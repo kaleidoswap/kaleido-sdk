@@ -26,7 +26,7 @@ pub struct RoutesRequest {
     pub to_layer: Option<Option<Layer>>,
     /// Maximum number of hops (1-5)
     #[serde(rename = "max_hops", skip_serializing_if = "Option::is_none")]
-    pub max_hops: Option<i32>,
+    pub max_hops: Option<i64>,
 }
 
 impl RoutesRequest {

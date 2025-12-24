@@ -19,15 +19,15 @@ pub struct ChannelOrderResponse {
     #[serde(rename = "client_pubkey")]
     pub client_pubkey: String,
     #[serde(rename = "lsp_balance_sat")]
-    pub lsp_balance_sat: i32,
+    pub lsp_balance_sat: i64,
     #[serde(rename = "client_balance_sat")]
-    pub client_balance_sat: i32,
+    pub client_balance_sat: i64,
     #[serde(rename = "required_channel_confirmations")]
-    pub required_channel_confirmations: i32,
+    pub required_channel_confirmations: i64,
     #[serde(rename = "funding_confirms_within_blocks")]
-    pub funding_confirms_within_blocks: i32,
+    pub funding_confirms_within_blocks: i64,
     #[serde(rename = "channel_expiry_blocks")]
-    pub channel_expiry_blocks: i32,
+    pub channel_expiry_blocks: i64,
     #[serde(rename = "token", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub token: Option<Option<String>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
@@ -43,13 +43,13 @@ pub struct ChannelOrderResponse {
     #[serde(rename = "asset_id", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<Option<String>>,
     #[serde(rename = "lsp_asset_amount", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub lsp_asset_amount: Option<Option<i32>>,
+    pub lsp_asset_amount: Option<Option<i64>>,
     #[serde(rename = "client_asset_amount", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub client_asset_amount: Option<Option<i32>>,
+    pub client_asset_amount: Option<Option<i64>>,
     #[serde(rename = "rfq_id", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub rfq_id: Option<Option<String>>,
     #[serde(rename = "asset_price_sat", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub asset_price_sat: Option<Option<i32>>,
+    pub asset_price_sat: Option<Option<i64>>,
     #[serde(rename = "asset_delivery_status", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub asset_delivery_status: Option<Option<AssetDeliveryStatus>>,
     #[serde(rename = "asset_delivery_payment_hash", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
@@ -63,7 +63,7 @@ pub struct ChannelOrderResponse {
 }
 
 impl ChannelOrderResponse {
-    pub fn new(order_id: String, client_pubkey: String, lsp_balance_sat: i32, client_balance_sat: i32, required_channel_confirmations: i32, funding_confirms_within_blocks: i32, channel_expiry_blocks: i32, announce_channel: bool, order_state: OrderState, payment: PaymentDetails) -> ChannelOrderResponse {
+    pub fn new(order_id: String, client_pubkey: String, lsp_balance_sat: i64, client_balance_sat: i64, required_channel_confirmations: i64, funding_confirms_within_blocks: i64, channel_expiry_blocks: i64, announce_channel: bool, order_state: OrderState, payment: PaymentDetails) -> ChannelOrderResponse {
         ChannelOrderResponse {
             order_id,
             client_pubkey,

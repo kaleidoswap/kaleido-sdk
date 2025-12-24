@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FailTransfersRequest {
     #[serde(rename = "batch_transfer_idx", skip_serializing_if = "Option::is_none")]
-    pub batch_transfer_idx: Option<i32>,
+    pub batch_transfer_idx: Option<i64>,
     #[serde(rename = "no_asset_only", skip_serializing_if = "Option::is_none")]
     pub no_asset_only: Option<bool>,
     #[serde(rename = "skip_sync", skip_serializing_if = "Option::is_none")]

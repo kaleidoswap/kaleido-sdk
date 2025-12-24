@@ -15,13 +15,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ConfirmSwapResponse {
     #[serde(rename = "status")]
-    pub status: i32,
+    pub status: i64,
     #[serde(rename = "message")]
     pub message: String,
 }
 
 impl ConfirmSwapResponse {
-    pub fn new(status: i32, message: String) -> ConfirmSwapResponse {
+    pub fn new(status: i64, message: String) -> ConfirmSwapResponse {
         ConfirmSwapResponse {
             status,
             message,

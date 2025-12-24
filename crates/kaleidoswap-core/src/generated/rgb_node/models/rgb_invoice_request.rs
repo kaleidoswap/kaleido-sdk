@@ -15,13 +15,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RgbInvoiceRequest {
     #[serde(rename = "min_confirmations", skip_serializing_if = "Option::is_none")]
-    pub min_confirmations: Option<i32>,
+    pub min_confirmations: Option<i64>,
     #[serde(rename = "asset_id", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "assignment", skip_serializing_if = "Option::is_none")]
     pub assignment: Option<Box<Assignment>>,
     #[serde(rename = "duration_seconds", skip_serializing_if = "Option::is_none")]
-    pub duration_seconds: Option<i32>,
+    pub duration_seconds: Option<i64>,
     #[serde(rename = "witness", skip_serializing_if = "Option::is_none")]
     pub witness: Option<bool>,
 }

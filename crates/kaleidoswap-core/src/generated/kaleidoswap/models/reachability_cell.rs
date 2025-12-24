@@ -26,12 +26,12 @@ pub struct ReachabilityCell {
     pub layers: Vec<String>,
     /// Minimum number of hops required
     #[serde(rename = "min_hops")]
-    pub min_hops: i32,
+    pub min_hops: i64,
 }
 
 impl ReachabilityCell {
     /// Single cell in reachability matrix.
-    pub fn new(from_asset: String, to_asset: String, layers: Vec<String>, min_hops: i32) -> ReachabilityCell {
+    pub fn new(from_asset: String, to_asset: String, layers: Vec<String>, min_hops: i64) -> ReachabilityCell {
         ReachabilityCell {
             from_asset,
             to_asset,

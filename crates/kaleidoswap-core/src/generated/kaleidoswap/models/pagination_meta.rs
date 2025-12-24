@@ -17,19 +17,19 @@ use serde::{Deserialize, Serialize};
 pub struct PaginationMeta {
     /// Total number of items matching the filter
     #[serde(rename = "total")]
-    pub total: i32,
+    pub total: i64,
     /// Number of items per page
     #[serde(rename = "limit")]
-    pub limit: i32,
+    pub limit: i64,
     /// Number of items skipped
     #[serde(rename = "skip")]
-    pub skip: i32,
+    pub skip: i64,
     /// Current page number (1-indexed)
     #[serde(rename = "current_page")]
-    pub current_page: i32,
+    pub current_page: i64,
     /// Total number of pages
     #[serde(rename = "total_pages")]
-    pub total_pages: i32,
+    pub total_pages: i64,
     /// Whether there is a next page
     #[serde(rename = "has_next")]
     pub has_next: bool,
@@ -40,7 +40,7 @@ pub struct PaginationMeta {
 
 impl PaginationMeta {
     /// Pagination metadata
-    pub fn new(total: i32, limit: i32, skip: i32, current_page: i32, total_pages: i32, has_next: bool, has_previous: bool) -> PaginationMeta {
+    pub fn new(total: i64, limit: i64, skip: i64, current_page: i64, total_pages: i64, has_next: bool, has_previous: bool) -> PaginationMeta {
         PaginationMeta {
             total,
             limit,

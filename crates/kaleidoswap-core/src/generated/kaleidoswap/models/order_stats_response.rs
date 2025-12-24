@@ -16,17 +16,17 @@ use serde::{Deserialize, Serialize};
 pub struct OrderStatsResponse {
     /// Count of orders by status
     #[serde(rename = "status_counts")]
-    pub status_counts: std::collections::HashMap<String, i32>,
+    pub status_counts: std::collections::HashMap<String, i64>,
     /// Total volume of filled orders
     #[serde(rename = "filled_orders_volume")]
-    pub filled_orders_volume: i32,
+    pub filled_orders_volume: i64,
     /// Total count of filled orders
     #[serde(rename = "filled_orders_count")]
-    pub filled_orders_count: i32,
+    pub filled_orders_count: i64,
 }
 
 impl OrderStatsResponse {
-    pub fn new(status_counts: std::collections::HashMap<String, i32>, filled_orders_volume: i32, filled_orders_count: i32) -> OrderStatsResponse {
+    pub fn new(status_counts: std::collections::HashMap<String, i64>, filled_orders_volume: i64, filled_orders_count: i64) -> OrderStatsResponse {
         OrderStatsResponse {
             status_counts,
             filled_orders_volume,

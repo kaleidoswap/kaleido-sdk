@@ -15,15 +15,15 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AssetBalanceResponse {
     #[serde(rename = "settled", skip_serializing_if = "Option::is_none")]
-    pub settled: Option<i32>,
+    pub settled: Option<i64>,
     #[serde(rename = "future", skip_serializing_if = "Option::is_none")]
-    pub future: Option<i32>,
+    pub future: Option<i64>,
     #[serde(rename = "spendable", skip_serializing_if = "Option::is_none")]
-    pub spendable: Option<i32>,
+    pub spendable: Option<i64>,
     #[serde(rename = "offchain_outbound", skip_serializing_if = "Option::is_none")]
-    pub offchain_outbound: Option<i32>,
+    pub offchain_outbound: Option<i64>,
     #[serde(rename = "offchain_inbound", skip_serializing_if = "Option::is_none")]
-    pub offchain_inbound: Option<i32>,
+    pub offchain_inbound: Option<i64>,
 }
 
 impl AssetBalanceResponse {

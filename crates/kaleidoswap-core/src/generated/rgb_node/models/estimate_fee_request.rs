@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EstimateFeeRequest {
     #[serde(rename = "blocks", skip_serializing_if = "Option::is_none")]
-    pub blocks: Option<i32>,
+    pub blocks: Option<i64>,
 }
 
 impl EstimateFeeRequest {

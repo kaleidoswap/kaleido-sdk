@@ -15,11 +15,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Transfer {
     #[serde(rename = "idx", skip_serializing_if = "Option::is_none")]
-    pub idx: Option<i32>,
+    pub idx: Option<i64>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
-    pub created_at: Option<i32>,
+    pub created_at: Option<i64>,
     #[serde(rename = "updated_at", skip_serializing_if = "Option::is_none")]
-    pub updated_at: Option<i32>,
+    pub updated_at: Option<i64>,
     #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
     pub status: Option<TransferStatus>,
     #[serde(rename = "requested_assignment", skip_serializing_if = "Option::is_none")]
@@ -37,7 +37,7 @@ pub struct Transfer {
     #[serde(rename = "change_utxo", skip_serializing_if = "Option::is_none")]
     pub change_utxo: Option<String>,
     #[serde(rename = "expiration", skip_serializing_if = "Option::is_none")]
-    pub expiration: Option<i32>,
+    pub expiration: Option<i64>,
     #[serde(rename = "transport_endpoints", skip_serializing_if = "Option::is_none")]
     pub transport_endpoints: Option<Vec<TransferTransportEndpoint>>,
 }

@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TokenLight {
     #[serde(rename = "index", skip_serializing_if = "Option::is_none")]
-    pub index: Option<i32>,
+    pub index: Option<i64>,
     #[serde(rename = "ticker", skip_serializing_if = "Option::is_none")]
     pub ticker: Option<String>,
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]

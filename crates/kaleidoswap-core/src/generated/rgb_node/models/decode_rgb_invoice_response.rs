@@ -27,7 +27,7 @@ pub struct DecodeRgbInvoiceResponse {
     #[serde(rename = "network", skip_serializing_if = "Option::is_none")]
     pub network: Option<BitcoinNetwork>,
     #[serde(rename = "expiration_timestamp", skip_serializing_if = "Option::is_none")]
-    pub expiration_timestamp: Option<i32>,
+    pub expiration_timestamp: Option<i64>,
     #[serde(rename = "transport_endpoints", skip_serializing_if = "Option::is_none")]
     pub transport_endpoints: Option<Vec<String>>,
 }

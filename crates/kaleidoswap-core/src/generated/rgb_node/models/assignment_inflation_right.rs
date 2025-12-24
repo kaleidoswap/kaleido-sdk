@@ -17,11 +17,11 @@ pub struct AssignmentInflationRight {
     #[serde(rename = "type")]
     pub r#type: Type,
     #[serde(rename = "value")]
-    pub value: i32,
+    pub value: i64,
 }
 
 impl AssignmentInflationRight {
-    pub fn new(r#type: Type, value: i32) -> AssignmentInflationRight {
+    pub fn new(r#type: Type, value: i64) -> AssignmentInflationRight {
         AssignmentInflationRight {
             r#type,
             value,

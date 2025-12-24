@@ -26,23 +26,23 @@ pub struct OrderHistorySummary {
     pub from_asset: String,
     /// Amount of from_asset
     #[serde(rename = "from_amount")]
-    pub from_amount: i32,
+    pub from_amount: i64,
     /// Asset being swapped to
     #[serde(rename = "to_asset")]
     pub to_asset: String,
     /// Amount of to_asset
     #[serde(rename = "to_amount")]
-    pub to_amount: i32,
+    pub to_amount: i64,
     /// Order creation timestamp
     #[serde(rename = "created_at")]
-    pub created_at: i32,
+    pub created_at: i64,
     #[serde(rename = "filled_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub filled_at: Option<Option<i32>>,
+    pub filled_at: Option<Option<i64>>,
 }
 
 impl OrderHistorySummary {
     /// Simplified order information for history listing
-    pub fn new(id: String, status: SwapOrderStatus, from_asset: String, from_amount: i32, to_asset: String, to_amount: i32, created_at: i32) -> OrderHistorySummary {
+    pub fn new(id: String, status: SwapOrderStatus, from_asset: String, from_amount: i64, to_asset: String, to_amount: i64, created_at: i64) -> OrderHistorySummary {
         OrderHistorySummary {
             id,
             status,

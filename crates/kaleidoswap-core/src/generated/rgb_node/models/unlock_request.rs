@@ -23,7 +23,7 @@ pub struct UnlockRequest {
     #[serde(rename = "bitcoind_rpc_host", skip_serializing_if = "Option::is_none")]
     pub bitcoind_rpc_host: Option<String>,
     #[serde(rename = "bitcoind_rpc_port", skip_serializing_if = "Option::is_none")]
-    pub bitcoind_rpc_port: Option<i32>,
+    pub bitcoind_rpc_port: Option<i64>,
     #[serde(rename = "indexer_url", skip_serializing_if = "Option::is_none")]
     pub indexer_url: Option<String>,
     #[serde(rename = "proxy_endpoint", skip_serializing_if = "Option::is_none")]

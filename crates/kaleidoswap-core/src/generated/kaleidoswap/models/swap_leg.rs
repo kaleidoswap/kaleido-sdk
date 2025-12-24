@@ -32,12 +32,12 @@ pub struct SwapLeg {
     pub amount: i64,
     /// Number of decimal places for this asset (e.g., 8 for BTC, 6 or 8 for stablecoins)
     #[serde(rename = "precision")]
-    pub precision: i32,
+    pub precision: i64,
 }
 
 impl SwapLeg {
     /// Swap Leg: Complete asset specification for one side of a swap.  Represents a specific asset on a specific settlement layer with an amount. This is the fundamental unit for swap orders - each side (leg) of a swap specifies an asset on a particular network with a specific amount.
-    pub fn new(asset_id: String, name: String, ticker: String, layer: Layer, amount: i64, precision: i32) -> SwapLeg {
+    pub fn new(asset_id: String, name: String, ticker: String, layer: Layer, amount: i64, precision: i64) -> SwapLeg {
         SwapLeg {
             asset_id,
             name,

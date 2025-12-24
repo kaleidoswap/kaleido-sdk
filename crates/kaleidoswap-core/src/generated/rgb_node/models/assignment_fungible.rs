@@ -17,11 +17,11 @@ pub struct AssignmentFungible {
     #[serde(rename = "type")]
     pub r#type: Type,
     #[serde(rename = "value")]
-    pub value: i32,
+    pub value: i64,
 }
 
 impl AssignmentFungible {
-    pub fn new(r#type: Type, value: i32) -> AssignmentFungible {
+    pub fn new(r#type: Type, value: i64) -> AssignmentFungible {
         AssignmentFungible {
             r#type,
             value,

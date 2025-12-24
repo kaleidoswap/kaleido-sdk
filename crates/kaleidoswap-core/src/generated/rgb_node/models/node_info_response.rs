@@ -17,39 +17,39 @@ pub struct NodeInfoResponse {
     #[serde(rename = "pubkey", skip_serializing_if = "Option::is_none")]
     pub pubkey: Option<String>,
     #[serde(rename = "num_channels", skip_serializing_if = "Option::is_none")]
-    pub num_channels: Option<i32>,
+    pub num_channels: Option<i64>,
     #[serde(rename = "num_usable_channels", skip_serializing_if = "Option::is_none")]
-    pub num_usable_channels: Option<i32>,
+    pub num_usable_channels: Option<i64>,
     #[serde(rename = "local_balance_sat", skip_serializing_if = "Option::is_none")]
-    pub local_balance_sat: Option<i32>,
+    pub local_balance_sat: Option<i64>,
     #[serde(rename = "eventual_close_fees_sat", skip_serializing_if = "Option::is_none")]
-    pub eventual_close_fees_sat: Option<i32>,
+    pub eventual_close_fees_sat: Option<i64>,
     #[serde(rename = "pending_outbound_payments_sat", skip_serializing_if = "Option::is_none")]
-    pub pending_outbound_payments_sat: Option<i32>,
+    pub pending_outbound_payments_sat: Option<i64>,
     #[serde(rename = "num_peers", skip_serializing_if = "Option::is_none")]
-    pub num_peers: Option<i32>,
+    pub num_peers: Option<i64>,
     #[serde(rename = "account_xpub_vanilla", skip_serializing_if = "Option::is_none")]
     pub account_xpub_vanilla: Option<String>,
     #[serde(rename = "account_xpub_colored", skip_serializing_if = "Option::is_none")]
     pub account_xpub_colored: Option<String>,
     #[serde(rename = "max_media_upload_size_mb", skip_serializing_if = "Option::is_none")]
-    pub max_media_upload_size_mb: Option<i32>,
+    pub max_media_upload_size_mb: Option<i64>,
     #[serde(rename = "rgb_htlc_min_msat", skip_serializing_if = "Option::is_none")]
-    pub rgb_htlc_min_msat: Option<i32>,
+    pub rgb_htlc_min_msat: Option<i64>,
     #[serde(rename = "rgb_channel_capacity_min_sat", skip_serializing_if = "Option::is_none")]
-    pub rgb_channel_capacity_min_sat: Option<i32>,
+    pub rgb_channel_capacity_min_sat: Option<i64>,
     #[serde(rename = "channel_capacity_min_sat", skip_serializing_if = "Option::is_none")]
-    pub channel_capacity_min_sat: Option<i32>,
+    pub channel_capacity_min_sat: Option<i64>,
     #[serde(rename = "channel_capacity_max_sat", skip_serializing_if = "Option::is_none")]
-    pub channel_capacity_max_sat: Option<i32>,
+    pub channel_capacity_max_sat: Option<i64>,
     #[serde(rename = "channel_asset_min_amount", skip_serializing_if = "Option::is_none")]
-    pub channel_asset_min_amount: Option<i32>,
+    pub channel_asset_min_amount: Option<i64>,
     #[serde(rename = "channel_asset_max_amount", skip_serializing_if = "Option::is_none")]
-    pub channel_asset_max_amount: Option<i32>,
+    pub channel_asset_max_amount: Option<i64>,
     #[serde(rename = "network_nodes", skip_serializing_if = "Option::is_none")]
-    pub network_nodes: Option<i32>,
+    pub network_nodes: Option<i64>,
     #[serde(rename = "network_channels", skip_serializing_if = "Option::is_none")]
-    pub network_channels: Option<i32>,
+    pub network_channels: Option<i64>,
 }
 
 impl NodeInfoResponse {

@@ -27,7 +27,7 @@ pub struct SendAssetRequest {
     #[serde(rename = "fee_rate", skip_serializing_if = "Option::is_none")]
     pub fee_rate: Option<f64>,
     #[serde(rename = "min_confirmations", skip_serializing_if = "Option::is_none")]
-    pub min_confirmations: Option<i32>,
+    pub min_confirmations: Option<i64>,
     #[serde(rename = "transport_endpoints", skip_serializing_if = "Option::is_none")]
     pub transport_endpoints: Option<Vec<String>>,
     #[serde(rename = "skip_sync", skip_serializing_if = "Option::is_none")]

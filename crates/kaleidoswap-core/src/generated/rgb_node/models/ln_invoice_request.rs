@@ -15,13 +15,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LnInvoiceRequest {
     #[serde(rename = "amt_msat", skip_serializing_if = "Option::is_none")]
-    pub amt_msat: Option<i32>,
+    pub amt_msat: Option<i64>,
     #[serde(rename = "expiry_sec", skip_serializing_if = "Option::is_none")]
-    pub expiry_sec: Option<i32>,
+    pub expiry_sec: Option<i64>,
     #[serde(rename = "asset_id", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "asset_amount", skip_serializing_if = "Option::is_none")]
-    pub asset_amount: Option<i32>,
+    pub asset_amount: Option<i64>,
 }
 
 impl LnInvoiceRequest {

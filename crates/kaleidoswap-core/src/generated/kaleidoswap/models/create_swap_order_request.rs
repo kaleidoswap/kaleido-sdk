@@ -27,7 +27,7 @@ pub struct CreateSwapOrderRequest {
     #[serde(rename = "receiver_address")]
     pub receiver_address: Box<ReceiverAddress>,
     #[serde(rename = "min_onchain_conf", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub min_onchain_conf: Option<Option<i32>>,
+    pub min_onchain_conf: Option<Option<i64>>,
     #[serde(rename = "refund_address", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub refund_address: Option<Option<String>>,
     #[serde(rename = "email", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]

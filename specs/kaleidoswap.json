@@ -5,10 +5,13 @@
     "description": "API for managing swaps and channels",
     "version": "0.1.0",
     "x-build-info": {
-      "version": "v0.4.0-rc1-116-g63087884",
-      "commit": "630878842b521c94fa55c0aa66963093c56be5c1",
-      "buildDate": "2025-12-22T14:46:54.602638+00:00",
-      "generator": "kaleidoswap-maker/scripts/generate_openapi.py"
+      "version": "v0.4.0-rc2",
+      "commit": "7a5c9bb9bc8d976980db110c70ba2fe99b110bad",
+      "buildDate": "2025-12-24T15:49:13.772687+00:00"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
     }
   },
   "paths": {
@@ -19,24 +22,7 @@
         ],
         "summary": "Get Info",
         "operationId": "get_info_api_v1_lsps1_get_info_get",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -90,24 +76,7 @@
         ],
         "summary": "Create Order",
         "operationId": "create_order_api_v1_lsps1_create_order_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -150,24 +119,7 @@
         "summary": "Estimate Fees",
         "description": "Estimate channel fees based on the provided parameters without creating an order.\nFor asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.",
         "operationId": "estimate_fees_api_v1_lsps1_estimate_fees_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -355,24 +307,7 @@
         ],
         "summary": "Initiate Swap",
         "operationId": "initiate_swap_api_v1_swaps_init_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -414,24 +349,7 @@
         ],
         "summary": "Confirm Swap",
         "operationId": "confirm_swap_api_v1_swaps_execute_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -473,24 +391,7 @@
         ],
         "summary": "Get Swap Status",
         "operationId": "get_swap_status_api_v1_swaps_atomic_status_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1031,24 +932,7 @@
         "summary": "Get Quote",
         "description": "Get a quote for a swap between two assets.\n\nRequest body contains SwapLegInput for both from_asset and to_asset,\nspecifying asset_id, layer, and amount (on one side).\n\nReturns a quote with full SwapLeg details including:\n- Complete asset information (ticker, name, precision)\n- Layer configuration\n- Calculated amounts and fees\n- Submarine swap indicator (if same asset on different networks)",
         "operationId": "get_quote_api_v1_market_quote_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1090,24 +974,7 @@
         ],
         "summary": "Create Swap Order",
         "operationId": "create_swap_order_api_v1_swaps_orders_post",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -1230,22 +1097,6 @@
               "default": 0,
               "title": "Skip"
             }
-          },
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
           }
         ],
         "responses": {
@@ -1280,24 +1131,7 @@
         "summary": "Get Order Stats",
         "description": "Get order statistics including counts by status and volume information",
         "operationId": "get_order_stats_api_v1_swaps_orders_analytics_get",
-        "parameters": [
-          {
-            "name": "args",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Args"
-            }
-          },
-          {
-            "name": "kwargs",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "title": "Kwargs"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1406,14 +1240,17 @@
             "description": "Logo/media"
           },
           "issued_supply": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "format": "int64",
             "title": "Issued Supply",
-            "description": "Total issued supply",
-            "type": [
-              "integer",
-              "null"
-            ],
-            "default": null
+            "description": "Total issued supply"
           },
           "timestamp": {
             "anyOf": [
@@ -2538,13 +2375,17 @@
             "default": true
           },
           "min_onchain_payment_size_sat": {
-            "format": "int64",
-            "title": "Min Onchain Payment Size Sat",
-            "type": [
-              "integer",
-              "null"
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
             ],
-            "default": null
+            "format": "int64",
+            "title": "Min Onchain Payment Size Sat"
           },
           "max_channel_expiry_blocks": {
             "type": "integer",
@@ -3446,17 +3287,20 @@
             ]
           },
           "amount": {
-            "format": "int64",
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Amount",
             "description": "Amount in smallest unit (optional - one side must have amount)",
             "examples": [
               1000000
-            ],
-            "type": [
-              "integer",
-              "null"
-            ],
-            "default": null
+            ]
           }
         },
         "type": "object",
@@ -3600,7 +3444,7 @@
             "title": "Created At",
             "description": "Creation timestamp (seconds since epoch)",
             "examples": [
-              1766414814
+              1766591353
             ]
           },
           "expires_at": {
@@ -4012,14 +3856,17 @@
             "description": "Logo/media"
           },
           "issued_supply": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "format": "int64",
             "title": "Issued Supply",
-            "description": "Total issued supply",
-            "type": [
-              "integer",
-              "null"
-            ],
-            "default": null
+            "description": "Total issued supply"
           },
           "timestamp": {
             "anyOf": [
@@ -4201,5 +4048,41 @@
         "title": "ValidationError"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "https://api.signet.kaleidoswap.com",
+      "description": "Signet Server"
+    },
+    {
+      "url": "https://api.regtest.kaleidoswap.com",
+      "description": "Regtest Server"
+    },
+    {
+      "url": "https://api.staging.kaleidoswap.com",
+      "description": "Staging Server"
+    },
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "LSPS1",
+      "description": "LSP Specification v1 endpoints for channel opening and management"
+    },
+    {
+      "name": "Swaps",
+      "description": "Atomic swap operations (Submarine Swaps)"
+    },
+    {
+      "name": "Market",
+      "description": "Market data, pairs, and quotes"
+    },
+    {
+      "name": "SwapOrders",
+      "description": "Order management for swaps"
+    }
+  ]
 }

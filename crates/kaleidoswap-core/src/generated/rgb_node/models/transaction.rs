@@ -19,11 +19,11 @@ pub struct Transaction {
     #[serde(rename = "txid", skip_serializing_if = "Option::is_none")]
     pub txid: Option<String>,
     #[serde(rename = "received", skip_serializing_if = "Option::is_none")]
-    pub received: Option<i32>,
+    pub received: Option<i64>,
     #[serde(rename = "sent", skip_serializing_if = "Option::is_none")]
-    pub sent: Option<i32>,
+    pub sent: Option<i64>,
     #[serde(rename = "fee", skip_serializing_if = "Option::is_none")]
-    pub fee: Option<i32>,
+    pub fee: Option<i64>,
     #[serde(rename = "confirmation_time", skip_serializing_if = "Option::is_none")]
     pub confirmation_time: Option<Box<BlockTime>>,
 }

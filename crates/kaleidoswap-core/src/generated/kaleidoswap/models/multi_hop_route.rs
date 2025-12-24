@@ -20,12 +20,12 @@ pub struct MultiHopRoute {
     pub steps: Vec<RouteStep>,
     /// Number of hops in the route
     #[serde(rename = "total_hops")]
-    pub total_hops: i32,
+    pub total_hops: i64,
 }
 
 impl MultiHopRoute {
     /// Complete route with one or more steps.
-    pub fn new(steps: Vec<RouteStep>, total_hops: i32) -> MultiHopRoute {
+    pub fn new(steps: Vec<RouteStep>, total_hops: i64) -> MultiHopRoute {
         MultiHopRoute {
             steps,
             total_hops,

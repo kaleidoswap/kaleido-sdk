@@ -21,13 +21,13 @@ pub struct AssetCfa {
     #[serde(rename = "details", skip_serializing_if = "Option::is_none")]
     pub details: Option<String>,
     #[serde(rename = "precision", skip_serializing_if = "Option::is_none")]
-    pub precision: Option<i32>,
+    pub precision: Option<i64>,
     #[serde(rename = "issued_supply", skip_serializing_if = "Option::is_none")]
-    pub issued_supply: Option<i32>,
+    pub issued_supply: Option<i64>,
     #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<i32>,
+    pub timestamp: Option<i64>,
     #[serde(rename = "added_at", skip_serializing_if = "Option::is_none")]
-    pub added_at: Option<i32>,
+    pub added_at: Option<i64>,
     #[serde(rename = "balance", skip_serializing_if = "Option::is_none")]
     pub balance: Option<Box<AssetBalanceResponse>>,
     #[serde(rename = "media", skip_serializing_if = "Option::is_none")]

@@ -15,13 +15,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ChannelFees {
     #[serde(rename = "setup_fee")]
-    pub setup_fee: i32,
+    pub setup_fee: i64,
     #[serde(rename = "capacity_fee")]
-    pub capacity_fee: i32,
+    pub capacity_fee: i64,
     #[serde(rename = "duration_fee")]
-    pub duration_fee: i32,
+    pub duration_fee: i64,
     #[serde(rename = "total_fee")]
-    pub total_fee: i32,
+    pub total_fee: i64,
     #[serde(rename = "applied_discount", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub applied_discount: Option<Option<f64>>,
     #[serde(rename = "discount_code", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
@@ -29,7 +29,7 @@ pub struct ChannelFees {
 }
 
 impl ChannelFees {
-    pub fn new(setup_fee: i32, capacity_fee: i32, duration_fee: i32, total_fee: i32) -> ChannelFees {
+    pub fn new(setup_fee: i64, capacity_fee: i64, duration_fee: i64, total_fee: i64) -> ChannelFees {
         ChannelFees {
             setup_fee,
             capacity_fee,

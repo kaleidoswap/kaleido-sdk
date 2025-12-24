@@ -20,12 +20,12 @@ pub struct RoutesResponse {
     pub routes: Vec<MultiHopRoute>,
     /// Response timestamp
     #[serde(rename = "timestamp")]
-    pub timestamp: i32,
+    pub timestamp: i64,
 }
 
 impl RoutesResponse {
     /// Response with discovered routes.
-    pub fn new(routes: Vec<MultiHopRoute>, timestamp: i32) -> RoutesResponse {
+    pub fn new(routes: Vec<MultiHopRoute>, timestamp: i64) -> RoutesResponse {
         RoutesResponse {
             routes,
             timestamp,

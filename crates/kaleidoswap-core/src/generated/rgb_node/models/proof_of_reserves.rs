@@ -17,7 +17,7 @@ pub struct ProofOfReserves {
     #[serde(rename = "utxo", skip_serializing_if = "Option::is_none")]
     pub utxo: Option<String>,
     #[serde(rename = "proof", skip_serializing_if = "Option::is_none")]
-    pub proof: Option<Vec<i32>>,
+    pub proof: Option<Vec<i64>>,
 }
 
 impl ProofOfReserves {

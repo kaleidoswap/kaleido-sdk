@@ -18,18 +18,18 @@ pub struct TradingPairsResponse {
     #[serde(rename = "pairs")]
     pub pairs: Vec<TradingPair>,
     #[serde(rename = "total")]
-    pub total: i32,
+    pub total: i64,
     #[serde(rename = "limit")]
-    pub limit: i32,
+    pub limit: i64,
     #[serde(rename = "offset")]
-    pub offset: i32,
+    pub offset: i64,
     #[serde(rename = "timestamp")]
-    pub timestamp: i32,
+    pub timestamp: i64,
 }
 
 impl TradingPairsResponse {
     /// Response containing list of trading pairs with pagination support.
-    pub fn new(pairs: Vec<TradingPair>, total: i32, limit: i32, offset: i32, timestamp: i32) -> TradingPairsResponse {
+    pub fn new(pairs: Vec<TradingPair>, total: i64, limit: i64, offset: i64, timestamp: i64) -> TradingPairsResponse {
         TradingPairsResponse {
             pairs,
             total,

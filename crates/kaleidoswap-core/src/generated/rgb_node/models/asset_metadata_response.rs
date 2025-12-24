@@ -17,17 +17,17 @@ pub struct AssetMetadataResponse {
     #[serde(rename = "asset_schema", skip_serializing_if = "Option::is_none")]
     pub asset_schema: Option<AssetSchema>,
     #[serde(rename = "initial_supply", skip_serializing_if = "Option::is_none")]
-    pub initial_supply: Option<i32>,
+    pub initial_supply: Option<i64>,
     #[serde(rename = "max_supply", skip_serializing_if = "Option::is_none")]
-    pub max_supply: Option<i32>,
+    pub max_supply: Option<i64>,
     #[serde(rename = "known_circulating_supply", skip_serializing_if = "Option::is_none")]
-    pub known_circulating_supply: Option<i32>,
+    pub known_circulating_supply: Option<i64>,
     #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<i32>,
+    pub timestamp: Option<i64>,
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(rename = "precision", skip_serializing_if = "Option::is_none")]
-    pub precision: Option<i32>,
+    pub precision: Option<i64>,
     #[serde(rename = "ticker", skip_serializing_if = "Option::is_none")]
     pub ticker: Option<String>,
     #[serde(rename = "details", skip_serializing_if = "Option::is_none")]

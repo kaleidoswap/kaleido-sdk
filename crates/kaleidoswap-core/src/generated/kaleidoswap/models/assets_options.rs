@@ -21,7 +21,7 @@ pub struct AssetsOptions {
     #[serde(rename = "ticker", skip_serializing_if = "Option::is_none")]
     pub ticker: Option<String>,
     #[serde(rename = "precision", skip_serializing_if = "Option::is_none")]
-    pub precision: Option<i32>,
+    pub precision: Option<i64>,
     #[serde(rename = "issued_supply", skip_serializing_if = "Option::is_none")]
     pub issued_supply: Option<i64>,
     #[serde(rename = "min_initial_client_amount", skip_serializing_if = "Option::is_none")]

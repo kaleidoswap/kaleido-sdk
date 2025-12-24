@@ -1,8 +1,77 @@
 import { createClient, KaleidoConfig, toSmallestUnits, toDisplayUnits } from '../src';
+import { createServer, Server } from 'http';
+import { AddressInfo } from 'net';
+
+let mockServer: Server;
+let sharedMockUrl: string;
+
+const mockAssets = {
+    assets: [
+        {
+            ticker: 'BTC',
+            name: 'Bitcoin',
+            precision: 8,
+            protocol_ids: { BTC: 'BTC' },
+            is_active: true
+        }
+    ],
+    total: 1,
+    limit: 100,
+    offset: 0
+};
+
+const mockPairs = {
+    pairs: [
+        {
+            base: {
+                ticker: 'BTC',
+                name: 'Bitcoin',
+                precision: 8,
+                protocol_ids: { BTC: 'BTC' },
+                is_active: true
+            },
+            quote: {
+                ticker: 'USDT',
+                name: 'Tether',
+                precision: 6,
+                protocol_ids: { RGB: 'rgb:...' },
+                is_active: true
+            },
+            is_active: true
+        }
+    ],
+    total: 1,
+    limit: 100,
+    offset: 0,
+    timestamp: 1234567890
+};
+
+beforeAll((done) => {
+    mockServer = createServer((req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        if (req.url === '/api/v1/market/assets') {
+            res.end(JSON.stringify(mockAssets));
+        } else if (req.url === '/api/v1/market/pairs') {
+            res.end(JSON.stringify(mockPairs));
+        } else {
+            res.statusCode = 404;
+            res.end('{}');
+        }
+    });
+    mockServer.listen(0, () => {
+        const address = mockServer.address() as AddressInfo;
+        sharedMockUrl = `http://localhost:${address.port}`;
+        done();
+    });
+});
+
+afterAll((done) => {
+    mockServer.close(done);
+});
 
 describe('KaleidoClient', () => {
     const testConfig: KaleidoConfig = {
-        baseUrl: 'https://api.regtest.kaleidoswap.com',
+        baseUrl: 'http://placeholder',
         timeout: 30.0,
         maxRetries: 3,
         cacheTtl: 60,
@@ -29,6 +98,7 @@ describe('KaleidoClient', () => {
         let client: any;
 
         beforeEach(() => {
+            testConfig.baseUrl = sharedMockUrl;
             client = createClient(testConfig);
         });
 
@@ -39,7 +109,6 @@ describe('KaleidoClient', () => {
 
             if (assets.length > 0) {
                 const asset = assets[0];
-                expect(asset).toHaveProperty('assetId');
                 expect(asset).toHaveProperty('ticker');
                 expect(asset).toHaveProperty('name');
             }
@@ -61,8 +130,8 @@ describe('KaleidoClient', () => {
 
             if (pairs.length > 0) {
                 const pair = pairs[0];
-                expect(pair).toHaveProperty('baseAsset');
-                expect(pair).toHaveProperty('quoteAsset');
+                expect(pair).toHaveProperty('base');
+                expect(pair).toHaveProperty('quote');
             }
         });
 
@@ -172,7 +241,7 @@ describe('Configuration', () => {
 
 describe('Sub-Client Pattern', () => {
     const testConfig: KaleidoConfig = {
-        baseUrl: 'https://api.regtest.kaleidoswap.com',
+        baseUrl: 'http://placeholder',
         nodeUrl: 'http://localhost:3000',
         timeout: 30.0,
     };
@@ -180,6 +249,7 @@ describe('Sub-Client Pattern', () => {
     let client: any;
 
     beforeEach(() => {
+        testConfig.baseUrl = sharedMockUrl;
         client = createClient(testConfig);
     });
 
@@ -297,13 +367,14 @@ describe('Sub-Client Pattern', () => {
 
 describe('Convenience Methods', () => {
     const testConfig: KaleidoConfig = {
-        baseUrl: 'https://api.regtest.kaleidoswap.com',
+        baseUrl: 'http://placeholder',
         timeout: 30.0,
     };
 
     let client: any;
 
     beforeEach(() => {
+        testConfig.baseUrl = sharedMockUrl;
         client = createClient(testConfig);
     });
 

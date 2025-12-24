@@ -30,15 +30,15 @@ pub struct PairQuoteResponse {
     pub fee: Box<Fee>,
     /// Quote creation timestamp (seconds since epoch)
     #[serde(rename = "timestamp")]
-    pub timestamp: i32,
+    pub timestamp: i64,
     /// Quote expiry timestamp (seconds since epoch)
     #[serde(rename = "expires_at")]
-    pub expires_at: i32,
+    pub expires_at: i64,
 }
 
 impl PairQuoteResponse {
     /// Response containing a quote for a trading pair.  Uses full SwapLeg for both sides, providing complete asset details including ticker, name, precision, layer, and amount.
-    pub fn new(rfq_id: String, from_asset: SwapLeg, to_asset: SwapLeg, price: i64, fee: Fee, timestamp: i32, expires_at: i32) -> PairQuoteResponse {
+    pub fn new(rfq_id: String, from_asset: SwapLeg, to_asset: SwapLeg, price: i64, fee: Fee, timestamp: i64, expires_at: i64) -> PairQuoteResponse {
         PairQuoteResponse {
             rfq_id,
             from_asset: Box::new(from_asset),

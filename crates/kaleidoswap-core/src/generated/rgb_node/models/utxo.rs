@@ -17,7 +17,7 @@ pub struct Utxo {
     #[serde(rename = "outpoint", skip_serializing_if = "Option::is_none")]
     pub outpoint: Option<String>,
     #[serde(rename = "btc_amount", skip_serializing_if = "Option::is_none")]
-    pub btc_amount: Option<i32>,
+    pub btc_amount: Option<i64>,
     #[serde(rename = "colorable", skip_serializing_if = "Option::is_none")]
     pub colorable: Option<bool>,
 }

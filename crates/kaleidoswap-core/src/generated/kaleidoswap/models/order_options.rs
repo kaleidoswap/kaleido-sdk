@@ -15,17 +15,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct OrderOptions {
     #[serde(rename = "min_required_channel_confirmations", skip_serializing_if = "Option::is_none")]
-    pub min_required_channel_confirmations: Option<i32>,
+    pub min_required_channel_confirmations: Option<i64>,
     #[serde(rename = "min_funding_confirms_within_blocks", skip_serializing_if = "Option::is_none")]
-    pub min_funding_confirms_within_blocks: Option<i32>,
+    pub min_funding_confirms_within_blocks: Option<i64>,
     #[serde(rename = "min_onchain_payment_confirmations", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub min_onchain_payment_confirmations: Option<Option<i32>>,
+    pub min_onchain_payment_confirmations: Option<Option<i64>>,
     #[serde(rename = "supports_zero_channel_reserve", skip_serializing_if = "Option::is_none")]
     pub supports_zero_channel_reserve: Option<bool>,
     #[serde(rename = "min_onchain_payment_size_sat", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub min_onchain_payment_size_sat: Option<Option<i64>>,
     #[serde(rename = "max_channel_expiry_blocks", skip_serializing_if = "Option::is_none")]
-    pub max_channel_expiry_blocks: Option<i32>,
+    pub max_channel_expiry_blocks: Option<i64>,
     #[serde(rename = "min_initial_client_balance_sat", skip_serializing_if = "Option::is_none")]
     pub min_initial_client_balance_sat: Option<i64>,
     #[serde(rename = "max_initial_client_balance_sat", skip_serializing_if = "Option::is_none")]

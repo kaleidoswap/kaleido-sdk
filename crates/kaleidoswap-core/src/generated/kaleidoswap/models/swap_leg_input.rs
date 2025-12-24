@@ -21,7 +21,6 @@ pub struct SwapLegInput {
     /// Settlement layer (e.g., 'BTC_LN', 'RGB_L1')
     #[serde(rename = "layer")]
     pub layer: Layer,
-    /// Amount in smallest unit (optional - one side must have amount)
     #[serde(rename = "amount", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub amount: Option<Option<i64>>,
 }

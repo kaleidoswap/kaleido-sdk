@@ -19,9 +19,9 @@ pub struct RgbInvoiceResponse {
     #[serde(rename = "invoice", skip_serializing_if = "Option::is_none")]
     pub invoice: Option<String>,
     #[serde(rename = "expiration_timestamp", skip_serializing_if = "Option::is_none")]
-    pub expiration_timestamp: Option<i32>,
+    pub expiration_timestamp: Option<i64>,
     #[serde(rename = "batch_transfer_idx", skip_serializing_if = "Option::is_none")]
-    pub batch_transfer_idx: Option<i32>,
+    pub batch_transfer_idx: Option<i64>,
 }
 
 impl RgbInvoiceResponse {

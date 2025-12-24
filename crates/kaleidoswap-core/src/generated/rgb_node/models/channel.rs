@@ -23,23 +23,23 @@ pub struct Channel {
     #[serde(rename = "peer_alias", skip_serializing_if = "Option::is_none")]
     pub peer_alias: Option<String>,
     #[serde(rename = "short_channel_id", skip_serializing_if = "Option::is_none")]
-    pub short_channel_id: Option<i32>,
+    pub short_channel_id: Option<i64>,
     #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
     pub status: Option<ChannelStatus>,
     #[serde(rename = "ready", skip_serializing_if = "Option::is_none")]
     pub ready: Option<bool>,
     #[serde(rename = "capacity_sat", skip_serializing_if = "Option::is_none")]
-    pub capacity_sat: Option<i32>,
+    pub capacity_sat: Option<i64>,
     #[serde(rename = "local_balance_sat", skip_serializing_if = "Option::is_none")]
-    pub local_balance_sat: Option<i32>,
+    pub local_balance_sat: Option<i64>,
     #[serde(rename = "outbound_balance_msat", skip_serializing_if = "Option::is_none")]
-    pub outbound_balance_msat: Option<i32>,
+    pub outbound_balance_msat: Option<i64>,
     #[serde(rename = "inbound_balance_msat", skip_serializing_if = "Option::is_none")]
-    pub inbound_balance_msat: Option<i32>,
+    pub inbound_balance_msat: Option<i64>,
     #[serde(rename = "next_outbound_htlc_limit_msat", skip_serializing_if = "Option::is_none")]
-    pub next_outbound_htlc_limit_msat: Option<i32>,
+    pub next_outbound_htlc_limit_msat: Option<i64>,
     #[serde(rename = "next_outbound_htlc_minimum_msat", skip_serializing_if = "Option::is_none")]
-    pub next_outbound_htlc_minimum_msat: Option<i32>,
+    pub next_outbound_htlc_minimum_msat: Option<i64>,
     #[serde(rename = "is_usable", skip_serializing_if = "Option::is_none")]
     pub is_usable: Option<bool>,
     #[serde(rename = "public", skip_serializing_if = "Option::is_none")]
@@ -47,9 +47,9 @@ pub struct Channel {
     #[serde(rename = "asset_id", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "asset_local_amount", skip_serializing_if = "Option::is_none")]
-    pub asset_local_amount: Option<i32>,
+    pub asset_local_amount: Option<i64>,
     #[serde(rename = "asset_remote_amount", skip_serializing_if = "Option::is_none")]
-    pub asset_remote_amount: Option<i32>,
+    pub asset_remote_amount: Option<i64>,
 }
 
 impl Channel {

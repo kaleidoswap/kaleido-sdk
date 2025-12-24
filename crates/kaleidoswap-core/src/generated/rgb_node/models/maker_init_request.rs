@@ -15,15 +15,15 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MakerInitRequest {
     #[serde(rename = "qty_from", skip_serializing_if = "Option::is_none")]
-    pub qty_from: Option<i32>,
+    pub qty_from: Option<i64>,
     #[serde(rename = "qty_to", skip_serializing_if = "Option::is_none")]
-    pub qty_to: Option<i32>,
+    pub qty_to: Option<i64>,
     #[serde(rename = "from_asset", skip_serializing_if = "Option::is_none")]
     pub from_asset: Option<String>,
     #[serde(rename = "to_asset", skip_serializing_if = "Option::is_none")]
     pub to_asset: Option<String>,
     #[serde(rename = "timeout_sec", skip_serializing_if = "Option::is_none")]
-    pub timeout_sec: Option<i32>,
+    pub timeout_sec: Option<i64>,
 }
 
 impl MakerInitRequest {

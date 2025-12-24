@@ -21,7 +21,7 @@ pub struct IssueAssetUdaRequest {
     #[serde(rename = "details", skip_serializing_if = "Option::is_none")]
     pub details: Option<String>,
     #[serde(rename = "precision", skip_serializing_if = "Option::is_none")]
-    pub precision: Option<i32>,
+    pub precision: Option<i64>,
     #[serde(rename = "media_file_digest", skip_serializing_if = "Option::is_none")]
     pub media_file_digest: Option<String>,
     #[serde(rename = "attachments_file_digests", skip_serializing_if = "Option::is_none")]

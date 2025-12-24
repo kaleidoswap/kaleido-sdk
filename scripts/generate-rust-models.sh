@@ -119,8 +119,11 @@ EOF
                 
                 # Convert all i32 to i64 for financial data correctness
                 # This handles all integer fields regardless of OpenAPI format annotation
-                sed -i '' 's/\bi32\b/i64/g' "$f" 2>/dev/null || \
-                sed -i 's/\bi32\b/i64/g' "$f"
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '' 's/[[:<:]]i32[[:>:]]/i64/g' "$f"
+                else
+                    sed -i 's/\bi32\b/i64/g' "$f"
+                fi
             fi
         done
     fi

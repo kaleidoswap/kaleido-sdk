@@ -17,7 +17,7 @@ pub struct EmbeddedMedia {
     #[serde(rename = "mime", skip_serializing_if = "Option::is_none")]
     pub mime: Option<String>,
     #[serde(rename = "data", skip_serializing_if = "Option::is_none")]
-    pub data: Option<Vec<i32>>,
+    pub data: Option<Vec<i64>>,
 }
 
 impl EmbeddedMedia {

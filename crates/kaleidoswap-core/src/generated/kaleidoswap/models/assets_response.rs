@@ -20,18 +20,18 @@ pub struct AssetsResponse {
     #[serde(rename = "network", skip_serializing_if = "Option::is_none")]
     pub network: Option<String>,
     #[serde(rename = "total")]
-    pub total: i32,
+    pub total: i64,
     #[serde(rename = "limit")]
-    pub limit: i32,
+    pub limit: i64,
     #[serde(rename = "offset")]
-    pub offset: i32,
+    pub offset: i64,
     #[serde(rename = "timestamp", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<Option<i32>>,
+    pub timestamp: Option<Option<i64>>,
 }
 
 impl AssetsResponse {
     /// Response model for asset listing endpoints with pagination support.
-    pub fn new(assets: Vec<Asset>, total: i32, limit: i32, offset: i32) -> AssetsResponse {
+    pub fn new(assets: Vec<Asset>, total: i64, limit: i64, offset: i64) -> AssetsResponse {
         AssetsResponse {
             assets,
             network: None,

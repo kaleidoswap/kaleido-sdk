@@ -23,17 +23,16 @@ pub struct Asset {
     pub name: String,
     /// Decimal places (e.g., 8 for BTC, 6 for USDT)
     #[serde(rename = "precision")]
-    pub precision: i32,
+    pub precision: i64,
     /// Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})
     #[serde(rename = "protocol_ids", skip_serializing_if = "Option::is_none")]
     pub protocol_ids: Option<std::collections::HashMap<String, String>>,
     #[serde(rename = "media", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub media: Option<Option<Box<Media>>>,
-    /// Total issued supply
     #[serde(rename = "issued_supply", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub issued_supply: Option<Option<i64>>,
     #[serde(rename = "timestamp", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<Option<i32>>,
+    pub timestamp: Option<Option<i64>>,
     /// Layer endpoints with trading limits
     #[serde(rename = "endpoints", skip_serializing_if = "Option::is_none")]
     pub endpoints: Option<Vec<TradingLimits>>,
@@ -41,14 +40,14 @@ pub struct Asset {
     #[serde(rename = "is_active", skip_serializing_if = "Option::is_none")]
     pub is_active: Option<bool>,
     #[serde(rename = "added_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
-    pub added_at: Option<Option<i32>>,
+    pub added_at: Option<Option<i64>>,
     #[serde(rename = "supported_layers", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
     pub supported_layers: Option<Option<Vec<String>>>,
 }
 
 impl Asset {
     /// Extended asset definition for the trading system.  Extends TradableAsset with: - Trading status (is_active) - Supported layers (protocol/network combinations as strings) - RGB-specific fields for node API compatibility - Methods to convert to TradableAsset for specific settlements  Supported Layers Format: PROTOCOL/NETWORK - BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU - RGB_L1, RGB_LN - TAPASS_L1, TAPASS_LN - LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK
-    pub fn new(ticker: String, name: String, precision: i32) -> Asset {
+    pub fn new(ticker: String, name: String, precision: i64) -> Asset {
         Asset {
             ticker,
             name,

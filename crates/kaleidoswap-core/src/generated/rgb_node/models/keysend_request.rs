@@ -17,11 +17,11 @@ pub struct KeysendRequest {
     #[serde(rename = "dest_pubkey", skip_serializing_if = "Option::is_none")]
     pub dest_pubkey: Option<String>,
     #[serde(rename = "amt_msat", skip_serializing_if = "Option::is_none")]
-    pub amt_msat: Option<i32>,
+    pub amt_msat: Option<i64>,
     #[serde(rename = "asset_id", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "asset_amount", skip_serializing_if = "Option::is_none")]
-    pub asset_amount: Option<i32>,
+    pub asset_amount: Option<i64>,
 }
 
 impl KeysendRequest {

@@ -17,11 +17,11 @@ pub struct OpenChannelRequest {
     #[serde(rename = "peer_pubkey_and_opt_addr", skip_serializing_if = "Option::is_none")]
     pub peer_pubkey_and_opt_addr: Option<String>,
     #[serde(rename = "capacity_sat", skip_serializing_if = "Option::is_none")]
-    pub capacity_sat: Option<i32>,
+    pub capacity_sat: Option<i64>,
     #[serde(rename = "push_msat", skip_serializing_if = "Option::is_none")]
-    pub push_msat: Option<i32>,
+    pub push_msat: Option<i64>,
     #[serde(rename = "asset_amount", skip_serializing_if = "Option::is_none")]
-    pub asset_amount: Option<i32>,
+    pub asset_amount: Option<i64>,
     #[serde(rename = "asset_id", skip_serializing_if = "Option::is_none")]
     pub asset_id: Option<String>,
     #[serde(rename = "public", skip_serializing_if = "Option::is_none")]
@@ -29,9 +29,9 @@ pub struct OpenChannelRequest {
     #[serde(rename = "with_anchors", skip_serializing_if = "Option::is_none")]
     pub with_anchors: Option<bool>,
     #[serde(rename = "fee_base_msat", skip_serializing_if = "Option::is_none")]
-    pub fee_base_msat: Option<i32>,
+    pub fee_base_msat: Option<i64>,
     #[serde(rename = "fee_proportional_millionths", skip_serializing_if = "Option::is_none")]
-    pub fee_proportional_millionths: Option<i32>,
+    pub fee_proportional_millionths: Option<i64>,
     #[serde(rename = "temporary_channel_id", skip_serializing_if = "Option::is_none")]
     pub temporary_channel_id: Option<String>,
 }

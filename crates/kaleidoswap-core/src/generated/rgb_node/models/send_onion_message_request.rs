@@ -17,7 +17,7 @@ pub struct SendOnionMessageRequest {
     #[serde(rename = "node_ids", skip_serializing_if = "Option::is_none")]
     pub node_ids: Option<Vec<String>>,
     #[serde(rename = "tlv_type", skip_serializing_if = "Option::is_none")]
-    pub tlv_type: Option<i32>,
+    pub tlv_type: Option<i64>,
     #[serde(rename = "data", skip_serializing_if = "Option::is_none")]
     pub data: Option<String>,
 }

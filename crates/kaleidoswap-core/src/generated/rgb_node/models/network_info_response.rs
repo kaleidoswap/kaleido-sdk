@@ -17,7 +17,7 @@ pub struct NetworkInfoResponse {
     #[serde(rename = "network", skip_serializing_if = "Option::is_none")]
     pub network: Option<BitcoinNetwork>,
     #[serde(rename = "height", skip_serializing_if = "Option::is_none")]
-    pub height: Option<i32>,
+    pub height: Option<i64>,
 }
 
 impl NetworkInfoResponse {

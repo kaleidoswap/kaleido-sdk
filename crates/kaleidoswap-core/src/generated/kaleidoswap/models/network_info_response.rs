@@ -17,11 +17,11 @@ pub struct NetworkInfoResponse {
     #[serde(rename = "network")]
     pub network: BitcoinNetwork,
     #[serde(rename = "height")]
-    pub height: i32,
+    pub height: i64,
 }
 
 impl NetworkInfoResponse {
-    pub fn new(network: BitcoinNetwork, height: i32) -> NetworkInfoResponse {
+    pub fn new(network: BitcoinNetwork, height: i64) -> NetworkInfoResponse {
         NetworkInfoResponse {
             network,
             height,
