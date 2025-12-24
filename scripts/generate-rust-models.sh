@@ -116,6 +116,11 @@ EOF
                 sed -i 's/use crate::models;/#[allow(unused_imports)]\nuse super::*;/' "$f"
                 sed -i '' 's/models:://g' "$f" 2>/dev/null || \
                 sed -i 's/models:://g' "$f"
+                
+                # Convert all i32 to i64 for financial data correctness
+                # This handles all integer fields regardless of OpenAPI format annotation
+                sed -i '' 's/\bi32\b/i64/g' "$f" 2>/dev/null || \
+                sed -i 's/\bi32\b/i64/g' "$f"
             fi
         done
     fi
