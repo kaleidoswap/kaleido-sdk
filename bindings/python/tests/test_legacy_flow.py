@@ -61,7 +61,7 @@ async def test_complete_swap_legacy(client):
     # Try 600,000 sats - hopefully valid range
     logger.info("Getting quote for 600,000 sats")
     try:
-        quote_json = client.get_best_quote("BTC/USDT", 600000, None)
+        quote = client.get_best_quote("BTC/USDT", 600000, None)
     except Exception as e:
         logger.error(f"Failed to get quote: {e}")
         # List pairs to help debug
@@ -72,23 +72,18 @@ async def test_complete_swap_legacy(client):
             pass
         raise e
 
-    quote = json.loads(quote_json)
-    logger.info(f"Got quote: {quote}")
+    logger.info(f"Got quote: rfq_id={quote.rfq_id}")
 
     # 2. Initialize Maker Swap
     logger.info("Initiating maker swap")
     # SwapRequest requires simple strings/ints
     init_request = {
-        "rfq_id": quote["rfq_id"],
-        "from_asset": quote["from_asset"]["asset_id"],
-        "to_asset": quote["to_asset"]["asset_id"],
-        "from_amount": quote["from_asset"]["amount"],  # Integer
-        "to_amount": quote["to_asset"]["amount"],  # Integer
+        "rfq_id": quote.rfq_id,
+        "from_asset": quote.from_asset.asset_id,
+        "to_asset": quote.to_asset.asset_id,
+        "from_amount": int(quote.from_asset.amount),
+        "to_amount": int(quote.to_asset.amount),
     }
-
-    # Ensure amounts are integers (they should be from Pydantic model response)
-    init_request["from_amount"] = int(init_request["from_amount"])
-    init_request["to_amount"] = int(init_request["to_amount"])
 
     logger.info(f"Init request payload: {init_request}")
 
@@ -111,9 +106,8 @@ async def test_complete_swap_legacy(client):
 
     # 3. Get Taker Pubkey
     # client.get_node_pubkey() is not exposed directly, use get_node_info
-    node_info_json = client.get_node_info()
-    node_info = json.loads(node_info_json)
-    taker_pubkey = node_info.get("pubkey")
+    node_info = client.get_node_info()
+    taker_pubkey = node_info.pubkey
     assert taker_pubkey is not None
     logger.info("Taker pubkey: %s", taker_pubkey)
 
@@ -138,12 +132,11 @@ async def test_complete_swap_legacy(client):
     logger.info("Waiting for swap completion...")
     start_time = time.time()
     while time.time() - start_time < 180:
-        status_json = client.get_swap_status(init_result["payment_hash"])
-        status_response = json.loads(status_json)
+        status_response = client.get_swap_status(init_result["payment_hash"])
 
         # Check nested swap status
-        if "swap" in status_response and status_response["swap"]:
-            status = status_response["swap"]["status"]
+        if status_response.swap:
+            status = status_response.swap.status
             logger.info("Swap status: %s", status)
             if status == "Succeeded":
                 break
@@ -184,11 +177,12 @@ async def test_create_order_legacy(client):
         # Continue anyway, maybe already connected
 
     # Use helper to get pubkey
-    node_info_json = client.get_node_info()
-    pubkey = json.loads(node_info_json).get("pubkey")
+    node_info = client.get_node_info()
+    pubkey = node_info.pubkey
 
-    onchain_json = client.get_onchain_address()
-    onchain_address = json.loads(onchain_json)["address"]
+    onchain_response = client.node.get_onchain_address()
+    onchain_address = onchain_response.address
+
 
     order_request = {
         "client_pubkey": pubkey,
@@ -224,7 +218,7 @@ async def test_create_swap_order_legacy(client):
     """Test creating a swap order (Legacy)."""
     # Get a quote first - reduce amount to 600,000
     try:
-        quote_json = client.get_best_quote("BTC/USDT", 600000, None)
+        quote = client.get_best_quote("BTC/USDT", 600000, None)
     except Exception as e:
         logger.error(f"Failed to get quote: {e}")
         # List pairs to help debug
@@ -234,13 +228,11 @@ async def test_create_swap_order_legacy(client):
             pass
         raise e
 
-    quote = json.loads(quote_json)
-
     # Create swap order request matching Rust CreateSwapOrderRequest
     swap_order_request = {
-        "rfq_id": quote["rfq_id"],
-        "from_asset": quote["from_asset"],  # Complete SwapLeg object
-        "to_asset": quote["to_asset"],  # Complete SwapLeg object
+        "rfq_id": quote.rfq_id,
+        "from_asset": quote.from_asset.model_dump(mode='json'),  # Convert to JSON-serializable dict
+        "to_asset": quote.to_asset.model_dump(mode='json'),  # Convert to JSON-serializable dict
         "receiver_address": {
             "address": "rgb:invoice:example123",
             "format": "RGB_INVOICE",
@@ -254,7 +246,7 @@ async def test_create_swap_order_legacy(client):
         # Checking for id or order_id
         assert "id" in swap_order or "order_id" in swap_order
         if "id" in swap_order:
-            assert swap_order["rfq_id"] == quote["rfq_id"]
+            assert swap_order["rfq_id"] == quote.rfq_id
         return swap_order
     except Exception as e:
         logger.error(

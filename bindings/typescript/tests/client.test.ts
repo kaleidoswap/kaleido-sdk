@@ -32,30 +32,60 @@ describe('KaleidoClient', () => {
             client = createClient(testConfig);
         });
 
-        it('should list assets and return JSON string', async () => {
+        it('should list assets and return typed objects', async () => {
             const assets = await client.listAssets();
+            // Now returns typed Asset[] instead of JSON string
+            expect(Array.isArray(assets)).toBe(true);
+
+            if (assets.length > 0) {
+                const asset = assets[0];
+                expect(asset).toHaveProperty('assetId');
+                expect(asset).toHaveProperty('ticker');
+                expect(asset).toHaveProperty('name');
+            }
+        });
+
+        it('should list assets and return JSON string when raw:true', async () => {
+            const assets = await client.listAssets({ raw: true });
             expect(typeof assets).toBe('string');
 
             // Verify it's valid JSON
             const parsed = JSON.parse(assets);
-            // API returns raw array of assets
             expect(Array.isArray(parsed)).toBe(true);
         });
 
-        it('should list pairs and return JSON string', async () => {
+        it('should list pairs and return typed objects', async () => {
             const pairs = await client.listPairs();
+            // Now returns typed TradingPair[] instead of JSON string
+            expect(Array.isArray(pairs)).toBe(true);
+
+            if (pairs.length > 0) {
+                const pair = pairs[0];
+                expect(pair).toHaveProperty('baseAsset');
+                expect(pair).toHaveProperty('quoteAsset');
+            }
+        });
+
+        it('should list pairs and return JSON string when raw:true', async () => {
+            const pairs = await client.listPairs({ raw: true });
             expect(typeof pairs).toBe('string');
 
             // Verify it's valid JSON
             const parsed = JSON.parse(pairs);
-            // API returns raw array of pairs
             expect(Array.isArray(parsed)).toBe(true);
         });
 
         // Quote tests require valid asset IDs which depend on the environment
         // Skip for now as they require live API with proper RGB assets
-        it.skip('should get quote by ticker', async () => {
+        it.skip('should get quote by ticker with typed response', async () => {
             const quote = await client.getQuoteByPair('BTC/USDT', 100000, null);
+            expect(quote).toHaveProperty('rfqId');
+            expect(quote).toHaveProperty('fromAsset');
+            expect(quote).toHaveProperty('toAsset');
+        });
+
+        it.skip('should get quote by ticker with raw response', async () => {
+            const quote = await client.getQuoteByPair('BTC/USDT', 100000, null, { raw: true });
             expect(typeof quote).toBe('string');
 
             const parsed = JSON.parse(quote);
@@ -64,11 +94,8 @@ describe('KaleidoClient', () => {
 
         it.skip('should get quote by pair ticker with to_amount', async () => {
             const quote = await client.getQuoteByPair('BTC/USDT', null, 100000);
-            expect(typeof quote).toBe('string');
-
-            const parsed = JSON.parse(quote);
-            expect(parsed.ticker).toBe('BTC/USDT');
-            expect(parsed.from_amount).toBe(100000);
+            expect(quote).toHaveProperty('rfqId');
+            expect(quote.toAmount).toBe(100000);
         });
     });
 });
@@ -143,6 +170,180 @@ describe('Configuration', () => {
     });
 });
 
+describe('Sub-Client Pattern', () => {
+    const testConfig: KaleidoConfig = {
+        baseUrl: 'https://api.regtest.kaleidoswap.com',
+        nodeUrl: 'http://localhost:3000',
+        timeout: 30.0,
+    };
+
+    let client: any;
+
+    beforeEach(() => {
+        client = createClient(testConfig);
+    });
+
+    describe('Market Sub-Client', () => {
+        it('should have market property', () => {
+            expect(client.market).toBeDefined();
+        });
+
+        it('should access listAssets via market sub-client', async () => {
+            const assets = await client.market.listAssets();
+            expect(Array.isArray(assets)).toBe(true);
+        });
+
+        it('should access listPairs via market sub-client', async () => {
+            const pairs = await client.market.listPairs();
+            expect(Array.isArray(pairs)).toBe(true);
+        });
+
+        it.skip('should access getQuoteByPair via market sub-client', async () => {
+            const quote = await client.market.getQuoteByPair('BTC/USDT', 100000);
+            expect(quote).toHaveProperty('rfqId');
+        });
+
+        it.skip('should access getBestQuote via market sub-client', async () => {
+            const quote = await client.market.getBestQuote('BTC/USDT', 100000);
+            expect(quote).toHaveProperty('rfqId');
+        });
+    });
+
+    describe('Orders Sub-Client', () => {
+        it('should have orders property', () => {
+            expect(client.orders).toBeDefined();
+        });
+
+        it('should have getOrderHistory method', () => {
+            expect(typeof client.orders.getOrderHistory).toBe('function');
+        });
+
+        it('should have getOrderAnalytics method', () => {
+            expect(typeof client.orders.getOrderAnalytics).toBe('function');
+        });
+    });
+
+    describe('Swaps Sub-Client', () => {
+        it('should have swaps property', () => {
+            expect(client.swaps).toBeDefined();
+        });
+
+        it('should have getNodeInfo method', () => {
+            expect(typeof client.swaps.getNodeInfo).toBe('function');
+        });
+
+        it('should have getSwapStatus method', () => {
+            expect(typeof client.swaps.getSwapStatus).toBe('function');
+        });
+    });
+
+    describe('LSP Sub-Client', () => {
+        it('should have lsp property', () => {
+            expect(client.lsp).toBeDefined();
+        });
+
+        it('should have getLspInfo method', () => {
+            expect(typeof client.lsp.getLspInfo).toBe('function');
+        });
+
+        it('should have getLspNetworkInfo method', () => {
+            expect(typeof client.lsp.getLspNetworkInfo).toBe('function');
+        });
+    });
+
+    describe('Node Sub-Client', () => {
+        it('should have node property when configured', () => {
+            // Node is configured with nodeUrl in testConfig
+            expect(client.node).toBeDefined();
+            expect(client.node).not.toBeNull();
+        });
+
+        it('should return null when node not configured', () => {
+            const clientNoNode = createClient({
+                baseUrl: 'https://api.regtest.kaleidoswap.com'
+            });
+            expect(clientNoNode.node).toBeNull();
+        });
+
+        it('should have getRgbNodeInfo method when configured', () => {
+            if (client.node) {
+                expect(typeof client.node.getRgbNodeInfo).toBe('function');
+            }
+        });
+
+        it('should have listChannels method when configured', () => {
+            if (client.node) {
+                expect(typeof client.node.listChannels).toBe('function');
+            }
+        });
+    });
+
+    describe('Backward Compatibility', () => {
+        it('should support flat access pattern', async () => {
+            // Ensure flat method access still works
+            const assets = await client.listAssets();
+            expect(Array.isArray(assets)).toBe(true);
+        });
+
+        it('should support both patterns simultaneously', async () => {
+            const assetsFlat = await client.listAssets();
+            const assetsSubClient = await client.market.listAssets();
+
+            expect(Array.isArray(assetsFlat)).toBe(true);
+            expect(Array.isArray(assetsSubClient)).toBe(true);
+        });
+    });
+});
+
+describe('Convenience Methods', () => {
+    const testConfig: KaleidoConfig = {
+        baseUrl: 'https://api.regtest.kaleidoswap.com',
+        timeout: 30.0,
+    };
+
+    let client: any;
+
+    beforeEach(() => {
+        client = createClient(testConfig);
+    });
+
+    describe('Active Filtering', () => {
+        it('should have listActiveAssets method', () => {
+            expect(typeof client.listActiveAssets).toBe('function');
+        });
+
+        it('should have listActivePairs method', () => {
+            expect(typeof client.listActivePairs).toBe('function');
+        });
+
+        it('should list active assets with typed response', async () => {
+            const assets = await client.listActiveAssets();
+            expect(Array.isArray(assets)).toBe(true);
+        });
+
+        it('should list active pairs with typed response', async () => {
+            const pairs = await client.listActivePairs();
+            expect(Array.isArray(pairs)).toBe(true);
+        });
+    });
+
+    describe('Find Methods', () => {
+        it('should have findAssetByTicker method', () => {
+            expect(typeof client.findAssetByTicker).toBe('function');
+        });
+
+        it('should have findPairByTicker method', () => {
+            expect(typeof client.findPairByTicker).toBe('function');
+        });
+    });
+
+    describe('Fee Estimation', () => {
+        it('should have estimateSwapFees method', () => {
+            expect(typeof client.estimateSwapFees).toBe('function');
+        });
+    });
+});
+
 // Integration tests (require running API)
 describe.skip('Integration Tests', () => {
     const client = createClient({
@@ -167,7 +368,9 @@ describe.skip('Integration Tests', () => {
     it('should get a quote', async () => {
         const quote = await client.getQuoteByPair('BTC/USDT', 100000);
         expect(typeof quote).toBe('string');
-        expect(quote.length).toBeGreaterThan(0);
+        if (typeof quote === 'string') {
+            expect(quote.length).toBeGreaterThan(0);
+        }
     });
 });
 

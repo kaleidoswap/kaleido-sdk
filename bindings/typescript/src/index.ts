@@ -7,7 +7,7 @@
 
 // Import the napi-rs generated native bindings
 // @ts-ignore - napi generated module
-const nativeBinding = require('../kaleidoswap.node');
+const nativeBinding = require('../index.node');
 
 // Re-export types and classes from native binding
 const NativeKaleidoClient = nativeBinding.KaleidoClient;
@@ -248,6 +248,9 @@ export interface IKaleidoClient {
     readonly lsp: ILspClient;
     readonly node: INodeClient | null;
 
+    // Configuration checks
+    hasNode(): boolean;
+
     // Market Operations (legacy flat access)
     listAssets(options?: { raw?: boolean }): Promise<Asset[] | string>;
     listPairs(options?: { raw?: boolean }): Promise<TradingPair[] | string>;
@@ -255,7 +258,16 @@ export interface IKaleidoClient {
     getBestQuote(ticker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string>;
 
     // Swap Operations
+    getNodeInfo(options?: { raw?: boolean }): Promise<NodeInfo | string>;
+    getSwapStatus(paymentHash: string, options?: { raw?: boolean }): Promise<any | string>;
+    waitForSwapCompletion(paymentHash: string, timeoutSecs: number, pollIntervalSecs: number): Promise<string>;
     checkSwapStatus(paymentHash: string, options?: { raw?: boolean }): Promise<any | string>;
+
+    // Order Operations  
+    getSwapOrderStatus(orderId: string): Promise<string>;
+    getOrderHistory(status: string | null, limit: number, skip: number): Promise<string>;
+    getOrderAnalytics(): Promise<string>;
+    swapOrderRateDecision(orderId: string, accept: boolean): Promise<string>;
 
     // LSP Operations
     getLspInfo(options?: { raw?: boolean }): Promise<any | string>;
@@ -282,7 +294,15 @@ export interface IKaleidoClient {
     getAssetByTicker(ticker: string, options?: { raw?: boolean }): Promise<Asset | string>;
     getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string>;
     completeSwapFromQuote(quoteJson: string): Promise<string>;
+    completeSwap(quoteJson: string): Promise<string>; // Alias for backwards compatibility
     getPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string>;
+
+    // Additional convenience methods for feature parity
+    listActiveAssets(options?: { raw?: boolean }): Promise<Asset[] | string>;
+    listActivePairs(options?: { raw?: boolean }): Promise<TradingPair[] | string>;
+    estimateSwapFees(ticker: string, amount: number): Promise<number>;
+    findAssetByTicker(ticker: string, options?: { raw?: boolean }): Promise<Asset | string>;
+    findPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string>;
 
     // Legacy Support Methods (Strongly Typed)
     createLspOrder(request: CreateOrderRequest): Promise<string>;
@@ -310,7 +330,16 @@ export class KaleidoClient implements IKaleidoClient {
     private _nodeClient: INodeClient | null = null;
 
     constructor(config: KaleidoConfig) {
-        this.inner = new NativeKaleidoClient(config);
+        // Ensure all required fields have defaults for Rust FFI
+        const fullConfig = {
+            baseUrl: config.baseUrl,
+            nodeUrl: config.nodeUrl,
+            apiKey: config.apiKey,
+            timeout: config.timeout || 30.0,
+            maxRetries: config.maxRetries || 3,
+            cacheTtl: config.cacheTtl || 60,
+        };
+        this.inner = new NativeKaleidoClient(fullConfig);
     }
 
     // === Sub-Client Properties ===
@@ -345,13 +374,19 @@ export class KaleidoClient implements IKaleidoClient {
 
     get node(): INodeClient | null {
         // Check if node is configured
-        if (!this.inner.hasNode || !this.inner.hasNode()) {
+        if (!this.hasNode()) {
             return null;
         }
         if (!this._nodeClient) {
             this._nodeClient = new NodeClient(this.inner, (json) => JSON.parse(json));
         }
         return this._nodeClient;
+    }
+
+    // === Configuration Methods ===
+
+    hasNode(): boolean {
+        return this.inner.hasNode ? this.inner.hasNode() : false;
     }
 
     /**
@@ -389,6 +424,20 @@ export class KaleidoClient implements IKaleidoClient {
     }
 
     // === Swap Operations ===
+
+    async getNodeInfo(options?: { raw?: boolean }): Promise<NodeInfo | string> {
+        const json = await this.inner.getNodeInfo();
+        return this._parseResponse<NodeInfo>(json, options?.raw);
+    }
+
+    async getSwapStatus(paymentHash: string, options?: { raw?: boolean }): Promise<any | string> {
+        const json = await this.inner.getSwapStatus(paymentHash);
+        return this._parseResponse<any>(json, options?.raw);
+    }
+
+    async waitForSwapCompletion(paymentHash: string, timeoutSecs: number, pollIntervalSecs: number): Promise<string> {
+        return this.inner.waitForSwapCompletion(paymentHash, timeoutSecs, pollIntervalSecs);
+    }
 
     async checkSwapStatus(paymentHash: string, options?: { raw?: boolean }): Promise<any | string> {
         const json = await this.inner.checkSwapStatus(paymentHash);
@@ -497,10 +546,42 @@ export class KaleidoClient implements IKaleidoClient {
         return this.inner.completeSwapFromQuote(quoteJson);
     }
 
+    // Alias for backwards compatibility
+    async completeSwap(quoteJson: string): Promise<string> {
+        return this.completeSwapFromQuote(quoteJson);
+    }
+
     async getPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string> {
         const json = await this.inner.getPairByTicker(ticker);
         return this._parseResponse<TradingPair>(json, options?.raw);
     }
+
+    // Additional convenience methods for feature parity with Python
+    async listActiveAssets(options?: { raw?: boolean }): Promise<Asset[] | string> {
+        const json = await this.inner.listActiveAssets();
+        return this._parseResponse<Asset[]>(json, options?.raw);
+    }
+
+    async listActivePairs(options?: { raw?: boolean }): Promise<TradingPair[] | string> {
+        const json = await this.inner.listActivePairs();
+        return this._parseResponse<TradingPair[]>(json, options?.raw);
+    }
+
+    async estimateSwapFees(ticker: string, amount: number): Promise<number> {
+        return this.inner.estimateSwapFees(ticker, amount);
+    }
+
+    async findAssetByTicker(ticker: string, options?: { raw?: boolean }): Promise<Asset | string> {
+        const json = await this.inner.findAssetByTicker(ticker);
+        return this._parseResponse<Asset>(json, options?.raw);
+    }
+
+    async findPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string> {
+        const json = await this.inner.findPairByTicker(ticker);
+        return this._parseResponse<TradingPair>(json, options?.raw);
+    }
+
+    // === Legacy Support Methods ===
 
     async createLspOrder(request: CreateOrderRequest): Promise<string> {
         return this.inner.createLspOrder(JSON.stringify(request));
@@ -525,11 +606,23 @@ export class KaleidoClient implements IKaleidoClient {
         return this.inner.createQuoteStream(pairTicker);
     }
 
-    // Explicitly re-declare extra methods if they exist on inner but not in interface
-    async getSwapOrderStatus(orderId: string): Promise<string> { return this.inner.getSwapOrderStatus(orderId); }
-    async getOrderHistory(status: string | null, limit: number, skip: number): Promise<string> { return this.inner.getOrderHistory(status, limit, skip); }
-    async getOrderAnalytics(): Promise<string> { return this.inner.getOrderAnalytics(); }
-    async swapOrderRateDecision(orderId: string, accept: boolean): Promise<string> { return this.inner.swapOrderRateDecision(orderId, accept); }
+    // === Order Management Methods ===
+
+    async getSwapOrderStatus(orderId: string): Promise<string> {
+        return this.inner.getSwapOrderStatus(orderId);
+    }
+
+    async getOrderHistory(status: string | null, limit: number, skip: number): Promise<string> {
+        return this.inner.getOrderHistory(status, limit, skip);
+    }
+
+    async getOrderAnalytics(): Promise<string> {
+        return this.inner.getOrderAnalytics();
+    }
+
+    async swapOrderRateDecision(orderId: string, accept: boolean): Promise<string> {
+        return this.inner.swapOrderRateDecision(orderId, accept);
+    }
 }
 
 

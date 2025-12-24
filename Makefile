@@ -46,7 +46,7 @@ build: build-rust build-python build-typescript
 
 build-rust:
 	@echo "🦀 Building Rust core library..."
-	cargo build --release
+	cargo build --release --workspace --exclude kaleidoswap-python
 
 build-python:
 	@echo "🐍 Building Python bindings..."
