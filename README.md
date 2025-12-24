@@ -179,7 +179,7 @@ if (client.node) {
 ### Prerequisites
 
 - Rust 1.75+
-- Python 3.11+ (for Python bindings)
+- Python 3.8+ (for Python bindings)
 - Node.js 18+ (for TypeScript bindings)
 - Docker (for regenerating models)
 

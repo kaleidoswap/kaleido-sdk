@@ -2,7 +2,6 @@
 Sub-client modules for organized API access.
 """
 
-import json
 from typing import Any, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -17,6 +16,18 @@ if TYPE_CHECKING:
         OrderStatsResponse,
         SwapOrderRateDecisionResponse,
         NetworkInfoResponse,
+    )
+    from .rgb_node_models import (
+        NodeInfoResponse,
+        Channel,
+        Peer,
+        AssetBalanceResponse,
+        AddressResponse,
+        BtcBalanceResponse,
+        DecodeLNInvoiceResponse,
+        Payment,
+        InitResponse,
+        EmptyResponse,
     )
 
 

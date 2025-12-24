@@ -30,7 +30,7 @@ def test_typed_responses():
     try:
         assets_json = client.list_assets(raw=True)
         assert isinstance(assets_json, str), f"Expected str, got {type(assets_json)}"
-        print(f"✓ list_assets(raw=True) returns JSON string")
+        print("✓ list_assets(raw=True) returns JSON string")
     except Exception as e:
        print(f"✗ list_assets(raw=True) failed: {e}")
     
@@ -49,7 +49,7 @@ def test_typed_responses():
     try:
         quote = client.get_best_quote("BTC/USDT", 1000000, None)
         assert isinstance(quote, PairQuoteResponse), f"Expected PairQuoteResponse, got {type(quote)}"
-        print(f"✓ get_best_quote() returns PairQuoteResponse")
+        print("✓ get_best_quote() returns PairQuoteResponse")
         print(f"  {quote.from_asset.amount} {quote.from_asset.ticker} -> {quote.to_asset.amount} {quote.to_asset.ticker}")
         print(f"  Price: {quote.price}")
     except Exception as e:

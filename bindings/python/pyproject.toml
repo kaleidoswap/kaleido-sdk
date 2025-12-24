@@ -37,10 +37,11 @@ Documentation = "https://docs.kaleidoswap.com/python"
 python-source = "python"
 module-name = "kaleidoswap.kaleidoswap"
 
-[dependency-groups]
-dev = [
-    "datamodel-code-generator[http]>=0.27.3",
+[tool.pytest.ini_options]
+markers = [
+    "integration: tests requiring a running Kaleidoswap backend",
 ]
+testpaths = ["tests"]
 
 [project.optional-dependencies]
 dev = [
@@ -49,5 +50,6 @@ dev = [
     "black>=23.0",
     "ruff>=0.1.0",
     "isort>=5.12",
-    "datamodel-code-generator[http]>=0.25.0",
+    "datamodel-code-generator[http]>=0.27.3",
 ]
+

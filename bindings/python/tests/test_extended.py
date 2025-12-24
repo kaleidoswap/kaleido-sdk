@@ -4,8 +4,6 @@ This module contains comprehensive tests for additional SDK functionality
 including utility functions, error handling, and more API methods.
 """
 
-import json
-
 import pytest
 
 

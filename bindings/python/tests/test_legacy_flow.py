@@ -68,7 +68,7 @@ async def test_complete_swap_legacy(client):
         try:
             pairs = client.list_pairs()
             logger.info(f"Available pairs: {pairs}")
-        except:
+        except Exception:
             pass
         raise e
 
@@ -224,7 +224,7 @@ async def test_create_swap_order_legacy(client):
         # List pairs to help debug
         try:
             logger.info(f"Available pairs: {client.list_pairs()}")
-        except:
+        except Exception:
             pass
         raise e
 

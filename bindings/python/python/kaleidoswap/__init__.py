@@ -123,6 +123,7 @@ __all__ = [
     "OrderNotFoundError",
     # Utilities
     "JsonValue",
+    "PyKaleidoClient",
     "PyQuoteStream",
     "to_smallest_units",
     "to_display_units",

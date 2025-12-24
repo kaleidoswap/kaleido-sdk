@@ -236,14 +236,14 @@ impl KaleidoClient {
 
         let from_asset_input = SwapLegInput {
             asset_id: parts[0].to_string(),
-            layer: layer.clone(),
-            amount: from_amount.map(|a| Some(a)),
+            layer,
+            amount: from_amount.map(Some),
         };
 
         let to_asset_input = SwapLegInput {
             asset_id: parts[1].to_string(),
             layer,
-            amount: to_amount.map(|a| Some(a)),
+            amount: to_amount.map(Some),
         };
 
         let request = PairQuoteRequest {
@@ -616,12 +616,12 @@ impl KaleidoClient {
                 let request = PairQuoteRequest {
                     from_asset: Box::new(SwapLegInput {
                         asset_id: parts[0].to_string(), // Ticker as ID, backend handles it
-                        layer: from_layer.clone(),
+                        layer: *from_layer,
                         amount: from_amount.map(Some),
                     }),
                     to_asset: Box::new(SwapLegInput {
                         asset_id: parts[1].to_string(),
-                        layer: to_layer.clone(),
+                        layer: *to_layer,
                         amount: to_amount.map(Some),
                     }),
                 };
