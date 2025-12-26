@@ -237,7 +237,7 @@ deploy:npm:
         TAG="latest"
       fi
       echo "Publishing with tag: $TAG"
-      pnpm publish --tag $TAG --access public --no-git-checks
+      pnpm publish --tag $TAG --access public --no-git-checks --ignore-scripts
   rules:
     - if: $CI_COMMIT_TAG
   environment:
