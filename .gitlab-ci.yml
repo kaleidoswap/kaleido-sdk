@@ -12,7 +12,7 @@ stages:
   - deploy
 
 variables:
-  RUST_VERSION: "1.82"
+  RUST_VERSION: "1.85"
   PYTHON_VERSION: "3.11"
   NODE_VERSION: "18"
   # Use Docker image's default Rust installation paths
