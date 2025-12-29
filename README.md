@@ -22,7 +22,7 @@ The SDK is built in **Rust** with bindings for multiple languages:
 - 🔗 **RGB Lightning Node** - Full RGB node integration
 - 🛡️ **Type Safe** - Auto-generated models from OpenAPI specs
 - 🔧 **Built-in Retry** - Exponential backoff for reliability
-- 📡 **WebSocket** - Real-time updates (coming soon)
+- 📡 **WebSocket** - Real-time updates with auto-reconnection
 
 ## Installation
 
@@ -52,7 +52,7 @@ pnpm add @kaleidoswap/sdk
 ### Rust
 
 ```rust
-use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
+use kaleidoswap_core::{KaleidoClient, KaleidoConfig, WsEvent};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -75,6 +75,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         quote.to_asset.amount
     );
 
+    // WebSocket - Real-time updates
+    client.connect_websocket().await?;
+    
+    client.on_websocket_event(WsEvent::PriceUpdate, |data| {
+        if let Some(pair) = data.get("pair") {
+            if let Some(price) = data.get("price") {
+                println!("Price: {} - ${}", pair, price);
+            }
+        }
+    }).await?;
+    
+    client.subscribe_to_pair("BTC/USDT").await?;
+
     Ok(())
 }
 ```
@@ -83,7 +96,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Python
 
 ```python
-from kaleidoswap import KaleidoClient, KaleidoConfig
+from kaleidoswap import KaleidoClient, KaleidoConfig, WsEvent
+import asyncio
 
 # Configure client
 config = KaleidoConfig(base_url="https://api.regtest.kaleidoswap.com")
@@ -100,6 +114,22 @@ for asset in assets:
 quote = client.market.get_best_quote("BTC/USDT", 1_000_000)  # PairQuoteResponse
 print(f"Rate: {quote.price}")
 print(f"Fee: {quote.fee.amount} {quote.fee.asset_ticker}")
+
+# WebSocket - Real-time updates
+async def websocket_example():
+    await client.connect_websocket()
+    
+    await client.on_websocket_event(
+        WsEvent.PriceUpdate,
+        lambda data: print(f"Price: {data['pair']} - ${data['price']}")
+    )
+    
+    await client.subscribe_to_pair('BTC/USDT')
+    
+    # Stream for 30 seconds
+    await asyncio.sleep(30)
+    
+    await client.disconnect_websocket()
 
 # Order management
 history = client.orders.get_order_history()  # OrderHistoryResponse
@@ -156,6 +186,15 @@ console.log(`Fee: ${quote.fee.amount} ${quote.fee.assetTicker}`);
 const history = await client.orders.getOrderHistory();
 console.log(`Total orders: ${history.total}`);
 
+// WebSocket - Real-time updates
+await client.connectWebsocket();
+
+client.onWebsocketEvent('price_update', (data) => {
+    console.log(`Price: ${data.pair} - $${data.price}`);
+});
+
+await client.subscribeToPair('BTC/USDT');
+
 // RGB Node operations (if configured)
 if (client.node) {
     const nodeInfo = await client.node.getRgbNodeInfo();
@@ -172,7 +211,7 @@ if (client.node) {
 - **[API Reference](./docs/API_REFERENCE.md)** - Complete API documentation
 - **[Examples](./docs/EXAMPLES.md)** - Code examples and workflows
 - **[Error Handling](./docs/ERROR_HANDLING.md)** - Error types and handling
-- **[WebSocket](./docs/WEBSOCKET.md)** - Real-time updates
+- **[WebSocket](./docs/WEBSOCKET.md)** - Real-time updates and streaming
 
 ## 🔧 Development
 
@@ -242,7 +281,7 @@ See [Architecture](./docs/ARCHITECTURE.md) for details on the code generation wo
 - [x] Python bindings
 - [x] TypeScript bindings
 - [x] Auto-generated models from OpenAPI
-- [ ] WebSocket support for real-time updates
+- [x] WebSocket support for real-time updates
 - [ ] Swift bindings for iOS/macOS
 - [ ] Kotlin bindings for Android
 - [ ] CLI tool

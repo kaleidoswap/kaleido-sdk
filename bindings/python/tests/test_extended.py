@@ -191,3 +191,266 @@ class TestModuleMetadata:
         assert KaleidoError is not None
         assert callable(to_smallest_units)
         assert callable(to_display_units)
+
+
+class TestDisplayAmountUtilities:
+    """Test display amount conversion methods."""
+
+    @pytest.fixture
+    def client(self):
+        """Create a client for tests."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig
+
+        config = KaleidoConfig(
+            base_url="http://localhost:8000",
+            timeout=30.0,
+        )
+        return KaleidoClient(config)
+
+    def test_has_to_raw_method(self, client):
+        """Test that to_raw method exists."""
+        assert hasattr(client, "to_raw")
+        assert callable(client.to_raw)
+
+    def test_has_to_display_method(self, client):
+        """Test that to_display method exists."""
+        assert hasattr(client, "to_display")
+        assert callable(client.to_display)
+
+    def test_has_convert_amount_method(self, client):
+        """Test that convert_amount method exists."""
+        assert hasattr(client, "convert_amount")
+        assert callable(client.convert_amount)
+
+
+class TestAssetPairResolution:
+    """Test asset and pair resolution methods."""
+
+    @pytest.fixture
+    def client(self):
+        """Create a client for tests."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig
+
+        config = KaleidoConfig(
+            base_url="http://localhost:8000",
+            timeout=30.0,
+        )
+        return KaleidoClient(config)
+
+    def test_has_get_asset_by_id_method(self, client):
+        """Test that get_asset_by_id method exists."""
+        assert hasattr(client, "get_asset_by_id")
+        assert callable(client.get_asset_by_id)
+
+    def test_has_get_pair_by_assets_method(self, client):
+        """Test that get_pair_by_assets method exists."""
+        assert hasattr(client, "get_pair_by_assets")
+        assert callable(client.get_pair_by_assets)
+
+
+class TestValidationHelpers:
+    """Test validation and trade helper methods."""
+
+    @pytest.fixture
+    def client(self):
+        """Create a client for tests."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig
+
+        config = KaleidoConfig(
+            base_url="http://localhost:8000",
+            timeout=30.0,
+        )
+        return KaleidoClient(config)
+
+    def test_has_can_trade_method(self, client):
+        """Test that can_trade method exists."""
+        assert hasattr(client, "can_trade")
+        assert callable(client.can_trade)
+
+    def test_has_validate_amount_method(self, client):
+        """Test that validate_amount method exists."""
+        assert hasattr(client, "validate_amount")
+        assert callable(client.validate_amount)
+
+    def test_has_refresh_cache_method(self, client):
+        """Test that refresh_cache method exists."""
+        assert hasattr(client, "refresh_cache")
+        assert callable(client.refresh_cache)
+
+
+@pytest.mark.integration
+class TestDisplayAmountIntegration:
+    """Integration tests for display amount utilities."""
+
+    @pytest.fixture
+    def client(self):
+        """Create a client for integration tests."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig
+
+        config = KaleidoConfig(
+            base_url="http://localhost:8000",
+            timeout=30.0,
+        )
+        return KaleidoClient(config)
+
+    def test_to_raw_with_btc(self, client):
+        """Test to_raw conversion with BTC asset."""
+        from kaleidoswap import Asset
+
+        # Create a mock BTC asset with precision 8
+        btc_asset = Asset(
+            ticker="BTC",
+            name="Bitcoin",
+            precision=8,
+        )
+        
+        result = client.to_raw(1.5, btc_asset)
+        assert result == 150_000_000  # 1.5 BTC in satoshis
+
+    def test_to_display_with_btc(self, client):
+        """Test to_display conversion with BTC asset."""
+        from kaleidoswap import Asset
+
+        btc_asset = Asset(
+            ticker="BTC",
+            name="Bitcoin",
+            precision=8,
+        )
+        
+        result = client.to_display(150_000_000, btc_asset)
+        assert result == 1.5
+
+    def test_convert_amount_to_raw(self, client):
+        """Test convert_amount to raw."""
+        from kaleidoswap import Asset
+
+        usdt_asset = Asset(
+            ticker="USDT",
+            name="Tether",
+            precision=6,
+        )
+        
+        result = client.convert_amount(10.5, usdt_asset, "raw")
+        assert result == 10_500_000
+
+    def test_convert_amount_to_display(self, client):
+        """Test convert_amount to display."""
+        from kaleidoswap import Asset
+
+        usdt_asset = Asset(
+            ticker="USDT",
+            name="Tether",
+            precision=6,
+        )
+        
+        result = client.convert_amount(10_500_000, usdt_asset, "display")
+        assert result == 10.5
+
+    def test_convert_amount_invalid_direction(self, client):
+        """Test convert_amount with invalid direction."""
+        from kaleidoswap import Asset
+
+        usdt_asset = Asset(
+            ticker="USDT",
+            name="Tether",
+            precision=6,
+        )
+        
+        with pytest.raises(ValueError):
+            client.convert_amount(10.5, usdt_asset, "invalid")
+
+
+@pytest.mark.integration
+class TestValidationIntegration:
+    """Integration tests for validation helpers."""
+
+    @pytest.fixture
+    def client(self):
+        """Create a client for integration tests."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig
+
+        config = KaleidoConfig(
+            base_url="http://localhost:8000",
+            timeout=30.0,
+        )
+        return KaleidoClient(config)
+
+    def test_validate_amount_with_live_asset(self, client):
+        """Test validate_amount with a live asset from the API."""
+        # This test requires a running API
+        result = client.validate_amount(1.0, "BTC")
+        
+        assert "valid" in result
+        assert "raw_amount" in result
+        assert "display_amount" in result
+        assert "errors" in result
+        
+        if result["valid"]:
+            assert result["raw_amount"] > 0
+            assert result["display_amount"] == 1.0
+            assert len(result["errors"]) == 0
+
+    def test_can_trade_with_live_pairs(self, client):
+        """Test can_trade with live trading pairs."""
+        # This tests with actual pairs from the API
+        result = client.can_trade("BTC", "USDT")
+        
+        # Result should be boolean
+        assert isinstance(result, bool)
+
+
+class TestHighLevelSwapFlows:
+    """Test high-level swap flow methods."""
+
+    @pytest.fixture
+    def client(self):
+        """Create a client for tests."""
+        from kaleidoswap import KaleidoClient, KaleidoConfig
+
+        config = KaleidoConfig(
+            base_url="http://localhost:8000",
+            node_url="http://localhost:3001",
+            timeout=30.0,
+        )
+        return KaleidoClient(config)
+
+    def test_has_execute_swap_flow_method(self, client):
+        """Test that execute_swap_flow method exists."""
+        assert hasattr(client, "execute_swap_flow")
+        assert callable(client.execute_swap_flow)
+
+    def test_has_execute_swap_by_pair_method(self, client):
+        """Test that execute_swap_by_pair method exists."""
+        assert hasattr(client, "execute_swap_by_pair")
+        assert callable(client.execute_swap_by_pair)
+
+    def test_has_complete_maker_swap_method(self, client):
+        """Test that complete_maker_swap method exists."""
+        assert hasattr(client, "complete_maker_swap")
+        assert callable(client.complete_maker_swap)
+
+    def test_execute_swap_by_pair_invalid_side(self, client):
+        """Test that execute_swap_by_pair raises on invalid side."""
+        with pytest.raises(ValueError) as exc_info:
+            # This will fail before making API calls due to invalid side
+            client.execute_swap_by_pair(
+                pair_ticker="BTC/USDT",
+                amount=0.01,
+                side="invalid",  # Invalid side
+                taker_pubkey="fakepubkey",
+            )
+        
+        assert "Invalid side" in str(exc_info.value)
+
+    def test_execute_swap_by_pair_invalid_ticker(self, client):
+        """Test that execute_swap_by_pair raises on invalid ticker format."""
+        with pytest.raises(ValueError) as exc_info:
+            client.execute_swap_by_pair(
+                pair_ticker="BTCUSDT",  # Missing slash
+                amount=0.01,
+                side="sell",
+                taker_pubkey="fakepubkey",
+            )
+        
+        assert "Invalid pair ticker" in str(exc_info.value)
+

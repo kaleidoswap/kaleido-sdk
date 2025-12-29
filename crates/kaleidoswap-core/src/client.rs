@@ -19,7 +19,7 @@ use crate::models::{
     SwapOrderStatusResponse, SwapRequest, SwapResponse, SwapStatusResponse, TradingPair,
 };
 use crate::retry::RetryConfig;
-use crate::websocket::WebSocketClient;
+use crate::websocket::{WebSocketClient, WebSocketConfig, WsEvent};
 use crate::KaleidoConfig;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -48,7 +48,6 @@ pub struct KaleidoClient {
     node: Option<NodeApi>,
 
     // WebSocket client (lazy initialized)
-    #[allow(dead_code)]
     ws_client: RwLock<Option<WebSocketClient>>,
 
     // Caches
@@ -673,5 +672,149 @@ impl KaleidoClient {
             })
             .ok_or_else(|| KaleidoError::not_found("TradingPair", ticker))
     }
+
+    // === WebSocket Operations ===
+
+    /// Initialize WebSocket connection with default configuration.
+    pub async fn connect_websocket(&self) -> Result<()> {
+        self.connect_websocket_with_config(WebSocketConfig::default())
+            .await
+    }
+
+    /// Initialize WebSocket connection with custom configuration.
+    pub async fn connect_websocket_with_config(&self, config: WebSocketConfig) -> Result<()> {
+        let mut ws_lock = self.ws_client.write().await;
+
+        if ws_lock.is_some() {
+            return Err(KaleidoError::config(
+                "WebSocket already connected. Disconnect first.",
+            ));
+        }
+
+        let mut ws_client = WebSocketClient::with_config(&self.config.base_url, config)?;
+        ws_client.connect().await?;
+
+        *ws_lock = Some(ws_client);
+        Ok(())
+    }
+
+    /// Disconnect WebSocket.
+    pub async fn disconnect_websocket(&self) -> Result<()> {
+        let mut ws_lock = self.ws_client.write().await;
+
+        if let Some(mut ws_client) = ws_lock.take() {
+            ws_client.disconnect().await;
+            Ok(())
+        } else {
+            Err(KaleidoError::websocket("Not connected"))
+        }
+    }
+
+    /// Check if WebSocket is connected.
+    pub async fn is_websocket_connected(&self) -> bool {
+        let ws_lock = self.ws_client.read().await;
+        if let Some(ws_client) = &*ws_lock {
+            ws_client.is_connected().await
+        } else {
+            false
+        }
+    }
+
+    /// Subscribe to price updates for a trading pair via WebSocket.
+    pub async fn subscribe_to_pair(&self, pair_id: &str) -> Result<()> {
+        let ws_lock = self.ws_client.read().await;
+        let ws_client = ws_lock
+            .as_ref()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
+
+        ws_client.subscribe(pair_id).await
+    }
+
+    /// Unsubscribe from price updates for a trading pair.
+    pub async fn unsubscribe_from_pair(&self, pair_id: &str) -> Result<()> {
+        let ws_lock = self.ws_client.read().await;
+        let ws_client = ws_lock
+            .as_ref()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
+
+        ws_client.unsubscribe(pair_id).await
+    }
+
+    /// Request a quote via WebSocket (faster than HTTP for real-time quotes).
+    pub async fn get_quote_websocket(
+        &self,
+        ticker: &str,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+        _layer: Layer,
+    ) -> Result<PairQuoteResponse> {
+        let parts: Vec<&str> = ticker.split('/').collect();
+        if parts.len() != 2 {
+            return Err(KaleidoError::validation(format!(
+                "Invalid ticker format: '{}'. Expected format: 'BASE/QUOTE'",
+                ticker
+            )));
+        }
+
+        let ws_lock = self.ws_client.read().await;
+        let ws_client = ws_lock
+            .as_ref()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
+
+        // Send quote request
+        ws_client
+            .request_quote(parts[0], parts[1], from_amount, to_amount)
+            .await?;
+
+        // Wait for response with timeout
+        let timeout = Duration::from_secs_f64(self.config.timeout);
+        let data = ws_client
+            .wait_for_event(WsEvent::QuoteResponse, timeout)
+            .await?;
+
+        // Parse response
+        serde_json::from_value(data)
+            .map_err(|e| KaleidoError::validation(format!("Failed to parse quote response: {}", e)))
+    }
+
+    /// Register a WebSocket event handler.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # use kaleidoswap_core::{KaleidoClient, KaleidoConfig};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = KaleidoClient::new(KaleidoConfig::default())?;
+    /// client.connect_websocket().await?;
+    ///
+    /// client.on_websocket_event(
+    ///     kaleidoswap_core::websocket::WsEvent::PriceUpdate,
+    ///     |data| {
+    ///         println!("Price update: {:?}", data);
+    ///     }
+    /// ).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn on_websocket_event<F>(&self, event: WsEvent, handler: F) -> Result<()>
+    where
+        F: Fn(serde_json::Value) + Send + Sync + 'static,
+    {
+        let ws_lock = self.ws_client.read().await;
+        let ws_client = ws_lock
+            .as_ref()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
+
+        ws_client.on(event, handler).await;
+        Ok(())
+    }
+
+    /// Reconnect WebSocket with exponential backoff.
+    pub async fn reconnect_websocket(&self) -> Result<()> {
+        let mut ws_lock = self.ws_client.write().await;
+        let ws_client = ws_lock
+            .as_mut()
+            .ok_or_else(|| KaleidoError::websocket("Not connected"))?;
+
+        ws_client.reconnect().await
+    }
 }
-// return not implmeneted error

@@ -45,6 +45,9 @@ pub use models::*;
 // Export API modules for bindings
 pub use api::{LspApi, MarketApi, NodeApi, OrdersApi, SwapsApi};
 
+// Export WebSocket types
+pub use websocket::{ConnectionState, WebSocketClient, WebSocketConfig, WsEvent, WsMessage};
+
 /// Configuration for the Kaleidoswap client.
 #[derive(Debug, Clone)]
 pub struct KaleidoConfig {

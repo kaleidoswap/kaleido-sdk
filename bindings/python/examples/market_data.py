@@ -9,7 +9,7 @@ This example demonstrates how to:
 4. Get a quote for a swap
 """
 
-from kaleidoswap import KaleidoClient, KaleidoConfig
+from kaleidoswap import KaleidoClient, KaleidoConfig, KaleidoError
 
 BASE_URL = "http://localhost:8000"
 
@@ -70,8 +70,26 @@ def main():
         print("-" * 40)
 
         try:
-            # 1M sats (> min 500k)
-            quote = client.get_best_quote(ticker, 1_000_000, None)
+            # Determine valid amount from asset limits
+            ticker_parts = ticker.split('/')
+            base_ticker = ticker_parts[0]
+            base_asset = None
+            
+            # Find base asset to check limits
+            for asset in assets:
+                if getattr(asset, "ticker", "") == base_ticker:
+                    base_asset = asset
+                    break
+            
+            from_amount = 10_000_000  # Default 10M
+            if base_asset and hasattr(base_asset, 'endpoints') and base_asset.endpoints:
+                for endpoint in base_asset.endpoints:
+                    if hasattr(endpoint, 'min_amount') and endpoint.min_amount:
+                        from_amount = max(from_amount, endpoint.min_amount + endpoint.min_amount // 10)
+                        break
+            
+            print(f"  Requesting quote for {from_amount} {base_ticker}...")
+            quote = client.get_best_quote(ticker, from_amount, None)
 
             from_amount = quote.from_asset.amount if quote.from_asset else 0
             to_amount = quote.to_asset.amount if quote.to_asset else 0
@@ -79,8 +97,22 @@ def main():
             print(f"  From Amount: {from_amount}")
             print(f"  To Amount: {to_amount}")
             print(f"  Price: {getattr(quote, 'price', 'N/A')}")
+        except KaleidoError as e:
+            print(f"  Error getting quote: {e} ({type(e).__name__})")
         except Exception as e:
-            print(f"  Could not get quote: {e}")
+            print(f"  Unexpected error: {e}")
+            
+    # Demonstrate error handling
+    print("\n⚠️  Testing Error Handling:")
+    print("-" * 40)
+    try:
+        print("  Requesting quote for invalid pair INV/ALID...")
+        client.get_best_quote("INV/ALID", 1000, None)
+    except KaleidoError as e:
+        print(f"  Caught expected error: {e}")
+        print(f"  Error Type: {type(e).__name__}")
+    except Exception as e:
+        print(f"  Caught unexpected error: {e} ({type(e).__name__})")
 
     print("\n" + "=" * 60)
     print("Done!")

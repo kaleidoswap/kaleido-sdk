@@ -13,13 +13,13 @@ The Kaleidoswap SDK is currently focused on TypeScript support. Python and Rust 
 - [x] Swap order creation and monitoring
 - [x] Precision handling utilities
 - [x] Asset pair mapping utilities
-- [ ] WebSocket client implementation (planned)
+- [x] WebSocket client implementation
 - [ ] Maker operations (community contributions welcome)
 - [ ] Advanced order types
 
 ### Protocol Support
 - [x] REST API integration
-- [ ] WebSocket API integration (in progress)
+- [x] WebSocket API integration
 - [ ] Nostr protocol support (planned for v0.3)
 - [ ] Protocol versioning and compatibility
 

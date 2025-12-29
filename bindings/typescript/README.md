@@ -6,8 +6,6 @@ TypeScript bindings for the Kaleidoswap SDK - trade RGB assets on Bitcoin Lightn
 
 ```bash
 npm install @kaleidoswap/sdk
-# or
-yarn add @kaleidoswap/sdk
 ```
 
 ## Quick Start
@@ -18,42 +16,84 @@ import { createClient } from '@kaleidoswap/sdk';
 // Create a client
 const client = createClient({
   baseUrl: 'https://api.regtest.kaleidoswap.com',
-  timeout: 30.0,
-  maxRetries: 3,
-  cacheTtl: 60,
 });
 
 // List available assets
 const assets = await client.listAssets();
-console.log(JSON.parse(assets));
+console.log(`Found ${assets.length} assets`);
 
-// List trading pairs
-const pairs = await client.listPairs();
-console.log(JSON.parse(pairs));
+// Get asset by ticker
+const btc = await client.getAssetByTicker('BTC');
 
-// Get a quote (returns JSON string)
-// Use getBestQuote for optimal routing (supports cross-protocol)
-const quoteJson = await client.getBestQuote('BTC/USDT', 1000000); // 1M sats
-const quote = JSON.parse(quoteJson);
+// Get a quote
+const quote = await client.getQuoteByPair('BTC/USDT', 1_000_000);
+console.log(`Quote: ${quote.fromAmount} → ${quote.toAmount}`);
+```
 
-// Access nested fields
-const fromAmt = quote.from_asset?.amount || 0;
-const toAmt = quote.to_asset?.amount || 0;
-console.log(`Quote: ${fromAmt} -> ${toAmt}`);
+## Convenience Methods
 
-// Legacy operations (Strongly Typed)
-// Methods accept objects matching defined interfaces (e.g., CreateOrderRequest)
-const initRequest = {
-  rfq_id: quote.rfq_id,
-  from_asset: quote.from_asset.asset_id,
-  to_asset: quote.to_asset.asset_id,
-  from_amount: quote.from_asset.amount,
-  to_amount: quote.to_asset.amount,
-};
+### Amount Conversion
 
-const initResultJson = await client.initSwap(initRequest);
-const initResult = JSON.parse(initResultJson);
-console.log(`Swap Initiated: ${initResult.payment_hash}`);
+```typescript
+// Convert display amount to atomic units
+const raw = await client.toRaw(1.5, 'BTC'); // 150000000
+
+// Convert atomic units back to display
+const display = await client.toDisplay(raw, 'BTC'); // 1.5
+
+// Flexible conversion
+const amount = await client.convertAmount(2.5, 'BTC', 'raw');
+```
+
+### Validation & Trade Helpers
+
+```typescript
+// Check if pair is tradeable
+const canTrade = await client.canTrade('BTC', 'USDT');
+
+// Validate amount
+const result = await client.validateAmount(0.01, 'BTC');
+if (result.valid) {
+  console.log(`Raw amount: ${result.rawAmount}`);
+} else {
+  console.log(`Errors: ${result.errors.join(', ')}`);
+}
+
+// Refresh cache
+client.refreshCache();
+```
+
+### High-Level Swap Flows
+
+```typescript
+// Execute complete swap (init + whitelist + execute)
+const initResult = await client.initSwap({
+  rfq_id: quote.rfqId,
+  from_asset: quote.fromAsset,
+  to_asset: quote.toAsset,
+  from_amount: quote.fromAmount,
+  to_amount: quote.toAmount,
+});
+
+await client.whitelistTrade(initResult.swapstring);
+
+await client.executeSwap({
+  swapstring: initResult.swapstring,
+  payment_hash: initResult.payment_hash,
+  taker_pubkey: pubkey,
+});
+
+// Wait for completion
+const status = await client.waitForSwapCompletion(
+  initResult.payment_hash,
+  180, // timeout seconds
+  2,   // poll interval
+);
+```
+
+## Examples
+
+See the [examples/](examples/) directory for complete usage examples.
 ```
 
 ## Configuration

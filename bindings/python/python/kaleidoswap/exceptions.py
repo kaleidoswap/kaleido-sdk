@@ -77,3 +77,28 @@ class ChannelNotFoundError(KaleidoError):
 class OrderNotFoundError(KaleidoError):
     """Order not found."""
     pass
+
+
+class ResourceNotFoundError(KaleidoError):
+    """Requested resource (asset, pair, etc.) not found."""
+    pass
+
+
+class AssetNotFoundError(ResourceNotFoundError):
+    """Asset not found."""
+    pass
+
+
+class TradingPairNotFoundError(ResourceNotFoundError):
+    """Trading pair not found."""
+    pass
+
+
+class NodeLockedError(KaleidoError):
+    """Node is locked."""
+    pass
+
+
+class LspError(KaleidoError):
+    """LSP related error."""
+    pass

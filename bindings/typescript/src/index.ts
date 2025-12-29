@@ -314,6 +314,21 @@ export interface IKaleidoClient {
 
     // WebSocket Streaming
     createQuoteStream(pairTicker: string): Promise<IQuoteStream>;
+
+    // Display Amount Utilities
+    toRaw(displayAmount: number, asset: Asset | string): Promise<number>;
+    toDisplay(rawAmount: number, asset: Asset | string): Promise<number>;
+    convertAmount(amount: number, asset: Asset | string, to: 'raw' | 'display'): Promise<number>;
+
+    // Validation & Trade Helpers
+    canTrade(baseTicker: string, quoteTicker: string): Promise<boolean>;
+    validateAmount(amount: number, assetIdentifier: string): Promise<{
+        valid: boolean;
+        rawAmount: number;
+        displayAmount: number;
+        errors: string[];
+    }>;
+    refreshCache(): void;
 }
 
 // ============================================================================
@@ -622,6 +637,156 @@ export class KaleidoClient implements IKaleidoClient {
 
     async swapOrderRateDecision(orderId: string, accept: boolean): Promise<string> {
         return this.inner.swapOrderRateDecision(orderId, accept);
+    }
+
+    // === Display Amount Utilities ===
+
+    /**
+     * Convert display amount to raw atomic units.
+     * 
+     * @param displayAmount - Amount in display units (e.g., 1.5 BTC)
+     * @param asset - Asset object or ticker string
+     * @returns Raw atomic units
+     */
+    async toRaw(displayAmount: number, asset: Asset | string): Promise<number> {
+        let precision: number;
+
+        if (typeof asset === 'string') {
+            const assetObj = await this.getAssetByTicker(asset);
+            if (typeof assetObj === 'string') {
+                const parsed = JSON.parse(assetObj) as Asset;
+                precision = parsed.precision;
+            } else {
+                precision = assetObj.precision;
+            }
+        } else {
+            precision = asset.precision;
+        }
+
+        return Math.round(displayAmount * Math.pow(10, precision));
+    }
+
+    /**
+     * Convert raw atomic units to display amount.
+     * 
+     * @param rawAmount - Amount in raw atomic units (e.g., 150000000 sats)
+     * @param asset - Asset object or ticker string
+     * @returns Display amount
+     */
+    async toDisplay(rawAmount: number, asset: Asset | string): Promise<number> {
+        let precision: number;
+
+        if (typeof asset === 'string') {
+            const assetObj = await this.getAssetByTicker(asset);
+            if (typeof assetObj === 'string') {
+                const parsed = JSON.parse(assetObj) as Asset;
+                precision = parsed.precision;
+            } else {
+                precision = assetObj.precision;
+            }
+        } else {
+            precision = asset.precision;
+        }
+
+        return rawAmount / Math.pow(10, precision);
+    }
+
+    /**
+     * Convert amount between raw and display units.
+     * 
+     * @param amount - Amount to convert
+     * @param asset - Asset object or ticker string
+     * @param to - 'raw' or 'display'
+     * @returns Converted amount
+     */
+    async convertAmount(amount: number, asset: Asset | string, to: 'raw' | 'display'): Promise<number> {
+        if (to === 'raw') {
+            return this.toRaw(amount, asset);
+        } else if (to === 'display') {
+            return this.toDisplay(amount, asset);
+        } else {
+            throw new Error(`Invalid 'to' value: ${to}. Must be 'raw' or 'display'.`);
+        }
+    }
+
+    // === Validation & Trade Helpers ===
+
+    /**
+     * Check if a trading pair exists and is active.
+     * 
+     * @param baseTicker - Base asset ticker (e.g., "BTC")
+     * @param quoteTicker - Quote asset ticker (e.g., "USDT")
+     * @returns true if pair exists and is active
+     */
+    async canTrade(baseTicker: string, quoteTicker: string): Promise<boolean> {
+        try {
+            const pairs = await this.listPairs();
+            const pairsList = typeof pairs === 'string' ? JSON.parse(pairs) : pairs;
+
+            return pairsList.some((pair: TradingPair) =>
+                (pair.baseAsset === baseTicker && pair.quoteAsset === quoteTicker) ||
+                (pair.baseAsset === quoteTicker && pair.quoteAsset === baseTicker)
+            );
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Validate an amount against asset constraints.
+     * 
+     * @param amount - Display amount to validate
+     * @param assetIdentifier - Asset ticker or ID
+     * @returns Validation result object
+     */
+    async validateAmount(amount: number, assetIdentifier: string): Promise<{
+        valid: boolean;
+        rawAmount: number;
+        displayAmount: number;
+        errors: string[];
+    }> {
+        const errors: string[] = [];
+        let rawAmount = 0;
+
+        try {
+            const asset = await this.getAssetByTicker(assetIdentifier);
+            const assetObj = typeof asset === 'string' ? JSON.parse(asset) as Asset : asset;
+
+            rawAmount = await this.toRaw(amount, assetObj);
+
+            if (amount <= 0) {
+                errors.push('Amount must be positive');
+            }
+
+            if (!Number.isFinite(amount)) {
+                errors.push('Amount must be a valid finite number');
+            }
+
+            if (rawAmount === 0 && amount > 0) {
+                errors.push(`Amount ${amount} is too small for precision ${assetObj.precision}`);
+            }
+        } catch (e) {
+            errors.push(`Asset not found: ${assetIdentifier}`);
+        }
+
+        return {
+            valid: errors.length === 0,
+            rawAmount,
+            displayAmount: amount,
+            errors,
+        };
+    }
+
+    /**
+     * Force refresh of internal caches.
+     * Clears any cached data to ensure fresh data on next request.
+     */
+    refreshCache(): void {
+        this._marketClient = null;
+        this._ordersClient = null;
+        this._swapsClient = null;
+        this._lspClient = null;
+        this._nodeClient = null;
     }
 }
 

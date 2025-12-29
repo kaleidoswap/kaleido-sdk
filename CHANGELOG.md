@@ -5,6 +5,55 @@ All notable changes to the Kaleidoswap SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### ✨ Added - WebSocket Support
+
+#### Core Features
+- **Full WebSocket Implementation** for real-time data streaming
+  - Automatic reconnection with exponential backoff
+  - Event-driven architecture with custom event handlers
+  - Connection state management
+  - Ping/pong keepalive mechanism
+
+#### WebSocket Client Features
+- `WebSocketClient` with configurable reconnection settings
+- Support for multiple event types:
+  - `PriceUpdate` - Real-time price updates
+  - `QuoteResponse` - Fast quote responses
+  - `SwapUpdate` - Swap status updates
+  - `OrderUpdate` - Order status updates
+  - `Connected/Disconnected` - Connection lifecycle events
+  - `Error` - Error handling
+
+#### KaleidoClient Integration
+- `connect_websocket()` - Initialize WebSocket connection
+- `connect_websocket_with_config()` - Custom configuration support
+- `disconnect_websocket()` - Clean disconnection
+- `subscribe_to_pair()` - Subscribe to price updates
+- `unsubscribe_from_pair()` - Unsubscribe from updates
+- `get_quote_websocket()` - Fast quote requests via WebSocket
+- `on_websocket_event()` - Register event handlers
+- `reconnect_websocket()` - Manual reconnection
+
+#### Examples Added
+- **Rust**: `websocket_streaming.rs`, `websocket_quotes.rs`
+- **Python**: `websocket_streaming.py`, `websocket_quotes.py`
+- **TypeScript**: `websocket-streaming.ts`, `websocket-quotes.ts`
+
+#### Testing
+- Comprehensive integration test suite for WebSocket functionality
+- Tests for connection lifecycle, subscriptions, events, and reconnection
+
+#### Documentation
+- Complete WebSocket usage guide with examples
+- Updated README with WebSocket examples for all languages
+- Architecture documentation updated
+
+### 🔄 Changed
+- Moved WebSocket documentation from `planned/` to main `docs/` folder
+- Updated ROADMAP to reflect completed WebSocket implementation
+
 ## [0.2.0] - 2024-11-19
 
 ### 🎉 Major Release: Auto-Generated SDK from OpenAPI Specs
