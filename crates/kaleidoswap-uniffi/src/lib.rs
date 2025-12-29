@@ -721,10 +721,12 @@ impl KaleidoClient {
             _ => Layer::BtcLn, // Default
         };
 
-        let result = self.runtime.block_on(
-            self.inner
-                .get_quote_websocket(&ticker, from_amount, to_amount, layer_enum),
-        )?;
+        let result = self.runtime.block_on(self.inner.get_quote_websocket(
+            &ticker,
+            from_amount,
+            to_amount,
+            layer_enum,
+        ))?;
         Ok(JsonValue::new(result))
     }
 

@@ -2,10 +2,10 @@
 
 import pytest
 from kaleidoswap import (
-    PairQuoteResponse,
+    NetworkInfoResponse,
     OrderHistoryResponse,
     OrderStatsResponse,
-    NetworkInfoResponse,
+    PairQuoteResponse,
 )
 
 API_URL = "http://localhost:8000"
@@ -94,6 +94,7 @@ class TestIntegration:
         assert len(assets) > 0
         # Verify it's actually Asset objects
         from kaleidoswap import Asset
+
         assert isinstance(assets[0], Asset)
 
     def test_list_pairs(self, client):
@@ -103,6 +104,7 @@ class TestIntegration:
         assert len(pairs) > 0
         # Verify it's actually TradingPair objects
         from kaleidoswap import TradingPair
+
         assert isinstance(pairs[0], TradingPair)
 
 
@@ -708,7 +710,7 @@ class TestJsonParsing:
 
     def test_list_assets_returns_typed_objects(self):
         """Test that list_assets returns typed Asset objects."""
-        from kaleidoswap import KaleidoClient, KaleidoConfig, Asset
+        from kaleidoswap import Asset, KaleidoClient, KaleidoConfig
 
         config = KaleidoConfig(
             base_url=API_URL,

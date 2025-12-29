@@ -15,12 +15,9 @@ use tokio::time::{sleep, Duration};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize logging
-    env_logger::init();
-
-    println!("=".repeat(60));
+    println!("{}", "=".repeat(60));
     println!("Kaleidoswap WebSocket Streaming Example");
-    println!("=".repeat(60));
+    println!("{}", "=".repeat(60));
 
     // Create client
     let config = KaleidoConfig::new("https://api.regtest.kaleidoswap.com")
@@ -105,8 +102,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         Ok(quote) => {
             println!("✅ Quote received:");
-            println!("  From: {} {}", quote.from_asset.amount, quote.from_asset.asset_id);
-            println!("  To: {} {}", quote.to_asset.amount, quote.to_asset.asset_id);
+            println!(
+                "  From: {} {}",
+                quote.from_asset.amount, quote.from_asset.asset_id
+            );
+            println!(
+                "  To: {} {}",
+                quote.to_asset.amount, quote.to_asset.asset_id
+            );
             println!("  Price: {:?}", quote.price);
         }
         Err(e) => {
@@ -129,11 +132,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     client.disconnect_websocket().await?;
 
     let final_count = update_count.load(Ordering::SeqCst);
-    println!("\n" .repeat(60));
+    println!();
     println!("✅ Session complete!");
     println!("   Received {} price updates", final_count);
-    println!("=".repeat(60));
+    println!("{}", "=".repeat(60));
 
     Ok(())
 }
-

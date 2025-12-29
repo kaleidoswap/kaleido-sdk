@@ -12,13 +12,13 @@ from pydantic import BaseModel, Field, RootModel
 
 class AddressResponse(BaseModel):
     address: str | None = Field(
-        None, examples=['bcrt1qnc5y6j6dmejrkwy93farhvpezk0lf46gk7aecs']
+        None, examples=["bcrt1qnc5y6j6dmejrkwy93farhvpezk0lf46gk7aecs"]
     )
 
 
 class AssetBalanceRequest(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
 
 
@@ -32,71 +32,71 @@ class AssetBalanceResponse(BaseModel):
 
 class AssetMetadataRequest(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
 
 
 class AssetSchema(Enum):
-    nia = 'Nia'
-    uda = 'Uda'
-    cfa = 'Cfa'
+    nia = "Nia"
+    uda = "Uda"
+    cfa = "Cfa"
 
 
 class Type(Enum):
-    any = 'Any'
+    any = "Any"
 
 
 class AssignmentAny(BaseModel):
-    type: Literal['Any']
+    type: Literal["Any"]
 
 
 class Type1(Enum):
-    fungible = 'Fungible'
+    fungible = "Fungible"
 
 
 class AssignmentFungible(BaseModel):
-    type: Literal['Fungible']
+    type: Literal["Fungible"]
     value: int = Field(..., examples=[42])
 
 
 class Type2(Enum):
-    inflation_right = 'InflationRight'
+    inflation_right = "InflationRight"
 
 
 class AssignmentInflationRight(BaseModel):
-    type: Literal['InflationRight']
+    type: Literal["InflationRight"]
     value: int = Field(..., examples=[200])
 
 
 class Type3(Enum):
-    non_fungible = 'NonFungible'
+    non_fungible = "NonFungible"
 
 
 class AssignmentNonFungible(BaseModel):
-    type: Literal['NonFungible']
+    type: Literal["NonFungible"]
 
 
 class Type4(Enum):
-    replace_right = 'ReplaceRight'
+    replace_right = "ReplaceRight"
 
 
 class AssignmentReplaceRight(BaseModel):
-    type: Literal['ReplaceRight']
+    type: Literal["ReplaceRight"]
 
 
 class BackupRequest(BaseModel):
     backup_path: str | None = Field(
-        None, examples=['/path/where/to/save/the/backup/file']
+        None, examples=["/path/where/to/save/the/backup/file"]
     )
-    password: str | None = Field(None, examples=['nodepassword'])
+    password: str | None = Field(None, examples=["nodepassword"])
 
 
 class BitcoinNetwork(Enum):
-    mainnet = 'Mainnet'
-    testnet = 'Testnet'
-    testnet4 = 'Testnet4'
-    signet = 'Signet'
-    regtest = 'Regtest'
+    mainnet = "Mainnet"
+    testnet = "Testnet"
+    testnet4 = "Testnet4"
+    signet = "Signet"
+    regtest = "Regtest"
 
 
 class BlockTime(BaseModel):
@@ -120,32 +120,32 @@ class BtcBalanceResponse(BaseModel):
 
 
 class ChangePasswordRequest(BaseModel):
-    old_password: str | None = Field(None, examples=['nodepassword'])
-    new_password: str | None = Field(None, examples=['nodenewpassword'])
+    old_password: str | None = Field(None, examples=["nodepassword"])
+    new_password: str | None = Field(None, examples=["nodenewpassword"])
 
 
 class ChannelStatus(Enum):
-    opening = 'Opening'
-    opened = 'Opened'
-    closing = 'Closing'
+    opening = "Opening"
+    opened = "Opened"
+    closing = "Closing"
 
 
 class CheckIndexerUrlRequest(BaseModel):
-    indexer_url: str | None = Field(None, examples=['127.0.0.1:50001'])
+    indexer_url: str | None = Field(None, examples=["127.0.0.1:50001"])
 
 
 class CheckProxyEndpointRequest(BaseModel):
-    proxy_url: str | None = Field(None, examples=['rpc://127.0.0.1:3000/json-rpc'])
+    proxy_url: str | None = Field(None, examples=["rpc://127.0.0.1:3000/json-rpc"])
 
 
 class CloseChannelRequest(BaseModel):
     channel_id: str | None = Field(
         None,
-        examples=['8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a'],
+        examples=["8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a"],
     )
     peer_pubkey: str | None = Field(
         None,
-        examples=['03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d'],
+        examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"],
     )
     force: bool | None = Field(None, examples=[False])
 
@@ -154,7 +154,7 @@ class ConnectPeerRequest(BaseModel):
     peer_pubkey_and_addr: str | None = Field(
         None,
         examples=[
-            '03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736'
+            "03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736"
         ],
     )
 
@@ -171,7 +171,7 @@ class DecodeLNInvoiceRequest(BaseModel):
     invoice: str | None = Field(
         None,
         examples=[
-            'lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8'
+            "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
         ],
     )
 
@@ -181,20 +181,20 @@ class DecodeLNInvoiceResponse(BaseModel):
     expiry_sec: int | None = Field(None, examples=[420])
     timestamp: int | None = Field(None, examples=[1691160659])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     asset_amount: int | None = Field(None, examples=[42])
     payment_hash: str | None = Field(
         None,
-        examples=['5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938'],
+        examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"],
     )
     payment_secret: str | None = Field(
         None,
-        examples=['f9fa239a283a72fa351ec6d0d6fdb16f5e59a64cb10e64add0b57123855ff592'],
+        examples=["f9fa239a283a72fa351ec6d0d6fdb16f5e59a64cb10e64add0b57123855ff592"],
     )
     payee_pubkey: str | None = Field(
         None,
-        examples=['0343851df9e0e8aff0c10b3498ce723ff4c9b4a855e6c8819adcafbbb3e24ea2af'],
+        examples=["0343851df9e0e8aff0c10b3498ce723ff4c9b4a855e6c8819adcafbbb3e24ea2af"],
     )
     network: BitcoinNetwork | None = None
 
@@ -203,7 +203,7 @@ class DecodeRGBInvoiceRequest(BaseModel):
     invoice: str | None = Field(
         None,
         examples=[
-            'rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1749906951&endpoints=rpcs://proxy.iriswallet.com/0.2/json-rpc'
+            "rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1749906951&endpoints=rpcs://proxy.iriswallet.com/0.2/json-rpc"
         ],
     )
 
@@ -211,12 +211,12 @@ class DecodeRGBInvoiceRequest(BaseModel):
 class DisconnectPeerRequest(BaseModel):
     peer_pubkey: str | None = Field(
         None,
-        examples=['03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d'],
+        examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"],
     )
 
 
 class EmbeddedMedia(BaseModel):
-    mime: str | None = Field(None, examples=['text/plain'])
+    mime: str | None = Field(None, examples=["text/plain"])
     data: list[int] | None = Field(None, examples=[[82, 76, 78]])
 
 
@@ -245,79 +245,79 @@ class FailTransfersResponse(BaseModel):
 class GetAssetMediaRequest(BaseModel):
     digest: str | None = Field(
         None,
-        examples=['5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03'],
+        examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"],
     )
 
 
 class GetAssetMediaResponse(BaseModel):
-    bytes_hex: str | None = Field(None, examples=['68656c6c6f0a'])
+    bytes_hex: str | None = Field(None, examples=["68656c6c6f0a"])
 
 
 class GetChannelIdRequest(BaseModel):
     temporary_channel_id: str | None = Field(
         None,
-        examples=['a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5'],
+        examples=["a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5"],
     )
 
 
 class GetChannelIdResponse(BaseModel):
     channel_id: str | None = Field(
         None,
-        examples=['8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a'],
+        examples=["8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a"],
     )
 
 
 class GetPaymentRequest(BaseModel):
     payment_hash: str | None = Field(
         None,
-        examples=['5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938'],
+        examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"],
     )
 
 
 class GetSwapRequest(BaseModel):
     payment_hash: str | None = Field(
         None,
-        examples=['5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938'],
+        examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"],
     )
     taker: bool | None = Field(None, examples=[False])
 
 
 class HTLCStatus(Enum):
-    pending = 'Pending'
-    succeeded = 'Succeeded'
-    failed = 'Failed'
+    pending = "Pending"
+    succeeded = "Succeeded"
+    failed = "Failed"
 
 
 class IndexerProtocol(Enum):
-    electrum = 'Electrum'
-    esplora = 'Esplora'
+    electrum = "Electrum"
+    esplora = "Esplora"
 
 
 class InitRequest(BaseModel):
-    password: str | None = Field(None, examples=['nodepassword'])
+    password: str | None = Field(None, examples=["nodepassword"])
 
 
 class InitResponse(BaseModel):
     mnemonic: str | None = Field(
         None,
         examples=[
-            'skill lamp please gown put season degree collect decline account monitor insane'
+            "skill lamp please gown put season degree collect decline account monitor insane"
         ],
     )
 
 
 class InvoiceStatus(Enum):
-    pending = 'Pending'
-    succeeded = 'Succeeded'
-    failed = 'Failed'
-    expired = 'Expired'
+    pending = "Pending"
+    succeeded = "Succeeded"
+    failed = "Failed"
+    expired = "Expired"
 
 
 class InvoiceStatusRequest(BaseModel):
     invoice: str | None = Field(
         None,
         examples=[
-            'lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8'
+            "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
         ],
     )
 
@@ -328,34 +328,34 @@ class InvoiceStatusResponse(BaseModel):
 
 class IssueAssetCFARequest(BaseModel):
     amounts: list[int] | None = Field(None, examples=[[1000, 600]])
-    name: str | None = Field(None, examples=['Tether'])
-    details: str | None = Field(None, examples=['asset details'])
+    name: str | None = Field(None, examples=["Tether"])
+    details: str | None = Field(None, examples=["asset details"])
     precision: int | None = Field(None, examples=[0])
     file_digest: str | None = Field(
         None,
-        examples=['5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03'],
+        examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"],
     )
 
 
 class IssueAssetNIARequest(BaseModel):
     amounts: list[int] | None = Field(None, examples=[[1000, 600]])
-    ticker: str | None = Field(None, examples=['USDT'])
-    name: str | None = Field(None, examples=['Tether'])
+    ticker: str | None = Field(None, examples=["USDT"])
+    name: str | None = Field(None, examples=["Tether"])
     precision: int | None = Field(None, examples=[0])
 
 
 class IssueAssetUDARequest(BaseModel):
-    ticker: str | None = Field(None, examples=['UNI'])
-    name: str | None = Field(None, examples=['Unique'])
-    details: str | None = Field(None, examples=['asset details'])
+    ticker: str | None = Field(None, examples=["UNI"])
+    name: str | None = Field(None, examples=["Unique"])
+    details: str | None = Field(None, examples=["asset details"])
     precision: int | None = Field(None, examples=[0])
-    media_file_digest: str | None = Field(None, examples=['/path/to/media'])
+    media_file_digest: str | None = Field(None, examples=["/path/to/media"])
     attachments_file_digests: list[str] | None = Field(
         None,
         examples=[
             [
-                '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03',
-                'd7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a',
+                "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+                "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
             ]
         ],
     )
@@ -364,11 +364,11 @@ class IssueAssetUDARequest(BaseModel):
 class KeysendRequest(BaseModel):
     dest_pubkey: str | None = Field(
         None,
-        examples=['03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d'],
+        examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"],
     )
     amt_msat: int | None = Field(None, examples=[3000000])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     asset_amount: int | None = Field(None, examples=[42])
 
@@ -376,18 +376,18 @@ class KeysendRequest(BaseModel):
 class KeysendResponse(BaseModel):
     payment_hash: str | None = Field(
         None,
-        examples=['8ffd4c0642047bc51ea01a22e6b2ede0fc001aee0e9929b2e84e41cf6589d61e'],
+        examples=["8ffd4c0642047bc51ea01a22e6b2ede0fc001aee0e9929b2e84e41cf6589d61e"],
     )
     payment_preimage: str | None = Field(
         None,
-        examples=['89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578'],
+        examples=["89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578"],
     )
     status: HTLCStatus | None = None
 
 
 class ListAssetsRequest(BaseModel):
     filter_asset_schemas: list[AssetSchema] | None = Field(
-        None, examples=[['Nia', 'Uda', 'Cfa']]
+        None, examples=[["Nia", "Uda", "Cfa"]]
     )
 
 
@@ -397,7 +397,7 @@ class ListTransactionsRequest(BaseModel):
 
 class ListTransfersRequest(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
 
 
@@ -409,7 +409,7 @@ class LNInvoiceRequest(BaseModel):
     amt_msat: int | None = Field(None, examples=[3000000])
     expiry_sec: int | None = Field(None, examples=[420])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     asset_amount: int | None = Field(None, examples=[42])
 
@@ -418,7 +418,7 @@ class LNInvoiceResponse(BaseModel):
     invoice: str | None = Field(
         None,
         examples=[
-            'lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8'
+            "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
         ],
     )
 
@@ -427,16 +427,16 @@ class MakerExecuteRequest(BaseModel):
     swapstring: str | None = Field(
         None,
         examples=[
-            '30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2'
+            "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
         ],
     )
     payment_secret: str | None = Field(
         None,
-        examples=['777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2'],
+        examples=["777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2"],
     )
     taker_pubkey: str | None = Field(
         None,
-        examples=['02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043'],
+        examples=["02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043"],
     )
 
 
@@ -444,10 +444,10 @@ class MakerInitRequest(BaseModel):
     qty_from: int | None = Field(None, examples=[30])
     qty_to: int | None = Field(None, examples=[10])
     from_asset: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     to_asset: str | None = Field(
-        None, examples=['rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE']
+        None, examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"]
     )
     timeout_sec: int | None = Field(None, examples=[100])
 
@@ -455,23 +455,23 @@ class MakerInitRequest(BaseModel):
 class MakerInitResponse(BaseModel):
     payment_hash: str | None = Field(
         None,
-        examples=['3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd'],
+        examples=["3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd"],
     )
     payment_secret: str | None = Field(
         None,
-        examples=['777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2'],
+        examples=["777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2"],
     )
     swapstring: str | None = Field(
         None,
         examples=[
-            '30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2'
+            "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
         ],
     )
 
 
 class Media(BaseModel):
-    file_path: str | None = Field(None, examples=['/path/to/media'])
-    mime: str | None = Field(None, examples=['text/plain'])
+    file_path: str | None = Field(None, examples=["/path/to/media"])
+    mime: str | None = Field(None, examples=["text/plain"])
 
 
 class NetworkInfoResponse(BaseModel):
@@ -482,7 +482,7 @@ class NetworkInfoResponse(BaseModel):
 class NodeInfoResponse(BaseModel):
     pubkey: str | None = Field(
         None,
-        examples=['02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043'],
+        examples=["02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043"],
     )
     num_channels: int | None = Field(None, examples=[1])
     num_usable_channels: int | None = Field(None, examples=[0])
@@ -493,13 +493,13 @@ class NodeInfoResponse(BaseModel):
     account_xpub_vanilla: str | None = Field(
         None,
         examples=[
-            'tpubDDfzqHEET3ksD81qshMHkw35yp6TuLP1kr5rWWeJcLAqDfMXKDJzmDwAnda6DCqw7kkkhPphuDZFE2a6Sw8h5ZA5NwmtTssEnjMqN7xMzSd'
+            "tpubDDfzqHEET3ksD81qshMHkw35yp6TuLP1kr5rWWeJcLAqDfMXKDJzmDwAnda6DCqw7kkkhPphuDZFE2a6Sw8h5ZA5NwmtTssEnjMqN7xMzSd"
         ],
     )
     account_xpub_colored: str | None = Field(
         None,
         examples=[
-            'tpubDDcdKhaxwVV2T6xwigti7dSY1a7LHFwZmKAaLWtNhzrvuTXqjjzo8U7YQkUuPah5yHvnk3cbXmb18ZRFwHEKTFUQmA9dij1nPVA2LCJCiEa'
+            "tpubDDcdKhaxwVV2T6xwigti7dSY1a7LHFwZmKAaLWtNhzrvuTXqjjzo8U7YQkUuPah5yHvnk3cbXmb18ZRFwHEKTFUQmA9dij1nPVA2LCJCiEa"
         ],
     )
     max_media_upload_size_mb: int | None = Field(None, examples=[5])
@@ -517,14 +517,14 @@ class OpenChannelRequest(BaseModel):
     peer_pubkey_and_opt_addr: str | None = Field(
         None,
         examples=[
-            '03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736'
+            "03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736"
         ],
     )
     capacity_sat: int | None = Field(None, examples=[30010])
     push_msat: int | None = Field(None, examples=[1394000])
     asset_amount: int | None = Field(None, examples=[333])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     public: bool | None = Field(None, examples=[True])
     with_anchors: bool | None = Field(None, examples=[True])
@@ -532,14 +532,14 @@ class OpenChannelRequest(BaseModel):
     fee_proportional_millionths: int | None = Field(None, examples=[0])
     temporary_channel_id: str | None = Field(
         None,
-        examples=['a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5'],
+        examples=["a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5"],
     )
 
 
 class OpenChannelResponse(BaseModel):
     temporary_channel_id: str | None = Field(
         None,
-        examples=['a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5'],
+        examples=["a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5"],
     )
 
 
@@ -547,11 +547,11 @@ class Payment(BaseModel):
     amt_msat: int | None = Field(None, examples=[3000000])
     asset_amount: int | None = Field(None, examples=[42])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     payment_hash: str | None = Field(
         None,
-        examples=['3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd'],
+        examples=["3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd"],
     )
     inbound: bool | None = Field(None, examples=[True])
     status: HTLCStatus | None = None
@@ -559,14 +559,14 @@ class Payment(BaseModel):
     updated_at: int | None = Field(None, examples=[1691162674])
     payee_pubkey: str | None = Field(
         None,
-        examples=['03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d'],
+        examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"],
     )
 
 
 class Peer(BaseModel):
     pubkey: str | None = Field(
         None,
-        examples=['03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d'],
+        examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"],
     )
 
 
@@ -577,21 +577,21 @@ class PostAssetMediaRequest(BaseModel):
 class PostAssetMediaResponse(BaseModel):
     digest: str | None = Field(
         None,
-        examples=['5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03'],
+        examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"],
     )
 
 
 class ProofOfReserves(BaseModel):
     utxo: str | None = Field(
         None,
-        examples=['efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0'],
+        examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"],
     )
     proof: list[int] | None = Field(None, examples=[[6, 36, 87, 13, 5, 17]])
 
 
 class RecipientType(Enum):
-    blind = 'Blind'
-    witness = 'Witness'
+    blind = "Blind"
+    witness = "Witness"
 
 
 class RefreshRequest(BaseModel):
@@ -599,22 +599,22 @@ class RefreshRequest(BaseModel):
 
 
 class RestoreRequest(BaseModel):
-    backup_path: str | None = Field(None, examples=['/path/to/the/backup/file'])
-    password: str | None = Field(None, examples=['nodepassword'])
+    backup_path: str | None = Field(None, examples=["/path/to/the/backup/file"])
+    password: str | None = Field(None, examples=["nodepassword"])
 
 
 class RevokeTokenRequest(BaseModel):
     token: str | None = Field(
         None,
         examples=[
-            'EnYKDBgDIggKBggGEgIYDRIkCAASICqCgqtFMIJ1eLCM3raDzqg9UqV-6nJWzGjjJG0S5IIUGkBpF-itmppHcdcSrSCiKklz9VZT4UmIND_0RFc32Imq3bLR_Y7GYaSpJo5lJfU1cA2BG_hy7P1UN4g5jKTKS88GIiIKIAUKXrrx0Ca-rMZa537VOFw2X8q_KVQ6OC4Z0ztro0sQ'
+            "EnYKDBgDIggKBggGEgIYDRIkCAASICqCgqtFMIJ1eLCM3raDzqg9UqV-6nJWzGjjJG0S5IIUGkBpF-itmppHcdcSrSCiKklz9VZT4UmIND_0RFc32Imq3bLR_Y7GYaSpJo5lJfU1cA2BG_hy7P1UN4g5jKTKS88GIiIKIAUKXrrx0Ca-rMZa537VOFw2X8q_KVQ6OC4Z0ztro0sQ"
         ],
     )
 
 
 class RgbAllocation(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     assignment: AssignmentFungible | None = None
     settled: bool | None = Field(None, examples=[False])
@@ -623,12 +623,12 @@ class RgbAllocation(BaseModel):
 class RgbInvoiceResponse(BaseModel):
     recipient_id: str | None = Field(
         None,
-        examples=['bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX'],
+        examples=["bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX"],
     )
     invoice: str | None = Field(
         None,
         examples=[
-            'rgb:~/~/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1695811760&endpoints=rpc://127.0.0.1:3000/json-rpc'
+            "rgb:~/~/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1695811760&endpoints=rpc://127.0.0.1:3000/json-rpc"
         ],
     )
     expiration_timestamp: int | None = Field(None, examples=[1695811760])
@@ -638,14 +638,14 @@ class RgbInvoiceResponse(BaseModel):
 class SendAssetResponse(BaseModel):
     txid: str | None = Field(
         None,
-        examples=['7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664'],
+        examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
     )
 
 
 class SendBtcRequest(BaseModel):
     amount: int | None = Field(None, examples=[16900])
     address: str | None = Field(
-        None, examples=['bcrt1qwxht5tut39dws8tjcf649tp908r8fr2j75c94k']
+        None, examples=["bcrt1qwxht5tut39dws8tjcf649tp908r8fr2j75c94k"]
     )
     fee_rate: float | None = Field(None, examples=[5])
     skip_sync: bool | None = Field(None, examples=[False])
@@ -654,21 +654,21 @@ class SendBtcRequest(BaseModel):
 class SendBtcResponse(BaseModel):
     txid: str | None = Field(
         None,
-        examples=['7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664'],
+        examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
     )
 
 
 class SendOnionMessageRequest(BaseModel):
     node_ids: list[str] | None = None
     tlv_type: int | None = Field(None, examples=[77])
-    data: str | None = Field(None, examples=['message to send'])
+    data: str | None = Field(None, examples=["message to send"])
 
 
 class SendPaymentRequest(BaseModel):
     invoice: str | None = Field(
         None,
         examples=[
-            'lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8'
+            "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
         ],
     )
 
@@ -676,45 +676,45 @@ class SendPaymentRequest(BaseModel):
 class SendPaymentResponse(BaseModel):
     payment_hash: str | None = Field(
         None,
-        examples=['3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd'],
+        examples=["3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd"],
     )
     payment_secret: str | None = Field(
         None,
-        examples=['777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2'],
+        examples=["777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2"],
     )
     status: HTLCStatus | None = None
 
 
 class SignMessageRequest(BaseModel):
-    message: str | None = Field(None, examples=['message to sign'])
+    message: str | None = Field(None, examples=["message to sign"])
 
 
 class SignMessageResponse(BaseModel):
-    signed_message: str | None = Field(None, examples=['signed message'])
+    signed_message: str | None = Field(None, examples=["signed message"])
 
 
 class SwapStatus(Enum):
-    waiting = 'Waiting'
-    pending = 'Pending'
-    succeeded = 'Succeeded'
-    expired = 'Expired'
-    failed = 'Failed'
+    waiting = "Waiting"
+    pending = "Pending"
+    succeeded = "Succeeded"
+    expired = "Expired"
+    failed = "Failed"
 
 
 class TakerRequest(BaseModel):
     swapstring: str | None = Field(
         None,
         examples=[
-            '30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2'
+            "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
         ],
     )
 
 
 class Token(BaseModel):
     index: int | None = Field(None, examples=[0])
-    ticker: str | None = Field(None, examples=['TKN'])
-    name: str | None = Field(None, examples=['Token'])
-    details: str | None = Field(None, examples=['token details'])
+    ticker: str | None = Field(None, examples=["TKN"])
+    name: str | None = Field(None, examples=["Token"])
+    details: str | None = Field(None, examples=["token details"])
     embedded_media: EmbeddedMedia | None = None
     media: Media | None = None
     attachments: dict[str, Media] | None = Field(
@@ -722,14 +722,14 @@ class Token(BaseModel):
         examples=[
             {
                 0: {
-                    'file_path': 'path/to/attachment0',
-                    'digest': '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03',
-                    'mime': 'text/plain',
+                    "file_path": "path/to/attachment0",
+                    "digest": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+                    "mime": "text/plain",
                 },
                 1: {
-                    'file_path': 'path/to/attachment1',
-                    'digest': 'd7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a',
-                    'mime': 'image/png',
+                    "file_path": "path/to/attachment1",
+                    "digest": "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
+                    "mime": "image/png",
                 },
             }
         ],
@@ -739,9 +739,9 @@ class Token(BaseModel):
 
 class TokenLight(BaseModel):
     index: int | None = Field(None, examples=[0])
-    ticker: str | None = Field(None, examples=['TKN'])
-    name: str | None = Field(None, examples=['Token'])
-    details: str | None = Field(None, examples=['token details'])
+    ticker: str | None = Field(None, examples=["TKN"])
+    name: str | None = Field(None, examples=["Token"])
+    details: str | None = Field(None, examples=["token details"])
     embedded_media: bool | None = Field(None, examples=[True])
     media: Media | None = None
     attachments: dict[str, Media] | None = Field(
@@ -749,14 +749,14 @@ class TokenLight(BaseModel):
         examples=[
             {
                 0: {
-                    'file_path': 'path/to/attachment0',
-                    'digest': '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03',
-                    'mime': 'text/plain',
+                    "file_path": "path/to/attachment0",
+                    "digest": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+                    "mime": "text/plain",
                 },
                 1: {
-                    'file_path': 'path/to/attachment1',
-                    'digest': 'd7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a',
-                    'mime': 'image/png',
+                    "file_path": "path/to/attachment1",
+                    "digest": "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
+                    "mime": "image/png",
                 },
             }
         ],
@@ -765,47 +765,47 @@ class TokenLight(BaseModel):
 
 
 class TransactionType(Enum):
-    rgb_send = 'RgbSend'
-    drain = 'Drain'
-    create_utxos = 'CreateUtxos'
-    user = 'User'
+    rgb_send = "RgbSend"
+    drain = "Drain"
+    create_utxos = "CreateUtxos"
+    user = "User"
 
 
 class TransferKind(Enum):
-    issuance = 'Issuance'
-    receive_blind = 'ReceiveBlind'
-    receive_witness = 'ReceiveWitness'
-    send = 'Send'
-    inflation = 'Inflation'
+    issuance = "Issuance"
+    receive_blind = "ReceiveBlind"
+    receive_witness = "ReceiveWitness"
+    send = "Send"
+    inflation = "Inflation"
 
 
 class TransferStatus(Enum):
-    waiting_counterparty = 'WaitingCounterparty'
-    waiting_confirmations = 'WaitingConfirmations'
-    settled = 'Settled'
-    failed = 'Failed'
+    waiting_counterparty = "WaitingCounterparty"
+    waiting_confirmations = "WaitingConfirmations"
+    settled = "Settled"
+    failed = "Failed"
 
 
 class TransportType(Enum):
-    json_rpc = 'JsonRpc'
+    json_rpc = "JsonRpc"
 
 
 class UnlockRequest(BaseModel):
-    password: str | None = Field(None, examples=['nodepassword'])
-    bitcoind_rpc_username: str | None = Field(None, examples=['user'])
-    bitcoind_rpc_password: str | None = Field(None, examples=['password'])
-    bitcoind_rpc_host: str | None = Field(None, examples=['localhost'])
+    password: str | None = Field(None, examples=["nodepassword"])
+    bitcoind_rpc_username: str | None = Field(None, examples=["user"])
+    bitcoind_rpc_password: str | None = Field(None, examples=["password"])
+    bitcoind_rpc_host: str | None = Field(None, examples=["localhost"])
     bitcoind_rpc_port: int | None = Field(None, examples=[18443])
-    indexer_url: str | None = Field(None, examples=['127.0.0.1:50001'])
-    proxy_endpoint: str | None = Field(None, examples=['rpc://127.0.0.1:3000/json-rpc'])
+    indexer_url: str | None = Field(None, examples=["127.0.0.1:50001"])
+    proxy_endpoint: str | None = Field(None, examples=["rpc://127.0.0.1:3000/json-rpc"])
     announce_addresses: list[str] | None = None
-    announce_alias: str | None = Field(None, examples=['nodeAlias'])
+    announce_alias: str | None = Field(None, examples=["nodeAlias"])
 
 
 class Utxo(BaseModel):
     outpoint: str | None = Field(
         None,
-        examples=['efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0'],
+        examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"],
     )
     btc_amount: int | None = Field(None, examples=[1000])
     colorable: bool | None = Field(None, examples=[True])
@@ -822,19 +822,19 @@ class AssetMetadataResponse(BaseModel):
     max_supply: int | None = Field(None, examples=[777])
     known_circulating_supply: int | None = Field(None, examples=[777])
     timestamp: int | None = Field(None, examples=[1691160565])
-    name: str | None = Field(None, examples=['Collectible'])
+    name: str | None = Field(None, examples=["Collectible"])
     precision: int | None = Field(None, examples=[0])
-    ticker: str | None = Field(None, examples=['USDT'])
-    details: str | None = Field(None, examples=['asset details'])
+    ticker: str | None = Field(None, examples=["USDT"])
+    details: str | None = Field(None, examples=["asset details"])
     token: Token | None = None
 
 
 class AssetCFA(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
-    name: str | None = Field(None, examples=['Collectible'])
-    details: str | None = Field(None, examples=['asset details'])
+    name: str | None = Field(None, examples=["Collectible"])
+    details: str | None = Field(None, examples=["asset details"])
     precision: int | None = Field(None, examples=[0])
     issued_supply: int | None = Field(None, examples=[777])
     timestamp: int | None = Field(None, examples=[1691160565])
@@ -845,11 +845,11 @@ class AssetCFA(BaseModel):
 
 class AssetNIA(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
-    ticker: str | None = Field(None, examples=['USDT'])
-    name: str | None = Field(None, examples=['Tether'])
-    details: str | None = Field(None, examples=['asset details'])
+    ticker: str | None = Field(None, examples=["USDT"])
+    name: str | None = Field(None, examples=["Tether"])
+    details: str | None = Field(None, examples=["asset details"])
     precision: int | None = Field(None, examples=[0])
     issued_supply: int | None = Field(None, examples=[777])
     timestamp: int | None = Field(None, examples=[1691160565])
@@ -860,11 +860,11 @@ class AssetNIA(BaseModel):
 
 class AssetUDA(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
-    ticker: str | None = Field(None, examples=['UNI'])
-    name: str | None = Field(None, examples=['Unique'])
-    details: str | None = Field(None, examples=['asset details'])
+    ticker: str | None = Field(None, examples=["UNI"])
+    name: str | None = Field(None, examples=["Unique"])
+    details: str | None = Field(None, examples=["asset details"])
     precision: int | None = Field(None, examples=[0])
     timestamp: int | None = Field(None, examples=[1691160565])
     added_at: int | None = Field(None, examples=[1691161979])
@@ -887,21 +887,21 @@ class Assignment(
         | AssignmentInflationRight
         | AssignmentReplaceRight
         | AssignmentAny
-    ) = Field(..., discriminator='type')
+    ) = Field(..., discriminator="type")
 
 
 class Channel(BaseModel):
     channel_id: str | None = Field(
         None,
-        examples=['8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a'],
+        examples=["8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a"],
     )
     funding_txid: str | None = Field(
         None,
-        examples=['5a106a814fe28404eece1754dfd45e92ec9bb0044cbfe1d560cfd7b1e1af2981'],
+        examples=["5a106a814fe28404eece1754dfd45e92ec9bb0044cbfe1d560cfd7b1e1af2981"],
     )
     peer_pubkey: str | None = Field(
         None,
-        examples=['03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d'],
+        examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"],
     )
     peer_alias: str | None = Field(None, examples=[None])
     short_channel_id: int | None = Field(None, examples=[120946279120896])
@@ -916,7 +916,7 @@ class Channel(BaseModel):
     is_usable: bool | None = Field(None, examples=[False])
     public: bool | None = Field(None, examples=[True])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     asset_local_amount: int | None = Field(None, examples=[777])
     asset_remote_amount: int | None = Field(None, examples=[0])
@@ -929,12 +929,12 @@ class CheckIndexerUrlResponse(BaseModel):
 class DecodeRGBInvoiceResponse(BaseModel):
     recipient_id: str | None = Field(
         None,
-        examples=['bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX'],
+        examples=["bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX"],
     )
     recipient_type: RecipientType | None = None
     asset_schema: AssetSchema | None = None
     asset_id: str | None = Field(
-        None, examples=['rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE']
+        None, examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"]
     )
     assignment: Assignment | None = None
     network: BitcoinNetwork | None = None
@@ -979,7 +979,7 @@ class ListPeersResponse(BaseModel):
 class RgbInvoiceRequest(BaseModel):
     min_confirmations: int | None = Field(None, examples=[1])
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     assignment: Assignment | None = None
     duration_seconds: int | None = Field(None, examples=[86400])
@@ -988,12 +988,12 @@ class RgbInvoiceRequest(BaseModel):
 
 class SendAssetRequest(BaseModel):
     asset_id: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     assignment: AssignmentFungible | None = None
     recipient_id: str | None = Field(
         None,
-        examples=['bcrt:utxob:2FZsSuk-iyVQLVuU4-Gc6J4qkE8-mLS17N4jd-MEx6cWz9F-MFkyE1n'],
+        examples=["bcrt:utxob:2FZsSuk-iyVQLVuU4-Gc6J4qkE8-mLS17N4jd-MEx6cWz9F-MFkyE1n"],
     )
     witness_data: WitnessData | None = None
     donation: bool | None = Field(None, examples=[False])
@@ -1007,14 +1007,14 @@ class Swap(BaseModel):
     qty_from: int | None = Field(None, examples=[30])
     qty_to: int | None = Field(None, examples=[10])
     from_asset: str | None = Field(
-        None, examples=['rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8']
+        None, examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"]
     )
     to_asset: str | None = Field(
-        None, examples=['rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE']
+        None, examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"]
     )
     payment_hash: str | None = Field(
         None,
-        examples=['7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664'],
+        examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
     )
     status: SwapStatus | None = None
     requested_at: int | None = Field(None, examples=[1691160765])
@@ -1027,7 +1027,7 @@ class Transaction(BaseModel):
     transaction_type: TransactionType | None = None
     txid: str | None = Field(
         None,
-        examples=['7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664'],
+        examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
     )
     received: int | None = Field(None, examples=[650])
     sent: int | None = Field(None, examples=[1050])
@@ -1036,7 +1036,7 @@ class Transaction(BaseModel):
 
 
 class TransferTransportEndpoint(BaseModel):
-    endpoint: str | None = Field(None, examples=['http://127.0.0.1:3000/json-rpc'])
+    endpoint: str | None = Field(None, examples=["http://127.0.0.1:3000/json-rpc"])
     transport_type: TransportType | None = None
     used: bool | None = Field(None, examples=[False])
 
@@ -1073,14 +1073,14 @@ class Transfer(BaseModel):
     kind: TransferKind | None = None
     txid: str | None = Field(
         None,
-        examples=['7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664'],
+        examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
     )
     recipient_id: str | None = Field(
-        None, examples=['61qsVbWtkNmU54F2i6qtB9uSmEGsPoaeypCi5uC5uctZ']
+        None, examples=["61qsVbWtkNmU54F2i6qtB9uSmEGsPoaeypCi5uC5uctZ"]
     )
     receive_utxo: str | None = Field(
         None,
-        examples=['efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0'],
+        examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"],
     )
     change_utxo: str | None = Field(None, examples=[None])
     expiration: int | None = Field(None, examples=[1691171612])

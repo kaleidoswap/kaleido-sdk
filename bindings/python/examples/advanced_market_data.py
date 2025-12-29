@@ -14,13 +14,13 @@ import logging
 import os
 
 from kaleidoswap import (
-    KaleidoClient, 
-    KaleidoConfig, 
-    Asset, 
-    KaleidoError, 
+    Asset,
     AssetNotFoundError,
+    KaleidoClient,
+    KaleidoConfig,
+    KaleidoError,
     TradingPairNotFoundError,
-    ValidationError
+    ValidationError,
 )
 
 # Configure logging
@@ -42,7 +42,7 @@ def main():
 
     # Example 1: Find assets by ticker
     logger.info("🔍 Example 1: Finding assets by ticker...")
-    
+
     try:
         btc_asset = client.get_asset_by_ticker("BTC")
         if btc_asset:
@@ -62,7 +62,7 @@ def main():
 
     # Example 2: Find trading pair by ticker
     logger.info("\n📊 Example 2: Finding trading pairs by ticker...")
-    
+
     try:
         pairs = client.list_pairs()
         if pairs:
@@ -93,7 +93,7 @@ def main():
         # Convert back
         converted_back = client.to_display(atomic_amount, btc_asset)
         logger.info(f"  {atomic_amount} satoshis = {converted_back} BTC")
-        
+
         # Using convert_amount helper
         result = client.convert_amount(2.5, btc_asset, to="raw")
         logger.info(f"  2.5 BTC = {result} satoshis (via convert_amount)")
@@ -101,10 +101,10 @@ def main():
         # Demo with mock asset
         logger.info("  Using mock BTC asset for demo...")
         mock_btc = Asset(ticker="BTC", name="Bitcoin", precision=8)
-        
+
         atomic = client.to_raw(1.0, mock_btc)
         logger.info(f"  1.0 BTC = {atomic} satoshis")
-        
+
         display = client.to_display(100_000_000, mock_btc)
         logger.info(f"  100,000,000 satoshis = {display} BTC")
 
@@ -141,20 +141,22 @@ def main():
         if pairs:
             first_pair = pairs[0]
             pair_ticker = f"{first_pair.base.ticker}/{first_pair.quote.ticker}"
-            
+
             # Get base asset to check limits
             base_asset = client.get_asset_by_ticker(first_pair.base.ticker)
-            
+
             # Find a valid amount from asset limits
             from_amount = 10_000_000  # Default 10M smallest units
             if base_asset and base_asset.endpoints:
                 for endpoint in base_asset.endpoints:
-                    if hasattr(endpoint, 'min_amount') and endpoint.min_amount:
-                        from_amount = max(from_amount, endpoint.min_amount + endpoint.min_amount // 10)
+                    if hasattr(endpoint, "min_amount") and endpoint.min_amount:
+                        from_amount = max(
+                            from_amount, endpoint.min_amount + endpoint.min_amount // 10
+                        )
                         break
-            
+
             logger.info(f"  Using amount: {from_amount} for {pair_ticker}")
-            
+
             quote = client.get_quote_by_pair(
                 ticker=pair_ticker,
                 from_amount=from_amount,
@@ -162,15 +164,19 @@ def main():
 
             logger.info(f"  ✅ Quote for {pair_ticker}:")
             logger.info(f"    RFQ ID: {quote.rfq_id}")
-            logger.info(f"    From: {quote.from_asset.amount} {quote.from_asset.ticker}")
+            logger.info(
+                f"    From: {quote.from_asset.amount} {quote.from_asset.ticker}"
+            )
             logger.info(f"    To: {quote.to_asset.amount} {quote.to_asset.ticker}")
-    except ResourceNotFoundError as e:
-        logger.warning(f"  Resource not found: {e}")
+    except Exception as e:
+        if "not found" in str(e).lower():
+            logger.warning(f"  Resource not found: {e}")
+        else:
+            raise
     except KaleidoError as e:
         logger.warning(f"  Error getting quote: {e}")
     except Exception as e:
         logger.warning(f"  Unexpected error: {e}")
-
 
     # Example 7: Cache management
     logger.info("\n🔄 Example 7: Cache management...")

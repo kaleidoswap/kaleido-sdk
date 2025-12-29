@@ -92,9 +92,10 @@ class TestClientMethods:
         """Test that list_assets returns typed Asset objects."""
         result = client.list_assets()
         assert isinstance(result, list)
-        
+
         # Verify objects are Asset instances
         from kaleidoswap import Asset
+
         if len(result) > 0:
             assert isinstance(result[0], Asset)
 
@@ -102,9 +103,10 @@ class TestClientMethods:
         """Test that list_pairs returns typed TradingPair objects."""
         result = client.list_pairs()
         assert isinstance(result, list)
-        
+
         # Verify objects are TradingPair instances
         from kaleidoswap import TradingPair
+
         if len(result) > 0:
             assert isinstance(result[0], TradingPair)
 
@@ -183,8 +185,13 @@ class TestModuleMetadata:
 
     def test_imports_work(self):
         """Test that all main imports work."""
-        from kaleidoswap import (KaleidoClient, KaleidoConfig, KaleidoError,
-                                 to_display_units, to_smallest_units)
+        from kaleidoswap import (
+            KaleidoClient,
+            KaleidoConfig,
+            KaleidoError,
+            to_display_units,
+            to_smallest_units,
+        )
 
         assert KaleidoClient is not None
         assert KaleidoConfig is not None
@@ -303,7 +310,7 @@ class TestDisplayAmountIntegration:
             name="Bitcoin",
             precision=8,
         )
-        
+
         result = client.to_raw(1.5, btc_asset)
         assert result == 150_000_000  # 1.5 BTC in satoshis
 
@@ -316,7 +323,7 @@ class TestDisplayAmountIntegration:
             name="Bitcoin",
             precision=8,
         )
-        
+
         result = client.to_display(150_000_000, btc_asset)
         assert result == 1.5
 
@@ -329,7 +336,7 @@ class TestDisplayAmountIntegration:
             name="Tether",
             precision=6,
         )
-        
+
         result = client.convert_amount(10.5, usdt_asset, "raw")
         assert result == 10_500_000
 
@@ -342,7 +349,7 @@ class TestDisplayAmountIntegration:
             name="Tether",
             precision=6,
         )
-        
+
         result = client.convert_amount(10_500_000, usdt_asset, "display")
         assert result == 10.5
 
@@ -355,7 +362,7 @@ class TestDisplayAmountIntegration:
             name="Tether",
             precision=6,
         )
-        
+
         with pytest.raises(ValueError):
             client.convert_amount(10.5, usdt_asset, "invalid")
 
@@ -379,12 +386,12 @@ class TestValidationIntegration:
         """Test validate_amount with a live asset from the API."""
         # This test requires a running API
         result = client.validate_amount(1.0, "BTC")
-        
+
         assert "valid" in result
         assert "raw_amount" in result
         assert "display_amount" in result
         assert "errors" in result
-        
+
         if result["valid"]:
             assert result["raw_amount"] > 0
             assert result["display_amount"] == 1.0
@@ -394,7 +401,7 @@ class TestValidationIntegration:
         """Test can_trade with live trading pairs."""
         # This tests with actual pairs from the API
         result = client.can_trade("BTC", "USDT")
-        
+
         # Result should be boolean
         assert isinstance(result, bool)
 
@@ -439,7 +446,7 @@ class TestHighLevelSwapFlows:
                 side="invalid",  # Invalid side
                 taker_pubkey="fakepubkey",
             )
-        
+
         assert "Invalid side" in str(exc_info.value)
 
     def test_execute_swap_by_pair_invalid_ticker(self, client):
@@ -451,6 +458,5 @@ class TestHighLevelSwapFlows:
                 side="sell",
                 taker_pubkey="fakepubkey",
             )
-        
-        assert "Invalid pair ticker" in str(exc_info.value)
 
+        assert "Invalid pair ticker" in str(exc_info.value)

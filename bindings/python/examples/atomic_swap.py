@@ -58,30 +58,30 @@ def main():
     from_ticker = pair.base.ticker if pair.base else "?"
     to_ticker = pair.quote.ticker if pair.quote else "?"
     pair_ticker = f"{from_ticker}/{to_ticker}"
-    
+
     print(f"   Using pair: {pair_ticker}")
     print(f"   Price: {pair.price}")
-    
+
     # Get trading limits from the pair's routes
     min_amount = None
     max_amount = None
-    
+
     # Check if base asset has endpoints with limits
     from_asset = client.get_asset_by_ticker(from_ticker)
     if from_asset and from_asset.endpoints:
         for endpoint in from_asset.endpoints:
-            if hasattr(endpoint, 'min_amount') and hasattr(endpoint, 'max_amount'):
+            if hasattr(endpoint, "min_amount") and hasattr(endpoint, "max_amount"):
                 min_amount = endpoint.min_amount
                 max_amount = endpoint.max_amount
                 print(f"   Limits: min={min_amount}, max={max_amount}")
                 break
-    
+
     # Step 2: Calculate a valid amount
     print("\n💰 Step 2: Determining valid swap amount...")
-    
+
     # Start with a reasonable default
     from_amount = 10_000_000  # 10M smallest units
-    
+
     # Adjust to be within limits if known
     if min_amount and from_amount < min_amount:
         from_amount = min_amount + (min_amount // 10)  # Add 10% buffer
@@ -89,8 +89,10 @@ def main():
     elif max_amount and from_amount > max_amount:
         from_amount = max_amount - (max_amount // 10)  # Subtract 10% buffer
         print(f"   Adjusted to maximum: {from_amount}")
-    
-    display_amount = client.to_display(from_amount, from_asset) if from_asset else from_amount
+
+    display_amount = (
+        client.to_display(from_amount, from_asset) if from_asset else from_amount
+    )
     print(f"   Amount: {from_amount} ({display_amount} {from_ticker})")
 
     # Step 3: Get a quote
@@ -142,7 +144,7 @@ def main():
         print("   ✅ Swap completed:")
         print(f"     Swapstring: {result['swapstring'][:50]}...")
         print(f"     Payment Hash: {result['payment_hash']}")
-        
+
         if "swap" in result:
             swap = result["swap"]
             if isinstance(swap, dict):

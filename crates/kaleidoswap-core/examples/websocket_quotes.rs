@@ -21,9 +21,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Request multiple quotes
     let pairs = vec![
-        ("BTC/USDT", 100000000),  // 1 BTC
-        ("BTC/USDT", 50000000),   // 0.5 BTC
-        ("BTC/USDT", 200000000),  // 2 BTC
+        ("BTC/USDT", 100000000), // 1 BTC
+        ("BTC/USDT", 50000000),  // 0.5 BTC
+        ("BTC/USDT", 200000000), // 2 BTC
     ];
 
     for (pair, amount) in pairs {
@@ -38,9 +38,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("  ✅ Quote received:");
                 println!("     From: {:.8} BTC", from_btc);
                 println!("     To: {} USDT", quote.to_asset.amount);
-                if let Some(price) = quote.price {
-                    println!("     Price: ${:.2}/BTC", price);
-                }
+                let price = quote.price as f64 / 1_000_000.0;
+                println!("     Price: ${:.2}/BTC", price);
                 println!();
             }
             Err(e) => {
@@ -55,4 +54,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

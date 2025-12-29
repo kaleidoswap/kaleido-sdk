@@ -104,9 +104,9 @@ async fn test_websocket_quote_request() {
             assert!(!quote.from_asset.asset_id.is_empty());
             assert!(!quote.to_asset.asset_id.is_empty());
             assert!(quote.from_asset.amount > 0);
-            println!("Quote received: {} -> {}", 
-                quote.from_asset.amount, 
-                quote.to_asset.amount
+            println!(
+                "Quote received: {} -> {}",
+                quote.from_asset.amount, quote.to_asset.amount
             );
         }
         Err(e) => {
@@ -229,4 +229,3 @@ async fn test_websocket_disconnect_event() {
     // Should have received disconnect event
     assert!(disconnected.load(Ordering::SeqCst));
 }
-

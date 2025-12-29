@@ -39,7 +39,11 @@ def main():
     logger.info("📋 Step 1: Getting LSP information...")
     try:
         lsp_info = client.get_lsp_info()
-        logger.info(f"  LSP Info: {lsp_info[:200]}..." if len(lsp_info) > 200 else f"  LSP Info: {lsp_info}")
+        logger.info(
+            f"  LSP Info: {lsp_info[:200]}..."
+            if len(lsp_info) > 200
+            else f"  LSP Info: {lsp_info}"
+        )
     except Exception as e:
         logger.warning(f"  Could not get LSP info: {e}")
 
@@ -56,25 +60,37 @@ def main():
     logger.info("\n🔑 Step 3: Checking node availability...")
     if client.has_node():
         logger.info("  ✅ Node is configured")
-        
+
         # Get node info
         try:
             node_info = client.get_rgb_node_info()
-            logger.info(f"  Node info: {node_info[:100]}..." if len(node_info) > 100 else f"  Node info: {node_info}")
+            logger.info(
+                f"  Node info: {node_info[:100]}..."
+                if len(node_info) > 100
+                else f"  Node info: {node_info}"
+            )
         except Exception as e:
             logger.warning(f"  Could not get node info: {e}")
-            
+
         # Get channels
         try:
             channels = client.list_channels()
-            logger.info(f"  Channels: {channels[:100]}..." if len(channels) > 100 else f"  Channels: {channels}")
+            logger.info(
+                f"  Channels: {channels[:100]}..."
+                if len(channels) > 100
+                else f"  Channels: {channels}"
+            )
         except Exception as e:
             logger.warning(f"  Could not list channels: {e}")
-            
+
         # Get peers
         try:
             peers = client.list_peers()
-            logger.info(f"  Peers: {peers[:100]}..." if len(peers) > 100 else f"  Peers: {peers}")
+            logger.info(
+                f"  Peers: {peers[:100]}..."
+                if len(peers) > 100
+                else f"  Peers: {peers}"
+            )
         except Exception as e:
             logger.warning(f"  Could not list peers: {e}")
     else:

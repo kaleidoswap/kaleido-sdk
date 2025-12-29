@@ -65,7 +65,10 @@ pub enum WsMessage {
     OrderUpdate { data: serde_json::Value },
     /// Error message
     #[serde(rename = "error")]
-    Error { message: String, code: Option<String> },
+    Error {
+        message: String,
+        code: Option<String>,
+    },
     /// Ping for keepalive
     #[serde(rename = "ping")]
     Ping,
@@ -251,19 +254,17 @@ impl WebSocketClient {
         tokio::spawn(async move {
             while let Some(msg_result) = read.next().await {
                 match msg_result {
-                    Ok(Message::Text(text)) => {
-                        match serde_json::from_str::<WsMessage>(&text) {
-                            Ok(ws_msg) => {
-                                if let Err(e) = tx_to_client_clone.send(ws_msg).await {
-                                    log::error!("Failed to forward message: {}", e);
-                                    break;
-                                }
-                            }
-                            Err(e) => {
-                                log::warn!("Failed to parse WebSocket message: {}", e);
+                    Ok(Message::Text(text)) => match serde_json::from_str::<WsMessage>(&text) {
+                        Ok(ws_msg) => {
+                            if let Err(e) = tx_to_client_clone.send(ws_msg).await {
+                                log::error!("Failed to forward message: {}", e);
+                                break;
                             }
                         }
-                    }
+                        Err(e) => {
+                            log::warn!("Failed to parse WebSocket message: {}", e);
+                        }
+                    },
                     Ok(Message::Ping(_)) => {
                         log::debug!("Received ping");
                     }
@@ -284,7 +285,7 @@ impl WebSocketClient {
 
             // Connection lost
             *state.write().await = ConnectionState::Disconnected;
-            
+
             // Emit disconnect event
             let handlers = event_handlers.read().await;
             if let Some(event_handlers) = handlers.get(&WsEvent::Disconnected) {
@@ -366,8 +367,9 @@ impl WebSocketClient {
 
         let current_attempts = {
             let mut attempts = self.reconnect_attempts.write().await;
-            
-            if self.config.max_reconnect_attempts > 0 && *attempts >= self.config.max_reconnect_attempts
+
+            if self.config.max_reconnect_attempts > 0
+                && *attempts >= self.config.max_reconnect_attempts
             {
                 return Err(KaleidoError::websocket(format!(
                     "Max reconnection attempts ({}) exceeded",
@@ -468,8 +470,11 @@ impl WebSocketClient {
         self.sender = None;
         *self.receiver.write().await = None;
         self.set_state(ConnectionState::Disconnected).await;
-        self.emit_event(WsEvent::Disconnected, serde_json::json!({"reason": "manual"}))
-            .await;
+        self.emit_event(
+            WsEvent::Disconnected,
+            serde_json::json!({"reason": "manual"}),
+        )
+        .await;
     }
 
     /// Check if connected.
@@ -511,7 +516,7 @@ mod tests {
     fn test_url_conversion() {
         let client = WebSocketClient::new("https://api.example.com").unwrap();
         assert!(client.url.as_str().starts_with("wss://"));
-        assert!(client.url.as_str().ends_with("/ws"));
+        assert!(client.url.as_str().contains("/api/v1/market/ws/"));
 
         let client2 = WebSocketClient::new("http://localhost:8000").unwrap();
         assert!(client2.url.as_str().starts_with("ws://"));
@@ -552,7 +557,7 @@ mod tests {
     #[tokio::test]
     async fn test_event_handler_registration() {
         let client = WebSocketClient::new("https://api.example.com").unwrap();
-        
+
         client
             .on(WsEvent::PriceUpdate, |data| {
                 println!("Price update: {:?}", data);
@@ -566,7 +571,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_connection_state() {
-        let mut client = WebSocketClient::new("https://api.example.com").unwrap();
+        let client = WebSocketClient::new("https://api.example.com").unwrap();
         assert_eq!(client.state().await, ConnectionState::Disconnected);
 
         // Note: Actual connection will fail since it's just a test URL

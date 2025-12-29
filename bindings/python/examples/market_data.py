@@ -35,7 +35,6 @@ def main():
 
     print("-" * 40)
     assets = client.list_assets()
-    
 
     for asset in assets[:5]:  # Show first 5
         name = getattr(asset, "name", "Unknown")
@@ -71,23 +70,25 @@ def main():
 
         try:
             # Determine valid amount from asset limits
-            ticker_parts = ticker.split('/')
+            ticker_parts = ticker.split("/")
             base_ticker = ticker_parts[0]
             base_asset = None
-            
+
             # Find base asset to check limits
             for asset in assets:
                 if getattr(asset, "ticker", "") == base_ticker:
                     base_asset = asset
                     break
-            
+
             from_amount = 10_000_000  # Default 10M
-            if base_asset and hasattr(base_asset, 'endpoints') and base_asset.endpoints:
+            if base_asset and hasattr(base_asset, "endpoints") and base_asset.endpoints:
                 for endpoint in base_asset.endpoints:
-                    if hasattr(endpoint, 'min_amount') and endpoint.min_amount:
-                        from_amount = max(from_amount, endpoint.min_amount + endpoint.min_amount // 10)
+                    if hasattr(endpoint, "min_amount") and endpoint.min_amount:
+                        from_amount = max(
+                            from_amount, endpoint.min_amount + endpoint.min_amount // 10
+                        )
                         break
-            
+
             print(f"  Requesting quote for {from_amount} {base_ticker}...")
             quote = client.get_best_quote(ticker, from_amount, None)
 
@@ -101,7 +102,7 @@ def main():
             print(f"  Error getting quote: {e} ({type(e).__name__})")
         except Exception as e:
             print(f"  Unexpected error: {e}")
-            
+
     # Demonstrate error handling
     print("\n⚠️  Testing Error Handling:")
     print("-" * 40)
@@ -120,4 +121,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

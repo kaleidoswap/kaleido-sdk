@@ -54,12 +54,12 @@ def main():
     from_ticker = pair.base.ticker if pair.base else "?"
     to_ticker = pair.quote.ticker if pair.quote else "?"
     pair_ticker = f"{from_ticker}/{to_ticker}"
-    
+
     logger.info(f"  Using Pair: {pair_ticker}")
 
     # Determine valid amount from asset limits
     from_amount = 10_000_000  # Default 10M
-    
+
     base_asset = None
     assets = client.list_assets()
     for asset in assets:
@@ -67,10 +67,12 @@ def main():
             base_asset = asset
             break
 
-    if base_asset and hasattr(base_asset, 'endpoints') and base_asset.endpoints:
+    if base_asset and hasattr(base_asset, "endpoints") and base_asset.endpoints:
         for endpoint in base_asset.endpoints:
-            if hasattr(endpoint, 'min_amount') and endpoint.min_amount:
-                from_amount = max(from_amount, endpoint.min_amount + endpoint.min_amount // 10)
+            if hasattr(endpoint, "min_amount") and endpoint.min_amount:
+                from_amount = max(
+                    from_amount, endpoint.min_amount + endpoint.min_amount // 10
+                )
                 break
 
     # Step 2: Get a quote to determine amounts
@@ -112,8 +114,8 @@ def main():
                 to_asset=quote.to_asset,
                 receiver_address=ReceiverAddress(
                     address="lnbcrt1p...",  # Mock invoice for demo
-                    format=ReceiverAddressFormat.bolt11
-                )
+                    format=ReceiverAddressFormat.bolt11,
+                ),
             )
 
             # Pass the typed object - client will serialize it correctly
@@ -135,7 +137,9 @@ def main():
 
         except Exception as e:
             logger.warning(f"  Could not create swap order: {e}")
-            logger.info("  Note: This is expected if 'lnbcrt1p...' is not a valid invoice or node rejects it")
+            logger.info(
+                "  Note: This is expected if 'lnbcrt1p...' is not a valid invoice or node rejects it"
+            )
     else:
         logger.info("\n⏭️  Step 4: Skipping swap order creation (missing quote or node)")
 

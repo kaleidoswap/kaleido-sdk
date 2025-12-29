@@ -180,7 +180,7 @@ def example_graceful_degradation():
     # Node operations will fail gracefully
     if not client.has_node():
         logger.info("  Skipping node-dependent operations")
-    
+
 
 def main():
     """Run all error handling examples."""

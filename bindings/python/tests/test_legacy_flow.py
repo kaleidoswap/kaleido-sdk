@@ -183,7 +183,6 @@ async def test_create_order_legacy(client):
     onchain_response = client.node.get_onchain_address()
     onchain_address = onchain_response.address
 
-
     order_request = {
         "client_pubkey": pubkey,
         "lsp_balance_sat": 80000,
@@ -231,8 +230,12 @@ async def test_create_swap_order_legacy(client):
     # Create swap order request matching Rust CreateSwapOrderRequest
     swap_order_request = {
         "rfq_id": quote.rfq_id,
-        "from_asset": quote.from_asset.model_dump(mode='json'),  # Convert to JSON-serializable dict
-        "to_asset": quote.to_asset.model_dump(mode='json'),  # Convert to JSON-serializable dict
+        "from_asset": quote.from_asset.model_dump(
+            mode="json"
+        ),  # Convert to JSON-serializable dict
+        "to_asset": quote.to_asset.model_dump(
+            mode="json"
+        ),  # Convert to JSON-serializable dict
         "receiver_address": {
             "address": "rgb:invoice:example123",
             "format": "RGB_INVOICE",

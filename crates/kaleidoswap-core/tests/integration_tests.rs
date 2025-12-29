@@ -6,4 +6,3 @@
 mod integration {
     mod websocket_tests;
 }
-

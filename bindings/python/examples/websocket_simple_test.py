@@ -7,6 +7,7 @@ Note: Requires a running WebSocket server to fully function.
 """
 
 import asyncio
+
 from kaleidoswap import KaleidoClient, KaleidoConfig, WsEvent
 
 BASE_URL = "http://localhost:8000"
@@ -55,15 +56,15 @@ async def main():
     try:
         await client.connect_websocket()
         print("   ✅ connect_websocket() called successfully")
-        
+
         # If we got here, try to check status
         connected = await client.is_websocket_connected()
         print(f"   ℹ️  Connection status: {connected}")
-        
+
         # Try to disconnect
         await client.disconnect_websocket()
         print("   ✅ disconnect_websocket() called successfully")
-        
+
     except Exception as e:
         print(f"   ⚠️  Connection failed (expected): {type(e).__name__}: {str(e)[:80]}")
 
@@ -76,4 +77,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
