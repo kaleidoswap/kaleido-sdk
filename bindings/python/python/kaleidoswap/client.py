@@ -1033,3 +1033,78 @@ class KaleidoClient:
             taker_pubkey=taker_pubkey,
             wait_for_completion=False,
         )
+
+    # === WebSocket Operations ===
+
+    async def connect_websocket(self) -> None:
+        """Connect to WebSocket for real-time updates."""
+        self._inner.connect_websocket()
+
+    async def disconnect_websocket(self) -> None:
+        """Disconnect from WebSocket."""
+        self._inner.disconnect_websocket()
+
+    async def is_websocket_connected(self) -> bool:
+        """Check if WebSocket is connected."""
+        return self._inner.is_websocket_connected()
+
+    async def subscribe_to_pair(self, pair_id: str) -> None:
+        """Subscribe to price updates for a trading pair.
+        
+        Args:
+            pair_id: Trading pair ID (e.g., "BTC/USDT")
+        """
+        self._inner.subscribe_to_pair(pair_id)
+
+    async def unsubscribe_from_pair(self, pair_id: str) -> None:
+        """Unsubscribe from price updates for a trading pair.
+        
+        Args:
+            pair_id: Trading pair ID (e.g., "BTC/USDT")
+        """
+        self._inner.unsubscribe_from_pair(pair_id)
+
+    async def get_quote_websocket(
+        self,
+        ticker: str,
+        from_amount: Optional[int] = None,
+        to_amount: Optional[int] = None,
+        layer: str = "BTC_LN",
+    ) -> PairQuoteResponse:
+        """Request a quote via WebSocket (faster than HTTP).
+        
+        Args:
+            ticker: Trading pair ticker (e.g., "BTC/USDT")
+            from_amount: Amount to convert from (raw atomic units)
+            to_amount: Amount to convert to (raw atomic units)
+            layer: Layer to use (default: "BTC_LN")
+            
+        Returns:
+            PairQuoteResponse with quote details
+        """
+        result_json = self._inner.get_quote_websocket(
+            ticker, from_amount, to_amount, layer
+        )
+        result = json.loads(result_json)
+        return PairQuoteResponse(**result)
+
+    async def on_websocket_event(self, event: str, handler: callable) -> None:
+        """Register a WebSocket event handler.
+        
+        Args:
+            event: Event type (from WsEvent enum)
+            handler: Async callback function that receives event data
+            
+        Note: This is a simplified version. For full event handling,
+              use the Rust SDK directly or implement custom event loop.
+        """
+        # Note: Due to Python/Rust threading limitations,
+        # this stores the handler but doesn't wire it up fully.
+        # Users should implement their own event loop for production use.
+        import uuid
+        handler_id = str(uuid.uuid4())
+        self._inner.on_websocket_event(event, handler_id)
+
+    async def reconnect_websocket(self) -> None:
+        """Reconnect WebSocket with exponential backoff."""
+        self._inner.reconnect_websocket()

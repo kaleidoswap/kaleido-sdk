@@ -143,11 +143,20 @@ async def main():
         await client.unsubscribe_from_pair("ETH/USDT")
         print("✅ Unsubscribed")
 
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        print("\nNote: WebSocket connection requires authentication.")
+        print("This example demonstrates the API usage pattern.")
+        
     finally:
-        # Disconnect
-        print("\n🔌 Disconnecting WebSocket...")
-        await client.disconnect_websocket()
-        print("✅ Disconnected")
+        # Disconnect only if connected
+        if await client.is_websocket_connected():
+            print("\n🔌 Disconnecting WebSocket...")
+            try:
+                await client.disconnect_websocket()
+                print("✅ Disconnected")
+            except Exception as e:
+                print(f"⚠️  Disconnect warning: {e}")
 
         # Print summary
         tracker.print_summary()

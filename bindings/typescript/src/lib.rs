@@ -640,6 +640,96 @@ impl KaleidoClient {
             .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
+    // === WebSocket Operations ===
+
+    /// Connect to WebSocket
+    #[napi]
+    pub async fn connect_websocket(&self) -> Result<()> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.connect_websocket())
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Disconnect from WebSocket
+    #[napi]
+    pub async fn disconnect_websocket(&self) -> Result<()> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.disconnect_websocket())
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Check if WebSocket is connected
+    #[napi]
+    pub async fn is_websocket_connected(&self) -> Result<bool> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.is_websocket_connected())
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))
+    }
+
+    /// Subscribe to price updates for a trading pair
+    #[napi]
+    pub async fn subscribe_to_pair(&self, pair_id: String) -> Result<()> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.subscribe_to_pair(pair_id))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Unsubscribe from price updates for a trading pair
+    #[napi]
+    pub async fn unsubscribe_from_pair(&self, pair_id: String) -> Result<()> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.unsubscribe_from_pair(pair_id))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Request a quote via WebSocket (faster than HTTP)
+    #[napi]
+    pub async fn get_quote_websocket(
+        &self,
+        ticker: String,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+        layer: String,
+    ) -> Result<String> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || {
+            inner.get_quote_websocket(ticker, from_amount, to_amount, layer)
+        })
+        .await
+        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+        .map(|json_value| json_value.json)
+        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Register a WebSocket event handler
+    #[napi]
+    pub async fn on_websocket_event(&self, event: String, handler_id: String) -> Result<()> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.register_websocket_handler(event, handler_id))
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
+    /// Reconnect WebSocket with exponential backoff
+    #[napi]
+    pub async fn reconnect_websocket(&self) -> Result<()> {
+        let inner = Arc::clone(&self.inner);
+        tokio::task::spawn_blocking(move || inner.reconnect_websocket())
+            .await
+            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+    }
+
     /// Create a real-time quote stream for a trading pair
     /// The pair_ticker should be in format "BTC/USDT"
     #[napi]

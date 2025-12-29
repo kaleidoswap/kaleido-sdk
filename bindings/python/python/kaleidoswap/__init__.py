@@ -105,10 +105,25 @@ from .exceptions import (
     OrderNotFoundError,
 )
 
+# WebSocket Event types
+from enum import Enum
+
+class WsEvent(str, Enum):
+    """WebSocket event types."""
+    PriceUpdate = "price_update"
+    QuoteResponse = "quote_response"
+    SwapUpdate = "swap_update"
+    OrderUpdate = "order_update"
+    Connected = "connected"
+    Disconnected = "disconnected"
+    Error = "error"
+
 
 __all__ = [
     "KaleidoClient",
     "KaleidoConfig",
+    # WebSocket
+    "WsEvent",
     # Exceptions
     "KaleidoError",
     "APIError",

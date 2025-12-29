@@ -663,6 +663,90 @@ impl QuoteStream {
 }
 
 impl KaleidoClient {
+    // === WebSocket Operations ===
+
+    /// Connect to WebSocket with default configuration.
+    pub fn connect_websocket(&self) -> Result<(), KaleidoError> {
+        self.runtime
+            .block_on(self.inner.connect_websocket())
+            .map_err(Into::into)
+    }
+
+    /// Disconnect from WebSocket.
+    pub fn disconnect_websocket(&self) -> Result<(), KaleidoError> {
+        self.runtime
+            .block_on(self.inner.disconnect_websocket())
+            .map_err(Into::into)
+    }
+
+    /// Check if WebSocket is connected.
+    pub fn is_websocket_connected(&self) -> bool {
+        self.runtime.block_on(self.inner.is_websocket_connected())
+    }
+
+    /// Subscribe to price updates for a trading pair.
+    pub fn subscribe_to_pair(&self, pair_id: String) -> Result<(), KaleidoError> {
+        self.runtime
+            .block_on(self.inner.subscribe_to_pair(&pair_id))
+            .map_err(Into::into)
+    }
+
+    /// Unsubscribe from price updates for a trading pair.
+    pub fn unsubscribe_from_pair(&self, pair_id: String) -> Result<(), KaleidoError> {
+        self.runtime
+            .block_on(self.inner.unsubscribe_from_pair(&pair_id))
+            .map_err(Into::into)
+    }
+
+    /// Request a quote via WebSocket (faster than HTTP).
+    pub fn get_quote_websocket(
+        &self,
+        ticker: String,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+        layer: String,
+    ) -> Result<JsonValue, KaleidoError> {
+        let layer_enum = match layer.as_str() {
+            "BTC_L1" => Layer::BtcL1,
+            "BTC_LN" => Layer::BtcLn,
+            "RGB_L1" => Layer::RgbL1,
+            "RGB_LN" => Layer::RgbLn,
+            "BTC_SPARK" => Layer::BtcSpark,
+            "BTC_ARKADE" => Layer::BtcArkade,
+            "BTC_LIQUID" => Layer::BtcLiquid,
+            "BTC_CASHU" => Layer::BtcCashu,
+            "LIQUID_LIQUID" => Layer::LiquidLiquid,
+            "ARKADE_ARKADE" => Layer::ArkadeArkade,
+            "SPARK_SPARK" => Layer::SparkSpark,
+            _ => Layer::BtcLn, // Default
+        };
+
+        let result = self.runtime.block_on(
+            self.inner
+                .get_quote_websocket(&ticker, from_amount, to_amount, layer_enum),
+        )?;
+        Ok(JsonValue::new(result))
+    }
+
+    /// Register a WebSocket event handler (placeholder for event system).
+    pub fn register_websocket_handler(
+        &self,
+        _event: String,
+        _handler_id: String,
+    ) -> Result<(), KaleidoError> {
+        // Note: Full event handler registration would require callback mechanisms
+        // which are complex in FFI. For now, this is a placeholder.
+        // Real event handling should be done at the language binding level.
+        Ok(())
+    }
+
+    /// Reconnect WebSocket with exponential backoff.
+    pub fn reconnect_websocket(&self) -> Result<(), KaleidoError> {
+        self.runtime
+            .block_on(self.inner.reconnect_websocket())
+            .map_err(Into::into)
+    }
+
     /// Create a real-time quote stream for a trading pair.
     /// The pair_ticker should be in format "BTC/USDT".
     /// Returns a QuoteStream that can be used to receive quote updates.

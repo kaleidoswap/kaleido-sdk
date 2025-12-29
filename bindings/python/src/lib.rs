@@ -610,6 +610,92 @@ impl PyKaleidoClient {
             .map(|stream| PyQuoteStream { inner: stream })
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
+
+    // === WebSocket Operations ===
+
+    /// Connect to WebSocket with default configuration
+    fn connect_websocket(&self) -> PyResult<()> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.connect_websocket())
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Disconnect from WebSocket
+    fn disconnect_websocket(&self) -> PyResult<()> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.disconnect_websocket())
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Check if WebSocket is connected
+    fn is_websocket_connected(&self) -> PyResult<bool> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.is_websocket_connected())
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))
+    }
+
+    /// Subscribe to price updates for a trading pair
+    fn subscribe_to_pair(&self, pair_id: String) -> PyResult<()> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.subscribe_to_pair(pair_id))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Unsubscribe from price updates for a trading pair
+    fn unsubscribe_from_pair(&self, pair_id: String) -> PyResult<()> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.unsubscribe_from_pair(pair_id))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Request a quote via WebSocket (faster than HTTP)
+    #[pyo3(signature = (ticker, from_amount=None, to_amount=None, layer="BTC_LN".to_string()))]
+    fn get_quote_websocket(
+        &self,
+        ticker: String,
+        from_amount: Option<i64>,
+        to_amount: Option<i64>,
+        layer: String,
+    ) -> PyResult<String> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || {
+            inner
+                .get_quote_websocket(ticker, from_amount, to_amount, layer)
+                .map(|json_value| json_value.json)
+        })
+        .join()
+        .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Register a WebSocket event handler
+    /// Note: Due to Python/Rust threading limitations, this is a simplified version
+    /// Use the high-level Python client for full event handling
+    fn on_websocket_event(&self, event: String, handler_id: String) -> PyResult<()> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.register_websocket_handler(event, handler_id))
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
+
+    /// Reconnect WebSocket
+    fn reconnect_websocket(&self) -> PyResult<()> {
+        let inner = Arc::clone(&self.inner);
+        std::thread::spawn(move || inner.reconnect_websocket())
+            .join()
+            .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
+    }
 }
 
 // ============================================================================

@@ -138,7 +138,11 @@ impl WebSocketClient {
             .replace("https://", "wss://")
             .replace("http://", "ws://");
 
-        let url = Url::parse(&format!("{}/ws", ws_url))
+        // Generate a random client ID for this connection
+        let client_id = uuid::Uuid::new_v4().to_string();
+
+        // Use the correct Kaleidoswap WebSocket endpoint path
+        let url = Url::parse(&format!("{}/api/v1/market/ws/{}", ws_url, client_id))
             .map_err(|e| KaleidoError::config(format!("Invalid WebSocket URL: {}", e)))?;
 
         Ok(Self {

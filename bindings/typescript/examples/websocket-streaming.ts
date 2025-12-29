@@ -101,7 +101,7 @@ async function main() {
 
     // Initialize client
     const client = createClient({
-        baseUrl: 'https://api.regtest.kaleidoswap.com',
+        baseUrl: 'http://localhost:8000',
         timeout: 30.0,
     });
 

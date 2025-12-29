@@ -315,6 +315,16 @@ export interface IKaleidoClient {
     // WebSocket Streaming
     createQuoteStream(pairTicker: string): Promise<IQuoteStream>;
 
+    // WebSocket Operations
+    connectWebsocket(): Promise<void>;
+    disconnectWebsocket(): Promise<void>;
+    isWebsocketConnected(): Promise<boolean>;
+    subscribeToPair(pairId: string): Promise<void>;
+    unsubscribeFromPair(pairId: string): Promise<void>;
+    getQuoteWebsocket(ticker: string, fromAmount?: number | null, toAmount?: number | null, layer?: string): Promise<string>;
+    onWebsocketEvent(event: string, handlerId: string): Promise<void>;
+    reconnectWebsocket(): Promise<void>;
+
     // Display Amount Utilities
     toRaw(displayAmount: number, asset: Asset | string): Promise<number>;
     toDisplay(rawAmount: number, asset: Asset | string): Promise<number>;
@@ -619,6 +629,45 @@ export class KaleidoClient implements IKaleidoClient {
 
     async createQuoteStream(pairTicker: string): Promise<IQuoteStream> {
         return this.inner.createQuoteStream(pairTicker);
+    }
+
+    // === WebSocket Operations ===
+
+    async connectWebsocket(): Promise<void> {
+        return this.inner.connectWebsocket();
+    }
+
+    async disconnectWebsocket(): Promise<void> {
+        return this.inner.disconnectWebsocket();
+    }
+
+    async isWebsocketConnected(): Promise<boolean> {
+        return this.inner.isWebsocketConnected();
+    }
+
+    async subscribeToPair(pairId: string): Promise<void> {
+        return this.inner.subscribeToPair(pairId);
+    }
+
+    async unsubscribeFromPair(pairId: string): Promise<void> {
+        return this.inner.unsubscribeFromPair(pairId);
+    }
+
+    async getQuoteWebsocket(
+        ticker: string,
+        fromAmount?: number | null,
+        toAmount?: number | null,
+        layer: string = 'BTC_LN'
+    ): Promise<string> {
+        return this.inner.getQuoteWebsocket(ticker, fromAmount, toAmount, layer);
+    }
+
+    async onWebsocketEvent(event: string, handlerId: string): Promise<void> {
+        return this.inner.onWebsocketEvent(event, handlerId);
+    }
+
+    async reconnectWebsocket(): Promise<void> {
+        return this.inner.reconnectWebsocket();
     }
 
     // === Order Management Methods ===

@@ -24,43 +24,55 @@ async def main():
     )
     client = KaleidoClient(config)
 
-    print("\n📡 Connecting to WebSocket...")
-    await client.connect_websocket()
-    print("✅ WebSocket connected!")
+    try:
+        print("\n📡 Connecting to WebSocket...")
+        await client.connect_websocket()
+        print("✅ WebSocket connected!")
 
-    # Request quotes
-    pairs = [
-        ("BTC/USDT", 100000000),  # 1 BTC
-        ("BTC/USDT", 50000000),   # 0.5 BTC
-        ("BTC/USDT", 200000000),  # 2 BTC
-    ]
+        # Request quotes
+        pairs = [
+            ("BTC/USDT", 100000000),  # 1 BTC
+            ("BTC/USDT", 50000000),   # 0.5 BTC
+            ("BTC/USDT", 200000000),  # 2 BTC
+        ]
 
-    print("\n📊 Requesting quotes via WebSocket...")
-    print("-" * 40)
+        print("\n📊 Requesting quotes via WebSocket...")
+        print("-" * 40)
 
-    for pair, amount in pairs:
-        print(f"\nRequesting quote for {pair} ({amount} sats)...")
-        
-        try:
-            quote = await client.get_quote_websocket(
-                ticker=pair,
-                from_amount=amount,
-                layer="BTC_LN"
-            )
+        for pair, amount in pairs:
+            print(f"\nRequesting quote for {pair} ({amount} sats)...")
             
-            from_btc = quote.from_asset.amount / 100_000_000
-            print(f"  ✅ Quote received:")
-            print(f"     From: {from_btc:.8f} BTC")
-            print(f"     To: {quote.to_asset.amount} USDT")
-            if hasattr(quote, 'price') and quote.price:
-                print(f"     Price: ${quote.price:.2f}/BTC")
-        
-        except Exception as e:
-            print(f"  ❌ Error: {e}")
+            try:
+                quote = await client.get_quote_websocket(
+                    ticker=pair,
+                    from_amount=amount,
+                    layer="BTC_LN"
+                )
+                
+                from_btc = quote.from_asset.amount / 100_000_000
+                print(f"  ✅ Quote received:")
+                print(f"     From: {from_btc:.8f} BTC")
+                print(f"     To: {quote.to_asset.amount} USDT")
+                if hasattr(quote, 'price') and quote.price:
+                    print(f"     Price: ${quote.price:.2f}/BTC")
+            
+            except Exception as e:
+                print(f"  ❌ Error: {e}")
 
-    # Disconnect
-    print("\n🔌 Disconnecting WebSocket...")
-    await client.disconnect_websocket()
+    except Exception as e:
+        print(f"\n❌ Connection error: {e}")
+        print("\nNote: WebSocket connection requires authentication.")
+        print("This example demonstrates the API usage pattern.")
+        
+    finally:
+        # Disconnect only if connected
+        if await client.is_websocket_connected():
+            print("\n🔌 Disconnecting WebSocket...")
+            try:
+                await client.disconnect_websocket()
+                print("✅ Disconnected")
+            except Exception as e:
+                print(f"⚠️  Disconnect warning: {e}")
     
     print("\n" + "=" * 60)
     print("✅ Done!")
