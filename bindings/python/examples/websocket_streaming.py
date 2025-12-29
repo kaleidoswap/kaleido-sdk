@@ -15,6 +15,7 @@ from typing import Dict
 from kaleidoswap import KaleidoClient, KaleidoConfig, WsEvent
 
 BASE_URL = "https://api.regtest.kaleidoswap.com"
+BASE_URL = "http://localhost:8000"
 
 
 class PriceTracker:

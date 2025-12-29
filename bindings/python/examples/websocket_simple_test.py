@@ -9,7 +9,7 @@ Note: Requires a running WebSocket server to fully function.
 import asyncio
 from kaleidoswap import KaleidoClient, KaleidoConfig, WsEvent
 
-BASE_URL = "https://api.regtest.kaleidoswap.com"
+BASE_URL = "http://localhost:8000"
 
 
 async def main():
