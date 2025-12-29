@@ -583,7 +583,7 @@ wheels = [
 
 [[package]]
 name = "kaleidoswap"
-version = "0.2.0"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic", version = "2.10.6", source = { registry = "https://pypi.org/simple" }, extra = ["email"], marker = "python_full_version < '3.9'" },
@@ -610,17 +610,10 @@ dev = [
     { name = "ruff" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "datamodel-code-generator", version = "0.27.3", source = { registry = "https://pypi.org/simple" }, extra = ["http"], marker = "python_full_version < '3.9'" },
-    { name = "datamodel-code-generator", version = "0.45.0", source = { registry = "https://pypi.org/simple" }, extra = ["http"], marker = "python_full_version == '3.9.*'" },
-    { name = "datamodel-code-generator", version = "0.46.0", source = { registry = "https://pypi.org/simple" }, extra = ["http"], marker = "python_full_version >= '3.10'" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0" },
-    { name = "datamodel-code-generator", extras = ["http"], marker = "extra == 'dev'", specifier = ">=0.25.0" },
+    { name = "datamodel-code-generator", extras = ["http"], marker = "extra == 'dev'", specifier = ">=0.27.3" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.12" },
     { name = "pydantic", extras = ["email"], specifier = ">=2.10.6" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
@@ -628,9 +621,6 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
 ]
 provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "datamodel-code-generator", extras = ["http"], specifier = ">=0.27.3" }]
 
 [[package]]
 name = "markupsafe"

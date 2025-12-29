@@ -9,8 +9,6 @@ This example demonstrates how to:
 4. Get a quote for a swap
 """
 
-import json
-
 from kaleidoswap import KaleidoClient, KaleidoConfig
 
 BASE_URL = "http://localhost:8000"
@@ -32,33 +30,32 @@ def main():
     print("Kaleidoswap SDK - Market Data Example")
     print("=" * 60)
 
-    # List available assets
+    # List available assets (returns typed list directly)
     print("\n📋 Available Assets:")
+
     print("-" * 40)
-    assets_json = client.list_assets()
-    assets = json.loads(assets_json)
+    assets = client.list_assets()
+    
 
     for asset in assets[:5]:  # Show first 5
-        print(asset)
-        name = asset.get("name", "Unknown")
-        ticker = asset.get("ticker", "???")
-        precision = asset.get("precision", 0)
+        name = getattr(asset, "name", "Unknown")
+        ticker = getattr(asset, "ticker", "???")
+        precision = getattr(asset, "precision", 0)
         print(f"  • {name} ({ticker}) - Precision: {precision}")
 
     if len(assets) > 5:
         print(f"  ... and {len(assets) - 5} more assets")
 
-    # List trading pairs
+    # List trading pairs (returns typed list directly)
     print("\n💱 Trading Pairs:")
     print("-" * 40)
-    pairs_json = client.list_pairs()
-    pairs = json.loads(pairs_json)
+    pairs = client.list_pairs()
 
     for pair in pairs[:5]:  # Show first 5
-        base = pair.get("base", {}).get("ticker", "?")
-        quote = pair.get("quote", {}).get("ticker", "?")
+        base = getattr(pair.base, "ticker", "?") if pair.base else "?"
+        quote = getattr(pair.quote, "ticker", "?") if pair.quote else "?"
         ticker = f"{base}/{quote}"
-        price = pair.get("price", 0)
+        price = getattr(pair, "price", 0)
         print(f"  • {ticker} - Price: {price}")
 
     if len(pairs) > 5:
@@ -67,22 +64,21 @@ def main():
     # Get a quote (if pairs available)
     if pairs:
         first_pair = pairs[0]
-        ticker = first_pair.get("ticker", "BTC/USDT")
+        ticker = getattr(first_pair, "ticker", "BTC/USDT")
 
         print(f"\n📊 Quote for {ticker}:")
         print("-" * 40)
 
         try:
             # 1M sats (> min 500k)
-            quote_json = client.get_best_quote(ticker, 1_000_000, None)
-            quote = json.loads(quote_json)
+            quote = client.get_best_quote(ticker, 1_000_000, None)
 
-            from_amount = quote.get("from_asset", {}).get("amount", 0)
-            to_amount = quote.get("to_asset", {}).get("amount", 0)
+            from_amount = quote.from_asset.amount if quote.from_asset else 0
+            to_amount = quote.to_asset.amount if quote.to_asset else 0
 
             print(f"  From Amount: {from_amount}")
             print(f"  To Amount: {to_amount}")
-            print(f"  Price: {quote.get('price', 'N/A')}")
+            print(f"  Price: {getattr(quote, 'price', 'N/A')}")
         except Exception as e:
             print(f"  Could not get quote: {e}")
 
@@ -92,3 +88,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
