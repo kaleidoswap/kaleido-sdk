@@ -98,7 +98,7 @@ def main():
     # Step 3: Get a quote
     print("\n💱 Step 3: Getting quote...")
     try:
-        quote = client.get_quote_by_pair(pair_ticker, from_amount=from_amount)
+        quote = client.get_best_quote(pair_ticker, from_amount=from_amount)
 
         print("   ✅ Quote received:")
         print(f"     RFQ ID: {quote.rfq_id}")
