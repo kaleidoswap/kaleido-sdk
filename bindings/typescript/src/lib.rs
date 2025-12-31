@@ -3,10 +3,16 @@
 //! This crate provides TypeScript/JavaScript bindings using napi-rs.
 //! All methods are async and return Promises in JavaScript.
 
-use kaleidoswap_uniffi::{KaleidoClient as UniffiClient, KaleidoConfig as UniffiConfig};
+use kaleidoswap_uniffi::{KaleidoClient as UniffiClient, KaleidoConfig as UniffiConfig, KaleidoError as UniffiError};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::sync::Arc;
+
+/// Convert UniffiError to a user-friendly error message
+fn format_error(e: UniffiError) -> String {
+    // Use the Display trait implementation from thiserror
+    e.to_string()
+}
 
 #[napi(object)]
 #[derive(Debug, Clone)]
@@ -130,7 +136,7 @@ impl KaleidoClient {
     pub fn new(config: KaleidoConfig) -> Result<Self> {
         let uniffi_config: UniffiConfig = config.into();
         let inner =
-            UniffiClient::new(uniffi_config).map_err(|e| Error::from_reason(format!("{:?}", e)))?;
+            UniffiClient::new(uniffi_config).map_err(|e| Error::from_reason(format_error(e)))?;
         Ok(Self {
             inner: Arc::new(inner),
         })
@@ -150,8 +156,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_assets().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// List all available trading pairs
@@ -160,22 +166,24 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_pairs().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
-    /// Get a quote by trading pair ticker
+    /// Get a quote by trading pair ticker with explicit layers
     #[napi]
     pub async fn get_quote_by_pair(
         &self,
         ticker: String,
         from_amount: Option<i64>,
         to_amount: Option<i64>,
+        from_layer: String,
+        to_layer: String,
     ) -> Result<String> {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || {
             inner
-                .get_quote_by_pair(ticker, from_amount, to_amount)
+                .get_quote_by_pair(ticker, from_amount, to_amount, from_layer, to_layer)
                 .map(|v| v.json)
         })
         .await
@@ -191,8 +199,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_node_info().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get swap status by payment hash
@@ -201,8 +209,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_swap_status(payment_hash).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Wait for swap completion
@@ -232,8 +240,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_swap_order_status(order_id).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get order history
@@ -259,8 +267,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_order_analytics().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Submit rate decision for a swap order
@@ -285,8 +293,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_lsp_info().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get LSP network information
@@ -295,8 +303,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_lsp_network_info().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get an LSPS1 order
@@ -305,8 +313,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_lsp_order(order_id).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Estimate fees for an LSPS1 order
@@ -315,8 +323,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.estimate_lsp_fees(channel_size).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     // === RGB Lightning Node Operations ===
@@ -327,8 +335,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_rgb_node_info().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// List channels
@@ -337,8 +345,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_channels().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// List peers
@@ -347,8 +355,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_peers().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// List node assets
@@ -357,8 +365,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_node_assets().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get asset balance
@@ -367,8 +375,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_asset_balance(asset_id).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get onchain address
@@ -377,8 +385,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_onchain_address().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Get BTC balance
@@ -387,8 +395,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_btc_balance().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Whitelist a trade
@@ -397,8 +405,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.whitelist_trade(swapstring).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Decode a Lightning invoice
@@ -407,8 +415,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.decode_ln_invoice(invoice).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// List payments
@@ -417,8 +425,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_payments().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     // === Wallet Operations ===
@@ -429,8 +437,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.init_wallet(password).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Unlock wallet
@@ -439,8 +447,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.unlock_wallet(password).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Lock wallet
@@ -449,8 +457,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.lock_wallet().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     // === Convenience Methods ===
@@ -461,11 +469,11 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_asset_by_ticker(ticker).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
-    /// Get a quote by asset tickers (e.g., "BTC", "USDT")
+    /// Get a quote by asset tickers (e.g., "BTC", "USDT") with explicit layers
     #[napi]
     pub async fn get_quote_by_assets(
         &self,
@@ -473,11 +481,13 @@ impl KaleidoClient {
         to_ticker: String,
         from_amount: Option<i64>,
         to_amount: Option<i64>,
+        from_layer: String,
+        to_layer: String,
     ) -> Result<String> {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || {
             inner
-                .get_quote_by_assets(from_ticker, to_ticker, from_amount, to_amount)
+                .get_quote_by_assets(from_ticker, to_ticker, from_amount, to_amount, from_layer, to_layer)
                 .map(|v| v.json)
         })
         .await
@@ -503,8 +513,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.get_pair_by_ticker(ticker).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     // === New Convenience Methods ===
@@ -515,8 +525,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_active_assets().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// List only active trading pairs
@@ -525,37 +535,18 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.list_active_pairs().map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
-    /// Estimate swap fees for a given pair and amount
+    /// Estimate swap fees for a given pair and amount with explicit layers
     #[napi]
-    pub async fn estimate_swap_fees(&self, ticker: String, amount: i64) -> Result<i64> {
+    pub async fn estimate_swap_fees(&self, ticker: String, amount: i64, from_layer: String, to_layer: String) -> Result<i64> {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.estimate_swap_fees(ticker, amount))
+        tokio::task::spawn_blocking(move || inner.estimate_swap_fees(ticker, amount, from_layer, to_layer))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
-    }
-
-    /// Get the best quote by trying multiple layers
-    #[napi]
-    pub async fn get_best_quote(
-        &self,
-        ticker: String,
-        from_amount: Option<i64>,
-        to_amount: Option<i64>,
-    ) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
-            inner
-                .get_best_quote(ticker, from_amount, to_amount)
-                .map(|v| v.json)
-        })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Find an asset by ticker
@@ -564,8 +555,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.find_asset_by_ticker(ticker).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Find a trading pair by ticker
@@ -574,8 +565,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.find_pair_by_ticker(ticker).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     // === Legacy Support Methods ===
@@ -586,8 +577,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.create_lsp_order(request_json).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Create a swap order (Legacy)
@@ -596,8 +587,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.create_swap_order(request_json).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Initialize a swap (Legacy)
@@ -606,8 +597,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.init_swap(request_json).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Execute a swap (Legacy)
@@ -616,8 +607,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.execute_swap(request_json).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Retry asset delivery (Legacy)
@@ -626,8 +617,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.retry_delivery(order_id).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Connect to a peer
@@ -636,8 +627,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.connect_peer(request_json).map(|v| v.json))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     // === WebSocket Operations ===
@@ -648,8 +639,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.connect_websocket())
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Disconnect from WebSocket
@@ -658,8 +649,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.disconnect_websocket())
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Check if WebSocket is connected
@@ -677,8 +668,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.subscribe_to_pair(pair_id))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Unsubscribe from price updates for a trading pair
@@ -687,8 +678,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.unsubscribe_from_pair(pair_id))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Request a quote via WebSocket (faster than HTTP)
@@ -716,8 +707,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.register_websocket_handler(event, handler_id))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Reconnect WebSocket with exponential backoff
@@ -726,8 +717,8 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.reconnect_websocket())
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 
     /// Create a real-time quote stream for a trading pair
@@ -737,9 +728,9 @@ impl KaleidoClient {
         let inner = Arc::clone(&self.inner);
         tokio::task::spawn_blocking(move || inner.create_quote_stream(pair_ticker))
             .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
+            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
             .map(|stream| QuoteStream { inner: stream })
-            .map_err(|e| Error::from_reason(format!("{:?}", e)))
+            .map_err(|e| Error::from_reason(format_error(e)))
     }
 }
 

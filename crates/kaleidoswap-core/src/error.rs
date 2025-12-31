@@ -17,7 +17,7 @@ pub enum KaleidoError {
     },
 
     /// API returned an error response
-    #[error("API error ({status}): {message}")]
+    #[error("API error ({status}): {message}{}", details.as_ref().map(|d| format!(" - {}", d)).unwrap_or_default())]
     ApiError {
         status: u16,
         message: String,

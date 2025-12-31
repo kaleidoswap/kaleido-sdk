@@ -77,7 +77,7 @@ def test_market_client_get_quote():
     client = KaleidoClient(config)
 
     # Use the new market client
-    quote = client.market.get_best_quote("BTC/USDT", 1_000_000, None)
+    quote = client.market.get_quote_by_pair("BTC/USDT", 1_000_000, None, "BTC_LN", "RGB_LN")
     assert quote is not None
 
 

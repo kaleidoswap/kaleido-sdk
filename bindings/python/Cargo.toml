@@ -12,6 +12,7 @@ crate-type = ["cdylib"]
 name = "kaleidoswap"
 
 [dependencies]
+kaleidoswap-core = { path = "../../crates/kaleidoswap-core" }
 kaleidoswap-uniffi = { path = "../../crates/kaleidoswap-uniffi" }
 uniffi.workspace = true
 pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }

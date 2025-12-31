@@ -90,7 +90,7 @@ def main():
                         break
 
             print(f"  Requesting quote for {from_amount} {base_ticker}...")
-            quote = client.get_best_quote(ticker, from_amount, None)
+            quote = client.get_quote_by_pair(ticker, from_amount, None, "BTC_LN", "RGB_LN")
 
             from_amount = quote.from_asset.amount if quote.from_asset else 0
             to_amount = quote.to_asset.amount if quote.to_asset else 0
@@ -108,7 +108,7 @@ def main():
     print("-" * 40)
     try:
         print("  Requesting quote for invalid pair INV/ALID...")
-        client.get_best_quote("INV/ALID", 1000, None)
+        client.get_quote_by_pair("INV/ALID", 1000, None, "BTC_LN", "RGB_LN")
     except KaleidoError as e:
         print(f"  Caught expected error: {e}")
         print(f"  Error Type: {type(e).__name__}")

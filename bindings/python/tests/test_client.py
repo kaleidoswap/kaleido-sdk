@@ -182,7 +182,7 @@ class TestClientMethodSignatures:
         assert hasattr(client, "list_active_assets")
         assert hasattr(client, "list_active_pairs")
         assert hasattr(client, "estimate_swap_fees")
-        assert hasattr(client, "get_best_quote")
+        assert hasattr(client, "get_quote_by_pair")
         assert hasattr(client, "find_asset_by_ticker")
         assert hasattr(client, "find_pair_by_ticker")
 
@@ -360,14 +360,16 @@ class TestQuoteOperationsIntegration:
 
     def test_get_quote_by_pair_with_from_amount(self, client):
         """Test getting a quote with from_amount."""
+        from kaleidoswap import Layer
         # 1M sats > 500k min
-        quote = client.get_best_quote("BTC/USDT", 1_000_000, None)
+        quote = client.get_quote_by_pair("BTC/USDT", 1_000_000, None, "BTC_LN", "RGB_LN")
         assert isinstance(quote, PairQuoteResponse)
 
     def test_get_quote_by_pair_with_to_amount(self, client):
         """Test getting a quote with to_amount."""
+        from kaleidoswap import Layer
         # 10 USDT > 1 USDT min
-        quote = client.get_best_quote("BTC/USDT", None, 10_000_000)
+        quote = client.get_quote_by_pair("BTC/USDT", None, 10_000_000, "BTC_LN", "RGB_LN")
         assert isinstance(quote, PairQuoteResponse)
 
 

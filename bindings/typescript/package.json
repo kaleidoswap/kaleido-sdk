@@ -38,6 +38,7 @@
   },
   "files": [
     "dist/",
+    "index.node",
     "native/"
   ]
 }

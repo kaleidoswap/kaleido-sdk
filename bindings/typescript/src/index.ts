@@ -292,7 +292,7 @@ export interface IKaleidoClient {
 
     // Convenience Methods
     getAssetByTicker(ticker: string, options?: { raw?: boolean }): Promise<Asset | string>;
-    getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string>;
+    getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, fromLayer?: string, toLayer?: string, options?: { raw?: boolean }): Promise<Quote | string>;
     completeSwapFromQuote(quoteJson: string): Promise<string>;
     completeSwap(quoteJson: string): Promise<string>; // Alias for backwards compatibility
     getPairByTicker(ticker: string, options?: { raw?: boolean }): Promise<TradingPair | string>;
@@ -415,9 +415,12 @@ export class KaleidoClient implements IKaleidoClient {
     }
 
     /**
-     * Helper to parse JSON response into typed object.
+     * Helper to handle JSON response from native binding.
+     * By default, returns parsed TypeScript objects for better developer experience.
+     * Pass `{ raw: true }` to get JSON strings for backwards compatibility.
+     * 
      * @param jsonStr - JSON string from native binding
-     * @param raw - If true, return raw JSON string
+     * @param raw - If true, return raw JSON string instead of parsed object
      */
     private _parseResponse<T>(jsonStr: string, raw?: boolean): T | string {
         if (raw) {
@@ -562,8 +565,8 @@ export class KaleidoClient implements IKaleidoClient {
         return this._parseResponse<Asset>(json, options?.raw);
     }
 
-    async getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, options?: { raw?: boolean }): Promise<Quote | string> {
-        const json = await this.inner.getQuoteByAssets(fromTicker, toTicker, fromAmount, toAmount);
+    async getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, fromLayer?: string, toLayer?: string, options?: { raw?: boolean }): Promise<Quote | string> {
+        const json = await this.inner.getQuoteByAssets(fromTicker, toTicker, fromAmount, toAmount, fromLayer || 'BTC_LN', toLayer || 'RGB_L1');
         return this._parseResponse<Quote>(json, options?.raw);
     }
 

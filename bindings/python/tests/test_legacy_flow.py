@@ -61,7 +61,7 @@ async def test_complete_swap_legacy(client):
     # Try 600,000 sats - hopefully valid range
     logger.info("Getting quote for 600,000 sats")
     try:
-        quote = client.get_best_quote("BTC/USDT", 600000, None)
+        quote = client.get_quote_by_pair("BTC/USDT", 600000, None, "BTC_LN", "RGB_LN")
     except Exception as e:
         logger.error(f"Failed to get quote: {e}")
         # List pairs to help debug
@@ -217,7 +217,7 @@ async def test_create_swap_order_legacy(client):
     """Test creating a swap order (Legacy)."""
     # Get a quote first - reduce amount to 600,000
     try:
-        quote = client.get_best_quote("BTC/USDT", 600000, None)
+        quote = client.get_quote_by_pair("BTC/USDT", 600000, None, "BTC_LN", "RGB_LN")
     except Exception as e:
         logger.error(f"Failed to get quote: {e}")
         # List pairs to help debug

@@ -318,30 +318,23 @@ class KaleidoClient:
         ticker: str,
         from_amount: Optional[int] = None,
         to_amount: Optional[int] = None,
+        from_layer: str = "BTC_LN",
+        to_layer: str = "RGB_LN",
     ) -> PairQuoteResponse:
-        """Get quote for a trading pair.
+        """Get quote for a trading pair with explicit layers.
+
+        Args:
+            ticker: Trading pair ticker (e.g., "BTC/USDT")
+            from_amount: Amount to swap from (in smallest unit)
+            to_amount: Amount to receive (in smallest unit)
+            from_layer: Layer for from asset (e.g., "BTC_LN", "BTC_L1")
+            to_layer: Layer for to asset (e.g., "RGB_LN", "RGB_L1")
 
         Returns:
             PairQuoteResponse object
         """
         json_str = self._execute(
-            self._inner.get_quote_by_pair, ticker, from_amount, to_amount
-        )
-        return self._parse_response(json_str, PairQuoteResponse)
-
-    def get_best_quote(
-        self,
-        ticker: str,
-        from_amount: Optional[int] = None,
-        to_amount: Optional[int] = None,
-    ) -> PairQuoteResponse:
-        """Get best quote for an asset.
-
-        Returns:
-            PairQuoteResponse object
-        """
-        json_str = self._execute(
-            self._inner.get_best_quote, ticker, from_amount, to_amount
+            self._inner.get_quote_by_pair, ticker, from_amount, to_amount, from_layer, to_layer
         )
         return self._parse_response(json_str, PairQuoteResponse)
 
@@ -495,8 +488,18 @@ class KaleidoClient:
         to_ticker: str,
         from_amount: Optional[int] = None,
         to_amount: Optional[int] = None,
+        from_layer: str = "BTC_LN",
+        to_layer: str = "RGB_LN",
     ) -> PairQuoteResponse:
-        """Get quote by asset tickers.
+        """Get quote by asset tickers with explicit layers.
+
+        Args:
+            from_ticker: Source asset ticker (e.g., "BTC")
+            to_ticker: Destination asset ticker (e.g., "USDT")
+            from_amount: Amount to swap from (in smallest unit)
+            to_amount: Amount to receive (in smallest unit)
+            from_layer: Layer for from asset (e.g., "BTC_LN", "BTC_L1")
+            to_layer: Layer for to asset (e.g., "RGB_LN", "RGB_L1")
 
         Returns:
             PairQuoteResponse object
@@ -507,6 +510,8 @@ class KaleidoClient:
             to_ticker,
             from_amount,
             to_amount,
+            from_layer,
+            to_layer,
         )
         return self._parse_response(json_str, PairQuoteResponse)
 
@@ -541,8 +546,19 @@ class KaleidoClient:
         json_str = self._execute(self._inner.list_active_pairs)
         return self._parse_response(json_str, TradingPair)
 
-    def estimate_swap_fees(self, ticker: str, amount: int) -> int:
-        return self._execute(self._inner.estimate_swap_fees, ticker, amount)
+    def estimate_swap_fees(self, ticker: str, amount: int, from_layer: str = "BTC_LN", to_layer: str = "RGB_LN") -> int:
+        """Estimate swap fees for a given pair and amount with explicit layers.
+        
+        Args:
+            ticker: Trading pair ticker (e.g., "BTC/USDT")
+            amount: Amount to estimate fees for
+            from_layer: Layer for from asset (e.g., "BTC_LN", "BTC_L1")
+            to_layer: Layer for to asset (e.g., "RGB_LN", "RGB_L1")
+            
+        Returns:
+            Estimated fee amount
+        """
+        return self._execute(self._inner.estimate_swap_fees, ticker, amount, from_layer, to_layer)
 
     def find_asset_by_ticker(self, ticker: str) -> Asset:
         """Find asset by ticker.

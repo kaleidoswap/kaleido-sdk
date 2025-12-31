@@ -79,13 +79,22 @@ class MarketClient:
         )
         return self._parse(json_str, PairQuoteResponse)
 
-    def get_best_quote(
+    def get_quote_by_pair(
         self,
         ticker: str,
         from_amount: Optional[int] = None,
         to_amount: Optional[int] = None,
+        from_layer: str = "BTC_LN",
+        to_layer: str = "RGB_LN",
     ) -> "PairQuoteResponse":
-        """Get best quote for an asset.
+        """Get quote for a trading pair with explicit layers.
+
+        Args:
+            ticker: Trading pair ticker (e.g., "BTC/USDT")
+            from_amount: Amount to swap from (in smallest unit)
+            to_amount: Amount to receive (in smallest unit)
+            from_layer: Layer for from asset (e.g., "BTC_LN", "BTC_L1")
+            to_layer: Layer for to asset (e.g., "RGB_LN", "RGB_L1")
 
         Returns:
             PairQuoteResponse object
@@ -93,7 +102,7 @@ class MarketClient:
         from .generated_models import PairQuoteResponse
 
         json_str = self._execute(
-            self._inner.get_best_quote, ticker, from_amount, to_amount
+            self._inner.get_quote_by_pair, ticker, from_amount, to_amount, from_layer, to_layer
         )
         return self._parse(json_str, PairQuoteResponse)
 

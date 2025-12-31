@@ -38,7 +38,7 @@ export interface IMarketClient {
     getPairByTicker(ticker: string): Promise<TradingPair>;
 
     /** Get a quote by asset tickers */
-    getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null): Promise<Quote>;
+    getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, fromLayer?: string, toLayer?: string): Promise<Quote>;
 }
 
 /**
@@ -174,8 +174,8 @@ export class MarketClient implements IMarketClient {
         return this.parse<TradingPair>(json);
     }
 
-    async getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null): Promise<Quote> {
-        const json = await this.inner.getQuoteByAssets(fromTicker, toTicker, fromAmount, toAmount);
+    async getQuoteByAssets(fromTicker: string, toTicker: string, fromAmount?: number | null, toAmount?: number | null, fromLayer?: string, toLayer?: string): Promise<Quote> {
+        const json = await this.inner.getQuoteByAssets(fromTicker, toTicker, fromAmount, toAmount, fromLayer || 'BTC_LN', toLayer || 'RGB_L1');
         return this.parse<Quote>(json);
     }
 }

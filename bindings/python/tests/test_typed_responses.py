@@ -52,19 +52,19 @@ def test_typed_responses():
     except Exception as e:
         print(f"✗ list_pairs() failed: {e}")
 
-    # Test 4: get_best_quote returns PairQuoteResponse
+    # Test 4: get_quote_by_pair returns PairQuoteResponse
     try:
-        quote = client.get_best_quote("BTC/USDT", 1000000, None)
+        quote = client.get_quote_by_pair("BTC/USDT", 1000000, None, "BTC_LN", "RGB_LN")
         assert isinstance(
             quote, PairQuoteResponse
         ), f"Expected PairQuoteResponse, got {type(quote)}"
-        print("✓ get_best_quote() returns PairQuoteResponse")
+        print("✓ get_quote_by_pair() returns PairQuoteResponse")
         print(
             f"  {quote.from_asset.amount} {quote.from_asset.ticker} -> {quote.to_asset.amount} {quote.to_asset.ticker}"
         )
         print(f"  Price: {quote.price}")
     except Exception as e:
-        print(f"✗ get_best_quote() failed: {e}")
+        print(f"✗ get_quote_by_pair() failed: {e}")
 
     print("\n✅ All tests passed! Typed responses working correctly.")
 

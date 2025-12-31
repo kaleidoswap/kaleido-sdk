@@ -77,32 +77,35 @@ impl From<KaleidoConfig> for CoreConfig {
 }
 
 /// Error types exposed to bindings.
-#[derive(Debug, thiserror::Error)]
+/// Note: We implement both Debug and Display to control error formatting across FFI boundaries.
+#[derive(Debug)]
 pub enum KaleidoError {
-    #[error("Network error: {message}")]
     NetworkError { message: String },
-
-    #[error("API error: {message}")]
     ApiError { message: String },
-
-    #[error("Validation error: {message}")]
     ValidationError { message: String },
-
-    #[error("Timeout error")]
     TimeoutError,
-
-    #[error("WebSocket error: {message}")]
     WebSocketError { message: String },
-
-    #[error("Not found: {message}")]
     NotFoundError { message: String },
-
-    #[error("Node not configured")]
     NodeNotConfigured,
-
-    #[error("Internal error: {message}")]
     InternalError { message: String },
 }
+
+impl std::fmt::Display for KaleidoError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NetworkError { message } => write!(f, "Network error: {}", message),
+            Self::ApiError { message } => write!(f, "{}", message),
+            Self::ValidationError { message } => write!(f, "Validation error: {}", message),
+            Self::TimeoutError => write!(f, "Timeout error"),
+            Self::WebSocketError { message } => write!(f, "WebSocket error: {}", message),
+            Self::NotFoundError { message } => write!(f, "Not found: {}", message),
+            Self::NodeNotConfigured => write!(f, "Node not configured"),
+            Self::InternalError { message } => write!(f, "Internal error: {}", message),
+        }
+    }
+}
+
+impl std::error::Error for KaleidoError {}
 
 impl From<kaleidoswap_core::KaleidoError> for KaleidoError {
     fn from(err: kaleidoswap_core::KaleidoError) -> Self {
@@ -110,8 +113,20 @@ impl From<kaleidoswap_core::KaleidoError> for KaleidoError {
             kaleidoswap_core::KaleidoError::NetworkError { message, .. } => {
                 KaleidoError::NetworkError { message }
             }
-            kaleidoswap_core::KaleidoError::ApiError { message, .. } => {
-                KaleidoError::ApiError { message }
+            kaleidoswap_core::KaleidoError::ApiError {
+                status,
+                message,
+                details,
+            } => {
+                // Include both the message and details for more informative errors
+                let full_message = if let Some(ref d) = details {
+                    format!("API Error {}: {} - {}", status, message, d)
+                } else {
+                    format!("API Error {}: {}", status, message)
+                };
+                KaleidoError::ApiError {
+                    message: full_message,
+                }
             }
             kaleidoswap_core::KaleidoError::ValidationError { message } => {
                 KaleidoError::ValidationError { message }
@@ -208,12 +223,24 @@ impl KaleidoClient {
         ticker: String,
         from_amount: Option<i64>,
         to_amount: Option<i64>,
+        from_layer: String,
+        to_layer: String,
     ) -> Result<JsonValue, KaleidoError> {
+        let from_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", from_layer))
+            .map_err(|_| KaleidoError::ValidationError {
+                message: format!("Invalid from_layer: {}", from_layer),
+            })?;
+        let to_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", to_layer))
+            .map_err(|_| KaleidoError::ValidationError {
+                message: format!("Invalid to_layer: {}", to_layer),
+            })?;
+        
         let result = self.runtime.block_on(self.inner.get_quote_by_pair(
             &ticker,
             from_amount,
             to_amount,
-            Layer::BtcLn,
+            from_layer_enum,
+            to_layer_enum,
         ))?;
         Ok(JsonValue::new(result))
     }
@@ -433,21 +460,32 @@ impl KaleidoClient {
     }
 
     /// Get a quote by asset tickers (e.g., "BTC", "USDT").
-    /// Automatically resolves asset IDs from tickers.
-    /// Uses BTC/LN layer as default.
+    /// Automatically resolves asset IDs from tickers and finds the best layer combination.
     pub fn get_quote_by_assets(
         &self,
         from_ticker: String,
         to_ticker: String,
         from_amount: Option<i64>,
         to_amount: Option<i64>,
+        from_layer: String,
+        to_layer: String,
     ) -> Result<JsonValue, KaleidoError> {
+        let from_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", from_layer))
+            .map_err(|_| KaleidoError::ValidationError {
+                message: format!("Invalid from_layer: {}", from_layer),
+            })?;
+        let to_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", to_layer))
+            .map_err(|_| KaleidoError::ValidationError {
+                message: format!("Invalid to_layer: {}", to_layer),
+            })?;
+        
         let ticker = format!("{}/{}", from_ticker, to_ticker);
         let result = self.runtime.block_on(self.inner.get_quote_by_pair(
             &ticker,
             from_amount,
             to_amount,
-            Layer::BtcLn,
+            from_layer_enum,
+            to_layer_enum,
         ))?;
         Ok(JsonValue::new(result))
     }
@@ -497,26 +535,23 @@ impl KaleidoClient {
         Ok(JsonValue::new(result))
     }
 
-    /// Estimate swap fees for a given pair and amount.
-    pub fn estimate_swap_fees(&self, ticker: String, amount: i64) -> Result<i64, KaleidoError> {
+    /// Estimate swap fees for a given pair and amount with explicit layers.
+    pub fn estimate_swap_fees(&self, ticker: String, amount: i64, from_layer: String, to_layer: String) -> Result<i64, KaleidoError> {
+        let from_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", from_layer))
+            .map_err(|_| KaleidoError::ValidationError {
+                message: format!("Invalid from_layer: {}", from_layer),
+            })?;
+        let to_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", to_layer))
+            .map_err(|_| KaleidoError::ValidationError {
+                message: format!("Invalid to_layer: {}", to_layer),
+            })?;
+        
         let result =
             self.runtime
-                .block_on(self.inner.estimate_swap_fees(&ticker, amount, Layer::BtcLn))?;
+                .block_on(self.inner.estimate_swap_fees(&ticker, amount, from_layer_enum, to_layer_enum))?;
         Ok(result)
     }
 
-    /// Get the best quote by trying multiple layers.
-    pub fn get_best_quote(
-        &self,
-        ticker: String,
-        from_amount: Option<i64>,
-        to_amount: Option<i64>,
-    ) -> Result<JsonValue, KaleidoError> {
-        let result =
-            self.runtime
-                .block_on(self.inner.get_best_quote(&ticker, from_amount, to_amount))?;
-        Ok(JsonValue::new(result))
-    }
 
     /// Find an asset by ticker.
     pub fn find_asset_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {
