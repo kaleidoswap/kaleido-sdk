@@ -1,149 +1,159 @@
-//! Node.js bindings for the Kaleidoswap SDK using napi-rs.
+//! WebAssembly bindings for the Kaleidoswap SDK using wasm-bindgen.
 //!
-//! This crate provides TypeScript/JavaScript bindings using napi-rs.
+//! This crate provides browser and Node.js compatible JavaScript bindings for the Kaleidoswap SDK.
 //! All methods are async and return Promises in JavaScript.
+//!
+//! ## Features
+//! - **BigInt support**: All i64 amounts are serialized as JavaScript BigInt
+//! - **Typed returns**: Objects are returned directly, no JSON parsing needed
+//! - **Structured errors**: Errors contain code, message, and status for proper exception mapping
 
-use kaleidoswap_uniffi::{KaleidoClient as UniffiClient, KaleidoConfig as UniffiConfig, KaleidoError as UniffiError};
-use napi::bindgen_prelude::*;
-use napi_derive::napi;
+mod error;
+
+use error::to_js_error;
+use kaleidoswap_core::{
+    client::KaleidoClient as CoreClient, models::*, KaleidoConfig as CoreConfig,
+};
+use serde::{Deserialize, Serialize};
+use serde_wasm_bindgen::Serializer;
 use std::sync::Arc;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::future_to_promise;
 
-/// Convert UniffiError to a user-friendly error message
-fn format_error(e: UniffiError) -> String {
-    // Use the Display trait implementation from thiserror
-    e.to_string()
+// Set up panic hook for better error messages in development
+#[wasm_bindgen(start)]
+pub fn init_panic_hook() {
+    #[cfg(feature = "console_error_panic_hook")]
+    console_error_panic_hook::set_once();
 }
 
-#[napi(object)]
-#[derive(Debug, Clone)]
+/// Serializer configuration for BigInt support
+fn serializer() -> Serializer {
+    Serializer::new().serialize_large_number_types_as_bigints(true)
+}
+
+/// Helper to serialize Rust types to JavaScript objects directly (no JSON)
+fn to_js_value<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
+    value
+        .serialize(&serializer())
+        .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+}
+
+/// Log to browser console
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+/// Configuration for the Kaleidoswap client
+#[wasm_bindgen]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KaleidoConfig {
-    pub base_url: String,
-    pub node_url: Option<String>,
-    pub api_key: Option<String>,
-    pub timeout: f64,
-    pub max_retries: u32,
-    pub cache_ttl: i64,
+    base_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    node_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    api_key: Option<String>,
+    timeout: f64,
+    max_retries: u32,
+    cache_ttl: u32, // Use u32 to avoid BigInt conversion
 }
 
-impl From<KaleidoConfig> for UniffiConfig {
-    fn from(config: KaleidoConfig) -> Self {
-        UniffiConfig {
-            base_url: config.base_url,
-            node_url: config.node_url,
-            api_key: config.api_key,
-            timeout: config.timeout,
-            max_retries: config.max_retries,
-            cache_ttl: config.cache_ttl as u64,
+#[wasm_bindgen]
+impl KaleidoConfig {
+    /// Create a new configuration
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        base_url: String,
+        node_url: Option<String>,
+        api_key: Option<String>,
+        timeout: f64,
+        max_retries: u32,
+        cache_ttl: u32,
+    ) -> KaleidoConfig {
+        KaleidoConfig {
+            base_url,
+            node_url,
+            api_key,
+            timeout,
+            max_retries,
+            cache_ttl,
         }
+    }
+
+    /// Create a default configuration with a base URL
+    #[wasm_bindgen(js_name = withDefaults)]
+    pub fn with_defaults(base_url: String) -> KaleidoConfig {
+        KaleidoConfig {
+            base_url,
+            node_url: None,
+            api_key: None,
+            timeout: 30.0,
+            max_retries: 3,
+            cache_ttl: 60,
+        }
+    }
+
+    /// Set node URL
+    #[wasm_bindgen(js_name = setNodeUrl)]
+    pub fn set_node_url(&mut self, node_url: Option<String>) {
+        self.node_url = node_url;
+    }
+
+    /// Set API key
+    #[wasm_bindgen(js_name = setApiKey)]
+    pub fn set_api_key(&mut self, api_key: Option<String>) {
+        self.api_key = api_key;
+    }
+
+    /// Get base URL
+    #[wasm_bindgen(js_name = getBaseUrl)]
+    pub fn get_base_url(&self) -> String {
+        self.base_url.clone()
+    }
+}
+
+impl From<KaleidoConfig> for CoreConfig {
+    fn from(config: KaleidoConfig) -> Self {
+        let mut cfg = CoreConfig::new(config.base_url);
+        cfg.node_url = config.node_url;
+        cfg.api_key = config.api_key;
+        cfg.timeout = config.timeout;
+        cfg.max_retries = config.max_retries;
+        cfg.cache_ttl = config.cache_ttl as u64;
+        cfg
     }
 }
 
 // ============================================================================
-// Typed Response Structs
+// Main Client
 // ============================================================================
 
-/// Asset balance information
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct AssetBalance {
-    pub settled: i64,
-    pub future: i64,
-    pub spendable: i64,
-    pub offchain_outbound: i64,
-    pub offchain_inbound: i64,
-}
-
-/// Asset information (typed response)
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct Asset {
-    pub asset_id: String,
-    pub ticker: String,
-    pub name: String,
-    pub details: Option<String>,
-    pub precision: i64,
-    pub issued_supply: i64,
-    pub timestamp: i64,
-    pub added_at: i64,
-    pub balance: AssetBalance,
-    pub is_active: Option<bool>,
-}
-
-/// Trading pair information (typed response)
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct TradingPair {
-    pub id: Option<String>,
-    pub base_asset: String,
-    pub base_asset_id: String,
-    pub base_precision: i64,
-    pub quote_asset: String,
-    pub quote_asset_id: String,
-    pub quote_precision: i64,
-    pub is_active: bool,
-    pub min_base_order_size: i64,
-    pub max_base_order_size: i64,
-    pub min_quote_order_size: i64,
-    pub max_quote_order_size: i64,
-}
-
-/// Fee information (typed response)  
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct Fee {
-    pub base_fee: i64,
-    pub variable_fee: i64,
-    pub fee_rate: f64,
-    pub final_fee: i64,
-    pub fee_asset: String,
-    pub fee_asset_precision: i64,
-}
-
-/// Quote information (typed response)
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct Quote {
-    pub rfq_id: String,
-    pub from_asset: String,
-    pub from_amount: i64,
-    pub to_asset: String,
-    pub to_amount: i64,
-    pub price: i64,
-    pub fee: Fee,
-    pub timestamp: i64,
-    pub expires_at: i64,
-}
-
-/// Node information (typed response)
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct NodeInfo {
-    pub pubkey: Option<String>,
-    pub network: Option<String>,
-    pub block_height: Option<i64>,
-}
-
-/// Kaleidoswap client with async methods
-#[napi]
+/// Kaleidoswap client for browser and Node.js environments
+#[wasm_bindgen]
 pub struct KaleidoClient {
-    inner: Arc<UniffiClient>,
+    inner: Arc<CoreClient>,
 }
 
-#[napi]
+#[wasm_bindgen]
 impl KaleidoClient {
     /// Create a new Kaleidoswap client
-    #[napi(constructor)]
-    pub fn new(config: KaleidoConfig) -> Result<Self> {
-        let uniffi_config: UniffiConfig = config.into();
-        let inner =
-            UniffiClient::new(uniffi_config).map_err(|e| Error::from_reason(format_error(e)))?;
-        Ok(Self {
+    #[wasm_bindgen(constructor)]
+    pub fn new(config: KaleidoConfig) -> Result<KaleidoClient, JsValue> {
+        let core_config: CoreConfig = config.into();
+        let inner = CoreClient::new(core_config).map_err(to_js_error)?;
+        Ok(KaleidoClient {
             inner: Arc::new(inner),
         })
     }
 
     /// Check if the client has a node URL configured
-    #[napi]
+    #[wasm_bindgen(js_name = hasNode)]
     pub fn has_node(&self) -> bool {
         self.inner.has_node()
     }
@@ -151,331 +161,161 @@ impl KaleidoClient {
     // === Market Operations ===
 
     /// List all available assets
-    #[napi]
-    pub async fn list_assets(&self) -> Result<String> {
+    /// Returns a Promise that resolves to an array of Asset objects
+    #[wasm_bindgen(js_name = listAssets)]
+    pub fn list_assets(&self) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_assets().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .list_assets()
+                .await
+                .and_then(|assets| {
+                    to_js_value(&assets).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
     /// List all available trading pairs
-    #[napi]
-    pub async fn list_pairs(&self) -> Result<String> {
+    /// Returns a Promise that resolves to an array of TradingPair objects
+    #[wasm_bindgen(js_name = listPairs)]
+    pub fn list_pairs(&self) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_pairs().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .list_pairs()
+                .await
+                .and_then(|pairs| {
+                    to_js_value(&pairs).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    /// Get a quote by trading pair ticker with explicit layers
-    #[napi]
-    pub async fn get_quote_by_pair(
+    /// List only active assets
+    #[wasm_bindgen(js_name = listActiveAssets)]
+    pub fn list_active_assets(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .list_active_assets()
+                .await
+                .and_then(|assets| {
+                    to_js_value(&assets).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    /// List only active trading pairs
+    #[wasm_bindgen(js_name = listActivePairs)]
+    pub fn list_active_pairs(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .list_active_pairs()
+                .await
+                .and_then(|pairs| {
+                    to_js_value(&pairs).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get an asset by ticker
+    #[wasm_bindgen(js_name = getAssetByTicker)]
+    pub fn get_asset_by_ticker(&self, ticker: String) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .find_asset_by_ticker(&ticker)
+                .await
+                .and_then(|asset| {
+                    to_js_value(&asset).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get a trading pair by ticker (e.g., "BTC/USDT")
+    #[wasm_bindgen(js_name = getPairByTicker)]
+    pub fn get_pair_by_ticker(&self, ticker: String) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .find_pair_by_ticker(&ticker)
+                .await
+                .and_then(|pair| {
+                    to_js_value(&pair).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get a quote by trading pair ticker
+    /// from_layer and to_layer should be "BTC_LN", "BTC_L1", "RGB_LN", "RGB_L1", etc.
+    #[wasm_bindgen(js_name = getQuoteByPair)]
+    pub fn get_quote_by_pair(
         &self,
         ticker: String,
         from_amount: Option<i64>,
         to_amount: Option<i64>,
         from_layer: String,
         to_layer: String,
-    ) -> Result<String> {
+    ) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
+        future_to_promise(async move {
+            // Parse layer strings
+            let from_layer_enum = parse_layer(&from_layer)?;
+            let to_layer_enum = parse_layer(&to_layer)?;
+
             inner
-                .get_quote_by_pair(ticker, from_amount, to_amount, from_layer, to_layer)
-                .map(|v| v.json)
+                .get_quote_by_pair(
+                    &ticker,
+                    from_amount,
+                    to_amount,
+                    from_layer_enum,
+                    to_layer_enum,
+                )
+                .await
+                .and_then(|quote| {
+                    to_js_value(&quote).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
         })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
-    // === Swap Operations ===
-
-    /// Get node information
-    #[napi]
-    pub async fn get_node_info(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_node_info().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get swap status by payment hash
-    #[napi]
-    pub async fn get_swap_status(&self, payment_hash: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_swap_status(payment_hash).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Wait for swap completion
-    #[napi]
-    pub async fn wait_for_swap_completion(
-        &self,
-        payment_hash: String,
-        timeout_secs: f64,
-        poll_interval_secs: f64,
-    ) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
-            inner
-                .wait_for_swap_completion(payment_hash, timeout_secs, poll_interval_secs)
-                .map(|v| v.json)
-        })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
-    }
-
-    // === Swap Order Operations ===
-
-    /// Get swap order status
-    #[napi]
-    pub async fn get_swap_order_status(&self, order_id: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_swap_order_status(order_id).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get order history
-    #[napi]
-    pub async fn get_order_history(
-        &self,
-        status: Option<String>,
-        limit: i32,
-        skip: i32,
-    ) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
-            inner.get_order_history(status, limit, skip).map(|v| v.json)
-        })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
-    }
-
-    /// Get order analytics
-    #[napi]
-    pub async fn get_order_analytics(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_order_analytics().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Submit rate decision for a swap order
-    #[napi]
-    pub async fn swap_order_rate_decision(&self, order_id: String, accept: bool) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
-            inner
-                .swap_order_rate_decision(order_id, accept)
-                .map(|v| v.json)
-        })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
-    }
-
-    // === LSP Operations ===
-
-    /// Get LSP information
-    #[napi]
-    pub async fn get_lsp_info(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_lsp_info().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get LSP network information
-    #[napi]
-    pub async fn get_lsp_network_info(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_lsp_network_info().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get an LSPS1 order
-    #[napi]
-    pub async fn get_lsp_order(&self, order_id: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_lsp_order(order_id).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Estimate fees for an LSPS1 order
-    #[napi]
-    pub async fn estimate_lsp_fees(&self, channel_size: i64) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.estimate_lsp_fees(channel_size).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    // === RGB Lightning Node Operations ===
-
-    /// Get RGB node information
-    #[napi]
-    pub async fn get_rgb_node_info(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_rgb_node_info().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// List channels
-    #[napi]
-    pub async fn list_channels(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_channels().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// List peers
-    #[napi]
-    pub async fn list_peers(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_peers().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// List node assets
-    #[napi]
-    pub async fn list_node_assets(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_node_assets().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get asset balance
-    #[napi]
-    pub async fn get_asset_balance(&self, asset_id: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_asset_balance(asset_id).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get onchain address
-    #[napi]
-    pub async fn get_onchain_address(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_onchain_address().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get BTC balance
-    #[napi]
-    pub async fn get_btc_balance(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_btc_balance().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Whitelist a trade
-    #[napi]
-    pub async fn whitelist_trade(&self, swapstring: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.whitelist_trade(swapstring).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Decode a Lightning invoice
-    #[napi]
-    pub async fn decode_ln_invoice(&self, invoice: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.decode_ln_invoice(invoice).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// List payments
-    #[napi]
-    pub async fn list_payments(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_payments().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    // === Wallet Operations ===
-
-    /// Initialize wallet
-    #[napi]
-    pub async fn init_wallet(&self, password: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.init_wallet(password).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Unlock wallet
-    #[napi]
-    pub async fn unlock_wallet(&self, password: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.unlock_wallet(password).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Lock wallet
-    #[napi]
-    pub async fn lock_wallet(&self) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.lock_wallet().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    // === Convenience Methods ===
-
-    /// Get an asset by its ticker (e.g., "BTC", "USDT")
-    #[napi]
-    pub async fn get_asset_by_ticker(&self, ticker: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_asset_by_ticker(ticker).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Get a quote by asset tickers (e.g., "BTC", "USDT") with explicit layers
-    #[napi]
-    pub async fn get_quote_by_assets(
+    /// Get a quote by asset tickers (convenience method)
+    #[wasm_bindgen(js_name = getQuoteByAssets)]
+    pub fn get_quote_by_assets(
         &self,
         from_ticker: String,
         to_ticker: String,
@@ -483,302 +323,380 @@ impl KaleidoClient {
         to_amount: Option<i64>,
         from_layer: String,
         to_layer: String,
-    ) -> Result<String> {
+    ) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
+        future_to_promise(async move {
+            // Parse layer strings
+            let from_layer_enum = parse_layer(&from_layer)?;
+            let to_layer_enum = parse_layer(&to_layer)?;
+
+            // Construct pair ticker
+            let pair_ticker = format!("{}/{}", from_ticker, to_ticker);
+
             inner
-                .get_quote_by_assets(from_ticker, to_ticker, from_amount, to_amount, from_layer, to_layer)
-                .map(|v| v.json)
+                .get_quote_by_pair(
+                    &pair_ticker,
+                    from_amount,
+                    to_amount,
+                    from_layer_enum,
+                    to_layer_enum,
+                )
+                .await
+                .and_then(|quote| {
+                    to_js_value(&quote).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
         })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
-    /// Complete a swap using a quote JSON string
-    #[napi]
-    pub async fn complete_swap_from_quote(&self, quote_json: String) -> Result<String> {
+    // === Swap Operations ===
+
+    /// Get node information
+    #[wasm_bindgen(js_name = getNodeInfo)]
+    pub fn get_node_info(&self) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
-            inner.complete_swap_from_quote(quote_json).map(|v| v.json)
+        future_to_promise(async move {
+            inner
+                .get_node_info()
+                .await
+                .and_then(|info| {
+                    to_js_value(&info).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
         })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
-    /// Get a trading pair by ticker (e.g., "BTC/USDT")
-    #[napi]
-    pub async fn get_pair_by_ticker(&self, ticker: String) -> Result<String> {
+    /// Get swap status by payment hash
+    #[wasm_bindgen(js_name = getSwapStatus)]
+    pub fn get_swap_status(&self, payment_hash: String) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.get_pair_by_ticker(ticker).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .get_swap_status(&payment_hash)
+                .await
+                .and_then(|status| {
+                    to_js_value(&status).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    // === New Convenience Methods ===
-
-    /// List only active assets
-    #[napi]
-    pub async fn list_active_assets(&self) -> Result<String> {
+    /// Initialize a swap directly with the Maker
+    #[wasm_bindgen(js_name = initSwap)]
+    pub fn init_swap(&self, request: JsValue) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_active_assets().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            let req: SwapRequest = serde_wasm_bindgen::from_value(request).map_err(|e| {
+                to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                    e.to_string(),
+                ))
+            })?;
+
+            inner
+                .init_swap(&req)
+                .await
+                .and_then(|res| {
+                    to_js_value(&res).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    /// List only active trading pairs
-    #[napi]
-    pub async fn list_active_pairs(&self) -> Result<String> {
+    /// Whitelist a trade (if using a User Node)
+    #[wasm_bindgen(js_name = whitelistTrade)]
+    pub fn whitelist_trade(&self, swapstring: String) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.list_active_pairs().map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .whitelist_trade(&swapstring)
+                .await
+                .map(|_| JsValue::NULL)
+                .map_err(to_js_error)
+        })
     }
 
-    /// Estimate swap fees for a given pair and amount with explicit layers
-    #[napi]
-    pub async fn estimate_swap_fees(&self, ticker: String, amount: i64, from_layer: String, to_layer: String) -> Result<i64> {
+    /// Execute/Confirm a swap
+    #[wasm_bindgen(js_name = executeSwap)]
+    pub fn execute_swap(&self, request: JsValue) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.estimate_swap_fees(ticker, amount, from_layer, to_layer))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            let req: ConfirmSwapRequest = serde_wasm_bindgen::from_value(request).map_err(|e| {
+                to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                    e.to_string(),
+                ))
+            })?;
+
+            inner
+                .execute_swap(&req)
+                .await
+                .and_then(|res| {
+                    to_js_value(&res).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    /// Find an asset by ticker
-    #[napi]
-    pub async fn find_asset_by_ticker(&self, ticker: String) -> Result<String> {
+    // === Swap Order Operations ===
+
+    /// Create a swap order
+    /// Request should be a CreateSwapOrderRequest object
+    #[wasm_bindgen(js_name = createSwapOrder)]
+    pub fn create_swap_order(&self, request: JsValue) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.find_asset_by_ticker(ticker).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            let req: CreateSwapOrderRequest =
+                serde_wasm_bindgen::from_value(request).map_err(|e| {
+                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                        e.to_string(),
+                    ))
+                })?;
+
+            inner
+                .create_swap_order(&req)
+                .await
+                .and_then(|response| {
+                    to_js_value(&response).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    /// Find a trading pair by ticker
-    #[napi]
-    pub async fn find_pair_by_ticker(&self, ticker: String) -> Result<String> {
+    /// Get swap order status
+    #[wasm_bindgen(js_name = getSwapOrderStatus)]
+    pub fn get_swap_order_status(&self, order_id: String) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.find_pair_by_ticker(ticker).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .get_swap_order_status(&order_id)
+                .await
+                .and_then(|status| {
+                    to_js_value(&status).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    // === Legacy Support Methods ===
-
-    /// Create an LSPS1 order (Legacy)
-    #[napi]
-    pub async fn create_lsp_order(&self, request_json: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.create_lsp_order(request_json).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Create a swap order (Legacy)
-    #[napi]
-    pub async fn create_swap_order(&self, request_json: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.create_swap_order(request_json).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Initialize a swap (Legacy)
-    #[napi]
-    pub async fn init_swap(&self, request_json: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.init_swap(request_json).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Execute a swap (Legacy)
-    #[napi]
-    pub async fn execute_swap(&self, request_json: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.execute_swap(request_json).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Retry asset delivery (Legacy)
-    #[napi]
-    pub async fn retry_delivery(&self, order_id: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.retry_delivery(order_id).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Connect to a peer
-    #[napi]
-    pub async fn connect_peer(&self, request_json: String) -> Result<String> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.connect_peer(request_json).map(|v| v.json))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    // === WebSocket Operations ===
-
-    /// Connect to WebSocket
-    #[napi]
-    pub async fn connect_websocket(&self) -> Result<()> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.connect_websocket())
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Disconnect from WebSocket
-    #[napi]
-    pub async fn disconnect_websocket(&self) -> Result<()> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.disconnect_websocket())
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Check if WebSocket is connected
-    #[napi]
-    pub async fn is_websocket_connected(&self) -> Result<bool> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.is_websocket_connected())
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))
-    }
-
-    /// Subscribe to price updates for a trading pair
-    #[napi]
-    pub async fn subscribe_to_pair(&self, pair_id: String) -> Result<()> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.subscribe_to_pair(pair_id))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Unsubscribe from price updates for a trading pair
-    #[napi]
-    pub async fn unsubscribe_from_pair(&self, pair_id: String) -> Result<()> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.unsubscribe_from_pair(pair_id))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
-    }
-
-    /// Request a quote via WebSocket (faster than HTTP)
-    #[napi]
-    pub async fn get_quote_websocket(
+    /// Get order history
+    #[wasm_bindgen(js_name = getOrderHistory)]
+    pub fn get_order_history(
         &self,
-        ticker: String,
-        from_amount: Option<i64>,
-        to_amount: Option<i64>,
-        layer: String,
-    ) -> Result<String> {
+        status: Option<String>,
+        limit: i32,
+        skip: i32,
+    ) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || {
-            inner.get_quote_websocket(ticker, from_amount, to_amount, layer)
+        future_to_promise(async move {
+            inner
+                .get_order_history(status.as_deref(), limit, skip)
+                .await
+                .and_then(|history| {
+                    to_js_value(&history).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
         })
-        .await
-        .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))?
-        .map(|json_value| json_value.json)
-        .map_err(|e| Error::from_reason(format!("{:?}", e)))
     }
 
-    /// Register a WebSocket event handler
-    #[napi]
-    pub async fn on_websocket_event(&self, event: String, handler_id: String) -> Result<()> {
+    /// Get order analytics
+    #[wasm_bindgen(js_name = getOrderAnalytics)]
+    pub fn get_order_analytics(&self) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.register_websocket_handler(event, handler_id))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .get_order_analytics()
+                .await
+                .and_then(|stats| {
+                    to_js_value(&stats).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    /// Reconnect WebSocket with exponential backoff
-    #[napi]
-    pub async fn reconnect_websocket(&self) -> Result<()> {
+    // === LSP Operations ===
+
+    /// Get LSP information
+    #[wasm_bindgen(js_name = getLspInfo)]
+    pub fn get_lsp_info(&self) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.reconnect_websocket())
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .get_lsp_info()
+                .await
+                .and_then(|info| {
+                    to_js_value(&info).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
     }
 
-    /// Create a real-time quote stream for a trading pair
-    /// The pair_ticker should be in format "BTC/USDT"
-    #[napi]
-    pub async fn create_quote_stream(&self, pair_ticker: String) -> Result<QuoteStream> {
+    /// Get LSP network information
+    #[wasm_bindgen(js_name = getLspNetworkInfo)]
+    pub fn get_lsp_network_info(&self) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.create_quote_stream(pair_ticker))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {}", e)))?
-            .map(|stream| QuoteStream { inner: stream })
-            .map_err(|e| Error::from_reason(format_error(e)))
+        future_to_promise(async move {
+            inner
+                .get_lsp_network_info()
+                .await
+                .and_then(|info| {
+                    to_js_value(&info).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Estimate LSP fees
+    #[wasm_bindgen(js_name = estimateLspFees)]
+    pub fn estimate_lsp_fees(&self, channel_size: i64) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .estimate_lsp_fees(channel_size)
+                .await
+                .and_then(|fees| {
+                    to_js_value(&fees).map_err(|e| {
+                        kaleidoswap_core::error::KaleidoError::validation(
+                            e.as_string().unwrap_or_default(),
+                        )
+                    })
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    // === RGB Lightning Node Operations ===
+
+    /// Get RGB node information from the taker's local RGB Lightning Node.
+    /// Returns pubkey and other node info needed for swap execution.
+    #[wasm_bindgen(js_name = getRgbNodeInfo)]
+    pub fn get_rgb_node_info(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .get_rgb_node_info()
+                .await
+                .map(|info| {
+                    // Return the JSON value directly
+                    serde_wasm_bindgen::to_value(&info)
+                        .unwrap_or_else(|_| JsValue::from_str(&info.to_string()))
+                })
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get the taker's pubkey from the local RGB Lightning Node.
+    /// This is a convenience method that extracts just the pubkey from getRgbNodeInfo.
+    #[wasm_bindgen(js_name = getTakerPubkey)]
+    pub fn get_taker_pubkey(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            let info = inner.get_rgb_node_info().await.map_err(to_js_error)?;
+            let pubkey = info
+                .get("pubkey")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .unwrap_or_default();
+            Ok(JsValue::from_str(&pubkey))
+        })
     }
 }
 
 // ============================================================================
-// WebSocket Quote Streaming
+// Helper Functions
 // ============================================================================
 
-use kaleidoswap_uniffi::QuoteStream as UniffiQuoteStream;
-
-/// Real-time quote stream for receiving WebSocket updates
-#[napi]
-pub struct QuoteStream {
-    inner: Arc<UniffiQuoteStream>,
-}
-
-#[napi]
-impl QuoteStream {
-    /// Receive the next quote update (blocking with timeout)
-    /// Returns null if timeout expires without receiving a quote
-    #[napi]
-    pub async fn recv(&self, timeout_secs: f64) -> Result<Option<String>> {
-        let inner = Arc::clone(&self.inner);
-        tokio::task::spawn_blocking(move || inner.recv(timeout_secs))
-            .await
-            .map_err(|e| Error::from_reason(format!("Task failed: {:?}", e)))
-    }
-
-    /// Check if the stream is still connected
-    #[napi]
-    pub fn is_connected(&self) -> bool {
-        self.inner.is_connected()
-    }
-
-    /// Close the stream and clean up resources
-    #[napi]
-    pub fn close(&self) {
-        self.inner.close()
+/// Parse layer string to Layer enum
+fn parse_layer(layer: &str) -> Result<Layer, JsValue> {
+    match layer {
+        "BTC_L1" | "Onchain" => Ok(Layer::BtcL1),
+        "BTC_LN" | "Lightning" => Ok(Layer::BtcLn),
+        "BTC_SPARK" | "Spark" => Ok(Layer::BtcSpark),
+        "BTC_ARKADE" => Ok(Layer::BtcArkade),
+        "BTC_LIQUID" => Ok(Layer::BtcLiquid),
+        "BTC_CASHU" => Ok(Layer::BtcCashu),
+        "RGB_L1" => Ok(Layer::RgbL1),
+        "RGB_LN" => Ok(Layer::RgbLn),
+        "TAPASS_L1" => Ok(Layer::TapassL1),
+        "TAPASS_LN" => Ok(Layer::TapassLn),
+        "LIQUID_LIQUID" => Ok(Layer::LiquidLiquid),
+        "ARKADE_ARKADE" => Ok(Layer::ArkadeArkade),
+        "SPARK_SPARK" => Ok(Layer::SparkSpark),
+        _ => Err(to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+            format!("Invalid layer: {}. Expected one of: BTC_L1, BTC_LN, BTC_SPARK, RGB_L1, RGB_LN, etc.", layer)
+        ))),
     }
 }
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
 
 /// Convert display units to smallest units
-#[napi]
+#[wasm_bindgen(js_name = toSmallestUnits)]
 pub fn to_smallest_units(amount: f64, precision: u32) -> i64 {
-    kaleidoswap_uniffi::to_smallest_units(amount, precision as u8)
+    (amount * 10_f64.powi(precision as i32)) as i64
 }
 
 /// Convert smallest units to display units
-#[napi]
+#[wasm_bindgen(js_name = toDisplayUnits)]
 pub fn to_display_units(amount: i64, precision: u32) -> f64 {
-    kaleidoswap_uniffi::to_display_units(amount, precision as u8)
+    amount as f64 / 10_f64.powi(precision as i32)
+}
+
+// ============================================================================
+// Module Info
+// ============================================================================
+
+/// Get SDK version
+#[wasm_bindgen(js_name = getVersion)]
+pub fn get_version() -> String {
+    env!("CARGO_PKG_VERSION").to_string()
+}
+
+/// Get SDK name
+#[wasm_bindgen(js_name = getSdkName)]
+pub fn get_sdk_name() -> String {
+    "kaleidoswap-sdk".to_string()
 }

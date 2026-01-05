@@ -1,0 +1,17 @@
+# Build output
+/pkg/
+/pkg-web/
+/pkg-node/
+/target/
+
+# Node modules
+node_modules/
+
+# npm
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Test output
+/test-results/
+

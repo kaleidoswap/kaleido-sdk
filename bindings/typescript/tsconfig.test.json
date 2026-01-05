@@ -1,0 +1,28 @@
+{
+  "extends": "../typescript/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist-test",
+    "rootDir": "./tests",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "pkg",
+    "pkg-web",
+    "pkg-node"
+  ]
+}
+

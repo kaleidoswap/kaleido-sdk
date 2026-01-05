@@ -187,6 +187,7 @@ impl KaleidoError {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl From<reqwest::Error> for KaleidoError {
     fn from(err: reqwest::Error) -> Self {
         if err.is_timeout() {

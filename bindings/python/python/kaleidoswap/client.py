@@ -1,38 +1,22 @@
 import json
 from typing import Any, Iterator, List, Optional, Union
 
-from .exceptions import (
-    APIError,
-    AssetNotFoundError,
-    AuthenticationError,
-    ChannelNotFoundError,
-    InsufficientBalanceError,
-    KaleidoError,
-    LspError,
-    NetworkError,
-    NodeLockedError,
-    NodeNotConfiguredError,
-    OrderNotFoundError,
-    QuoteExpiredError,
-    RateLimitError,
-    ResourceNotFoundError,
-    TradingPairNotFoundError,
-    ValidationError,
-)
-from .generated_models import (
-    Asset,
-    NetworkInfoResponse,
-    OrderHistoryResponse,
-    OrderStatsResponse,
-    PairQuoteResponse,
-    SwapNodeInfoResponse,
-    SwapOrderRateDecisionResponse,
-    SwapOrderStatusResponse,
-    SwapStatusResponse,
-    TradingPair,
-)
+from .exceptions import (APIError, AssetNotFoundError, AuthenticationError,
+                         ChannelNotFoundError, InsufficientBalanceError,
+                         KaleidoError, LspError, NetworkError, NodeLockedError,
+                         NodeNotConfiguredError, OrderNotFoundError,
+                         QuoteExpiredError, RateLimitError,
+                         ResourceNotFoundError, TradingPairNotFoundError,
+                         ValidationError)
+from .generated_models import (Asset, NetworkInfoResponse,
+                               OrderHistoryResponse, OrderStatsResponse,
+                               PairQuoteResponse, SwapNodeInfoResponse,
+                               SwapOrderRateDecisionResponse,
+                               SwapOrderStatusResponse, SwapStatusResponse,
+                               TradingPair)
 from .kaleidoswap import PyKaleidoClient, PyKaleidoConfig
-from .sub_clients import LspClient, MarketClient, NodeClient, OrdersClient, SwapsClient
+from .sub_clients import (LspClient, MarketClient, NodeClient, OrdersClient,
+                          SwapsClient)
 
 
 class QuoteStreamContext:
@@ -334,17 +318,22 @@ class KaleidoClient:
             PairQuoteResponse object
         """
         json_str = self._execute(
-            self._inner.get_quote_by_pair, ticker, from_amount, to_amount, from_layer, to_layer
+            self._inner.get_quote_by_pair,
+            ticker,
+            from_amount,
+            to_amount,
+            from_layer,
+            to_layer,
         )
         return self._parse_response(json_str, PairQuoteResponse)
 
     # === Swap Operations ===
 
-    def get_node_info(self) -> SwapNodeInfoResponse:
-        """Get swap node information.
+    def get_maker_info(self) -> SwapNodeInfoResponse:
+        """Get maker node information (the remote swap service).
 
         Returns:
-            SwapNodeInfoResponse object
+            SwapNodeInfoResponse object with maker's pubkey and capabilities
         """
         json_str = self._execute(self._inner.get_node_info)
         return self._parse_response(json_str, SwapNodeInfoResponse)
@@ -430,10 +419,25 @@ class KaleidoClient:
     def estimate_lsp_fees(self, channel_size: int) -> str:
         return self._execute(self._inner.estimate_lsp_fees, channel_size)
 
-    # === RGB Node Operations ===
+    # === RGB Node Operations (Taker Node) ===
 
     def get_rgb_node_info(self) -> str:
+        """Get the local RGB node info (taker node configured via node_url)."""
         return self._execute(self._inner.get_rgb_node_info)
+
+    def get_taker_pubkey(self) -> str:
+        """Get the taker's pubkey from the local RGB node.
+
+        This is the pubkey needed for swap execution.
+
+        Returns:
+            Taker node pubkey string
+        """
+        import json
+
+        node_info = self.get_rgb_node_info()
+        data = json.loads(node_info)
+        return data.get("pubkey", "")
 
     def list_channels(self) -> str:
         return self._execute(self._inner.list_channels)
@@ -546,19 +550,27 @@ class KaleidoClient:
         json_str = self._execute(self._inner.list_active_pairs)
         return self._parse_response(json_str, TradingPair)
 
-    def estimate_swap_fees(self, ticker: str, amount: int, from_layer: str = "BTC_LN", to_layer: str = "RGB_LN") -> int:
+    def estimate_swap_fees(
+        self,
+        ticker: str,
+        amount: int,
+        from_layer: str = "BTC_LN",
+        to_layer: str = "RGB_LN",
+    ) -> int:
         """Estimate swap fees for a given pair and amount with explicit layers.
-        
+
         Args:
             ticker: Trading pair ticker (e.g., "BTC/USDT")
             amount: Amount to estimate fees for
             from_layer: Layer for from asset (e.g., "BTC_LN", "BTC_L1")
             to_layer: Layer for to asset (e.g., "RGB_LN", "RGB_L1")
-            
+
         Returns:
             Estimated fee amount
         """
-        return self._execute(self._inner.estimate_swap_fees, ticker, amount, from_layer, to_layer)
+        return self._execute(
+            self._inner.estimate_swap_fees, ticker, amount, from_layer, to_layer
+        )
 
     def find_asset_by_ticker(self, ticker: str) -> Asset:
         """Find asset by ticker.

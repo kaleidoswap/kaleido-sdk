@@ -14,11 +14,9 @@ import logging
 import os
 
 from kaleidoswap import KaleidoClient, KaleidoConfig
-from kaleidoswap.generated_models import (
-    CreateSwapOrderRequest,
-    ReceiverAddress,
-    ReceiverAddressFormat,
-)
+from kaleidoswap.generated_models import (CreateSwapOrderRequest,
+                                          ReceiverAddress,
+                                          ReceiverAddressFormat)
 
 # Configure logging
 logging.basicConfig(

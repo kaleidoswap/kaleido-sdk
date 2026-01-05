@@ -1,14 +1,43 @@
 //! WebSocket client for real-time quotes and updates.
+//!
+//! This module provides WebSocket functionality for both browser and native environments:
+//! - Browser: Uses web-sys::WebSocket (via browser.rs)
+//! - Native: Uses tokio-tungstenite (current implementation)
+
+// Conditional module declarations
+pub mod trait_def;
+
+#[cfg(target_arch = "wasm32")]
+pub mod browser;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub mod native;
+
+// Re-export the trait
+pub use trait_def::WebSocketConnection;
+
+// Re-export browser implementation for WASM
+#[cfg(target_arch = "wasm32")]
+pub use browser::BrowserWebSocket;
 
 use crate::error::{KaleidoError, Result};
-use futures::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
+
+// Only import these for native targets
+#[cfg(not(target_arch = "wasm32"))]
+use futures::{SinkExt, StreamExt};
+#[cfg(not(target_arch = "wasm32"))]
+use std::collections::HashMap;
+#[cfg(not(target_arch = "wasm32"))]
 use std::time::Duration;
+#[cfg(not(target_arch = "wasm32"))]
 use tokio::sync::{mpsc, RwLock};
+#[cfg(not(target_arch = "wasm32"))]
 use tokio::time;
+#[cfg(not(target_arch = "wasm32"))]
 use tokio_tungstenite::{connect_async, tungstenite::Message};
+#[cfg(not(target_arch = "wasm32"))]
 use url::Url;
 
 /// WebSocket event types.
@@ -117,7 +146,8 @@ impl Default for WebSocketConfig {
     }
 }
 
-/// WebSocket client for real-time updates.
+/// WebSocket client for real-time updates (native platforms only).
+#[cfg(not(target_arch = "wasm32"))]
 pub struct WebSocketClient {
     url: Url,
     config: WebSocketConfig,
@@ -128,6 +158,107 @@ pub struct WebSocketClient {
     reconnect_attempts: Arc<RwLock<u32>>,
 }
 
+/// WebSocket client stub for WASM (uses BrowserWebSocket instead).
+#[cfg(target_arch = "wasm32")]
+pub struct WebSocketClient;
+
+#[cfg(target_arch = "wasm32")]
+impl WebSocketClient {
+    /// Create a new WebSocket client (stub for WASM).
+    pub fn new(_base_url: &str) -> Result<Self> {
+        Ok(Self)
+    }
+
+    /// Create a new WebSocket client with custom configuration (stub for WASM).
+    pub fn with_config(_base_url: &str, _config: WebSocketConfig) -> Result<Self> {
+        Ok(Self)
+    }
+
+    /// Register an event handler (stub for WASM).
+    pub async fn on<F>(&self, _event: WsEvent, _handler: F)
+    where
+        F: Fn(serde_json::Value) + Send + Sync + 'static,
+    {
+        // No-op for WASM
+    }
+
+    /// Connect to the WebSocket server (stub for WASM).
+    pub async fn connect(&mut self) -> Result<()> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+
+    /// Disconnect from the WebSocket server (stub for WASM).
+    pub async fn disconnect(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    /// Check if the client is connected (stub for WASM).
+    pub async fn is_connected(&self) -> bool {
+        false
+    }
+
+    /// Subscribe to market updates (stub for WASM).
+    pub async fn subscribe<T>(&self, _subscription: T) -> Result<()> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+
+    /// Unsubscribe from market updates (stub for WASM).
+    pub async fn unsubscribe<T>(&self, _subscription: T) -> Result<()> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+
+    /// Request a quote (stub for WASM).
+    pub async fn request_quote(
+        &self,
+        _from_asset: &str,
+        _to_asset: &str,
+        _from_amount: Option<i64>,
+        _to_amount: Option<i64>,
+    ) -> Result<()> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+
+    /// Wait for a specific event (stub for WASM).
+    #[cfg(target_arch = "wasm32")]
+    pub async fn wait_for_event(
+        &self,
+        _event: WsEvent,
+        _timeout: u64,
+    ) -> Result<serde_json::Value> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+
+    /// Wait for a specific event (stub for non-WASM, shouldn't be called).
+    #[cfg(not(target_arch = "wasm32"))]
+    pub async fn wait_for_event(
+        &self,
+        _event: WsEvent,
+        _timeout: Duration,
+    ) -> Result<serde_json::Value> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+
+    /// Reconnect to the WebSocket server (stub for WASM).
+    pub async fn reconnect(&mut self) -> Result<()> {
+        Err(KaleidoError::websocket(
+            "WebSocketClient is not available on WASM. Use BrowserWebSocket instead.",
+        ))
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 impl WebSocketClient {
     /// Create a new WebSocket client with default configuration.
     pub fn new(base_url: &str) -> Result<Self> {

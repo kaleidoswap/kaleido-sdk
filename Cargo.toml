@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "crates/kaleidoswap-core",
-    "crates/kaleidoswap-uniffi",
     "bindings/python",
     "bindings/typescript",
 ]
@@ -17,7 +16,7 @@ description = "SDK for interacting with the Kaleidoswap protocol"
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.36", features = ["full"] }
+tokio = { version = "1.36", features = ["sync", "macros", "rt", "time"] }
 
 # HTTP client
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

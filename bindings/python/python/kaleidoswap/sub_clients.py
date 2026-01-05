@@ -5,30 +5,17 @@ Sub-client modules for organized API access.
 from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
-    from .generated_models import (
-        Asset,
-        NetworkInfoResponse,
-        OrderHistoryResponse,
-        OrderStatsResponse,
-        PairQuoteResponse,
-        SwapNodeInfoResponse,
-        SwapOrderRateDecisionResponse,
-        SwapOrderStatusResponse,
-        SwapStatusResponse,
-        TradingPair,
-    )
-    from .rgb_node_models import (
-        AddressResponse,
-        AssetBalanceResponse,
-        BtcBalanceResponse,
-        Channel,
-        DecodeLNInvoiceResponse,
-        EmptyResponse,
-        InitResponse,
-        NodeInfoResponse,
-        Payment,
-        Peer,
-    )
+    from .generated_models import (Asset, NetworkInfoResponse,
+                                   OrderHistoryResponse, OrderStatsResponse,
+                                   PairQuoteResponse, SwapNodeInfoResponse,
+                                   SwapOrderRateDecisionResponse,
+                                   SwapOrderStatusResponse, SwapStatusResponse,
+                                   TradingPair)
+    from .rgb_node_models import (AddressResponse, AssetBalanceResponse,
+                                  BtcBalanceResponse, Channel,
+                                  DecodeLNInvoiceResponse, EmptyResponse,
+                                  InitResponse, NodeInfoResponse, Payment,
+                                  Peer)
 
 
 class MarketClient:
@@ -66,24 +53,6 @@ class MarketClient:
         ticker: str,
         from_amount: Optional[int] = None,
         to_amount: Optional[int] = None,
-    ) -> "PairQuoteResponse":
-        """Get quote for a trading pair.
-
-        Returns:
-            PairQuoteResponse object
-        """
-        from .generated_models import PairQuoteResponse
-
-        json_str = self._execute(
-            self._inner.get_quote_by_pair, ticker, from_amount, to_amount
-        )
-        return self._parse(json_str, PairQuoteResponse)
-
-    def get_quote_by_pair(
-        self,
-        ticker: str,
-        from_amount: Optional[int] = None,
-        to_amount: Optional[int] = None,
         from_layer: str = "BTC_LN",
         to_layer: str = "RGB_LN",
     ) -> "PairQuoteResponse":
@@ -102,7 +71,12 @@ class MarketClient:
         from .generated_models import PairQuoteResponse
 
         json_str = self._execute(
-            self._inner.get_quote_by_pair, ticker, from_amount, to_amount, from_layer, to_layer
+            self._inner.get_quote_by_pair,
+            ticker,
+            from_amount,
+            to_amount,
+            from_layer,
+            to_layer,
         )
         return self._parse(json_str, PairQuoteResponse)
 

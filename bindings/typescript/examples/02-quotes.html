@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaleidoswap SDK - Get Quotes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; margin-bottom: 30px; }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .loading { color: #666; font-style: italic; }
+        .error {
+            color: #dc3545;
+            padding: 10px;
+            background: #f8d7da;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #28a745;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .quote-result {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .quote-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .quote-detail:last-child { border-bottom: none; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Kaleidoswap SDK - Get Quotes</h1>
+    
+    <div class="card">
+        <h2>Quote by Pair</h2>
+        <div class="form-group">
+            <label>Pair Ticker:</label>
+            <input type="text" id="pairTicker" value="BTC/USDT" placeholder="e.g., BTC/USDT">
+        </div>
+        <div class="form-group">
+            <label>From Amount (satoshis/smallest units):</label>
+            <input type="number" id="fromAmount" value="100000" placeholder="e.g., 100000">
+        </div>
+        <div class="form-group">
+            <label>From Layer:</label>
+            <select id="fromLayer">
+                <option value="BTC_LN">Lightning (BTC_LN)</option>
+                <option value="BTC_L1">Onchain (BTC_L1)</option>
+                <option value="RGB_LN">RGB Lightning</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>To Layer:</label>
+            <select id="toLayer">
+                <option value="RGB_LN">RGB Lightning</option>
+                <option value="BTC_LN">Lightning (BTC_LN)</option>
+                <option value="BTC_L1">Onchain (BTC_L1)</option>
+            </select>
+        </div>
+        <button id="getQuoteBtn">Get Quote</button>
+        <div id="quoteOutput"></div>
+    </div>
+
+    <div class="card">
+        <h2>Quote by Assets</h2>
+        <div class="form-group">
+            <label>From Asset:</label>
+            <input type="text" id="fromAsset" value="BTC" placeholder="e.g., BTC">
+        </div>
+        <div class="form-group">
+            <label>To Asset:</label>
+            <input type="text" id="toAsset" value="USDT" placeholder="e.g., USDT">
+        </div>
+        <div class="form-group">
+            <label>Amount:</label>
+            <input type="number" id="assetAmount" value="100000" placeholder="e.g., 100000">
+        </div>
+        <div class="form-group">
+            <label>From Layer:</label>
+            <select id="assetFromLayer">
+                <option value="BTC_LN">Lightning (BTC_LN)</option>
+                <option value="BTC_L1">Onchain (BTC_L1)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>To Layer:</label>
+            <select id="assetToLayer">
+                <option value="RGB_LN">RGB Lightning</option>
+                <option value="BTC_LN">Lightning (BTC_LN)</option>
+            </select>
+        </div>
+        <button id="getQuoteByAssetsBtn">Get Quote</button>
+        <div id="quoteByAssetsOutput"></div>
+    </div>
+
+    <script type="module">
+        import init, { KaleidoClient, KaleidoConfig } from '../pkg-web/kaleidoswap_web.js';
+
+        let client = null;
+        const API_URL = 'https://api.regtest.kaleidoswap.com';
+
+        // Initialize SDK on load
+        (async () => {
+            try {
+                await init();
+                const config = KaleidoConfig.withDefaults(API_URL);
+                client = new KaleidoClient(config);
+                console.log('SDK initialized');
+            } catch (error) {
+                document.body.innerHTML = `<div class="error">Failed to initialize SDK: ${error.message}</div>`;
+            }
+        })();
+
+        function formatQuote(quote) {
+            return `
+                <div class="quote-result">
+                    <h3>Quote Details</h3>
+                    <div class="quote-detail">
+                        <strong>RFQ ID:</strong>
+                        <span>${quote.rfq_id}</span>
+                    </div>
+                    <div class="quote-detail">
+                        <strong>From Asset:</strong>
+                        <span>${quote.from_asset.asset_id} (${quote.from_asset.amount})</span>
+                    </div>
+                    <div class="quote-detail">
+                        <strong>To Asset:</strong>
+                        <span>${quote.to_asset.asset_id} (${quote.to_asset.amount})</span>
+                    </div>
+                    <div class="quote-detail">
+                        <strong>Exchange Rate:</strong>
+                        <span>${quote.exchange_rate}</span>
+                    </div>
+                    <div class="quote-detail">
+                        <strong>Expiry:</strong>
+                        <span>${new Date(quote.expiry).toLocaleString()}</span>
+                    </div>
+                    <h4 style="margin-top: 20px;">Raw Response:</h4>
+                    <pre>${JSON.stringify(quote, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // Get Quote by Pair
+        document.getElementById('getQuoteBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('getQuoteBtn');
+            const output = document.getElementById('quoteOutput');
+            
+            const pairTicker = document.getElementById('pairTicker').value;
+            const fromAmount = parseInt(document.getElementById('fromAmount').value);
+            const fromLayer = document.getElementById('fromLayer').value;
+            const toLayer = document.getElementById('toLayer').value;
+            
+            try {
+                btn.disabled = true;
+                output.innerHTML = '<p class="loading">Getting quote...</p>';
+                
+                const quote = await client.getQuoteByPair(
+                    pairTicker,
+                    fromAmount,
+                    null,
+                    fromLayer,
+                    toLayer
+                );
+                
+                output.innerHTML = formatQuote(quote);
+                
+            } catch (error) {
+                output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Get Quote by Assets
+        document.getElementById('getQuoteByAssetsBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('getQuoteByAssetsBtn');
+            const output = document.getElementById('quoteByAssetsOutput');
+            
+            const fromAsset = document.getElementById('fromAsset').value;
+            const toAsset = document.getElementById('toAsset').value;
+            const amount = parseInt(document.getElementById('assetAmount').value);
+            const fromLayer = document.getElementById('assetFromLayer').value;
+            const toLayer = document.getElementById('assetToLayer').value;
+            
+            try {
+                btn.disabled = true;
+                output.innerHTML = '<p class="loading">Getting quote...</p>';
+                
+                const quote = await client.getQuoteByAssets(
+                    fromAsset,
+                    toAsset,
+                    amount,
+                    null,
+                    fromLayer,
+                    toLayer
+                );
+                
+                output.innerHTML = formatQuote(quote);
+                
+            } catch (error) {
+                output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

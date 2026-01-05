@@ -1,5 +1,9 @@
 .PHONY: help build test clean format lint check generate-models update-specs
 
+# Environment variables with defaults for local development
+export KALEIDO_API_URL ?= http://localhost:8000
+export KALEIDO_NODE_URL ?= http://localhost:3001
+
 # Default target
 help:
 	@echo "Kaleidoswap SDK - Development Makefile"
@@ -15,6 +19,16 @@ help:
 	@echo "  test-rust          - Run Rust tests"
 	@echo "  test-python        - Run Python binding tests (uv)"
 	@echo "  test-typescript    - Run TypeScript binding tests"
+	@echo ""
+	@echo "Examples & Development:"
+	@echo "  run-python-example - Run Python swap example (local env)"
+	@echo "  run-ts-example     - Run TypeScript swap example (local env)"
+	@echo "  dev-setup          - One-command setup for local development"
+	@echo "  check-services     - Verify API and Node are running"
+	@echo ""
+	@echo "Quick Utilities:"
+	@echo "  list-swaps         - List pending swaps (requires API)"
+	@echo "  node-info          - Get local node information"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  check              - Run cargo check"
@@ -54,7 +68,7 @@ build-python:
 
 build-typescript:
 	@echo "📦 Building TypeScript bindings..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build:nodejs
 
 # ============================================================================
 # Test targets
@@ -76,6 +90,53 @@ test-python:
 test-typescript:
 	@echo "🧪 Running TypeScript tests..."
 	cd $(BINDINGS_TYPESCRIPT) && pnpm test
+
+test-web:
+	@echo "🧪 Running Web (WASM) tests..."
+	cd bindings/web && wasm-pack test --headless --chrome
+
+# ============================================================================
+# Example & Development targets
+# ============================================================================
+
+run-python-example: dev-python
+	@echo "🐍 Running Python swap example..."
+	@echo "   API URL: $(KALEIDO_API_URL)"
+	@echo "   Node URL: $(KALEIDO_NODE_URL)"
+	@cd $(BINDINGS_PYTHON) && uv run examples/swap_example.py
+
+run-ts-example: dev-typescript
+	@echo "📦 Running TypeScript swap example..."
+	@echo "   API URL: $(KALEIDO_API_URL)"
+	@echo "   Node URL: $(KALEIDO_NODE_URL)"
+	@cd $(BINDINGS_TYPESCRIPT) && npx ts-node --esm examples/swap_example.ts
+
+dev-setup: dev-python dev-typescript check-services
+	@echo "✅ Development environment ready!"
+	@echo ""
+	@echo "Quick commands:"
+	@echo "  make run-python-example  - Run Python example"
+	@echo "  make run-ts-example      - Run TypeScript example"
+	@echo "  make check-services      - Verify services are running"
+
+check-services:
+	@echo "🔍 Checking services..."
+	@echo -n "  API ($(KALEIDO_API_URL)): "
+	@curl -s -o /dev/null -w "%{http_code}" $(KALEIDO_API_URL)/health 2>/dev/null | grep -q 200 && echo "✅ Running" || echo "❌ Not available"
+	@echo -n "  Node ($(KALEIDO_NODE_URL)): "
+	@curl -s -o /dev/null -w "%{http_code}" $(KALEIDO_NODE_URL)/nodeinfo 2>/dev/null | grep -q 200 && echo "✅ Running" || echo "❌ Not available"
+
+# ============================================================================
+# Quick Utility targets
+# ============================================================================
+
+list-swaps:
+	@echo "📋 Listing pending swaps..."
+	@curl -s $(KALEIDO_API_URL)/api/v1/swaps?status=pending | jq '.' || echo "Failed to fetch swaps"
+
+node-info:
+	@echo "🔑 Getting node information..."
+	@curl -s $(KALEIDO_NODE_URL)/nodeinfo | jq '.' || echo "Failed to fetch node info"
 
 # ============================================================================
 # Code quality targets
@@ -118,9 +179,9 @@ clippy:
 # ============================================================================
 
 generate-models:
-	@echo "🔄 Generating Rust models from OpenAPI specs (Docker)..."
+	@echo "🔄 Generating Rust models from OpenAPI specs (Progenitor)..."
 	./scripts/generate-rust-models.sh
-	@echo "✅ Models generated. Run 'cargo check' to verify."
+	@echo "✅ Models generated via build.rs."
 
 regenerate: update-specs generate-models check
 	@echo "✅ Full regeneration complete!"
@@ -169,7 +230,7 @@ dev-python:
 
 dev-typescript:
 	@echo "📦 Installing TypeScript bindings in development mode..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build:nodejs
 
 # Watch for changes and rebuild
 watch:

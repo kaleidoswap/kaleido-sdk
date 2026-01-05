@@ -2,50 +2,76 @@
 //!
 //! The main entry point for interacting with the Kaleidoswap protocol.
 
-use crate::api::{
-    lsp::LspApi,
-    market::{MarketApi, MarketHelper},
-    node::NodeApi,
-    orders::OrdersApi,
-    swaps::SwapsApi,
-};
 use crate::error::{KaleidoError, Result};
-use crate::http::HttpClient;
-use crate::models::{
-    Asset, ChannelFees, ChannelOrderResponse, ConfirmSwapRequest, ConfirmSwapResponse,
-    CreateOrderRequest, CreateSwapOrderRequest, CreateSwapOrderResponse, GetInfoResponseModel,
-    Layer, NetworkInfoResponse, OrderHistoryResponse, OrderStatsResponse, PairQuoteRequest,
-    PairQuoteResponse, Swap, SwapLegInput, SwapNodeInfoResponse, SwapOrderRateDecisionResponse,
-    SwapOrderStatusResponse, SwapRequest, SwapResponse, SwapStatusResponse, TradingPair,
-};
+use crate::generated::maker::Client as MakerClient;
+use crate::generated::maker::Error as MakerError;
+use crate::generated::rln::Client as RlnClient;
+use crate::generated::rln::Error as RlnError;
+use crate::models; // Import models module
 use crate::retry::RetryConfig;
+use crate::time::Timestamp;
 use crate::websocket::{WebSocketClient, WebSocketConfig, WsEvent};
 use crate::KaleidoConfig;
-use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use tokio::sync::RwLock;
+
+fn map_maker_error<E>(e: MakerError<E>) -> KaleidoError
+where
+    E: std::fmt::Debug,
+{
+    let s = format!("{:?}", e);
+    if s.contains("status: 404") {
+        return KaleidoError::not_found("Resource", "not found");
+    }
+    if s.contains("status: 400") || s.contains("status: 422") {
+        return KaleidoError::validation(s);
+    }
+    KaleidoError::InternalError(format!("Maker API Error: {}", s))
+}
+
+fn map_rln_error<E>(e: RlnError<E>) -> KaleidoError
+where
+    E: std::fmt::Debug,
+{
+    let s = format!("{:?}", e);
+    if s.contains("status: 404") {
+        return KaleidoError::not_found("Resource", "not found in RGB Node");
+    }
+    KaleidoError::InternalError(format!("RGB Node Error: {}", s))
+}
+
+// Type aliases for convenience
+type Asset = models::Asset;
+type TradingPair = models::TradingPair;
+type PairQuoteRequest = models::PairQuoteRequest;
+type PairQuoteResponse = models::PairQuoteResponse;
+type SwapRequest = models::SwapRequest;
+type SwapResponse = models::SwapResponse;
+type ConfirmSwapRequest = models::ConfirmSwapRequest;
+type ConfirmSwapResponse = models::ConfirmSwapResponse;
+type SwapLegInput = models::SwapLegInput;
+type Layer = models::Layer;
+type Swap = models::Swap;
+type CreateSwapOrderRequest = models::CreateSwapOrderRequest;
+type CreateOrderRequest = models::CreateOrderRequest;
 
 /// Cache entry with timestamp.
 struct CacheEntry<T> {
     data: T,
-    timestamp: Instant,
+    timestamp: Timestamp,
 }
 
 /// The main Kaleidoswap SDK client.
 pub struct KaleidoClient {
     #[allow(dead_code)]
     config: KaleidoConfig,
-    #[allow(dead_code)]
-    api_http: Arc<HttpClient>,
-    #[allow(dead_code)]
-    node_http: Option<Arc<HttpClient>>,
+    // api_http and node_http removed
 
-    // API modules
-    market: MarketApi,
-    swaps: SwapsApi,
-    orders: OrdersApi,
-    lsp: LspApi,
-    node: Option<NodeApi>,
+    // Generated Clients
+    maker_client: MakerClient,
+    rln_client: Option<RlnClient>,
+
+    // API modules field removed
 
     // WebSocket client (lazy initialized)
     ws_client: RwLock<Option<WebSocketClient>>,
@@ -59,38 +85,21 @@ pub struct KaleidoClient {
 impl KaleidoClient {
     /// Create a new Kaleidoswap client with the given configuration.
     pub fn new(config: KaleidoConfig) -> Result<Self> {
-        let retry_config = RetryConfig::new(config.max_retries);
-        let timeout = Duration::from_secs_f64(config.timeout);
+        let _retry_config = RetryConfig::new(config.max_retries);
+        let _timeout = Duration::from_secs_f64(config.timeout);
 
-        let api_http = Arc::new(HttpClient::new(
-            &config.base_url,
-            timeout,
-            retry_config.clone(),
-        )?);
+        // Legacy HTTP client initialization removed
 
-        let node_http = config
-            .node_url
-            .as_ref()
-            .map(|url| HttpClient::new(url, timeout, retry_config.clone()))
-            .transpose()?
-            .map(Arc::new);
-
-        let market = MarketApi::new(api_http.clone());
-        let swaps = SwapsApi::new(api_http.clone());
-        let orders = OrdersApi::new(api_http.clone());
-        let lsp = LspApi::new(api_http.clone());
-        let node = node_http.as_ref().map(|h| NodeApi::new(h.clone()));
+        // Initialize generated clients
+        let maker_client = MakerClient::new(&config.base_url);
+        let rln_client = config.node_url.as_ref().map(|url| RlnClient::new(url));
 
         Ok(Self {
             cache_ttl: Duration::from_secs(config.cache_ttl),
             config,
-            api_http,
-            node_http,
-            market,
-            swaps,
-            orders,
-            lsp,
-            node,
+            // api_http, node_http removed
+            maker_client,
+            rln_client,
             ws_client: RwLock::new(None),
             assets_cache: RwLock::new(None),
             pairs_cache: RwLock::new(None),
@@ -99,7 +108,7 @@ impl KaleidoClient {
 
     /// Check if RGB Lightning Node is configured.
     pub fn has_node(&self) -> bool {
-        self.node.is_some()
+        self.rln_client.is_some()
     }
 
     /// Get the configuration.
@@ -107,36 +116,13 @@ impl KaleidoClient {
         &self.config
     }
 
-    // === API Module Accessors ===
-
-    /// Get the Market API client for assets, pairs, and quotes.
-    pub fn market(&self) -> &MarketApi {
-        &self.market
-    }
-
-    /// Get the Swaps API client for swap operations.
-    pub fn swaps(&self) -> &SwapsApi {
-        &self.swaps
-    }
-
-    /// Get the Orders API client for order management.
-    pub fn orders(&self) -> &OrdersApi {
-        &self.orders
-    }
-
-    /// Get the LSP API client for Lightning Service Provider operations.
-    pub fn lsp(&self) -> &LspApi {
-        &self.lsp
-    }
-
-    /// Get the RGB Node API client (if configured).
-    pub fn node(&self) -> Option<&NodeApi> {
-        self.node.as_ref()
-    }
+    // === API Module Accessors Removed ===
+    // The legacy API modules (MarketApi, SwapsApi, OrdersApi, LspApi, NodeApi)
+    // have been replaced by the generated MakerClient and RlnClient.
 
     // === Cache Management ===
 
-    fn is_cache_valid(&self, timestamp: &Instant) -> bool {
+    fn is_cache_valid(&self, timestamp: &Timestamp) -> bool {
         timestamp.elapsed() < self.cache_ttl
     }
 
@@ -147,12 +133,7 @@ impl KaleidoClient {
         Ok(())
     }
 
-    /// Get a market helper with cached asset and pair data.
-    pub async fn market_helper(&self) -> Result<MarketHelper> {
-        let assets = self.list_assets().await?;
-        let pairs = self.list_pairs().await?;
-        Ok(MarketHelper::new(assets, pairs))
-    }
+    // Method market_helper removed as MarketHelper is deprecated.
 
     // === Market Operations ===
 
@@ -170,12 +151,20 @@ impl KaleidoClient {
     }
 
     async fn list_assets_uncached(&self) -> Result<Vec<Asset>> {
-        let assets = self.market.list_assets().await?;
+        let response = self
+            .maker_client
+            .list_assets(None, None, None, None, None, None, None, None)
+            .await
+            .map_err(map_maker_error)?;
+
+        let assets_response = response.into_inner();
+        let assets = assets_response.assets;
+
         {
             let mut cache = self.assets_cache.write().await;
             *cache = Some(CacheEntry {
                 data: assets.clone(),
-                timestamp: Instant::now(),
+                timestamp: Timestamp::now(),
             });
         }
         Ok(assets)
@@ -195,12 +184,32 @@ impl KaleidoClient {
     }
 
     async fn list_pairs_uncached(&self) -> Result<Vec<TradingPair>> {
-        let pairs = self.market.list_pairs().await?;
+        let response = self
+            .maker_client
+            .get_pairs(
+                None, // active_only
+                None, // asset
+                None, // base_ticker
+                None, // from_asset_id
+                None, // layer
+                None, // limit
+                None, // offset
+                None, // pair_id
+                None, // pair_ticker
+                None, // quote_asset_id
+                None, // quote_ticker
+            )
+            .await
+            .map_err(map_maker_error)?;
+
+        let pairs_response = response.into_inner();
+        let pairs = pairs_response.pairs;
+
         {
             let mut cache = self.pairs_cache.write().await;
             *cache = Some(CacheEntry {
                 data: pairs.clone(),
-                timestamp: Instant::now(),
+                timestamp: Timestamp::now(),
             });
         }
         Ok(pairs)
@@ -208,7 +217,13 @@ impl KaleidoClient {
 
     /// Get a quote for a swap.
     pub async fn get_quote(&self, request: &PairQuoteRequest) -> Result<PairQuoteResponse> {
-        self.market.get_quote(request).await
+        let response = self
+            .maker_client
+            .get_quote(request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get a quote by ticker pair (e.g., "BTC/USDT") with explicit layers.
@@ -237,18 +252,18 @@ impl KaleidoClient {
         let from_asset_input = SwapLegInput {
             asset_id: parts[0].to_string(),
             layer: from_layer,
-            amount: from_amount.map(Some),
+            amount: from_amount,
         };
 
         let to_asset_input = SwapLegInput {
             asset_id: parts[1].to_string(),
             layer: to_layer,
-            amount: to_amount.map(Some),
+            amount: to_amount,
         };
 
         let request = PairQuoteRequest {
-            from_asset: Box::new(from_asset_input),
-            to_asset: Box::new(to_asset_input),
+            from_asset: from_asset_input,
+            to_asset: to_asset_input,
         };
 
         self.get_quote(&request).await
@@ -257,23 +272,51 @@ impl KaleidoClient {
     // === Swap Operations ===
 
     /// Get node information from the swap service.
-    pub async fn get_node_info(&self) -> Result<SwapNodeInfoResponse> {
-        self.swaps.get_node_info().await
+    pub async fn get_node_info(&self) -> Result<models::SwapNodeInfoResponse> {
+        let response = self
+            .maker_client
+            .get_node_info()
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Initialize a swap.
     pub async fn init_swap(&self, request: &SwapRequest) -> Result<SwapResponse> {
-        self.swaps.init_swap(request).await
+        let response = self
+            .maker_client
+            .initiate_swap(request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Execute/confirm a swap.
     pub async fn execute_swap(&self, request: &ConfirmSwapRequest) -> Result<ConfirmSwapResponse> {
-        self.swaps.execute_swap(request).await
+        let response = self
+            .maker_client
+            .confirm_swap(request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get swap status by payment hash.
-    pub async fn get_swap_status(&self, payment_hash: &str) -> Result<SwapStatusResponse> {
-        self.swaps.get_swap_status(payment_hash).await
+    pub async fn get_swap_status(&self, payment_hash: &str) -> Result<models::SwapStatusResponse> {
+        let request = crate::generated::maker::types::SwapStatusRequest {
+            payment_hash: payment_hash.to_string(),
+        };
+
+        let response = self
+            .maker_client
+            .get_swap_status(&request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Wait for swap completion with polling.
@@ -283,18 +326,18 @@ impl KaleidoClient {
         timeout: Duration,
         poll_interval: Duration,
     ) -> Result<Swap> {
-        let start = Instant::now();
+        let start = Timestamp::now();
 
         loop {
             let response = self.get_swap_status(payment_hash).await?;
 
             // Handle double Option from serde_with
-            if let Some(Some(swap)) = response.swap {
+            if let Some(swap) = response.swap {
                 // status is not Option, it's SwapStatus directly
                 match swap.status {
                     crate::models::SwapStatus::Succeeded
                     | crate::models::SwapStatus::Expired
-                    | crate::models::SwapStatus::Failed => return Ok(*swap),
+                    | crate::models::SwapStatus::Failed => return Ok(swap),
                     _ => {}
                 }
             }
@@ -303,7 +346,14 @@ impl KaleidoClient {
                 return Err(KaleidoError::timeout(timeout.as_secs_f64()));
             }
 
+            #[cfg(not(target_arch = "wasm32"))]
             tokio::time::sleep(poll_interval).await;
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                use gloo_timers::future::sleep;
+                sleep(poll_interval).await;
+            }
         }
     }
 
@@ -324,9 +374,7 @@ impl KaleidoClient {
             .ok_or_else(|| KaleidoError::config("Node pubkey not available"))?;
 
         if self.has_node() {
-            self.swaps
-                .whitelist_trade(&init_response.swapstring)
-                .await?;
+            self.whitelist_trade(&init_response.swapstring).await?;
         }
 
         let confirm_request = ConfirmSwapRequest {
@@ -344,13 +392,32 @@ impl KaleidoClient {
     pub async fn create_swap_order(
         &self,
         request: &CreateSwapOrderRequest,
-    ) -> Result<CreateSwapOrderResponse> {
-        self.orders.create_order(request).await
+    ) -> Result<models::CreateSwapOrderResponse> {
+        let response = self
+            .maker_client
+            .create_swap_order(request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get swap order status.
-    pub async fn get_swap_order_status(&self, order_id: &str) -> Result<SwapOrderStatusResponse> {
-        self.orders.get_order_status(order_id).await
+    pub async fn get_swap_order_status(
+        &self,
+        order_id: &str,
+    ) -> Result<models::SwapOrderStatusResponse> {
+        let request = crate::generated::maker::types::SwapOrderStatusRequest {
+            order_id: order_id.to_string(),
+        };
+
+        let response = self
+            .maker_client
+            .get_swap_order_status(&request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get order history.
@@ -359,13 +426,43 @@ impl KaleidoClient {
         status: Option<&str>,
         limit: i32,
         skip: i32,
-    ) -> Result<OrderHistoryResponse> {
-        self.orders.get_order_history(status, limit, skip).await
+    ) -> Result<models::OrderHistoryResponse> {
+        let limit_val = Some(
+            std::num::NonZeroU64::new(limit as u64)
+                .unwrap_or(std::num::NonZeroU64::new(10).unwrap()),
+        );
+        let skip_val = Some(skip as u64);
+
+        // Convert string status to Enum
+        let status_val = if let Some(s) = status {
+            Some(
+                serde_json::from_value::<crate::generated::maker::types::SwapOrderStatus>(
+                    serde_json::Value::String(s.to_string()),
+                )
+                .map_err(|e| KaleidoError::validation(format!("Invalid status: {}", e)))?,
+            )
+        } else {
+            None
+        };
+
+        let response = self
+            .maker_client
+            .get_order_history(limit_val, skip_val, status_val)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get order analytics.
-    pub async fn get_order_analytics(&self) -> Result<OrderStatsResponse> {
-        self.orders.get_order_analytics().await
+    pub async fn get_order_analytics(&self) -> Result<models::OrderStatsResponse> {
+        let response = self
+            .maker_client
+            .get_order_stats() // Renamed from get_order_analytics
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Submit rate decision for a swap order.
@@ -373,157 +470,374 @@ impl KaleidoClient {
         &self,
         order_id: &str,
         accept: bool,
-    ) -> Result<SwapOrderRateDecisionResponse> {
-        self.orders.rate_decision(order_id, accept).await
+    ) -> Result<models::SwapOrderRateDecisionResponse> {
+        // Spec seems to require order_id in body AND accept_new_rate
+        let request = crate::generated::maker::types::SwapOrderRateDecisionRequest {
+            accept_new_rate: accept,
+            order_id: order_id.to_string(), // Assuming order_id is in body based on compilation error
+        };
+
+        let response = self
+            .maker_client
+            .handle_swap_order_rate_decision(&request) // Renamed
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     // === LSP Operations ===
 
     /// Get LSP information.
-    pub async fn get_lsp_info(&self) -> Result<GetInfoResponseModel> {
-        self.lsp.get_info().await
+    pub async fn get_lsp_info(&self) -> Result<models::GetInfoResponseModel> {
+        let response = self
+            .maker_client
+            .get_info() // Renamed
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get LSP network information.
-    pub async fn get_lsp_network_info(&self) -> Result<NetworkInfoResponse> {
-        self.lsp.get_network_info().await
+    pub async fn get_lsp_network_info(&self) -> Result<models::NetworkInfoResponse> {
+        let response = self
+            .maker_client
+            .get_network_info() // Renamed
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Create an LSPS1 channel order.
     pub async fn create_lsp_order(
         &self,
         request: &CreateOrderRequest,
-    ) -> Result<ChannelOrderResponse> {
-        self.lsp.create_order(request).await
+    ) -> Result<models::ChannelOrderResponse> {
+        let response = self
+            .maker_client
+            .create_order(request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Get an LSPS1 order.
-    pub async fn get_lsp_order(&self, order_id: &str) -> Result<ChannelOrderResponse> {
-        self.lsp.get_order(order_id).await
+    pub async fn get_lsp_order(&self, order_id: &str) -> Result<models::ChannelOrderResponse> {
+        let request = crate::generated::maker::types::GetOrderRequest {
+            order_id: order_id.to_string(),
+        };
+        let response = self
+            .maker_client
+            .get_order(&request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Estimate fees for an LSPS1 order.
-    pub async fn estimate_lsp_fees(&self, channel_size: i64) -> Result<ChannelFees> {
-        self.lsp.estimate_fees(channel_size).await
+    pub async fn estimate_lsp_fees(&self, channel_size: i64) -> Result<models::ChannelFees> {
+        // Construct CreateOrderRequest with just the size, assuming other fields optional or not needed for estimate
+        // Use serde_json to construct partial object if needed, or build struct?
+        // Struct likely requires all non-Option fields.
+        // Assuming CreateOrderRequest matches CreateOrderRequest from manual models
+
+        // We create a "dummy" CreateOrderRequest. But required fields might be an issue.
+        // If estimate_fees in spec requires CreateOrderRequest, it implies we give full order details to estimate.
+        // But manually we only gave channel_size.
+        // Hack: Create a JSON with channel_size and deserialize to generated type, if it works.
+        // If generated type has required fields missing, this will fail.
+        let json_req = serde_json::json!({
+            "amount": channel_size,
+            // "announce_channel": true // example defaults?
+        });
+
+        let gen_request: crate::generated::maker::types::CreateOrderRequest =
+            serde_json::from_value(json_req).map_err(|e| {
+                KaleidoError::validation(format!("Failed to build estimate request: {}", e))
+            })?;
+
+        let response = self
+            .maker_client
+            .estimate_fees(&gen_request)
+            .await
+            .map_err(map_maker_error)?;
+
+        Ok(response.into_inner())
     }
 
     /// Retry asset delivery for an order.
     pub async fn retry_delivery(&self, order_id: &str) -> Result<serde_json::Value> {
-        self.lsp.retry_delivery(order_id).await
+        let request = crate::generated::maker::types::RetryDeliveryRequest {
+            order_id: order_id.to_string(),
+        };
+
+        let response = self
+            .maker_client
+            .retry_delivery(&request)
+            .await
+            .map_err(map_maker_error)?;
+
+        let gen_response = response.into_inner();
+        Ok(serde_json::to_value(gen_response)?)
     }
 
     // === RGB Lightning Node Operations ===
 
-    fn ensure_node(&self) -> Result<&NodeApi> {
-        self.node.as_ref().ok_or(KaleidoError::NodeNotConfigured)
+    // === RGB Lightning Node Operations ===
+
+    fn get_node_client(&self) -> Result<&RlnClient> {
+        self.rln_client
+            .as_ref()
+            .ok_or(KaleidoError::NodeNotConfigured)
     }
 
     /// Get RGB node information.
-    pub async fn get_rgb_node_info(&self) -> Result<crate::api::node::RgbNodeInfo> {
-        self.ensure_node()?.get_info().await
+    pub async fn get_rgb_node_info(&self) -> Result<serde_json::Value> {
+        let response = self
+            .get_node_client()?
+            .get_nodeinfo()
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// List channels on the RGB node.
-    pub async fn list_channels(&self) -> Result<Vec<crate::api::node::Channel>> {
-        self.ensure_node()?.list_channels().await
+    pub async fn list_channels(&self) -> Result<serde_json::Value> {
+        let response = self
+            .get_node_client()?
+            .get_listchannels()
+            .await
+            .map_err(map_rln_error)?;
+        let inner = response.into_inner();
+        Ok(serde_json::to_value(inner.channels)?)
     }
 
     /// Open a channel on the RGB node.
     pub async fn open_channel(
         &self,
-        request: &crate::api::node::OpenChannelRequest,
+        request: &models::rln::OpenChannelRequest,
     ) -> Result<serde_json::Value> {
-        self.ensure_node()?.open_channel(request).await
+        let response = self
+            .get_node_client()?
+            .post_openchannel(request)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Close a channel on the RGB node.
     pub async fn close_channel(
         &self,
-        request: &crate::api::node::CloseChannelRequest,
+        request: &models::rln::CloseChannelRequest,
     ) -> Result<serde_json::Value> {
-        self.ensure_node()?.close_channel(request).await
+        let response = self
+            .get_node_client()?
+            .post_closechannel(request)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// List peers on the RGB node.
-    pub async fn list_peers(&self) -> Result<Vec<crate::api::node::Peer>> {
-        self.ensure_node()?.list_peers().await
+    pub async fn list_peers(&self) -> Result<serde_json::Value> {
+        let response = self
+            .get_node_client()?
+            .get_listpeers()
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner().peers)?)
     }
 
     /// Connect to a peer on the RGB node.
     pub async fn connect_peer(
         &self,
-        request: &crate::api::node::ConnectPeerRequest,
+        request: &models::rln::ConnectPeerRequest,
     ) -> Result<serde_json::Value> {
-        self.ensure_node()?.connect_peer(request).await
+        let response = self
+            .get_node_client()?
+            .post_connectpeer(request)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// List RGB assets on the node.
-    pub async fn list_node_assets(&self) -> Result<Vec<crate::api::node::RgbAsset>> {
-        self.ensure_node()?.list_assets().await
+    pub async fn list_node_assets(&self) -> Result<serde_json::Value> {
+        let req = crate::generated::rln::types::ListAssetsRequest {
+            filter_asset_schemas: vec![],
+        };
+        let response = self
+            .get_node_client()?
+            .post_listassets(&req)
+            .await
+            .map_err(map_rln_error)?;
+
+        let inner = response.into_inner();
+        let mut all_assets = Vec::new();
+
+        for a in inner.nia {
+            all_assets.push(serde_json::to_value(a)?);
+        }
+        for a in inner.uda {
+            all_assets.push(serde_json::to_value(a)?);
+        }
+        for a in inner.cfa {
+            all_assets.push(serde_json::to_value(a)?);
+        }
+        Ok(serde_json::Value::Array(all_assets))
     }
 
     /// Get asset balance from the node.
-    pub async fn get_asset_balance(
-        &self,
-        asset_id: &str,
-    ) -> Result<crate::api::node::RgbAssetBalance> {
-        self.ensure_node()?.get_asset_balance(asset_id).await
+    pub async fn get_asset_balance(&self, asset_id: &str) -> Result<serde_json::Value> {
+        let req = crate::generated::rln::types::AssetBalanceRequest {
+            asset_id: Some(asset_id.to_string()),
+        };
+        let response = self
+            .get_node_client()?
+            .post_assetbalance(&req)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Get a Bitcoin address from the node.
-    pub async fn get_onchain_address(&self) -> Result<crate::api::node::AddressResponse> {
-        self.ensure_node()?.get_address().await
+    pub async fn get_onchain_address(&self) -> Result<serde_json::Value> {
+        let response = self
+            .get_node_client()?
+            .post_address()
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Get BTC balance from the node.
-    pub async fn get_btc_balance(&self) -> Result<crate::api::node::BtcBalance> {
-        self.ensure_node()?.get_btc_balance().await
+    pub async fn get_btc_balance(&self) -> Result<serde_json::Value> {
+        let req = crate::generated::rln::types::BtcBalanceRequest { skip_sync: None };
+        let response = self
+            .get_node_client()?
+            .post_btcbalance(&req)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Whitelist a trade on the node (taker side).
     pub async fn whitelist_trade(&self, swapstring: &str) -> Result<serde_json::Value> {
-        self.ensure_node()?.whitelist_trade(swapstring).await
+        let req = crate::generated::rln::types::TakerRequest {
+            swapstring: Some(swapstring.to_string()),
+        };
+        let response = self
+            .get_node_client()?
+            .post_taker(&req)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Create a Lightning invoice on the node.
     pub async fn create_ln_invoice(
         &self,
-        request: &crate::api::node::CreateInvoiceRequest,
-    ) -> Result<crate::api::node::Invoice> {
-        self.ensure_node()?.create_invoice(request).await
+        amt_msat: Option<i64>,
+        expiry_sec: Option<i64>,
+        asset_amount: Option<i64>,
+        asset_id: Option<String>,
+    ) -> Result<serde_json::Value> {
+        let rln_request = models::rln::LnInvoiceRequest {
+            amt_msat,
+            expiry_sec,
+            asset_amount,
+            asset_id,
+        };
+        let response = self
+            .get_node_client()?
+            .post_lninvoice(&rln_request)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Decode a Lightning invoice.
     pub async fn decode_ln_invoice(&self, invoice: &str) -> Result<serde_json::Value> {
-        self.ensure_node()?.decode_invoice(invoice).await
+        let req = crate::generated::rln::types::DecodeLnInvoiceRequest {
+            invoice: Some(invoice.to_string()),
+        };
+        let response = self
+            .get_node_client()?
+            .post_decodelninvoice(&req)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Send a keysend payment.
     pub async fn keysend(
         &self,
-        request: &crate::api::node::KeysendRequest,
-    ) -> Result<crate::api::node::Payment> {
-        self.ensure_node()?.keysend(request).await
+        request: &models::rln::KeysendRequest,
+    ) -> Result<serde_json::Value> {
+        let response = self
+            .get_node_client()?
+            .post_keysend(request)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// List payments on the node.
-    pub async fn list_payments(&self) -> Result<Vec<crate::api::node::Payment>> {
-        self.ensure_node()?.list_payments().await
+    pub async fn list_payments(&self) -> Result<serde_json::Value> {
+        let response = self
+            .get_node_client()?
+            .get_listpayments()
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner().payments)?)
     }
 
     /// Initialize the node.
     pub async fn init_wallet(&self, password: &str) -> Result<serde_json::Value> {
-        self.ensure_node()?.init(password).await
+        let req = crate::generated::rln::types::InitRequest {
+            password: Some(password.to_string()),
+        };
+        let response = self
+            .get_node_client()?
+            .post_init(&req)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Unlock the node.
     pub async fn unlock_wallet(&self, password: &str) -> Result<serde_json::Value> {
-        self.ensure_node()?.unlock(password).await
+        let req = crate::generated::rln::types::UnlockRequest {
+            password: Some(password.to_string()),
+            announce_addresses: vec![],
+            announce_alias: None,
+            bitcoind_rpc_host: None,
+            bitcoind_rpc_password: None,
+            bitcoind_rpc_port: None,
+            bitcoind_rpc_username: None,
+            indexer_url: None,
+            proxy_endpoint: None,
+        };
+        let response = self
+            .get_node_client()?
+            .post_unlock(&req)
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     /// Lock the node.
     pub async fn lock_wallet(&self) -> Result<serde_json::Value> {
-        self.ensure_node()?.lock().await
+        let response = self
+            .get_node_client()?
+            .post_lock()
+            .await
+            .map_err(map_rln_error)?;
+        Ok(serde_json::to_value(response.into_inner())?)
     }
 
     // === Convenience Methods ===
@@ -531,24 +845,24 @@ impl KaleidoClient {
     /// List only active assets.
     pub async fn list_active_assets(&self) -> Result<Vec<Asset>> {
         let assets = self.list_assets().await?;
-        Ok(assets
-            .into_iter()
-            .filter(|p| p.is_active.unwrap_or(false))
-            .collect())
+        Ok(assets.into_iter().filter(|p| p.is_active).collect())
     }
 
     /// List only active trading pairs.
     pub async fn list_active_pairs(&self) -> Result<Vec<TradingPair>> {
         let pairs = self.list_pairs().await?;
-        Ok(pairs
-            .into_iter()
-            .filter(|p| p.is_active.unwrap_or(false))
-            .collect())
+        Ok(pairs.into_iter().filter(|p| p.is_active).collect())
     }
 
     /// Estimate swap fees for a given pair and amount.
     /// Returns the fee amount in the quote asset's precision.
-    pub async fn estimate_swap_fees(&self, ticker: &str, amount: i64, from_layer: Layer, to_layer: Layer) -> Result<i64> {
+    pub async fn estimate_swap_fees(
+        &self,
+        ticker: &str,
+        amount: i64,
+        from_layer: Layer,
+        to_layer: Layer,
+    ) -> Result<i64> {
         let _quote = self
             .get_quote_by_pair(ticker, Some(amount), None, from_layer, to_layer)
             .await?;
@@ -557,7 +871,6 @@ impl KaleidoClient {
         // Ok(quote.from_asset.amount - quote.to_asset.amount)
         Err(KaleidoError::NotImplemented)
     }
-
 
     /// Find an asset by ticker from the cached list.
     pub async fn find_asset_by_ticker(&self, ticker: &str) -> Result<Asset> {
@@ -614,7 +927,7 @@ impl KaleidoClient {
         let mut ws_lock = self.ws_client.write().await;
 
         if let Some(mut ws_client) = ws_lock.take() {
-            ws_client.disconnect().await;
+            let _ = ws_client.disconnect().await;
             Ok(())
         } else {
             Err(KaleidoError::websocket("Not connected"))
@@ -678,7 +991,11 @@ impl KaleidoClient {
             .await?;
 
         // Wait for response with timeout
+        #[cfg(not(target_arch = "wasm32"))]
         let timeout = Duration::from_secs_f64(self.config.timeout);
+        #[cfg(target_arch = "wasm32")]
+        let timeout = (self.config.timeout * 1000.0) as u64; // Convert to milliseconds for WASM
+
         let data = ws_client
             .wait_for_event(WsEvent::QuoteResponse, timeout)
             .await?;

@@ -226,15 +226,19 @@ impl KaleidoClient {
         from_layer: String,
         to_layer: String,
     ) -> Result<JsonValue, KaleidoError> {
-        let from_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", from_layer))
-            .map_err(|_| KaleidoError::ValidationError {
-                message: format!("Invalid from_layer: {}", from_layer),
+        let from_layer_enum: Layer =
+            serde_json::from_str(&format!("\"{}\"", from_layer)).map_err(|_| {
+                KaleidoError::ValidationError {
+                    message: format!("Invalid from_layer: {}", from_layer),
+                }
             })?;
-        let to_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", to_layer))
-            .map_err(|_| KaleidoError::ValidationError {
-                message: format!("Invalid to_layer: {}", to_layer),
+        let to_layer_enum: Layer =
+            serde_json::from_str(&format!("\"{}\"", to_layer)).map_err(|_| {
+                KaleidoError::ValidationError {
+                    message: format!("Invalid to_layer: {}", to_layer),
+                }
             })?;
-        
+
         let result = self.runtime.block_on(self.inner.get_quote_by_pair(
             &ticker,
             from_amount,
@@ -367,7 +371,7 @@ impl KaleidoClient {
 
     /// Connect to a peer.
     pub fn connect_peer(&self, request_json: String) -> Result<JsonValue, KaleidoError> {
-        let request: kaleidoswap_core::api::node::ConnectPeerRequest =
+        let request: kaleidoswap_core::models::rln::ConnectPeerRequest =
             serde_json::from_str(&request_json).map_err(|e| KaleidoError::ValidationError {
                 message: format!("Invalid request JSON: {}", e),
             })?;
@@ -470,15 +474,19 @@ impl KaleidoClient {
         from_layer: String,
         to_layer: String,
     ) -> Result<JsonValue, KaleidoError> {
-        let from_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", from_layer))
-            .map_err(|_| KaleidoError::ValidationError {
-                message: format!("Invalid from_layer: {}", from_layer),
+        let from_layer_enum: Layer =
+            serde_json::from_str(&format!("\"{}\"", from_layer)).map_err(|_| {
+                KaleidoError::ValidationError {
+                    message: format!("Invalid from_layer: {}", from_layer),
+                }
             })?;
-        let to_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", to_layer))
-            .map_err(|_| KaleidoError::ValidationError {
-                message: format!("Invalid to_layer: {}", to_layer),
+        let to_layer_enum: Layer =
+            serde_json::from_str(&format!("\"{}\"", to_layer)).map_err(|_| {
+                KaleidoError::ValidationError {
+                    message: format!("Invalid to_layer: {}", to_layer),
+                }
             })?;
-        
+
         let ticker = format!("{}/{}", from_ticker, to_ticker);
         let result = self.runtime.block_on(self.inner.get_quote_by_pair(
             &ticker,
@@ -536,22 +544,34 @@ impl KaleidoClient {
     }
 
     /// Estimate swap fees for a given pair and amount with explicit layers.
-    pub fn estimate_swap_fees(&self, ticker: String, amount: i64, from_layer: String, to_layer: String) -> Result<i64, KaleidoError> {
-        let from_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", from_layer))
-            .map_err(|_| KaleidoError::ValidationError {
-                message: format!("Invalid from_layer: {}", from_layer),
+    pub fn estimate_swap_fees(
+        &self,
+        ticker: String,
+        amount: i64,
+        from_layer: String,
+        to_layer: String,
+    ) -> Result<i64, KaleidoError> {
+        let from_layer_enum: Layer =
+            serde_json::from_str(&format!("\"{}\"", from_layer)).map_err(|_| {
+                KaleidoError::ValidationError {
+                    message: format!("Invalid from_layer: {}", from_layer),
+                }
             })?;
-        let to_layer_enum: Layer = serde_json::from_str(&format!("\"{}\"", to_layer))
-            .map_err(|_| KaleidoError::ValidationError {
-                message: format!("Invalid to_layer: {}", to_layer),
+        let to_layer_enum: Layer =
+            serde_json::from_str(&format!("\"{}\"", to_layer)).map_err(|_| {
+                KaleidoError::ValidationError {
+                    message: format!("Invalid to_layer: {}", to_layer),
+                }
             })?;
-        
-        let result =
-            self.runtime
-                .block_on(self.inner.estimate_swap_fees(&ticker, amount, from_layer_enum, to_layer_enum))?;
+
+        let result = self.runtime.block_on(self.inner.estimate_swap_fees(
+            &ticker,
+            amount,
+            from_layer_enum,
+            to_layer_enum,
+        ))?;
         Ok(result)
     }
-
 
     /// Find an asset by ticker.
     pub fn find_asset_by_ticker(&self, ticker: String) -> Result<JsonValue, KaleidoError> {

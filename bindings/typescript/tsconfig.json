@@ -1,36 +1,22 @@
 {
     "compilerOptions": {
         "target": "ES2020",
-        "module": "commonjs",
-        "lib": [
-            "ES2020"
-        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "declaration": true,
-        "strict": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "noImplicitThis": true,
-        "alwaysStrict": true,
-        "noUnusedLocals": false,
-        "noUnusedParameters": false,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": false,
-        "inlineSourceMap": true,
-        "inlineSources": true,
-        "experimentalDecorators": true,
-        "strictPropertyInitialization": false,
         "outDir": "./dist",
-        "rootDir": "./src",
+        "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "typescript/src/*"
+            ]
+        }
     },
     "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "node_modules",
-        "dist",
-        "tests"
+        "typescript/src/**/*"
     ]
 }

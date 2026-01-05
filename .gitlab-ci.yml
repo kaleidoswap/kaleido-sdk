@@ -1,4 +1,4 @@
-# GitLab CI/CD Pipeline for Kaleidoswap SDK (UniFFI)
+# GitLab CI/CD Pipeline for Kaleidoswap SDK (UniFFI + WASM)
 # This pipeline builds and publishes the Rust-based SDKs with UniFFI bindings
 #
 # On tag push:
@@ -66,6 +66,18 @@ test:uniffi:
   script:
     - echo "🔗 Testing UniFFI Bindings..."
     - cargo test -p kaleidoswap-uniffi --release
+
+test:wasm:
+  stage: test
+  image: rust:${RUST_VERSION}
+  <<: *rust_cache
+  before_script:
+    - rustup target add wasm32-unknown-unknown
+    - cargo install wasm-pack || true
+  script:
+    - echo "🌐 Testing WASM Bindings..."
+    - cd bindings/web
+    - cargo check --target wasm32-unknown-unknown
 
 lint:
   stage: test
@@ -164,6 +176,52 @@ build:python:
       - target/wheels/
     expire_in: 1 week
 
+# Build unified WASM TypeScript SDK
+build:wasm:
+  stage: build
+  image: rust:${RUST_VERSION}
+  <<: *rust_cache
+  needs:
+    - job: build:core
+      optional: true
+    - job: generate-models
+      optional: true
+      artifacts: true
+  before_script:
+    - apt-get update && apt-get install -y nodejs npm
+    - npm install -g pnpm
+    - rustup target add wasm32-unknown-unknown
+    - cargo install wasm-pack || true
+  script:
+    - echo "🌐 Building Unified WASM TypeScript SDK..."
+    
+    # Build WASM module
+    - cd bindings/web
+    - wasm-pack build --target bundler --out-dir typescript/pkg --out-name kaleidoswap_sdk
+    
+    # Install dependencies and build TypeScript wrapper
+    - cd typescript
+    - pnpm install
+    
+    # Generate TypeScript types from OpenAPI spec (if available)
+    - |
+      if [ -f "../../../specs/openapi.yaml" ]; then
+        echo "Generating TypeScript types from OpenAPI spec..."
+        pnpm run generate:types -- ../../../specs/openapi.yaml -o src/generated/api-types.ts || true
+      fi
+    
+    # Build TypeScript
+    - pnpm run build:ts
+  artifacts:
+    paths:
+      - bindings/web/typescript/dist/
+      - bindings/web/typescript/pkg/
+      - bindings/web/typescript/package.json
+      - bindings/web/typescript/README.md
+    expire_in: 1 week
+
+# DEPRECATED: Old napi-rs TypeScript bindings
+# Keeping for backwards compatibility during migration
 build:typescript:
   stage: build
   image: rust:${RUST_VERSION}
@@ -178,7 +236,7 @@ build:typescript:
     - apt-get update && apt-get install -y nodejs npm
     - npm install -g pnpm
   script:
-    - echo "📦 Building TypeScript Bindings..."
+    - echo "📦 Building TypeScript Bindings (DEPRECATED - use build:wasm instead)..."
     - cargo build -p kaleidoswap-typescript --release
     # Generate TypeScript types (requires uniffi-bindgen-ts when available)
     - cd bindings/typescript
@@ -189,6 +247,10 @@ build:typescript:
     exclude:
       - bindings/typescript/node_modules/**
     expire_in: 1 week
+  rules:
+    # Only run on explicit request or if wasm build fails
+    - if: $FORCE_LEGACY_TS == "true"
+    - when: never
 
 # ---------------------------------------------------------------------------
 # DEPLOY STAGE
@@ -214,17 +276,18 @@ deploy:pypi:
     name: pypi
     url: https://pypi.org/project/kaleidoswap/
 
+# Deploy unified WASM SDK to npm
 deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
   needs:
-    - job: build:typescript
+    - job: build:wasm
       artifacts: true
   before_script:
     - npm install -g pnpm
   script:
-    - echo "🚀 Publishing to npm..."
-    - cd bindings/typescript
+    - echo "🚀 Publishing unified WASM SDK to npm..."
+    - cd bindings/web/typescript
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     
     # Determine tag based on version pattern
@@ -237,7 +300,7 @@ deploy:npm:
         TAG="latest"
       fi
       echo "Publishing with tag: $TAG"
-      pnpm publish --tag $TAG --access public --no-git-checks --ignore-scripts
+      pnpm publish --tag $TAG --access public --no-git-checks
   rules:
     - if: $CI_COMMIT_TAG
   environment:

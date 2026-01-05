@@ -1,44 +1,60 @@
 {
   "name": "kaleidoswap-sdk",
   "version": "0.4.0",
-  "description": "TypeScript/JavaScript SDK for the Kaleidoswap protocol - trade RGB assets on Lightning Network",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kaleidoswap/kaleido-sdk"
-  },
+  "description": "Kaleidoswap SDK for web browsers (WASM)",
   "keywords": [
+    "kaleidoswap",
     "bitcoin",
     "lightning",
     "rgb",
+    "wasm",
+    "webassembly",
     "swap",
-    "trading",
-    "kaleidoswap"
+    "dex"
   ],
   "author": "Kaleidoswap Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaleidoswap/kaleido-sdk.git",
+    "directory": "bindings/web"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "pkg/**/*",
+    "pkg-node/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
-    "build": "npm run build:rust && npm run build:ts",
-    "build:rust": "cargo build --release",
-    "build:ts": "tsc",
-    "test": "jest",
-    "prepublishOnly": "npm run build"
+    "build": "wasm-pack build --target bundler --out-dir pkg",
+    "build:web": "wasm-pack build --target web --out-dir pkg-web",
+    "build:nodejs": "wasm-pack build --target nodejs --out-dir pkg-node",
+    "build:all": "npm run build && npm run build:web && npm run build:nodejs",
+    "test": "npm run test:unit && npm run test:wasm",
+    "test:unit": "npm run build && jest --config jest.config.cjs",
+    "test:unit:watch": "npm run build && jest --config jest.config.cjs --watch",
+    "test:unit:coverage": "npm run build && jest --config jest.config.cjs --coverage",
+    "test:wasm": "wasm-pack test --headless --chrome",
+    "test:firefox": "wasm-pack test --headless --firefox",
+    "test:all": "npm run test:unit && wasm-pack test --headless --chrome --firefox",
+    "test:integration": "npm run build:web && python3 -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "clean": "rm -rf pkg pkg-web pkg-node target dist-test coverage"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20.19.27",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.4.6",
-    "typescript": "^5.9.3"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "files": [
-    "dist/",
-    "index.node",
-    "native/"
-  ]
+    "wasm-pack": "^0.13.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  }
 }

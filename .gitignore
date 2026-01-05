@@ -30,6 +30,8 @@ package-lock.json
 # Allow package.json in specific directories
 !bindings/typescript/package.json
 !bindings/typescript/packages/*/package.json
+!bindings/web/package.json
+!bindings/web/typescript/package.json
 !bindings/python/package.json
 !crates/*/package.json
 

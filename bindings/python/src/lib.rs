@@ -434,7 +434,14 @@ impl PyKaleidoClient {
         let inner = Arc::clone(&self.inner);
         std::thread::spawn(move || {
             inner
-                .get_quote_by_assets(from_ticker, to_ticker, from_amount, to_amount, from_layer, to_layer)
+                .get_quote_by_assets(
+                    from_ticker,
+                    to_ticker,
+                    from_amount,
+                    to_amount,
+                    from_layer,
+                    to_layer,
+                )
                 .map(|json_value| json_value.json)
         })
         .join()
@@ -555,16 +562,19 @@ impl PyKaleidoClient {
 
     /// Estimate swap fees for a given pair and amount with explicit layers
     #[pyo3(signature = (ticker, amount, from_layer="BTC_LN".to_string(), to_layer="RGB_LN".to_string()))]
-    fn estimate_swap_fees(&self, ticker: String, amount: i64, from_layer: String, to_layer: String) -> PyResult<i64> {
+    fn estimate_swap_fees(
+        &self,
+        ticker: String,
+        amount: i64,
+        from_layer: String,
+        to_layer: String,
+    ) -> PyResult<i64> {
         let inner = Arc::clone(&self.inner);
-        std::thread::spawn(move || {
-            inner.estimate_swap_fees(ticker, amount, from_layer, to_layer)
-        })
+        std::thread::spawn(move || inner.estimate_swap_fees(ticker, amount, from_layer, to_layer))
             .join()
             .map_err(|_| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("Thread panicked"))?
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e)))
     }
-
 
     /// Find an asset by ticker
     fn find_asset_by_ticker(&self, ticker: String) -> PyResult<String> {
