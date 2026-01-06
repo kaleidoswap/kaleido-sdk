@@ -4,7 +4,7 @@
 //! All methods are async and return Promises in JavaScript.
 //!
 //! ## Features
-//! - **BigInt support**: All i64 amounts are serialized as JavaScript BigInt
+//! - **Number support**: All amounts use JavaScript numbers for better developer experience
 //! - **Typed returns**: Objects are returned directly, no JSON parsing needed
 //! - **Structured errors**: Errors contain code, message, and status for proper exception mapping
 
@@ -27,9 +27,10 @@ pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
-/// Serializer configuration for BigInt support
+/// Serializer configuration - use regular JavaScript numbers for better UX
+/// Numbers are safe up to 2^53 (9 quadrillion), which is sufficient for satoshi amounts
 fn serializer() -> Serializer {
-    Serializer::new().serialize_large_number_types_as_bigints(true)
+    Serializer::new().serialize_large_number_types_as_bigints(false)
 }
 
 /// Helper to serialize Rust types to JavaScript objects directly (no JSON)
@@ -282,8 +283,8 @@ impl KaleidoClient {
     pub fn get_quote_by_pair(
         &self,
         ticker: String,
-        from_amount: Option<i64>,
-        to_amount: Option<i64>,
+        from_amount: Option<f64>,
+        to_amount: Option<f64>,
         from_layer: String,
         to_layer: String,
     ) -> js_sys::Promise {
@@ -293,11 +294,15 @@ impl KaleidoClient {
             let from_layer_enum = parse_layer(&from_layer)?;
             let to_layer_enum = parse_layer(&to_layer)?;
 
+            // Convert f64 to i64 for the core client
+            let from_amount_i64 = from_amount.map(|v| v as i64);
+            let to_amount_i64 = to_amount.map(|v| v as i64);
+
             inner
                 .get_quote_by_pair(
                     &ticker,
-                    from_amount,
-                    to_amount,
+                    from_amount_i64,
+                    to_amount_i64,
                     from_layer_enum,
                     to_layer_enum,
                 )
@@ -319,8 +324,8 @@ impl KaleidoClient {
         &self,
         from_ticker: String,
         to_ticker: String,
-        from_amount: Option<i64>,
-        to_amount: Option<i64>,
+        from_amount: Option<f64>,
+        to_amount: Option<f64>,
         from_layer: String,
         to_layer: String,
     ) -> js_sys::Promise {
@@ -333,11 +338,15 @@ impl KaleidoClient {
             // Construct pair ticker
             let pair_ticker = format!("{}/{}", from_ticker, to_ticker);
 
+            // Convert f64 to i64 for the core client
+            let from_amount_i64 = from_amount.map(|v| v as i64);
+            let to_amount_i64 = to_amount.map(|v| v as i64);
+
             inner
                 .get_quote_by_pair(
                     &pair_ticker,
-                    from_amount,
-                    to_amount,
+                    from_amount_i64,
+                    to_amount_i64,
                     from_layer_enum,
                     to_layer_enum,
                 )
@@ -589,11 +598,12 @@ impl KaleidoClient {
 
     /// Estimate LSP fees
     #[wasm_bindgen(js_name = estimateLspFees)]
-    pub fn estimate_lsp_fees(&self, channel_size: i64) -> js_sys::Promise {
+    pub fn estimate_lsp_fees(&self, channel_size: f64) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
         future_to_promise(async move {
+            let channel_size_i64 = channel_size as i64;
             inner
-                .estimate_lsp_fees(channel_size)
+                .estimate_lsp_fees(channel_size_i64)
                 .await
                 .and_then(|fees| {
                     to_js_value(&fees).map_err(|e| {
@@ -675,14 +685,14 @@ fn parse_layer(layer: &str) -> Result<Layer, JsValue> {
 
 /// Convert display units to smallest units
 #[wasm_bindgen(js_name = toSmallestUnits)]
-pub fn to_smallest_units(amount: f64, precision: u32) -> i64 {
-    (amount * 10_f64.powi(precision as i32)) as i64
+pub fn to_smallest_units(amount: f64, precision: u32) -> f64 {
+    amount * 10_f64.powi(precision as i32)
 }
 
 /// Convert smallest units to display units
 #[wasm_bindgen(js_name = toDisplayUnits)]
-pub fn to_display_units(amount: i64, precision: u32) -> f64 {
-    amount as f64 / 10_f64.powi(precision as i32)
+pub fn to_display_units(amount: f64, precision: u32) -> f64 {
+    amount / 10_f64.powi(precision as i32)
 }
 
 // ============================================================================

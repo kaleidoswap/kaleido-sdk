@@ -7,7 +7,7 @@ This directory contains examples demonstrating how to use the Kaleidoswap TypeSc
 First, build the SDK:
 
 ```bash
-cd bindings/web/typescript
+cd bindings/typescript
 npm install
 npm run build
 ```

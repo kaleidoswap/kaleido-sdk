@@ -39,9 +39,9 @@ if [ -n "$1" ]; then
     fi
     
     # Update Web package.json
-    if [ -f bindings/web/package.json ]; then
-        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${NEW_VERSION}\"/" bindings/web/package.json
-        rm bindings/web/package.json.bak
+    if [ -f bindings/typescript/package.json ]; then
+        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${NEW_VERSION}\"/" bindings/typescript/package.json
+        rm bindings/typescript/package.json.bak
         echo -e "${GREEN}✓ Updated Web version${NC}"
     fi
     
@@ -65,8 +65,8 @@ else
         echo -e "Node.js:     ${GREEN}${TS_VERSION}${NC}"
     fi
     
-    if [ -f bindings/web/package.json ]; then
-        WEB_VERSION=$(grep '"version"' bindings/web/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+    if [ -f bindings/typescript/package.json ]; then
+        WEB_VERSION=$(grep '"version"' bindings/typescript/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
         echo -e "Web:         ${GREEN}${WEB_VERSION}${NC}"
     fi
     

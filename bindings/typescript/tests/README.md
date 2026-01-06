@@ -276,18 +276,18 @@ jobs:
       
       - name: Install dependencies
         run: npm install
-        working-directory: bindings/web
+        working-directory: bindings/typescript
       
       - name: Run tests
         run: npm run test:unit:coverage
-        working-directory: bindings/web
+        working-directory: bindings/typescript
         env:
           SKIP_INTEGRATION_TESTS: true
       
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          files: ./bindings/web/coverage/lcov.info
+          files: ./bindings/typescript/coverage/lcov.info
 ```
 
 ## Troubleshooting

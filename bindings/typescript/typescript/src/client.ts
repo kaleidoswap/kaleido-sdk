@@ -20,8 +20,6 @@ import type {
     OrderHistoryResponse,
     OrderStatsResponse,
     Layer,
-    AssetsResponse,
-    PairsResponse,
 } from './types.js';
 
 // WASM module types (will be provided by wasm-pack output)
@@ -39,24 +37,24 @@ interface WasmConfig {
 interface WasmClient {
     new(config: WasmConfig): WasmClient;
     hasNode(): boolean;
-    listAssets(): Promise<AssetsResponse>;
-    listPairs(): Promise<PairsResponse>;
-    listActiveAssets(): Promise<AssetsResponse>;
-    listActivePairs(): Promise<PairsResponse>;
+    listAssets(): Promise<Asset[]>;
+    listPairs(): Promise<TradingPair[]>;
+    listActiveAssets(): Promise<Asset[]>;
+    listActivePairs(): Promise<TradingPair[]>;
     getAssetByTicker(ticker: string): Promise<Asset>;
     getPairByTicker(ticker: string): Promise<TradingPair>;
     getQuoteByPair(
         ticker: string,
-        fromAmount: bigint | null,
-        toAmount: bigint | null,
+        fromAmount: number | null,
+        toAmount: number | null,
         fromLayer: string,
         toLayer: string
     ): Promise<Quote>;
     getQuoteByAssets(
         fromTicker: string,
         toTicker: string,
-        fromAmount: bigint | null,
-        toAmount: bigint | null,
+        fromAmount: number | null,
+        toAmount: number | null,
         fromLayer: string,
         toLayer: string
     ): Promise<Quote>;
@@ -68,14 +66,14 @@ interface WasmClient {
     getOrderAnalytics(): Promise<OrderStatsResponse>;
     getLspInfo(): Promise<LspInfo>;
     getLspNetworkInfo(): Promise<NetworkInfo>;
-    estimateLspFees(channelSize: bigint): Promise<ChannelFees>;
+    estimateLspFees(channelSize: number): Promise<ChannelFees>;
 }
 
 interface WasmModule {
     KaleidoConfig: { new(...args: ConstructorParameters<WasmConfig>): WasmConfig };
     KaleidoClient: { new(config: WasmConfig): WasmClient };
-    toSmallestUnits: (amount: number, precision: number) => bigint;
-    toDisplayUnits: (amount: bigint, precision: number) => number;
+    toSmallestUnits: (amount: number, precision: number) => number;
+    toDisplayUnits: (amount: number, precision: number) => number;
     getVersion: () => string;
     getSdkName: () => string;
 }
@@ -100,7 +98,8 @@ async function initWasm(): Promise<WasmModule> {
     initPromise = (async () => {
         // Dynamic import of WASM module
         // Import from pkg-node for Node.js/Next.js environment
-        const mod = await import('../../pkg-node/kaleidoswap_sdk.js') as unknown as WasmModule;
+        // @ts-ignore - pkg-node is generated during build
+        const mod = await import('../pkg-node/kaleidoswap_sdk.js') as unknown as WasmModule;
         wasmModule = mod;
         return mod;
     })();
@@ -176,8 +175,7 @@ export class KaleidoClient {
      */
     async listAssets(): Promise<Asset[]> {
         try {
-            const response = await this.inner.listAssets();
-            return response.assets;
+            return await this.inner.listAssets();
         } catch (e) {
             throw mapWasmError(e);
         }
@@ -188,8 +186,7 @@ export class KaleidoClient {
      */
     async listPairs(): Promise<TradingPair[]> {
         try {
-            const response = await this.inner.listPairs();
-            return response.pairs;
+            return await this.inner.listPairs();
         } catch (e) {
             throw mapWasmError(e);
         }
@@ -200,8 +197,7 @@ export class KaleidoClient {
      */
     async listActiveAssets(): Promise<Asset[]> {
         try {
-            const response = await this.inner.listActiveAssets();
-            return response.assets;
+            return await this.inner.listActiveAssets();
         } catch (e) {
             throw mapWasmError(e);
         }
@@ -212,8 +208,7 @@ export class KaleidoClient {
      */
     async listActivePairs(): Promise<TradingPair[]> {
         try {
-            const response = await this.inner.listActivePairs();
-            return response.pairs;
+            return await this.inner.listActivePairs();
         } catch (e) {
             throw mapWasmError(e);
         }
@@ -256,8 +251,8 @@ export class KaleidoClient {
      */
     async getQuote(
         ticker: string,
-        fromAmount: bigint | null,
-        toAmount: bigint | null,
+        fromAmount: number | null,
+        toAmount: number | null,
         fromLayer: Layer,
         toLayer: Layer
     ): Promise<Quote> {
@@ -281,8 +276,8 @@ export class KaleidoClient {
     async getQuoteByAssets(
         fromTicker: string,
         toTicker: string,
-        fromAmount: bigint | null,
-        toAmount: bigint | null,
+        fromAmount: number | null,
+        toAmount: number | null,
         fromLayer: Layer,
         toLayer: Layer
     ): Promise<Quote> {
@@ -415,7 +410,7 @@ export class KaleidoClient {
      *
      * @param channelSize - Desired channel capacity in satoshis
      */
-    async estimateLspFees(channelSize: bigint): Promise<ChannelFees> {
+    async estimateLspFees(channelSize: number): Promise<ChannelFees> {
         try {
             return await this.inner.estimateLspFees(channelSize);
         } catch (e) {
@@ -433,9 +428,9 @@ export class KaleidoClient {
  *
  * @param amount - Amount in display units
  * @param precision - Decimal precision (e.g., 8 for BTC)
- * @returns Amount in smallest units as BigInt
+ * @returns Amount in smallest units as number
  */
-export async function toSmallestUnits(amount: number, precision: number): Promise<bigint> {
+export async function toSmallestUnits(amount: number, precision: number): Promise<number> {
     const wasm = await initWasm();
     return wasm.toSmallestUnits(amount, precision);
 }
@@ -447,7 +442,7 @@ export async function toSmallestUnits(amount: number, precision: number): Promis
  * @param precision - Decimal precision (e.g., 8 for BTC)
  * @returns Amount in display units
  */
-export async function toDisplayUnits(amount: bigint, precision: number): Promise<number> {
+export async function toDisplayUnits(amount: number, precision: number): Promise<number> {
     const wasm = await initWasm();
     return wasm.toDisplayUnits(amount, precision);
 }

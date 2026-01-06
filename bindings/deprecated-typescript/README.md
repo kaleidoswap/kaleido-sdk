@@ -13,7 +13,7 @@
 > - Typed error classes for proper exception handling
 > - No platform-specific native binaries
 > 
-> See [`bindings/web/typescript/`](../web/typescript/) for the new implementation.
+> See [`bindings/typescript/`](../typescript/) for the new implementation.
 
 ---
 

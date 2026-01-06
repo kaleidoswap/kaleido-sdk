@@ -76,7 +76,7 @@ test:wasm:
     - cargo install wasm-pack || true
   script:
     - echo "🌐 Testing WASM Bindings..."
-    - cd bindings/web
+    - cd bindings/typescript
     - cargo check --target wasm32-unknown-unknown
 
 lint:
@@ -196,28 +196,27 @@ build:wasm:
     - echo "🌐 Building Unified WASM TypeScript SDK..."
     
     # Build WASM module
-    - cd bindings/web
-    - wasm-pack build --target bundler --out-dir typescript/pkg --out-name kaleidoswap_sdk
+    - cd bindings/typescript
+    - wasm-pack build --target bundler --out-dir pkg --out-name kaleidoswap_sdk
     
     # Install dependencies and build TypeScript wrapper
-    - cd typescript
     - pnpm install
     
     # Generate TypeScript types from OpenAPI spec (if available)
     - |
-      if [ -f "../../../specs/openapi.yaml" ]; then
+      if [ -f "../../specs/openapi.yaml" ]; then
         echo "Generating TypeScript types from OpenAPI spec..."
-        pnpm run generate:types -- ../../../specs/openapi.yaml -o src/generated/api-types.ts || true
+        pnpm run generate:types -- ../../specs/openapi.yaml -o src/generated/api-types.ts || true
       fi
     
     # Build TypeScript
     - pnpm run build:ts
   artifacts:
     paths:
-      - bindings/web/typescript/dist/
-      - bindings/web/typescript/pkg/
-      - bindings/web/typescript/package.json
-      - bindings/web/typescript/README.md
+      - bindings/typescript/dist/
+      - bindings/typescript/pkg/
+      - bindings/typescript/package.json
+      - bindings/typescript/README.md
     expire_in: 1 week
 
 # DEPRECATED: Old napi-rs TypeScript bindings
@@ -287,7 +286,7 @@ deploy:npm:
     - npm install -g pnpm
   script:
     - echo "🚀 Publishing unified WASM SDK to npm..."
-    - cd bindings/web/typescript
+    - cd bindings/typescript
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     
     # Determine tag based on version pattern

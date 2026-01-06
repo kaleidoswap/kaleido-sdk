@@ -91,9 +91,9 @@ test-typescript:
 	@echo "🧪 Running TypeScript tests..."
 	cd $(BINDINGS_TYPESCRIPT) && pnpm test
 
-test-web:
+test-wasm:
 	@echo "🧪 Running Web (WASM) tests..."
-	cd bindings/web && wasm-pack test --headless --chrome
+	cd bindings/typescript && wasm-pack test --headless --chrome
 
 # ============================================================================
 # Example & Development targets

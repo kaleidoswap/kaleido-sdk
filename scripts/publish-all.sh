@@ -91,7 +91,7 @@ echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}🌐 Web bindings (WASM) → npm${NC}"
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-cd bindings/web
+cd bindings/typescript
 
 if [ "$DRY_RUN" = true ]; then
     echo "Would build: npm run build"
