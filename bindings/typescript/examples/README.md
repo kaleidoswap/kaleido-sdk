@@ -175,8 +175,8 @@ Different build targets for different environments:
 # Node.js (for examples)
 pnpm run build:nodejs
 
-# Web (for browsers)
-pnpm run build:web
+# WASM (for browsers)
+pnpm run build:wasm
 
 # All targets
 pnpm run build:all

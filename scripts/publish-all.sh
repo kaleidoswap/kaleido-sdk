@@ -85,10 +85,10 @@ cd ../..
 echo ""
 
 # ============================================================================
-# Web/WASM (npm)
+# WASM (npm)
 # ============================================================================
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}🌐 Web bindings (WASM) → npm${NC}"
+echo -e "${YELLOW}🌐 WASM bindings → npm${NC}"
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 cd bindings/typescript
@@ -97,18 +97,18 @@ if [ "$DRY_RUN" = true ]; then
     echo "Would build: npm run build"
     echo "Would publish: npm publish --access public"
 else
-    echo "Building Web bindings (WASM)..."
+    echo "Building WASM bindings..."
     npm run build
     
     echo "Publishing to npm..."
-    read -p "Publish @kaleidoswap/sdk-web to npm? (y/N) " -n 1 -r
+    read -p "Publish @kaleidoswap/sdk to npm? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         # Publish from pkg directory
         cd pkg
         npm publish --access public
         cd ..
-        echo -e "${GREEN}✅ Published @kaleidoswap/sdk-web v${VERSION} to npm${NC}"
+        echo -e "${GREEN}✅ Published @kaleidoswap/sdk v${VERSION} to npm${NC}"
     else
         echo -e "${YELLOW}⏭️  Skipped npm publish${NC}"
     fi
@@ -127,7 +127,7 @@ echo ""
 echo "Published packages:"
 echo "  🐍 Python:     kaleidoswap v${VERSION}"
 echo "  📦 Node.js:    @kaleidoswap/sdk v${VERSION}"
-echo "  🌐 Web (WASM): @kaleidoswap/sdk-web v${VERSION}"
+echo "  🌐 WASM:       @kaleidoswap/sdk v${VERSION}"
 echo ""
 echo "Next steps:"
 echo "  1. Create GitHub release: https://github.com/kaleidoswap/kaleido-sdk/releases/new"

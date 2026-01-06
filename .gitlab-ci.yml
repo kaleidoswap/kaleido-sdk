@@ -208,9 +208,6 @@ build:wasm:
         echo "Generating TypeScript types from OpenAPI spec..."
         pnpm run generate:types -- ../../specs/openapi.yaml -o src/generated/api-types.ts || true
       fi
-    
-    # Build TypeScript
-    - pnpm run build:ts
   artifacts:
     paths:
       - bindings/typescript/dist/
@@ -287,11 +284,10 @@ deploy:npm:
   script:
     - echo "🚀 Publishing unified WASM SDK to npm..."
     - cd bindings/typescript
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     
     # Determine tag based on version pattern
     - |
-      VERSION=$(node -p "require('./package.json').version")
+      VERSION=$(node -p "require('./pkg/package.json').version")
       echo "Detected version: $VERSION"
       if [[ "$VERSION" =~ - ]]; then
         TAG="beta"
@@ -299,9 +295,14 @@ deploy:npm:
         TAG="latest"
       fi
       echo "Publishing with tag: $TAG"
-      pnpm publish --tag $TAG --access public --no-git-checks
+    
+    # Publish from pkg directory (wasm-pack output)
+    - cd pkg
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - pnpm publish --tag $TAG --access public --no-git-checks
   rules:
     - if: $CI_COMMIT_TAG
   environment:
     name: npm
     url: https://www.npmjs.com/package/@kaleidoswap/sdk
+```
