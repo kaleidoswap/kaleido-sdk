@@ -77,6 +77,92 @@ export type {
     components,
     paths,
     operations,
+
+    // ==========================================================================
+    // RGB Lightning Node API Types
+    // ==========================================================================
+
+    // Node API generated types
+    nodeComponents,
+    nodePaths,
+    nodeOperations,
+
+    // Address & Balance
+    AddressResponse,
+    AssetBalanceRequest,
+    AssetBalanceResponse,
+    BtcBalanceRequest,
+    BtcBalanceResponse,
+
+    // Backup & Restore
+    BackupRequest,
+    RestoreRequest,
+
+    // Channels
+    CloseChannelRequest,
+    OpenChannelRequest,
+    OpenChannelResponse,
+    ListChannelsResponse,
+    Channel,
+
+    // Peers
+    ConnectPeerRequest,
+    DisconnectPeerRequest,
+    ListPeersResponse,
+
+    // UTXOs & Transactions
+    CreateUtxosRequest,
+    ListUnspentsResponse,
+    ListTransactionsResponse,
+    EstimateFeeRequest,
+    EstimateFeeResponse,
+
+    // Invoices
+    DecodeLNInvoiceRequest,
+    DecodeLNInvoiceResponse,
+    DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
+    LNInvoiceRequest,
+    LNInvoiceResponse,
+    RgbInvoiceRequest,
+    RgbInvoiceResponse,
+    InvoiceStatusRequest,
+    InvoiceStatusResponse,
+
+    // Assets
+    IssueAssetNIARequest,
+    IssueAssetNIAResponse,
+    ListAssetsResponse,
+    AssetNIA,
+
+    // Transfers
+    ListTransfersResponse,
+    RefreshRequest,
+
+    // Send Operations
+    SendAssetRequest,
+    SendAssetResponse,
+    SendBtcRequest,
+    SendBtcResponse,
+
+    // Payments
+    SendPaymentRequest,
+    SendPaymentResponse,
+    KeysendRequest,
+    KeysendResponse,
+    ListPaymentsResponse,
+
+    // Node Info & Auth
+    RgbNodeInfoResponse,
+    InitRequest,
+    InitResponse,
+    UnlockRequest,
+    SignMessageRequest,
+    SignMessageResponse,
+
+    // Misc
+    Assignment,
+    AssignmentFungible,
 } from './types.js';
 
 // Errors

@@ -651,6 +651,221 @@ impl KaleidoClient {
             Ok(JsValue::from_str(&pubkey))
         })
     }
+
+    /// List channels on the RGB node
+    #[wasm_bindgen(js_name = listChannels)]
+    pub fn list_channels(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .list_channels()
+                .await
+                .map(|channels| serde_wasm_bindgen::to_value(&channels).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Open a channel on the RGB node
+    #[wasm_bindgen(js_name = openChannel)]
+    pub fn open_channel(&self, request: JsValue) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            let req: kaleidoswap_core::models::rln::OpenChannelRequest =
+                serde_wasm_bindgen::from_value(request).map_err(|e| {
+                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                        e.to_string(),
+                    ))
+                })?;
+            inner
+                .open_channel(&req)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Close a channel on the RGB node
+    #[wasm_bindgen(js_name = closeChannel)]
+    pub fn close_channel(&self, request: JsValue) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            let req: kaleidoswap_core::models::rln::CloseChannelRequest =
+                serde_wasm_bindgen::from_value(request).map_err(|e| {
+                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                        e.to_string(),
+                    ))
+                })?;
+            inner
+                .close_channel(&req)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// List peers on the RGB node
+    #[wasm_bindgen(js_name = listPeers)]
+    pub fn list_peers(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .list_peers()
+                .await
+                .map(|peers| serde_wasm_bindgen::to_value(&peers).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Connect to a peer on the RGB node
+    #[wasm_bindgen(js_name = connectPeer)]
+    pub fn connect_peer(&self, request: JsValue) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            let req: kaleidoswap_core::models::rln::ConnectPeerRequest =
+                serde_wasm_bindgen::from_value(request).map_err(|e| {
+                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                        e.to_string(),
+                    ))
+                })?;
+            inner
+                .connect_peer(&req)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// List RGB assets on the node
+    #[wasm_bindgen(js_name = listNodeAssets)]
+    pub fn list_node_assets(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .list_node_assets()
+                .await
+                .map(|assets| serde_wasm_bindgen::to_value(&assets).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get asset balance from the node
+    #[wasm_bindgen(js_name = getAssetBalance)]
+    pub fn get_asset_balance(&self, asset_id: String) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .get_asset_balance(&asset_id)
+                .await
+                .map(|balance| serde_wasm_bindgen::to_value(&balance).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get a Bitcoin address from the node
+    #[wasm_bindgen(js_name = getOnchainAddress)]
+    pub fn get_onchain_address(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .get_onchain_address()
+                .await
+                .map(|addr| serde_wasm_bindgen::to_value(&addr).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Get BTC balance from the node
+    #[wasm_bindgen(js_name = getBtcBalance)]
+    pub fn get_btc_balance(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .get_btc_balance()
+                .await
+                .map(|balance| serde_wasm_bindgen::to_value(&balance).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Create a Lightning invoice on the node
+    #[wasm_bindgen(js_name = createLnInvoice)]
+    pub fn create_ln_invoice(
+        &self,
+        amt_msat: Option<f64>,
+        expiry_sec: Option<f64>,
+        asset_amount: Option<f64>,
+        asset_id: Option<String>,
+    ) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            let amt_msat_i64 = amt_msat.map(|v| v as i64);
+            let expiry_sec_i64 = expiry_sec.map(|v| v as i64);
+            let asset_amount_i64 = asset_amount.map(|v| v as i64);
+            inner
+                .create_ln_invoice(amt_msat_i64, expiry_sec_i64, asset_amount_i64, asset_id)
+                .await
+                .map(|invoice| serde_wasm_bindgen::to_value(&invoice).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Decode a Lightning invoice
+    #[wasm_bindgen(js_name = decodeLnInvoice)]
+    pub fn decode_ln_invoice(&self, invoice: String) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .decode_ln_invoice(&invoice)
+                .await
+                .map(|decoded| serde_wasm_bindgen::to_value(&decoded).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Send a keysend payment
+    #[wasm_bindgen(js_name = keysend)]
+    pub fn keysend(&self, request: JsValue) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            let req: kaleidoswap_core::models::rln::KeysendRequest =
+                serde_wasm_bindgen::from_value(request).map_err(|e| {
+                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
+                        e.to_string(),
+                    ))
+                })?;
+            inner
+                .keysend(&req)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// List payments on the node
+    #[wasm_bindgen(js_name = listPayments)]
+    pub fn list_payments(&self) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .list_payments()
+                .await
+                .map(|payments| serde_wasm_bindgen::to_value(&payments).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Initialize the node wallet
+    #[wasm_bindgen(js_name = initWallet)]
+    pub fn init_wallet(&self, password: String) -> js_sys::Promise {
+        let inner = Arc::clone(&self.inner);
+        future_to_promise(async move {
+            inner
+                .init_wallet(&password)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
 }
 
 // ============================================================================

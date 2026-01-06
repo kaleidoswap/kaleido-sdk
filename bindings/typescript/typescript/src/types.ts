@@ -150,3 +150,99 @@ export type { components };
 
 /** All generated path types from OpenAPI */
 export type { paths, operations } from './generated/api-types.js';
+
+// ============================================================================
+// RGB Lightning Node API Types (from node-types.ts)
+// ============================================================================
+
+// Import node types
+import type { components as nodeComponents } from './generated/node-types.js';
+
+/** Node API generated schema types */
+export type { nodeComponents };
+
+/** Node API paths and operations */
+export type {
+    paths as nodePaths,
+    operations as nodeOperations
+} from './generated/node-types.js';
+
+// --- Request/Response Types ---
+
+// Address & Balance
+export type AddressResponse = nodeComponents['schemas']['AddressResponse'];
+export type AssetBalanceRequest = nodeComponents['schemas']['AssetBalanceRequest'];
+export type AssetBalanceResponse = nodeComponents['schemas']['AssetBalanceResponse'];
+export type BtcBalanceRequest = nodeComponents['schemas']['BtcBalanceRequest'];
+export type BtcBalanceResponse = nodeComponents['schemas']['BtcBalanceResponse'];
+
+// Backup & Restore
+export type BackupRequest = nodeComponents['schemas']['BackupRequest'];
+export type RestoreRequest = nodeComponents['schemas']['RestoreRequest'];
+
+// Channels
+export type CloseChannelRequest = nodeComponents['schemas']['CloseChannelRequest'];
+export type OpenChannelRequest = nodeComponents['schemas']['OpenChannelRequest'];
+export type OpenChannelResponse = nodeComponents['schemas']['OpenChannelResponse'];
+export type ListChannelsResponse = nodeComponents['schemas']['ListChannelsResponse'];
+export type Channel = nodeComponents['schemas']['Channel'];
+
+// Peers
+export type ConnectPeerRequest = nodeComponents['schemas']['ConnectPeerRequest'];
+export type DisconnectPeerRequest = nodeComponents['schemas']['DisconnectPeerRequest'];
+export type ListPeersResponse = nodeComponents['schemas']['ListPeersResponse'];
+
+// UTXOs & Transactions
+export type CreateUtxosRequest = nodeComponents['schemas']['CreateUtxosRequest'];
+export type ListUnspentsResponse = nodeComponents['schemas']['ListUnspentsResponse'];
+export type ListTransactionsResponse = nodeComponents['schemas']['ListTransactionsResponse'];
+export type EstimateFeeRequest = nodeComponents['schemas']['EstimateFeeRequest'];
+export type EstimateFeeResponse = nodeComponents['schemas']['EstimateFeeResponse'];
+
+// Invoices
+export type DecodeLNInvoiceRequest = nodeComponents['schemas']['DecodeLNInvoiceRequest'];
+export type DecodeLNInvoiceResponse = nodeComponents['schemas']['DecodeLNInvoiceResponse'];
+export type DecodeRGBInvoiceRequest = nodeComponents['schemas']['DecodeRGBInvoiceRequest'];
+export type DecodeRGBInvoiceResponse = nodeComponents['schemas']['DecodeRGBInvoiceResponse'];
+export type LNInvoiceRequest = nodeComponents['schemas']['LNInvoiceRequest'];
+export type LNInvoiceResponse = nodeComponents['schemas']['LNInvoiceResponse'];
+export type RgbInvoiceRequest = nodeComponents['schemas']['RgbInvoiceRequest'];
+export type RgbInvoiceResponse = nodeComponents['schemas']['RgbInvoiceResponse'];
+export type InvoiceStatusRequest = nodeComponents['schemas']['InvoiceStatusRequest'];
+export type InvoiceStatusResponse = nodeComponents['schemas']['InvoiceStatusResponse'];
+
+// Assets
+export type IssueAssetNIARequest = nodeComponents['schemas']['IssueAssetNIARequest'];
+export type IssueAssetNIAResponse = nodeComponents['schemas']['IssueAssetNIAResponse'];
+export type ListAssetsResponse = nodeComponents['schemas']['ListAssetsResponse'];
+export type AssetNIA = nodeComponents['schemas']['AssetNIA'];
+
+// Transfers
+export type ListTransfersResponse = nodeComponents['schemas']['ListTransfersResponse'];
+export type RefreshRequest = nodeComponents['schemas']['RefreshRequest'];
+
+// Send Operations
+export type SendAssetRequest = nodeComponents['schemas']['SendAssetRequest'];
+export type SendAssetResponse = nodeComponents['schemas']['SendAssetResponse'];
+export type SendBtcRequest = nodeComponents['schemas']['SendBtcRequest'];
+export type SendBtcResponse = nodeComponents['schemas']['SendBtcResponse'];
+
+// Payments
+export type SendPaymentRequest = nodeComponents['schemas']['SendPaymentRequest'];
+export type SendPaymentResponse = nodeComponents['schemas']['SendPaymentResponse'];
+export type KeysendRequest = nodeComponents['schemas']['KeysendRequest'];
+export type KeysendResponse = nodeComponents['schemas']['KeysendResponse'];
+export type ListPaymentsResponse = nodeComponents['schemas']['ListPaymentsResponse'];
+
+// Node Info & Auth
+export type RgbNodeInfoResponse = nodeComponents['schemas']['NodeInfoResponse'];
+export type InitRequest = nodeComponents['schemas']['InitRequest'];
+export type InitResponse = nodeComponents['schemas']['InitResponse'];
+export type UnlockRequest = nodeComponents['schemas']['UnlockRequest'];
+export type SignMessageRequest = nodeComponents['schemas']['SignMessageRequest'];
+export type SignMessageResponse = nodeComponents['schemas']['SignMessageResponse'];
+
+// Misc types
+export type Assignment = nodeComponents['schemas']['Assignment'];
+export type AssignmentFungible = nodeComponents['schemas']['AssignmentFungible'];
+

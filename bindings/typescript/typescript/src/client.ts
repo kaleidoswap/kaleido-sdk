@@ -67,6 +67,23 @@ interface WasmClient {
     getLspInfo(): Promise<LspInfo>;
     getLspNetworkInfo(): Promise<NetworkInfo>;
     estimateLspFees(channelSize: number): Promise<ChannelFees>;
+    // Node API methods
+    getRgbNodeInfo(): Promise<unknown>;
+    getTakerPubkey(): Promise<string>;
+    listChannels(): Promise<unknown>;
+    openChannel(request: unknown): Promise<unknown>;
+    closeChannel(request: unknown): Promise<unknown>;
+    listPeers(): Promise<unknown>;
+    connectPeer(request: unknown): Promise<unknown>;
+    listNodeAssets(): Promise<unknown>;
+    getAssetBalance(assetId: string): Promise<unknown>;
+    getOnchainAddress(): Promise<unknown>;
+    getBtcBalance(): Promise<unknown>;
+    createLnInvoice(amtMsat: number | null, expirySec: number | null, assetAmount: number | null, assetId: string | null): Promise<unknown>;
+    decodeLnInvoice(invoice: string): Promise<unknown>;
+    keysend(request: unknown): Promise<unknown>;
+    listPayments(): Promise<unknown>;
+    initWallet(password: string): Promise<unknown>;
 }
 
 interface WasmModule {
@@ -413,6 +430,196 @@ export class KaleidoClient {
     async estimateLspFees(channelSize: number): Promise<ChannelFees> {
         try {
             return await this.inner.estimateLspFees(channelSize);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    // =========================================================================
+    // RGB Lightning Node Operations
+    // =========================================================================
+
+    /**
+     * Get RGB node information
+     */
+    async getRgbNodeInfo(): Promise<unknown> {
+        try {
+            return await this.inner.getRgbNodeInfo();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Get taker pubkey from RGB node
+     */
+    async getTakerPubkey(): Promise<string> {
+        try {
+            return await this.inner.getTakerPubkey();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * List channels on RGB node
+     */
+    async listChannels(): Promise<unknown> {
+        try {
+            return await this.inner.listChannels();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Open a channel on RGB node
+     */
+    async openChannel(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.openChannel(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Close a channel on RGB node
+     */
+    async closeChannel(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.closeChannel(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * List peers on RGB node
+     */
+    async listPeers(): Promise<unknown> {
+        try {
+            return await this.inner.listPeers();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Connect to a peer on RGB node
+     */
+    async connectPeer(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.connectPeer(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * List RGB assets on node
+     */
+    async listNodeAssets(): Promise<unknown> {
+        try {
+            return await this.inner.listNodeAssets();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Get asset balance from node
+     */
+    async getAssetBalance(assetId: string): Promise<unknown> {
+        try {
+            return await this.inner.getAssetBalance(assetId);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Get onchain address from node
+     */
+    async getOnchainAddress(): Promise<unknown> {
+        try {
+            return await this.inner.getOnchainAddress();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Get BTC balance from node
+     */
+    async getBtcBalance(): Promise<unknown> {
+        try {
+            return await this.inner.getBtcBalance();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Create Lightning invoice on node
+     */
+    async createLnInvoice(
+        amtMsat?: number,
+        expirySec?: number,
+        assetAmount?: number,
+        assetId?: string
+    ): Promise<unknown> {
+        try {
+            return await this.inner.createLnInvoice(
+                amtMsat ?? null,
+                expirySec ?? null,
+                assetAmount ?? null,
+                assetId ?? null
+            );
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Decode Lightning invoice
+     */
+    async decodeLnInvoice(invoice: string): Promise<unknown> {
+        try {
+            return await this.inner.decodeLnInvoice(invoice);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Send keysend payment
+     */
+    async keysend(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.keysend(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * List payments on node
+     */
+    async listPayments(): Promise<unknown> {
+        try {
+            return await this.inner.listPayments();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    /**
+     * Initialize node wallet
+     */
+    async initWallet(password: string): Promise<unknown> {
+        try {
+            return await this.inner.initWallet(password);
         } catch (e) {
             throw mapWasmError(e);
         }
