@@ -35,15 +35,8 @@ dictionary JsonValue {
   string json;
 };
 
-// Main SDK client interface
-interface KaleidoClient {
-  // Constructor
-  [Throws=KaleidoError]
-  constructor(KaleidoConfig config);
-  
-  // Check if RGB Lightning Node is configured
-  boolean has_node();
-  
+// Market Client Interface
+interface MarketClient {
   // === Market Operations ===
   
   [Throws=KaleidoError]
@@ -93,9 +86,56 @@ interface KaleidoClient {
   
   [Throws=KaleidoError]
   JsonValue estimate_lsp_fees(i64 channel_size);
+
+  // === Convenience Methods ===
   
-  // === RGB Lightning Node Operations ===
+  [Throws=KaleidoError]
+  JsonValue get_asset_by_ticker(string ticker);
   
+  [Throws=KaleidoError]
+  JsonValue get_quote_by_assets(string from_ticker, string to_ticker, i64? from_amount, i64? to_amount, string from_layer, string to_layer);
+  
+  [Throws=KaleidoError]
+  JsonValue complete_swap_from_quote(string quote_json);
+  
+  [Throws=KaleidoError]
+  JsonValue get_pair_by_ticker(string ticker);
+  
+  [Throws=KaleidoError]
+  JsonValue list_active_assets();
+  
+  [Throws=KaleidoError]
+  JsonValue list_active_pairs();
+  
+  [Throws=KaleidoError]
+  i64 estimate_swap_fees(string ticker, i64 amount, string from_layer, string to_layer);
+  
+  [Throws=KaleidoError]
+  JsonValue find_asset_by_ticker(string ticker);
+  
+  [Throws=KaleidoError]
+  JsonValue find_pair_by_ticker(string ticker);
+  
+  // === Legacy Support Methods ===
+  
+  [Throws=KaleidoError]
+  JsonValue create_lsp_order(string request_json);
+  
+  [Throws=KaleidoError]
+  JsonValue create_swap_order(string request_json);
+  
+  [Throws=KaleidoError]
+  JsonValue init_swap(string request_json);
+  
+  [Throws=KaleidoError]
+  JsonValue execute_swap(string request_json);
+  
+  [Throws=KaleidoError]
+  JsonValue retry_delivery(string order_id);
+};
+
+// Node Client Interface
+interface NodeClient {
   [Throws=KaleidoError]
   JsonValue get_rgb_node_info();
   
@@ -134,42 +174,47 @@ interface KaleidoClient {
   
   [Throws=KaleidoError]
   JsonValue lock_wallet();
-  
-  // === Convenience Methods ===
+
+  // === New Methods ===
+
+  [Throws=KaleidoError]
+  JsonValue create_ln_invoice(i64? amt_msat, i64? expiry_sec, i64? asset_amount, string? asset_id);
+
+  [Throws=KaleidoError]
+  JsonValue keysend(string request_json);
+
+  [Throws=KaleidoError]
+  JsonValue open_channel(string request_json);
+
+  [Throws=KaleidoError]
+  JsonValue close_channel(string request_json);
   
   [Throws=KaleidoError]
-  JsonValue get_asset_by_ticker(string ticker);
-  
+  JsonValue connect_peer(string request_json);
+};
+
+// Main SDK client interface
+interface KaleidoClient {
+  // Constructor
   [Throws=KaleidoError]
-  JsonValue get_quote_by_assets(string from_ticker, string to_ticker, i64? from_amount, i64? to_amount, string from_layer, string to_layer);
+  constructor(KaleidoConfig config);
   
-  [Throws=KaleidoError]
-  JsonValue complete_swap_from_quote(string quote_json);
-  
-  [Throws=KaleidoError]
-  JsonValue get_pair_by_ticker(string ticker);
-  
-  // === New Convenience Methods ===
-  
-  [Throws=KaleidoError]
-  JsonValue list_active_assets();
-  
-  [Throws=KaleidoError]
-  JsonValue list_active_pairs();
-  
-  [Throws=KaleidoError]
-  i64 estimate_swap_fees(string ticker, i64 amount, string from_layer, string to_layer);
-  
-  [Throws=KaleidoError]
-  JsonValue find_asset_by_ticker(string ticker);
-  
-  [Throws=KaleidoError]
-  JsonValue find_pair_by_ticker(string ticker);
-  
+  // Get Market Client
+  MarketClient market();
+
+  // Get Node Client (optional)
+  NodeClient? node();
+
+  // Check if RGB Lightning Node is configured
+  boolean has_node();
+
   // === WebSocket Streaming ===
   
   [Throws=KaleidoError]
   QuoteStream create_quote_stream(string pair_ticker);
+
+  [Throws=KaleidoError]
+  void register_websocket_handler(string event, string handler_id);
 };
 
 // Real-time quote stream interface

@@ -185,6 +185,25 @@ impl KaleidoError {
             _ => false,
         }
     }
+
+    /// Get error code string for this error (matches Maker's error_code field).
+    pub fn error_code(&self) -> &str {
+        match self {
+            Self::NetworkError { .. } => "NETWORK_ERROR",
+            Self::ApiError { .. } => "API_ERROR",
+            Self::ValidationError { .. } => "VALIDATION_ERROR",
+            Self::TimeoutError { .. } => "TIMEOUT_ERROR",
+            Self::WebSocketError { .. } => "WEBSOCKET_ERROR",
+            Self::NotFoundError { .. } => "NOT_FOUND",
+            Self::SwapError { .. } => "SWAP_ERROR",
+            Self::NodeNotConfigured => "NODE_NOT_CONFIGURED",
+            Self::NotImplemented => "NOT_IMPLEMENTED",
+            Self::JsonError(_) => "JSON_ERROR",
+            Self::UrlError(_) => "URL_ERROR",
+            Self::ConfigError { .. } => "CONFIG_ERROR",
+            Self::InternalError(_) => "INTERNAL_ERROR",
+        }
+    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]

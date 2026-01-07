@@ -39,7 +39,7 @@ pub mod time;
 pub mod websocket;
 
 // Re-exports for convenience
-pub use client::KaleidoClient;
+pub use client::{KaleidoClient, MarketClient, NodeClient};
 pub use error::{KaleidoError, Result};
 pub use models::*;
 
