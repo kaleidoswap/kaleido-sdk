@@ -6,8 +6,6 @@
  * 2. List available assets
  * 3. List trading pairs
  * 4. Get a quote for a swap
- *
- * Note: All amount values are returned as BigInt for precision.
  */
 
 import { KaleidoClient, toDisplayUnits } from '../src/index.js';
@@ -32,7 +30,7 @@ async function main() {
     console.log('-'.repeat(40));
 
     try {
-        const assets = await client.listAssets();
+        const assets = await client.maker.listAssets();
         console.log(`  Found ${assets.length} assets\n`);
 
         assets.slice(0, 5).forEach((asset) => {
@@ -52,7 +50,7 @@ async function main() {
     console.log('-'.repeat(40));
 
     try {
-        const pairs = await client.listPairs();
+        const pairs = await client.maker.listPairs();
         console.log(`  Found ${pairs.length} trading pairs\n`);
 
         pairs.slice(0, 5).forEach((pair) => {
@@ -74,9 +72,9 @@ async function main() {
 
             try {
                 // Get quote for 100,000 satoshis (1 mBTC)
-                const quote = await client.getQuote(
+                const quote = await client.maker.getQuote(
                     ticker,
-                    BigInt(100000),  // fromAmount in smallest units
+                    100000,  // fromAmount in smallest units
                     null,            // toAmount (null = calculate based on fromAmount)
                     'BTC_LN',        // fromLayer
                     'RGB_LN'         // toLayer

@@ -3,7 +3,7 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export type paths = {
     "/api/v1/lsps1/get_info": {
         parameters: {
             query?: never;
@@ -12,7 +12,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Info */
-        get: operations["get_info_api_v1_lsps1_get_info_get"];
+        get: operations["get_info"];
         put?: never;
         post?: never;
         delete?: never;
@@ -32,7 +32,7 @@ export interface paths {
          * Get Network Info
          * @description Get network information including current blockchain height and network type.
          */
-        get: operations["get_network_info_api_v1_lsps1_network_info_get"];
+        get: operations["get_network_info"];
         put?: never;
         post?: never;
         delete?: never;
@@ -51,7 +51,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create Order */
-        post: operations["create_order_api_v1_lsps1_create_order_post"];
+        post: operations["create_order"];
         delete?: never;
         options?: never;
         head?: never;
@@ -72,7 +72,7 @@ export interface paths {
          * @description Estimate channel fees based on the provided parameters without creating an order.
          *     For asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.
          */
-        post: operations["estimate_fees_api_v1_lsps1_estimate_fees_post"];
+        post: operations["estimate_fees"];
         delete?: never;
         options?: never;
         head?: never;
@@ -89,7 +89,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Get Order */
-        post: operations["get_order_api_v1_lsps1_get_order_post"];
+        post: operations["get_order"];
         delete?: never;
         options?: never;
         head?: never;
@@ -110,7 +110,7 @@ export interface paths {
          * @description Handle user decision on rate change for LSPS1 orders.
          *     User can either accept the new market rate or request a refund.
          */
-        post: operations["handle_rate_decision_api_v1_lsps1_rate_decision_post"];
+        post: operations["handle_rate_decision"];
         delete?: never;
         options?: never;
         head?: never;
@@ -141,7 +141,7 @@ export interface paths {
          *     Returns:
          *         RetryDeliveryResponse with status and message
          */
-        post: operations["retry_delivery_api_v1_lsps1_retry_delivery_post"];
+        post: operations["retry_delivery"];
         delete?: never;
         options?: never;
         head?: never;
@@ -156,7 +156,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Node Info */
-        get: operations["get_node_info_api_v1_swaps_nodeinfo_get"];
+        get: operations["get_node_info"];
         put?: never;
         post?: never;
         delete?: never;
@@ -175,7 +175,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Initiate Swap */
-        post: operations["initiate_swap_api_v1_swaps_init_post"];
+        post: operations["initiate_swap"];
         delete?: never;
         options?: never;
         head?: never;
@@ -192,7 +192,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Confirm Swap */
-        post: operations["confirm_swap_api_v1_swaps_execute_post"];
+        post: operations["confirm_swap"];
         delete?: never;
         options?: never;
         head?: never;
@@ -209,7 +209,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Get Swap Status */
-        post: operations["get_swap_status_api_v1_swaps_atomic_status_post"];
+        post: operations["get_swap_status"];
         delete?: never;
         options?: never;
         head?: never;
@@ -223,8 +223,22 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Assets */
-        get: operations["list_assets_api_v1_market_assets_get"];
+        /**
+         * List Assets
+         * @description List assets with optional filters and pagination.
+         *
+         *     All filters are AND-combined. Examples:
+         *     - GET /assets                           → All active assets (paginated)
+         *     - GET /assets?asset_id=rgb:2dkSTbr-...  → Single asset by ID
+         *     - GET /assets?ticker=BTC                → Single asset by ticker
+         *     - GET /assets?layer=BTC_LN              → Assets supporting BTC on Lightning
+         *     - GET /assets?network=LN                → Assets on Lightning Network
+         *     - GET /assets?protocol=RGB              → All RGB assets
+         *     - GET /assets?is_active=true            → Only active assets (default behavior)
+         *     - GET /assets?protocol=RGB&network=LN   → RGB assets on Lightning
+         *     - GET /assets?limit=10&offset=20        → Pagination (page 3, 10 items per page)
+         */
+        get: operations["list_assets"];
         put?: never;
         post?: never;
         delete?: never;
@@ -240,8 +254,117 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Pairs */
-        get: operations["get_pairs_api_v1_market_pairs_get"];
+        /**
+         * Get Pairs
+         * @description Get trading pairs with optional filters and pagination.
+         *
+         *     **Single Pair Filters** (returns list with 0-1 items):
+         *     - pair_id: Filter by pair UUID
+         *     - pair_ticker: Filter by pair ticker (e.g., "BTC/USDT")
+         *     - base_ticker + quote_ticker: Filter by asset tickers
+         *     - from_asset_id + quote_asset_id: Filter by asset IDs
+         *
+         *     **List Filters**:
+         *     - layer: Filter by layer (e.g., BTC_LN, RGB_LN)
+         *     - asset: Filter by asset ticker or ID
+         *     - active_only: Only return active pairs (default: true)
+         *
+         *     **Pagination**:
+         *     - limit: Items per page (default: 50, max: 100)
+         *     - offset: Offset for pagination (default: 0)
+         *
+         *     Always returns TradingPairsResponse with pagination metadata.
+         */
+        get: operations["get_pairs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/market/pairs/routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get Pair Routes
+         * @description Get available swap routes for a trading pair.
+         *
+         *     Supports multiple identification methods:
+         *     1. By pair_id: {"pair_id": "2c188c7b-a823-4e5b-a82f-4d9fcb5e80ba"}
+         *     2. By asset IDs: {"from_asset_id": "BTC", "quote_asset_id": "rgb:..."}
+         *     3. By pair ticker: {"pair_ticker": "BTC/USDT"}
+         *     4. By separate tickers: {"base_ticker": "BTC", "quote_ticker": "USDT"}
+         *
+         *     Exactly one identification method must be provided.
+         *
+         *     Returns list of pre-computed routes with:
+         *     - Source network and protocol
+         *     - Destination network and protocol
+         *     - Submarine swap indicator (same asset, different networks)
+         */
+        post: operations["get_pair_routes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/market/routes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discover Routes
+         * @description Discover all possible routes from source to destination.
+         *
+         *     Supports multi-hop routing up to max_hops (default: 2).
+         *
+         *     Request body:
+         *     - from_asset: Source asset ticker (required)
+         *     - from_layer: Filter by source layer (optional)
+         *     - to_asset: Destination asset ticker (if None, returns all reachable assets)
+         *     - to_layer: Filter by destination layer (optional)
+         *     - max_hops: Maximum number of hops (1-5, default: 2)
+         *
+         *     Returns list of routes, each with:
+         *     - steps: List of RouteStep objects with asset, layer, and indicative price
+         *     - total_hops: Number of hops in the route
+         */
+        post: operations["discover_routes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/market/routes/matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Route Matrix
+         * @description Get full reachability matrix for all assets.
+         *
+         *     Returns a matrix showing which assets can reach which,
+         *     with available layer combinations and minimum hops required.
+         */
+        get: operations["get_route_matrix"];
         put?: never;
         post?: never;
         delete?: never;
@@ -259,8 +382,20 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Get Quote */
-        post: operations["get_quote_api_v1_market_quote_post"];
+        /**
+         * Get Quote
+         * @description Get a quote for a swap between two assets.
+         *
+         *     Request body contains SwapLegInput for both from_asset and to_asset,
+         *     specifying asset_id, layer, and amount (on one side).
+         *
+         *     Returns a quote with full SwapLeg details including:
+         *     - Complete asset information (ticker, name, precision)
+         *     - Layer configuration
+         *     - Calculated amounts and fees
+         *     - Submarine swap indicator (if same asset on different networks)
+         */
+        post: operations["get_quote"];
         delete?: never;
         options?: never;
         head?: never;
@@ -277,7 +412,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create Swap Order */
-        post: operations["create_swap_order_api_v1_swaps_orders_post"];
+        post: operations["create_swap_order"];
         delete?: never;
         options?: never;
         head?: never;
@@ -294,7 +429,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Get Swap Order Status */
-        post: operations["get_swap_order_status_api_v1_swaps_orders_status_post"];
+        post: operations["get_swap_order_status"];
         delete?: never;
         options?: never;
         head?: never;
@@ -312,7 +447,7 @@ export interface paths {
          * Get Order History
          * @description Get order history with optional status filtering and pagination
          */
-        get: operations["get_order_history_api_v1_swaps_orders_history_get"];
+        get: operations["get_order_history"];
         put?: never;
         post?: never;
         delete?: never;
@@ -332,7 +467,7 @@ export interface paths {
          * Get Order Stats
          * @description Get order statistics including counts by status and volume information
          */
-        get: operations["get_order_stats_api_v1_swaps_orders_analytics_get"];
+        get: operations["get_order_stats"];
         put?: never;
         post?: never;
         delete?: never;
@@ -355,44 +490,90 @@ export interface paths {
          * @description Handle user decision on rate change for swap orders.
          *     User can either accept the new market rate or request a refund.
          */
-        post: operations["handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post"];
+        post: operations["handle_swap_order_rate_decision"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-}
+};
 export type webhooks = Record<string, never>;
-export interface components {
+export type components = {
     schemas: {
-        /** AssetBalanceResponse */
-        AssetBalanceResponse: {
+        /**
+         * Asset
+         * @description Extended asset definition for the trading system.
+         *
+         *     Extends TradableAsset with:
+         *     - Trading status (is_active)
+         *     - Supported layers (protocol/network combinations as strings)
+         *     - RGB-specific fields for node API compatibility
+         *     - Methods to convert to TradableAsset for specific settlements
+         *
+         *     Supported Layers Format: PROTOCOL/NETWORK
+         *     - BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU
+         *     - RGB_L1, RGB_LN
+         *     - TAPASS_L1, TAPASS_LN
+         *     - LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK
+         */
+        Asset: {
             /**
-             * Settled
-             * @example 777
+             * Ticker
+             * @description Display ticker (e.g., 'BTC', 'USDT')
              */
-            settled: number;
+            ticker: string;
             /**
-             * Future
-             * @example 777
+             * Name
+             * @description Full name
              */
-            future: number;
+            name: string;
             /**
-             * Spendable
-             * @example 777
+             * Precision
+             * @description Decimal places (e.g., 8 for BTC, 6 for USDT)
              */
-            spendable: number;
+            precision: number;
             /**
-             * Offchain Outbound
-             * @example 444
+             * Protocol Ids
+             * @description Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})
              */
-            offchain_outbound: number;
+            protocol_ids?: {
+                [key: string]: string;
+            };
+            /** @description Logo/media */
+            media?: components["schemas"]["Media"] | null;
             /**
-             * Offchain Inbound
-             * @example 0
+             * Issued Supply
+             * Format: int64
+             * @description Total issued supply
              */
-            offchain_inbound: number;
+            issued_supply?: number | null;
+            /**
+             * Timestamp
+             * @description Creation timestamp
+             */
+            timestamp?: number | null;
+            /**
+             * Endpoints
+             * @description Layer endpoints with trading limits
+             */
+            endpoints?: components["schemas"]["TradingLimits"][];
+            /**
+             * Is Active
+             * @description Active for trading
+             * @default true
+             */
+            is_active: boolean;
+            /**
+             * Added At
+             * @description When added to wallet
+             */
+            added_at?: number | null;
+            /**
+             * Supported Layers
+             * @description Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')
+             */
+            supported_layers?: string[] | null;
         };
         /**
          * AssetDeliveryStatus
@@ -400,11 +581,6 @@ export interface components {
          * @enum {string}
          */
         AssetDeliveryStatus: "NOT_REQUIRED" | "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED" | "RATE_CHANGED";
-        /**
-         * AssetIface
-         * @enum {string}
-         */
-        AssetIface: "RGB20" | "RGB21" | "RGB25";
         /** AssetsOptions */
         AssetsOptions: {
             /**
@@ -429,49 +605,65 @@ export interface components {
             precision: number;
             /**
              * Issued Supply
+             * Format: int64
              * @default 0
              */
             issued_supply: number;
             /**
              * Min Initial Client Amount
+             * Format: int64
              * @default 0
              */
             min_initial_client_amount: number;
             /**
              * Max Initial Client Amount
+             * Format: int64
              * @default 0
              */
             max_initial_client_amount: number;
             /**
              * Min Initial Lsp Amount
+             * Format: int64
              * @default 0
              */
             min_initial_lsp_amount: number;
             /**
              * Max Initial Lsp Amount
+             * Format: int64
              * @default 10000
              */
             max_initial_lsp_amount: number;
             /**
              * Min Channel Amount
+             * Format: int64
              * @default 0
              */
             min_channel_amount: number;
             /**
              * Max Channel Amount
+             * Format: int64
              * @default 10000
              */
             max_channel_amount: number;
         };
-        /** AssetsResponse */
+        /**
+         * AssetsResponse
+         * @description Response model for asset listing endpoints with pagination support.
+         */
         AssetsResponse: {
             /** Assets */
-            assets: components["schemas"]["ClientAsset"][];
+            assets: components["schemas"]["Asset"][];
             /**
              * Network
              * @default regtest
              */
             network: string;
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
             /** Timestamp */
             timestamp?: number | null;
         };
@@ -486,11 +678,17 @@ export interface components {
             channel_id?: string | null;
             /** Temporary Channel Id */
             temporary_channel_id?: string | null;
-            /** Funded At */
+            /**
+             * Funded At
+             * Format: date-time
+             */
             funded_at?: string | null;
             /** Funding Outpoint */
             funding_outpoint?: string | null;
-            /** Expires At */
+            /**
+             * Expires At
+             * Format: date-time
+             */
             expires_at?: string | null;
         };
         /** ChannelFees */
@@ -508,56 +706,59 @@ export interface components {
             /** Discount Code */
             discount_code?: string | null;
         };
-        /** ClientAsset */
-        ClientAsset: {
+        /** ChannelOrderResponse */
+        ChannelOrderResponse: {
+            /** Order Id */
+            order_id: string;
+            /** Client Pubkey */
+            client_pubkey: string;
+            /** Lsp Balance Sat */
+            lsp_balance_sat: number;
+            /** Client Balance Sat */
+            client_balance_sat: number;
+            /** Required Channel Confirmations */
+            required_channel_confirmations: number;
+            /** Funding Confirms Within Blocks */
+            funding_confirms_within_blocks: number;
+            /** Channel Expiry Blocks */
+            channel_expiry_blocks: number;
             /**
-             * Asset Id
-             * @example rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd
+             * Token
+             * @default
              */
-            asset_id: string;
+            token: string | null;
             /**
-             * Ticker
-             * @example USDT
+             * Created At
+             * Format: date-time
              */
-            ticker: string;
+            created_at?: string;
+            /** Announce Channel */
+            announce_channel: boolean;
+            order_state: components["schemas"]["OrderState"];
+            payment: components["schemas"]["PaymentDetails"];
+            channel?: components["schemas"]["ChannelDetails"] | null;
+            /** Asset Id */
+            asset_id?: string | null;
+            /** Lsp Asset Amount */
+            lsp_asset_amount?: number | null;
+            /** Client Asset Amount */
+            client_asset_amount?: number | null;
+            /** Rfq Id */
+            rfq_id?: string | null;
+            /** Asset Price Sat */
+            asset_price_sat?: number | null;
+            asset_delivery_status?: components["schemas"]["AssetDeliveryStatus"] | null;
+            /** Asset Delivery Payment Hash */
+            asset_delivery_payment_hash?: string | null;
             /**
-             * Name
-             * @example Tether
+             * Asset Delivery Completed At
+             * Format: date-time
              */
-            name: string;
-            /**
-             * Details
-             * @example asset details
-             */
-            details?: string | null;
-            /**
-             * Precision
-             * @example 0
-             */
-            precision: number;
-            /**
-             * Issued Supply
-             * @example 777
-             */
-            issued_supply: number;
-            /**
-             * Timestamp
-             * @example 1691160565
-             */
-            timestamp: number;
-            /**
-             * Added At
-             * @example 1691161979
-             */
-            added_at: number;
-            balance: components["schemas"]["AssetBalanceResponse"];
-            media?: components["schemas"]["Media"] | null;
-            asset_iface?: components["schemas"]["AssetIface"] | null;
-            /**
-             * Is Active
-             * @default true
-             */
-            is_active: boolean;
+            asset_delivery_completed_at?: string | null;
+            /** Asset Delivery Error */
+            asset_delivery_error?: string | null;
+            /** Failure Reason */
+            failure_reason?: string | null;
         };
         /** ConfirmSwapRequest */
         ConfirmSwapRequest: {
@@ -634,25 +835,22 @@ export interface components {
              * @description RFQ ID cannot be empty
              */
             rfq_id: string;
-            /** @description Input type: ONCHAIN or LIGHTNING */
-            from_type: components["schemas"]["SwapSettlement"];
-            /** @description Output type: ONCHAIN or LIGHTNING */
-            to_type: components["schemas"]["SwapSettlement"];
+            /** @description Complete input specification: asset, ticker, network, protocol, and amount */
+            from_asset: components["schemas"]["SwapLeg"];
+            /** @description Complete output specification: asset, ticker, network, protocol, and amount */
+            to_asset: components["schemas"]["SwapLeg"];
+            /** @description Destination address/invoice for receiving the to_asset payout */
+            receiver_address: components["schemas"]["ReceiverAddress"];
             /**
              * Min Onchain Conf
              * @default 1
              */
             min_onchain_conf: number | null;
-            /** Dest Bolt11 */
-            dest_bolt11?: string | null;
-            /** Dest Onchain Address */
-            dest_onchain_address?: string | null;
-            /** Dest Rgb Invoice */
-            dest_rgb_invoice?: string | null;
             /** Refund Address */
             refund_address?: string | null;
             /**
              * Email
+             * Format: email
              * @description Optional email for notifications
              */
             email?: string | null;
@@ -663,26 +861,20 @@ export interface components {
             id: string;
             /** Rfq Id */
             rfq_id: string;
-            pay_in: components["schemas"]["SwapSettlement"];
-            /** Ln Invoice */
-            ln_invoice?: string | null;
-            /** Onchain Address */
-            onchain_address?: string | null;
-            /** Rgb Recipient Id */
-            rgb_recipient_id?: string | null;
-            /** Rgb Invoice */
-            rgb_invoice?: string | null;
+            deposit_address?: components["schemas"]["ReceiverAddress"] | null;
             status: components["schemas"]["SwapOrderStatus"];
         };
         /** Fee */
         Fee: {
             /**
              * Base Fee
+             * Format: int64
              * @example 1000000
              */
             base_fee: number;
             /**
              * Variable Fee
+             * Format: int64
              * @example 1000000
              */
             variable_fee: number;
@@ -693,6 +885,7 @@ export interface components {
             fee_rate: number;
             /**
              * Final Fee
+             * Format: int64
              * @example 2000000
              */
             final_fee: number;
@@ -725,6 +918,17 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * Layer
+         * @description Settlement layer combining protocol and network as a single string.
+         *
+         *     Format: PROTOCOL/NETWORK
+         *
+         *     Each layer represents a valid combination where assets can exist and be transacted.
+         *     The layer encodes both WHAT protocol the asset uses and WHERE it settles.
+         * @enum {string}
+         */
+        Layer: "BTC_L1" | "BTC_LN" | "BTC_SPARK" | "BTC_ARKADE" | "BTC_LIQUID" | "BTC_CASHU" | "RGB_L1" | "RGB_LN" | "TAPASS_L1" | "TAPASS_LN" | "LIQUID_LIQUID" | "ARKADE_ARKADE" | "SPARK_SPARK";
         /** Media */
         Media: {
             /**
@@ -743,6 +947,22 @@ export interface components {
              */
             mime: string;
         };
+        /**
+         * MultiHopRoute
+         * @description Complete route with one or more steps.
+         */
+        MultiHopRoute: {
+            /**
+             * Steps
+             * @description Ordered list of route steps
+             */
+            steps: components["schemas"]["RouteStep"][];
+            /**
+             * Total Hops
+             * @description Number of hops in the route
+             */
+            total_hops: number;
+        };
         /** NetworkInfoResponse */
         NetworkInfoResponse: {
             network: components["schemas"]["BitcoinNetwork"];
@@ -752,41 +972,57 @@ export interface components {
              */
             height: number;
         };
-        /** NodeInfoResponse */
-        NodeInfoResponse: {
-            /**
-             * Pubkey
-             * @example 034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706
-             */
-            pubkey: string | null;
-            /**
-             * Network
-             * @example Signet
-             */
-            network: string | null;
-            /**
-             * Block Height
-             * @example 805434
-             */
-            block_height: number | null;
-        };
         /** OrderHistoryResponse */
         OrderHistoryResponse: {
             /**
-             * Orders
+             * Data
              * @description List of orders
              */
-            orders: components["schemas"]["SwapOrder"][];
+            data: components["schemas"]["OrderHistorySummary"][];
+            pagination: components["schemas"]["PaginationMeta"];
+        };
+        /**
+         * OrderHistorySummary
+         * @description Simplified order information for history listing
+         */
+        OrderHistorySummary: {
             /**
-             * Total Count
-             * @description Total number of orders matching the filter
+             * Id
+             * @description Order ID
              */
-            total_count: number;
+            id: string;
+            /** @description Order status */
+            status: components["schemas"]["SwapOrderStatus"];
             /**
-             * Has More
-             * @description Whether there are more orders available
+             * From Asset
+             * @description Asset being swapped from
              */
-            has_more: boolean;
+            from_asset: string;
+            /**
+             * From Amount
+             * @description Amount of from_asset
+             */
+            from_amount: number;
+            /**
+             * To Asset
+             * @description Asset being swapped to
+             */
+            to_asset: string;
+            /**
+             * To Amount
+             * @description Amount of to_asset
+             */
+            to_amount: number;
+            /**
+             * Created At
+             * @description Order creation timestamp
+             */
+            created_at: number;
+            /**
+             * Filled At
+             * @description Order completion timestamp
+             */
+            filled_at?: number | null;
         };
         /** OrderOptions */
         OrderOptions: {
@@ -807,7 +1043,10 @@ export interface components {
              * @default true
              */
             supports_zero_channel_reserve: boolean;
-            /** Min Onchain Payment Size Sat */
+            /**
+             * Min Onchain Payment Size Sat
+             * Format: int64
+             */
             min_onchain_payment_size_sat?: number | null;
             /**
              * Max Channel Expiry Blocks
@@ -816,83 +1055,40 @@ export interface components {
             max_channel_expiry_blocks: number;
             /**
              * Min Initial Client Balance Sat
+             * Format: int64
              * @default 0
              */
             min_initial_client_balance_sat: number;
             /**
              * Max Initial Client Balance Sat
+             * Format: int64
              * @default 1000000
              */
             max_initial_client_balance_sat: number;
             /**
              * Min Initial Lsp Balance Sat
+             * Format: int64
              * @default 0
              */
             min_initial_lsp_balance_sat: number;
             /**
              * Max Initial Lsp Balance Sat
+             * Format: int64
              * @default 16777215
              */
             max_initial_lsp_balance_sat: number;
             /**
              * Min Channel Balance Sat
+             * Format: int64
              * @default 50000
              */
             min_channel_balance_sat: number;
             /**
              * Max Channel Balance Sat
+             * Format: int64
              * @default 16777215
              */
             max_channel_balance_sat: number;
-        };
-        /** OrderResponse */
-        OrderResponse: {
-            /** Order Id */
-            order_id: string;
-            /** Client Pubkey */
-            client_pubkey: string;
-            /** Lsp Balance Sat */
-            lsp_balance_sat: number;
-            /** Client Balance Sat */
-            client_balance_sat: number;
-            /** Required Channel Confirmations */
-            required_channel_confirmations: number;
-            /** Funding Confirms Within Blocks */
-            funding_confirms_within_blocks: number;
-            /** Channel Expiry Blocks */
-            channel_expiry_blocks: number;
-            /**
-             * Token
-             * @default
-             */
-            token: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at?: string;
-            /** Announce Channel */
-            announce_channel: boolean;
-            order_state: components["schemas"]["OrderState"];
-            payment: components["schemas"]["PaymentDetails"];
-            channel?: components["schemas"]["ChannelDetails"] | null;
-            /** Asset Id */
-            asset_id?: string | null;
-            /** Lsp Asset Amount */
-            lsp_asset_amount?: number | null;
-            /** Client Asset Amount */
-            client_asset_amount?: number | null;
-            /** Rfq Id */
-            rfq_id?: string | null;
-            /** Asset Price Sat */
-            asset_price_sat?: number | null;
-            asset_delivery_status?: components["schemas"]["AssetDeliveryStatus"] | null;
-            /** Asset Delivery Payment Hash */
-            asset_delivery_payment_hash?: string | null;
-            /** Asset Delivery Completed At */
-            asset_delivery_completed_at?: string | null;
-            /** Asset Delivery Error */
-            asset_delivery_error?: string | null;
         };
         /**
          * OrderState
@@ -919,103 +1115,92 @@ export interface components {
              */
             filled_orders_count: number;
         };
-        /** Pair */
-        Pair: {
-            /** Id */
-            id?: string;
-            /** Base Asset */
-            base_asset: string;
-            /** Base Asset Id */
-            base_asset_id: string;
-            /** Base Precision */
-            base_precision: number;
-            /** Quote Asset */
-            quote_asset: string;
-            /** Quote Asset Id */
-            quote_asset_id: string;
-            /** Quote Precision */
-            quote_precision: number;
-            /** Is Active */
-            is_active: boolean;
-            /** Min Base Order Size */
-            min_base_order_size: number;
-            /** Max Base Order Size */
-            max_base_order_size: number;
-            /** Min Quote Order Size */
-            min_quote_order_size: number;
-            /** Max Quote Order Size */
-            max_quote_order_size: number;
+        /**
+         * PaginationMeta
+         * @description Pagination metadata
+         */
+        PaginationMeta: {
+            /**
+             * Total
+             * @description Total number of items matching the filter
+             */
+            total: number;
+            /**
+             * Limit
+             * @description Number of items per page
+             */
+            limit: number;
+            /**
+             * Skip
+             * @description Number of items skipped
+             */
+            skip: number;
+            /**
+             * Current Page
+             * @description Current page number (1-indexed)
+             */
+            current_page: number;
+            /**
+             * Total Pages
+             * @description Total number of pages
+             */
+            total_pages: number;
+            /**
+             * Has Next
+             * @description Whether there is a next page
+             */
+            has_next: boolean;
+            /**
+             * Has Previous
+             * @description Whether there is a previous page
+             */
+            has_previous: boolean;
         };
-        /** PairQuoteRequest */
+        /**
+         * PairQuoteRequest
+         * @description Request for a quote on a trading pair using SwapLegInput.
+         */
         PairQuoteRequest: {
-            /**
-             * From Asset
-             * @example BTC
-             */
-            from_asset: string;
-            /**
-             * From Amount
-             * @description Amount of from_asset to convert. Either from_amount or to_amount must be provided, but not both.
-             * @example 1000000
-             */
-            from_amount?: number | null;
-            /**
-             * To Asset
-             * @example rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd
-             */
-            to_asset: string;
-            /**
-             * To Amount
-             * @description Desired amount of to_asset to receive. Either from_amount or to_amount must be provided, but not both.
-             * @example 1000000
-             */
-            to_amount?: number | null;
+            /** @description Source leg specification (asset_id, layer, amount) */
+            from_asset: components["schemas"]["SwapLegInput"];
+            /** @description Destination leg specification (asset_id, layer, amount) */
+            to_asset: components["schemas"]["SwapLegInput"];
         };
-        /** PairQuoteResponse */
+        /**
+         * PairQuoteResponse
+         * @description Response containing a quote for a trading pair.
+         *
+         *     Uses full SwapLeg for both sides, providing complete asset details
+         *     including ticker, name, precision, layer, and amount.
+         */
         PairQuoteResponse: {
             /**
              * Rfq Id
              * @example 1234567890
              */
             rfq_id: string;
-            /**
-             * From Asset
-             * @example BTC
-             */
-            from_asset: string;
-            /**
-             * From Amount
-             * @description Amount of from_asset in its smallest unit (e.g., millisatoshis for BTC if precision is 11)
-             * @example 100000000000
-             */
-            from_amount: number;
-            /**
-             * To Asset
-             * @example rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd
-             */
-            to_asset: string;
-            /**
-             * To Amount
-             * @description Amount of to_asset in its smallest unit, after applying price and fees.
-             * @example 49900123
-             */
-            to_amount: number;
+            /** @description Complete source leg specification with amount and details */
+            from_asset: components["schemas"]["SwapLeg"];
+            /** @description Complete destination leg specification with amount and details */
+            to_asset: components["schemas"]["SwapLeg"];
             /**
              * Price
+             * Format: int64
              * @description Price of 1 whole unit of from_asset (e.g., 1 BTC) in terms of the smallest unit of to_asset (e.g., USDT with precision 6). Matches PriceData.price for the given rfq_id.
              * @example 50000123456
              */
             price: number;
             fee: components["schemas"]["Fee"];
-            /** Timestamp */
+            /**
+             * Timestamp
+             * @description Quote creation timestamp (seconds since epoch)
+             */
             timestamp: number;
-            /** Expires At */
+            /**
+             * Expires At
+             * @description Quote expiry timestamp (seconds since epoch)
+             */
             expires_at: number;
-        };
-        /** PairResponse */
-        PairResponse: {
-            /** Pairs */
-            pairs: components["schemas"]["Pair"][];
         };
         /** PaymentBolt11 */
         PaymentBolt11: {
@@ -1056,7 +1241,7 @@ export interface components {
             /** Min Onchain Payment Confirmations */
             min_onchain_payment_confirmations: number;
             /** Refund Onchain Address */
-            refund_onchain_address: string | null;
+            refund_onchain_address?: string | null;
             /** Payment Status */
             payment_status?: string | null;
             /**
@@ -1103,6 +1288,78 @@ export interface components {
             refund_txid?: string | null;
         };
         /**
+         * ReachabilityCell
+         * @description Single cell in reachability matrix.
+         */
+        ReachabilityCell: {
+            /**
+             * From Asset
+             * @description Source asset ticker
+             */
+            from_asset: string;
+            /**
+             * To Asset
+             * @description Destination asset ticker
+             */
+            to_asset: string;
+            /**
+             * Layers
+             * @description Available layer combinations (e.g., 'RGB_LN->BTC_SPARK')
+             */
+            layers: string[];
+            /**
+             * Min Hops
+             * @description Minimum number of hops required
+             */
+            min_hops: number;
+        };
+        /**
+         * ReachabilityMatrixResponse
+         * @description Full reachability matrix response.
+         */
+        ReachabilityMatrixResponse: {
+            /**
+             * Matrix
+             * @description Reachability cells
+             */
+            matrix: components["schemas"]["ReachabilityCell"][];
+            /**
+             * Assets
+             * @description All assets in the matrix
+             */
+            assets: string[];
+            /**
+             * Timestamp
+             * @description Response timestamp
+             */
+            timestamp: number;
+        };
+        /**
+         * ReceiverAddress
+         * @description Receiver address or invoice with its format.
+         *
+         *     Encapsulates the destination for receiving funds along with
+         *     metadata about what format it uses.
+         */
+        ReceiverAddress: {
+            /**
+             * Address
+             * @description The actual address, invoice, or token string
+             */
+            address: string;
+            /** @description Format of the receiver address */
+            format: components["schemas"]["ReceiverAddressFormat"];
+        };
+        /**
+         * ReceiverAddressFormat
+         * @description Supported receiver address and invoice formats.
+         *
+         *     Different networks and protocols use different address/invoice formats
+         *     for receiving payments.
+         * @enum {string}
+         */
+        ReceiverAddressFormat: "BTC_ADDRESS" | "BOLT11" | "BOLT12" | "LN_ADDRESS" | "RGB_INVOICE" | "LIQUID_ADDRESS" | "LIQUID_INVOICE" | "SPARK_ADDRESS" | "SPARK_INVOICE" | "ARKADE_ADDRESS" | "ARKADE_INVOICE" | "CASHU_TOKEN";
+        /**
          * RetryDeliveryRequest
          * @description Request model for /retry_delivery endpoint to trigger immediate keysend retry
          */
@@ -1132,6 +1389,78 @@ export interface components {
          * @enum {string}
          */
         RetryDeliveryStatus: "processing" | "not_found" | "no_pending_delivery" | "error";
+        /**
+         * RouteStep
+         * @description Single step in a route (one swap within a trading pair).
+         */
+        RouteStep: {
+            /**
+             * From Asset
+             * @description Source asset ticker
+             */
+            from_asset: string;
+            /** @description Source layer */
+            from_layer: components["schemas"]["Layer"];
+            /**
+             * To Asset
+             * @description Destination asset ticker
+             */
+            to_asset: string;
+            /** @description Destination layer */
+            to_layer: components["schemas"]["Layer"];
+            /**
+             * Pair Ticker
+             * @description Trading pair ticker (e.g., 'USDT/BTC')
+             */
+            pair_ticker: string;
+            /**
+             * Indicative Price
+             * @description Indicative price from cached pair data
+             */
+            indicative_price?: string | null;
+        };
+        /**
+         * RoutesRequest
+         * @description Request for route discovery.
+         */
+        RoutesRequest: {
+            /**
+             * From Asset
+             * @description Source asset ticker or ID
+             */
+            from_asset: string;
+            /** @description Filter by source layer (optional) */
+            from_layer?: components["schemas"]["Layer"] | null;
+            /**
+             * To Asset
+             * @description Destination asset (if None, returns all reachable assets)
+             */
+            to_asset?: string | null;
+            /** @description Filter by destination layer (optional) */
+            to_layer?: components["schemas"]["Layer"] | null;
+            /**
+             * Max Hops
+             * @description Maximum number of hops (1-5)
+             * @default 2
+             */
+            max_hops: number;
+        };
+        /**
+         * RoutesResponse
+         * @description Response with discovered routes.
+         */
+        RoutesResponse: {
+            /**
+             * Routes
+             * @description List of discovered routes
+             */
+            routes: components["schemas"]["MultiHopRoute"][];
+            /**
+             * Timestamp
+             * @description Response timestamp
+             */
+            timestamp: number;
+        };
         /** Swap */
         Swap: {
             /**
@@ -1181,108 +1510,183 @@ export interface components {
              */
             completed_at?: number | null;
         };
+        /**
+         * SwapLeg
+         * @description Swap Leg: Complete asset specification for one side of a swap.
+         *
+         *     Represents a specific asset on a specific settlement layer with an amount.
+         *     This is the fundamental unit for swap orders - each side (leg) of a swap
+         *     specifies an asset on a particular network with a specific amount.
+         */
+        SwapLeg: {
+            /**
+             * Asset Id
+             * @description Unique identifier for the asset (e.g., 'BTC', RGB contract ID, etc.)
+             */
+            asset_id: string;
+            /**
+             * Name
+             * @description Full name of the asset
+             * @example Bitcoin
+             */
+            name: string;
+            /**
+             * Ticker
+             * @description Asset ticker symbol for display (e.g., 'BTC', 'USDT', 'EURX')
+             * @example BTC
+             */
+            ticker: string;
+            /** @description Settlement layer (e.g., 'BTC_LN', 'RGB_L1') */
+            layer: components["schemas"]["Layer"];
+            /**
+             * Amount
+             * Format: int64
+             * @description Amount of the asset in smallest unit. Must be greater than or equal to zero.
+             * @example 100000
+             */
+            amount: number;
+            /**
+             * Precision
+             * @description Number of decimal places for this asset (e.g., 8 for BTC, 6 or 8 for stablecoins)
+             * @example 8
+             */
+            precision: number;
+        };
+        /**
+         * SwapLegInput
+         * @description Lightweight input model for specifying one leg of a swap request.
+         *
+         *     Only contains the fields the client needs to provide. The service will
+         *     look up additional details (name, ticker, precision) from the asset registry.
+         */
+        SwapLegInput: {
+            /**
+             * Asset Id
+             * @description Asset identifier (e.g., 'BTC', RGB contract ID)
+             * @example BTC
+             */
+            asset_id: string;
+            /**
+             * @description Settlement layer (e.g., 'BTC_LN', 'RGB_L1')
+             * @example BTC_LN
+             */
+            layer: components["schemas"]["Layer"];
+            /**
+             * Amount
+             * Format: int64
+             * @description Amount in smallest unit (optional - one side must have amount)
+             * @example 1000000
+             */
+            amount?: number | null;
+        };
+        /** SwapNodeInfoResponse */
+        SwapNodeInfoResponse: {
+            /**
+             * Pubkey
+             * @example 034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706
+             */
+            pubkey: string | null;
+            /**
+             * Network
+             * @example Signet
+             */
+            network: string | null;
+            /**
+             * Block Height
+             * @example 805434
+             */
+            block_height: number | null;
+        };
         /** SwapOrder */
         SwapOrder: {
             /**
              * Id
-             * @description Order ID
+             * @description Order identifier
              */
             id: string;
             /**
              * Rfq Id
-             * @description RFQ that produced the quote
+             * @description Quote identifier used to create the order
              */
             rfq_id: string;
-            /** Maker Pubkey */
+            /**
+             * Maker Pubkey
+             * @description Maker node public key
+             */
             maker_pubkey?: string | null;
-            side: components["schemas"]["SwapOrderSide"];
-            /** @description Input settlement type: ONCHAIN or LIGHTNING */
-            from_type: components["schemas"]["SwapSettlement"];
-            /** From Asset */
-            from_asset: string;
-            /**
-             * From Amount
-             * @description Amount of the asset to swap from. Must be greater than zero.
-             * @example 100000
-             */
-            from_amount: number;
-            /** @description Output settlement type: ONCHAIN or LIGHTNING */
-            to_type: components["schemas"]["SwapSettlement"];
-            /** To Asset */
-            to_asset: string;
-            /**
-             * To Amount
-             * @description Amount of the asset to swap to. Must be greater than zero.
-             * @example 100000
-             */
-            to_amount: number;
+            /** @description Complete specification for input: asset, ticker, network, protocol, and amount */
+            from_asset: components["schemas"]["SwapLeg"];
+            /** @description Complete specification for output: asset, ticker, network, protocol, and amount */
+            to_asset: components["schemas"]["SwapLeg"];
             /** Price */
             price: number;
-            pay_in: components["schemas"]["SwapSettlement"];
-            pay_out: components["schemas"]["SwapSettlement"];
-            /** Ln Invoice */
-            ln_invoice?: string | null;
-            /** Onchain Address */
-            onchain_address?: string | null;
-            /** Min Onchain Conf */
-            min_onchain_conf?: number | null;
-            /** Rgb Recipient Id */
-            rgb_recipient_id?: string | null;
-            /** Rgb Invoice */
-            rgb_invoice?: string | null;
-            /** Dest Bolt11 */
-            dest_bolt11?: string | null;
-            /** Dest Onchain Address */
-            dest_onchain_address?: string | null;
-            /** Dest Rgb Invoice */
-            dest_rgb_invoice?: string | null;
-            /** Refund Address */
+            /** @description Address/Invoice for the user to deposit funds into */
+            deposit_address?: components["schemas"]["ReceiverAddress"] | null;
+            /** @description Destination address/invoice for receiving the to_asset payout */
+            payout_address?: components["schemas"]["ReceiverAddress"] | null;
+            /**
+             * Refund Address
+             * @description Onchain refund address if provided
+             */
             refund_address?: string | null;
-            /** Payment Hash */
-            payment_hash?: string | null;
-            /** Payment Secret */
-            payment_secret?: string | null;
-            /** Swapstring */
-            swapstring?: string | null;
-            /** @default OPEN */
+            /**
+             * @description Current order status
+             * @default OPEN
+             */
             status: components["schemas"]["SwapOrderStatus"];
-            /** Created At */
+            /**
+             * Created At
+             * @description Creation timestamp (seconds since epoch)
+             * @example 1766591667
+             */
             created_at?: number;
-            /** Expires At */
+            /**
+             * Expires At
+             * @description Expiry timestamp (seconds since epoch)
+             */
             expires_at?: number | null;
-            /** Filled At */
+            /**
+             * Filled At
+             * @description Timestamp when the order was filled
+             */
             filled_at?: number | null;
-            /** Refund Txid */
+            /**
+             * Refund Txid
+             * @description Transaction ID of any refund sent
+             */
             refund_txid?: string | null;
             /**
              * Requires Manual Refund
+             * @description Whether the order requires manual refund handling
              * @default false
+             * @example false
              */
             requires_manual_refund: boolean | null;
+            /** @description Status of onchain payment verification */
             payment_status?: components["schemas"]["PaymentStatus"] | null;
             /**
              * Payment Difference
-             * @description Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment
+             * @description Payment difference in satoshis (positive for overpayment, negative for underpayment)
              */
             payment_difference?: number | null;
-            /** Last Payment Check */
+            /**
+             * Last Payment Check
+             * @description Timestamp of the last payment verification
+             */
             last_payment_check?: number | null;
-            /** Email */
+            /**
+             * Email
+             * @description Notification email address
+             * @example swap@example.com
+             */
             email?: string | null;
-            /** Failure Reason */
+            /**
+             * Failure Reason
+             * @description Reason the order failed, if applicable
+             */
             failure_reason?: string | null;
-            /** Base Fee */
-            base_fee?: number | null;
-            /** Variable Fee */
-            variable_fee?: number | null;
-            /** Fee Rate */
-            fee_rate?: number | null;
-            /** Final Fee */
-            final_fee?: number | null;
-            /** Fee Asset */
-            fee_asset?: string | null;
-            /** Fee Asset Precision */
-            fee_asset_precision?: number | null;
+            /** @description Fee information from the quote */
+            fee: components["schemas"]["Fee"];
         };
         /**
          * SwapOrderRateDecisionRequest
@@ -1318,11 +1722,6 @@ export interface components {
             refund_txid?: string | null;
         };
         /**
-         * SwapOrderSide
-         * @enum {string}
-         */
-        SwapOrderSide: "BUY" | "SELL";
-        /**
          * SwapOrderStatus
          * @enum {string}
          */
@@ -1353,6 +1752,7 @@ export interface components {
             from_asset: string;
             /**
              * From Amount
+             * Format: int64
              * @example 1000000
              */
             from_amount: number;
@@ -1363,6 +1763,7 @@ export interface components {
             to_asset: string;
             /**
              * To Amount
+             * Format: int64
              * @example 1000000
              */
             to_amount: number;
@@ -1381,10 +1782,16 @@ export interface components {
             payment_hash: string;
         };
         /**
-         * SwapSettlement
-         * @enum {string}
+         * SwapRoute
+         * @description Pre-computed valid swap route between two layers.
+         *
+         *     Represents a specific path for swapping: from_layer -> to_layer.
+         *     Frozen for immutability and hashability (enables use in sets, dict keys).
          */
-        SwapSettlement: "LIGHTNING" | "ONCHAIN";
+        SwapRoute: {
+            from_layer: string;
+            to_layer: string;
+        };
         /**
          * SwapStatus
          * @enum {string}
@@ -1392,12 +1799,134 @@ export interface components {
         SwapStatus: "Waiting" | "Pending" | "Succeeded" | "Expired" | "Failed";
         /** SwapStatusRequest */
         SwapStatusRequest: {
-            /** Payment Hash */
+            /**
+             * Payment Hash
+             * @example 9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2
+             */
             payment_hash: string;
         };
         /** SwapStatusResponse */
         SwapStatusResponse: {
             swap?: components["schemas"]["Swap"] | null;
+        };
+        /**
+         * TradableAsset
+         * @description Asset with layer context(s) for trading operations.
+         *
+         *     Supports both:
+         *     - Single-layer use cases (swap execution): use layer property
+         *     - Multi-layer use cases (trading pairs): use endpoints list
+         */
+        TradableAsset: {
+            /**
+             * Ticker
+             * @description Display ticker (e.g., 'BTC', 'USDT')
+             */
+            ticker: string;
+            /**
+             * Name
+             * @description Full name
+             */
+            name: string;
+            /**
+             * Precision
+             * @description Decimal places (e.g., 8 for BTC, 6 for USDT)
+             */
+            precision: number;
+            /**
+             * Protocol Ids
+             * @description Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})
+             */
+            protocol_ids?: {
+                [key: string]: string;
+            };
+            /** @description Logo/media */
+            media?: components["schemas"]["Media"] | null;
+            /**
+             * Issued Supply
+             * Format: int64
+             * @description Total issued supply
+             */
+            issued_supply?: number | null;
+            /**
+             * Timestamp
+             * @description Creation timestamp
+             */
+            timestamp?: number | null;
+            /**
+             * Endpoints
+             * @description Layer endpoints with trading limits
+             */
+            endpoints?: components["schemas"]["TradingLimits"][];
+        };
+        /**
+         * TradingLimits
+         * @description Trading limits for a layer.
+         *
+         *     Combines a Layer (protocol/network) with min/max amount limits for trading.
+         */
+        TradingLimits: {
+            /** @description Settlement layer (e.g., 'BTC_LN', 'RGB_LN') */
+            layer: string;
+            /**
+             * Min Amount
+             * Format: int64
+             * @description Minimum amount for trading (in smallest unit)
+             */
+            min_amount: number;
+            /**
+             * Max Amount
+             * Format: int64
+             * @description Maximum amount for trading (in smallest unit)
+             */
+            max_amount: number;
+            /**
+             * Is Active
+             * @description Whether this layer is active for trading
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /**
+         * TradingPair
+         * @description Complete trading pair with full asset details, routes, and price.
+         *
+         *     This is the unified model used for both:
+         *     - API responses (Pairs API)
+         *     - Database storage
+         *
+         *     Contains all pre-computed information needed to display and validate swaps.
+         */
+        TradingPair: {
+            /** Id */
+            id?: string;
+            base: components["schemas"]["TradableAsset"];
+            quote: components["schemas"]["TradableAsset"];
+            /** Price */
+            price?: string | null;
+            /** Routes */
+            routes?: components["schemas"]["SwapRoute"][];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /**
+         * TradingPairsResponse
+         * @description Response containing list of trading pairs with pagination support.
+         */
+        TradingPairsResponse: {
+            /** Pairs */
+            pairs: components["schemas"]["TradingPair"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Timestamp */
+            timestamp: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -1414,10 +1943,10 @@ export interface components {
     requestBodies: never;
     headers: never;
     pathItems: never;
-}
+};
 export type $defs = Record<string, never>;
 export interface operations {
-    get_info_api_v1_lsps1_get_info_get: {
+    get_info: {
         parameters: {
             query?: never;
             header?: never;
@@ -1446,7 +1975,7 @@ export interface operations {
             };
         };
     };
-    get_network_info_api_v1_lsps1_network_info_get: {
+    get_network_info: {
         parameters: {
             query?: never;
             header?: never;
@@ -1466,7 +1995,7 @@ export interface operations {
             };
         };
     };
-    create_order_api_v1_lsps1_create_order_post: {
+    create_order: {
         parameters: {
             query?: never;
             header?: never;
@@ -1485,7 +2014,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderResponse"];
+                    "application/json": components["schemas"]["ChannelOrderResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1499,7 +2028,7 @@ export interface operations {
             };
         };
     };
-    estimate_fees_api_v1_lsps1_estimate_fees_post: {
+    estimate_fees: {
         parameters: {
             query?: never;
             header?: never;
@@ -1532,7 +2061,7 @@ export interface operations {
             };
         };
     };
-    get_order_api_v1_lsps1_get_order_post: {
+    get_order: {
         parameters: {
             query?: never;
             header?: never;
@@ -1551,7 +2080,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderResponse"];
+                    "application/json": components["schemas"]["ChannelOrderResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1565,7 +2094,7 @@ export interface operations {
             };
         };
     };
-    handle_rate_decision_api_v1_lsps1_rate_decision_post: {
+    handle_rate_decision: {
         parameters: {
             query?: never;
             header?: never;
@@ -1598,7 +2127,7 @@ export interface operations {
             };
         };
     };
-    retry_delivery_api_v1_lsps1_retry_delivery_post: {
+    retry_delivery: {
         parameters: {
             query?: never;
             header?: never;
@@ -1631,7 +2160,7 @@ export interface operations {
             };
         };
     };
-    get_node_info_api_v1_swaps_nodeinfo_get: {
+    get_node_info: {
         parameters: {
             query?: never;
             header?: never;
@@ -1646,12 +2175,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeInfoResponse"];
+                    "application/json": components["schemas"]["SwapNodeInfoResponse"];
                 };
             };
         };
     };
-    initiate_swap_api_v1_swaps_init_post: {
+    initiate_swap: {
         parameters: {
             query?: never;
             header?: never;
@@ -1684,7 +2213,7 @@ export interface operations {
             };
         };
     };
-    confirm_swap_api_v1_swaps_execute_post: {
+    confirm_swap: {
         parameters: {
             query?: never;
             header?: never;
@@ -1717,7 +2246,7 @@ export interface operations {
             };
         };
     };
-    get_swap_status_api_v1_swaps_atomic_status_post: {
+    get_swap_status: {
         parameters: {
             query?: never;
             header?: never;
@@ -1750,9 +2279,26 @@ export interface operations {
             };
         };
     };
-    list_assets_api_v1_market_assets_get: {
+    list_assets: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Filter by asset UUID (e.g., 'rgb:2dkSTbr-...') */
+                asset_id?: string | null;
+                /** @description Filter by ticker (e.g., 'BTC', 'USDT') */
+                ticker?: string | null;
+                /** @description Filter by layer (e.g., 'BTC_LN', 'RGB_L1') */
+                layer?: string | null;
+                /** @description Filter by network (e.g., 'LN', 'L1') */
+                network?: string | null;
+                /** @description Filter by protocol (e.g., 'BTC', 'RGB') */
+                protocol?: string | null;
+                /** @description Filter by active status */
+                is_active?: boolean | null;
+                /** @description Items per page (max 100) */
+                limit?: number;
+                /** @description Offset for pagination */
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1768,9 +2314,138 @@ export interface operations {
                     "application/json": components["schemas"]["AssetsResponse"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
-    get_pairs_api_v1_market_pairs_get: {
+    get_pairs: {
+        parameters: {
+            query?: {
+                /** @description Pair ID (UUID) */
+                pair_id?: string | null;
+                /** @description Base asset ID */
+                from_asset_id?: string | null;
+                /** @description Quote asset ID */
+                quote_asset_id?: string | null;
+                /** @description Pair ticker 'BASE/QUOTE' */
+                pair_ticker?: string | null;
+                /** @description Base asset ticker */
+                base_ticker?: string | null;
+                /** @description Quote asset ticker */
+                quote_ticker?: string | null;
+                /** @description Filter by layer (e.g., BTC_LN, RGB_LN, BTC_L1) */
+                layer?: string | null;
+                /** @description Filter by asset ticker or ID */
+                asset?: string | null;
+                /** @description Only return active pairs */
+                active_only?: boolean;
+                /** @description Items per page (max 100) */
+                limit?: number;
+                /** @description Offset for pagination */
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TradingPairsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pair_routes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwapRoute"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discover_routes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RoutesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_route_matrix: {
         parameters: {
             query?: never;
             header?: never;
@@ -1785,12 +2460,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PairResponse"];
+                    "application/json": components["schemas"]["ReachabilityMatrixResponse"];
                 };
             };
         };
     };
-    get_quote_api_v1_market_quote_post: {
+    get_quote: {
         parameters: {
             query?: never;
             header?: never;
@@ -1823,7 +2498,7 @@ export interface operations {
             };
         };
     };
-    create_swap_order_api_v1_swaps_orders_post: {
+    create_swap_order: {
         parameters: {
             query?: never;
             header?: never;
@@ -1856,7 +2531,7 @@ export interface operations {
             };
         };
     };
-    get_swap_order_status_api_v1_swaps_orders_status_post: {
+    get_swap_order_status: {
         parameters: {
             query?: never;
             header?: never;
@@ -1889,7 +2564,7 @@ export interface operations {
             };
         };
     };
-    get_order_history_api_v1_swaps_orders_history_get: {
+    get_order_history: {
         parameters: {
             query?: {
                 status?: components["schemas"]["SwapOrderStatus"] | null;
@@ -1922,7 +2597,7 @@ export interface operations {
             };
         };
     };
-    get_order_stats_api_v1_swaps_orders_analytics_get: {
+    get_order_stats: {
         parameters: {
             query?: never;
             header?: never;
@@ -1951,7 +2626,7 @@ export interface operations {
             };
         };
     };
-    handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post: {
+    handle_swap_order_rate_decision: {
         parameters: {
             query?: never;
             header?: never;

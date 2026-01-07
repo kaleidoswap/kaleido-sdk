@@ -37,6 +37,11 @@ interface WasmConfig {
 interface WasmClient {
     new(config: WasmConfig): WasmClient;
     hasNode(): boolean;
+    get maker(): WasmMakerClient;
+    get rln(): WasmRlnClient;
+}
+
+interface WasmMakerClient {
     listAssets(): Promise<Asset[]>;
     listPairs(): Promise<TradingPair[]>;
     listActiveAssets(): Promise<Asset[]>;
@@ -67,7 +72,9 @@ interface WasmClient {
     getLspInfo(): Promise<LspInfo>;
     getLspNetworkInfo(): Promise<NetworkInfo>;
     estimateLspFees(channelSize: number): Promise<ChannelFees>;
-    // Node API methods
+}
+
+interface WasmRlnClient {
     getRgbNodeInfo(): Promise<unknown>;
     getTakerPubkey(): Promise<string>;
     listChannels(): Promise<unknown>;
@@ -84,6 +91,8 @@ interface WasmClient {
     keysend(request: unknown): Promise<unknown>;
     listPayments(): Promise<unknown>;
     initWallet(password: string): Promise<unknown>;
+    unlockWallet(password: string): Promise<unknown>;
+    lockWallet(): Promise<unknown>;
 }
 
 interface WasmModule {
@@ -113,15 +122,350 @@ async function initWasm(): Promise<WasmModule> {
     }
 
     initPromise = (async () => {
-        // Dynamic import of WASM module
-        // Import from pkg-node for Node.js/Next.js environment
-        // @ts-ignore - pkg-node is generated during build
-        const mod = await import('../pkg-node/kaleidoswap_sdk.js') as unknown as WasmModule;
+        let mod: WasmModule;
+
+        if (typeof window === 'undefined') {
+            // Server-side (Node.js)
+            // @ts-ignore - pkg-node is generated during build
+            mod = await import('../pkg-node/kaleidoswap_sdk.js') as unknown as WasmModule;
+        } else {
+            // Client-side (Browser)
+            // @ts-ignore - pkg is generated during build
+            const browserMod = await import('../pkg/kaleidoswap_web.js');
+            mod = browserMod as unknown as WasmModule;
+        }
+
         wasmModule = mod;
         return mod;
     })();
 
     return initPromise;
+}
+
+export class MakerClient {
+    private inner: WasmMakerClient;
+
+    constructor(inner: WasmMakerClient) {
+        this.inner = inner;
+    }
+
+    async listAssets(): Promise<Asset[]> {
+        try {
+            return await this.inner.listAssets();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listPairs(): Promise<TradingPair[]> {
+        try {
+            return await this.inner.listPairs();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listActiveAssets(): Promise<Asset[]> {
+        try {
+            return await this.inner.listActiveAssets();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listActivePairs(): Promise<TradingPair[]> {
+        try {
+            return await this.inner.listActivePairs();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getAssetByTicker(ticker: string): Promise<Asset> {
+        try {
+            return await this.inner.getAssetByTicker(ticker);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getPairByTicker(ticker: string): Promise<TradingPair> {
+        try {
+            return await this.inner.getPairByTicker(ticker);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getQuote(
+        ticker: string,
+        fromAmount: number | null,
+        toAmount: number | null,
+        fromLayer: Layer,
+        toLayer: Layer
+    ): Promise<Quote> {
+        try {
+            return await this.inner.getQuoteByPair(ticker, fromAmount, toAmount, fromLayer, toLayer);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getQuoteByAssets(
+        fromTicker: string,
+        toTicker: string,
+        fromAmount: number | null,
+        toAmount: number | null,
+        fromLayer: Layer,
+        toLayer: Layer
+    ): Promise<Quote> {
+        try {
+            return await this.inner.getQuoteByAssets(
+                fromTicker,
+                toTicker,
+                fromAmount,
+                toAmount,
+                fromLayer,
+                toLayer
+            );
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async createSwapOrder(request: CreateSwapOrderRequest): Promise<CreateSwapOrderResponse> {
+        try {
+            return await this.inner.createSwapOrder(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getSwapOrderStatus(orderId: string): Promise<SwapOrderStatusResponse> {
+        try {
+            return await this.inner.getSwapOrderStatus(orderId);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getOrderHistory(status?: string, limit: number = 10, skip: number = 0): Promise<OrderHistoryResponse> {
+        try {
+            return await this.inner.getOrderHistory(status ?? null, limit, skip);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getOrderAnalytics(): Promise<OrderStatsResponse> {
+        try {
+            return await this.inner.getOrderAnalytics();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getNodeInfo(): Promise<NetworkInfo> {
+        try {
+            return await this.inner.getNodeInfo();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getSwapStatus(paymentHash: string): Promise<unknown> {
+        try {
+            return await this.inner.getSwapStatus(paymentHash);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getLspInfo(): Promise<LspInfo> {
+        try {
+            return await this.inner.getLspInfo();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getLspNetworkInfo(): Promise<NetworkInfo> {
+        try {
+            return await this.inner.getLspNetworkInfo();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async estimateLspFees(channelSize: number): Promise<ChannelFees> {
+        try {
+            return await this.inner.estimateLspFees(channelSize);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+}
+
+export class RlnClient {
+    private inner: WasmRlnClient;
+
+    constructor(inner: WasmRlnClient) {
+        this.inner = inner;
+    }
+
+    async getRgbNodeInfo(): Promise<unknown> {
+        try {
+            return await this.inner.getRgbNodeInfo();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getTakerPubkey(): Promise<string> {
+        try {
+            return await this.inner.getTakerPubkey();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listChannels(): Promise<unknown> {
+        try {
+            return await this.inner.listChannels();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async openChannel(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.openChannel(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async closeChannel(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.closeChannel(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listPeers(): Promise<unknown> {
+        try {
+            return await this.inner.listPeers();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async connectPeer(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.connectPeer(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listNodeAssets(): Promise<unknown> {
+        try {
+            return await this.inner.listNodeAssets();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getAssetBalance(assetId: string): Promise<unknown> {
+        try {
+            return await this.inner.getAssetBalance(assetId);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getOnchainAddress(): Promise<unknown> {
+        try {
+            return await this.inner.getOnchainAddress();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async getBtcBalance(): Promise<unknown> {
+        try {
+            return await this.inner.getBtcBalance();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async createLnInvoice(
+        amtMsat?: number,
+        expirySec?: number,
+        assetAmount?: number,
+        assetId?: string
+    ): Promise<unknown> {
+        try {
+            return await this.inner.createLnInvoice(
+                amtMsat ?? null,
+                expirySec ?? null,
+                assetAmount ?? null,
+                assetId ?? null
+            );
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async decodeLnInvoice(invoice: string): Promise<unknown> {
+        try {
+            return await this.inner.decodeLnInvoice(invoice);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async keysend(request: unknown): Promise<unknown> {
+        try {
+            return await this.inner.keysend(request);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async listPayments(): Promise<unknown> {
+        try {
+            return await this.inner.listPayments();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async initWallet(password: string): Promise<unknown> {
+        try {
+            return await this.inner.initWallet(password);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async unlockWallet(password: string): Promise<unknown> {
+        try {
+            return await this.inner.unlockWallet(password);
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
+
+    async lockWallet(): Promise<unknown> {
+        try {
+            return await this.inner.lockWallet();
+        } catch (e) {
+            throw mapWasmError(e);
+        }
+    }
 }
 
 /**
@@ -138,17 +482,29 @@ async function initWasm(): Promise<WasmModule> {
  *     baseUrl: 'https://api.kaleidoswap.com'
  * });
  *
- * const assets = await client.listAssets();
+ * const assets = await client.maker.listAssets();
  * console.log(assets[0].ticker); // "BTC"
  * ```
  */
 export class KaleidoClient {
     private inner: WasmClient;
     private config: KaleidoConfig;
+    private _maker: MakerClient;
+    private _rln: RlnClient;
 
     private constructor(inner: WasmClient, config: KaleidoConfig) {
+        console.log('[SDK Debug] KaleidoClient wrapper constructor');
+        console.log('[SDK Debug] inner:', inner);
+        try {
+            console.log('[SDK Debug] inner.maker:', inner.maker);
+        } catch (e) {
+            console.error('[SDK Debug] Error accessing inner.maker:', e);
+        }
+
         this.inner = inner;
         this.config = config;
+        this._maker = new MakerClient(inner.maker);
+        this._rln = new RlnClient(inner.rln);
     }
 
     /**
@@ -180,449 +536,18 @@ export class KaleidoClient {
         return this.inner.hasNode();
     }
 
-    // =========================================================================
-    // Market Operations
-    // =========================================================================
-
     /**
-     * List all available assets
+     * Access Market (Maker) Operations
      */
-    /**
-     * List all available assets
-     */
-    async listAssets(): Promise<Asset[]> {
-        try {
-            return await this.inner.listAssets();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
+    get maker(): MakerClient {
+        return this._maker;
     }
 
     /**
-     * List all available trading pairs
+     * Access RGB/Lightning Node Operations
      */
-    async listPairs(): Promise<TradingPair[]> {
-        try {
-            return await this.inner.listPairs();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * List only active assets
-     */
-    async listActiveAssets(): Promise<Asset[]> {
-        try {
-            return await this.inner.listActiveAssets();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * List only active trading pairs
-     */
-    async listActivePairs(): Promise<TradingPair[]> {
-        try {
-            return await this.inner.listActivePairs();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get an asset by ticker symbol
-     *
-     * @param ticker - Asset ticker (e.g., "BTC", "USDT")
-     */
-    async getAssetByTicker(ticker: string): Promise<Asset> {
-        try {
-            return await this.inner.getAssetByTicker(ticker);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get a trading pair by ticker
-     *
-     * @param ticker - Pair ticker (e.g., "BTC/USDT")
-     */
-    async getPairByTicker(ticker: string): Promise<TradingPair> {
-        try {
-            return await this.inner.getPairByTicker(ticker);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get a quote for a trading pair
-     *
-     * @param ticker - Pair ticker (e.g., "BTC/USDT")
-     * @param fromAmount - Source amount in smallest units (must specify either from or to)
-     * @param toAmount - Destination amount in smallest units
-     * @param fromLayer - Source network layer
-     * @param toLayer - Destination network layer
-     */
-    async getQuote(
-        ticker: string,
-        fromAmount: number | null,
-        toAmount: number | null,
-        fromLayer: Layer,
-        toLayer: Layer
-    ): Promise<Quote> {
-        try {
-            return await this.inner.getQuoteByPair(ticker, fromAmount, toAmount, fromLayer, toLayer);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get a quote by asset tickers
-     *
-     * @param fromTicker - Source asset ticker
-     * @param toTicker - Destination asset ticker
-     * @param fromAmount - Source amount in smallest units
-     * @param toAmount - Destination amount in smallest units
-     * @param fromLayer - Source network layer
-     * @param toLayer - Destination network layer
-     */
-    async getQuoteByAssets(
-        fromTicker: string,
-        toTicker: string,
-        fromAmount: number | null,
-        toAmount: number | null,
-        fromLayer: Layer,
-        toLayer: Layer
-    ): Promise<Quote> {
-        try {
-            return await this.inner.getQuoteByAssets(
-                fromTicker,
-                toTicker,
-                fromAmount,
-                toAmount,
-                fromLayer,
-                toLayer
-            );
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    // =========================================================================
-    // Order Operations
-    // =========================================================================
-
-    /**
-     * Create a swap order
-     *
-     * @param request - Order creation request
-     */
-    async createSwapOrder(request: CreateSwapOrderRequest): Promise<CreateSwapOrderResponse> {
-        try {
-            return await this.inner.createSwapOrder(request);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get swap order status
-     *
-     * @param orderId - Order ID
-     */
-    async getSwapOrderStatus(orderId: string): Promise<SwapOrderStatusResponse> {
-        try {
-            return await this.inner.getSwapOrderStatus(orderId);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get order history
-     *
-     * @param status - Filter by status (optional)
-     * @param limit - Maximum number of orders to return
-     * @param skip - Number of orders to skip (for pagination)
-     */
-    async getOrderHistory(status?: string, limit: number = 10, skip: number = 0): Promise<OrderHistoryResponse> {
-        try {
-            return await this.inner.getOrderHistory(status ?? null, limit, skip);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get order analytics/statistics
-     */
-    async getOrderAnalytics(): Promise<OrderStatsResponse> {
-        try {
-            return await this.inner.getOrderAnalytics();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    // =========================================================================
-    // Node Operations
-    // =========================================================================
-
-    /**
-     * Get node information
-     */
-    async getNodeInfo(): Promise<NetworkInfo> {
-        try {
-            return await this.inner.getNodeInfo();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get swap status by payment hash
-     *
-     * @param paymentHash - Lightning payment hash
-     */
-    async getSwapStatus(paymentHash: string): Promise<unknown> {
-        try {
-            return await this.inner.getSwapStatus(paymentHash);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    // =========================================================================
-    // LSP Operations
-    // =========================================================================
-
-    /**
-     * Get LSP information
-     */
-    async getLspInfo(): Promise<LspInfo> {
-        try {
-            return await this.inner.getLspInfo();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get LSP network information
-     */
-    async getLspNetworkInfo(): Promise<NetworkInfo> {
-        try {
-            return await this.inner.getLspNetworkInfo();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Estimate fees for opening an LSP channel
-     *
-     * @param channelSize - Desired channel capacity in satoshis
-     */
-    async estimateLspFees(channelSize: number): Promise<ChannelFees> {
-        try {
-            return await this.inner.estimateLspFees(channelSize);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    // =========================================================================
-    // RGB Lightning Node Operations
-    // =========================================================================
-
-    /**
-     * Get RGB node information
-     */
-    async getRgbNodeInfo(): Promise<unknown> {
-        try {
-            return await this.inner.getRgbNodeInfo();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get taker pubkey from RGB node
-     */
-    async getTakerPubkey(): Promise<string> {
-        try {
-            return await this.inner.getTakerPubkey();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * List channels on RGB node
-     */
-    async listChannels(): Promise<unknown> {
-        try {
-            return await this.inner.listChannels();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Open a channel on RGB node
-     */
-    async openChannel(request: unknown): Promise<unknown> {
-        try {
-            return await this.inner.openChannel(request);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Close a channel on RGB node
-     */
-    async closeChannel(request: unknown): Promise<unknown> {
-        try {
-            return await this.inner.closeChannel(request);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * List peers on RGB node
-     */
-    async listPeers(): Promise<unknown> {
-        try {
-            return await this.inner.listPeers();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Connect to a peer on RGB node
-     */
-    async connectPeer(request: unknown): Promise<unknown> {
-        try {
-            return await this.inner.connectPeer(request);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * List RGB assets on node
-     */
-    async listNodeAssets(): Promise<unknown> {
-        try {
-            return await this.inner.listNodeAssets();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get asset balance from node
-     */
-    async getAssetBalance(assetId: string): Promise<unknown> {
-        try {
-            return await this.inner.getAssetBalance(assetId);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get onchain address from node
-     */
-    async getOnchainAddress(): Promise<unknown> {
-        try {
-            return await this.inner.getOnchainAddress();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Get BTC balance from node
-     */
-    async getBtcBalance(): Promise<unknown> {
-        try {
-            return await this.inner.getBtcBalance();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Create Lightning invoice on node
-     */
-    async createLnInvoice(
-        amtMsat?: number,
-        expirySec?: number,
-        assetAmount?: number,
-        assetId?: string
-    ): Promise<unknown> {
-        try {
-            return await this.inner.createLnInvoice(
-                amtMsat ?? null,
-                expirySec ?? null,
-                assetAmount ?? null,
-                assetId ?? null
-            );
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Decode Lightning invoice
-     */
-    async decodeLnInvoice(invoice: string): Promise<unknown> {
-        try {
-            return await this.inner.decodeLnInvoice(invoice);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Send keysend payment
-     */
-    async keysend(request: unknown): Promise<unknown> {
-        try {
-            return await this.inner.keysend(request);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * List payments on node
-     */
-    async listPayments(): Promise<unknown> {
-        try {
-            return await this.inner.listPayments();
-        } catch (e) {
-            throw mapWasmError(e);
-        }
-    }
-
-    /**
-     * Initialize node wallet
-     */
-    async initWallet(password: string): Promise<unknown> {
-        try {
-            return await this.inner.initWallet(password);
-        } catch (e) {
-            throw mapWasmError(e);
-        }
+    get rln(): RlnClient {
+        return this._rln;
     }
 }
 

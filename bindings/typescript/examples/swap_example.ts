@@ -104,7 +104,7 @@ async function main() {
     console.log("\n📦 Listing Assets...");
     let assets: any[];
     try {
-        assets = await client.listAssets();
+        assets = await client.maker.listAssets();
         console.log(`   Found ${assets.length} assets`);
 
         for (const asset of assets.slice(0, 3)) {
@@ -120,7 +120,7 @@ async function main() {
     console.log("\n💱 Finding BTC/USDT pair...");
     let targetPair: any;
     try {
-        const pairs = await client.listPairs();
+        const pairs = await client.maker.listPairs();
         targetPair = findBtcUsdtPair(pairs);
 
         if (!targetPair) {
@@ -165,9 +165,9 @@ async function main() {
 
     let quote: any;
     try {
-        quote = await client.getQuoteByPair(
+        quote = await client.maker.getQuoteByPair(
             `${fromId}/${toId}`,
-            BigInt(fromAmount),
+            fromAmount,
             undefined,
             "BTC_LN",
             "RGB_L1"
@@ -187,7 +187,7 @@ async function main() {
     let takerPubkey = "";
     try {
         // Use getRgbNodeInfo to get the taker's local node pubkey
-        const nodeInfo = await client.getRgbNodeInfo();
+        const nodeInfo = await client.rln.getRgbNodeInfo()
 
         // The response might be a plain object or need parsing
         const info = typeof nodeInfo === 'string' ? JSON.parse(nodeInfo) : nodeInfo;
@@ -201,7 +201,7 @@ async function main() {
     } catch (e) {
         console.log("   ⚠️  RGB Node info failed, trying getTakerPubkey...");
         try {
-            takerPubkey = await client.getTakerPubkey() || "";
+            takerPubkey = await client.rln.getTakerPubkey() || "";
             if (takerPubkey) {
                 console.log(`   ✅ Pubkey: ${takerPubkey.substring(0, 20)}...`);
             }
@@ -234,10 +234,10 @@ async function main() {
             to_amount: quote.to_asset.amount
         };
 
-        const initResponse = await client.initSwap(swapRequest);
+        const initResponse = await client.maker.initSwap(swapRequest);
         console.log(`   Initialized: ${initResponse.swapstring.substring(0, 40)}...`);
 
-        await client.whitelistTrade(initResponse.swapstring);
+        await client.rln.whitelistTrade(initResponse.swapstring);
 
         const confirmRequest = {
             swapstring: initResponse.swapstring,
@@ -245,13 +245,13 @@ async function main() {
             payment_hash: initResponse.payment_hash
         };
 
-        const confirmResult = await client.executeSwap(confirmRequest);
+        const confirmResult = await client.maker.executeSwap(confirmRequest);
         console.log("   ✅ Swap completed!");
         console.log(`      Payment Hash: ${initResponse.payment_hash}`);
 
         // Poll for completion
         for (let i = 0; i < 20; i++) {
-            const status = await client.getSwapStatus(initResponse.payment_hash);
+            const status = await client.maker.getSwapStatus(initResponse.payment_hash);
             if (status.swap?.status &&
                 status.swap.status !== "Pending" &&
                 status.swap.status !== "Created") {

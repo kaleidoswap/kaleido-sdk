@@ -3,7 +3,7 @@
  * Do not make direct changes to the file.
  */
 
-export interface paths {
+export type paths = {
     "/address": {
         parameters: {
             query?: never;
@@ -17,26 +17,7 @@ export interface paths {
          * Get a Bitcoin address
          * @description Get a new Bitcoin address from the internal BDK wallet
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AddressResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_address"];
         delete?: never;
         options?: never;
         head?: never;
@@ -56,30 +37,7 @@ export interface paths {
          * Get the balance of an asset
          * @description Get the balance for the provided RGB asset
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AssetBalanceRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AssetBalanceResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_assetbalance"];
         delete?: never;
         options?: never;
         head?: never;
@@ -99,30 +57,7 @@ export interface paths {
          * Get the metadata of an asset
          * @description Get the metadata for the provided RGB asset
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["AssetMetadataRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["AssetMetadataResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_assetmetadata"];
         delete?: never;
         options?: never;
         head?: never;
@@ -142,30 +77,7 @@ export interface paths {
          * Backup the node
          * @description Create a backup of the node's data
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["BackupRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_backup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -185,30 +97,7 @@ export interface paths {
          * Get the BTC balance
          * @description Get the node's bitcoin balance for the vanilla and colored wallets
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["BtcBalanceRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["BtcBalanceResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_btcbalance"];
         delete?: never;
         options?: never;
         head?: never;
@@ -228,30 +117,7 @@ export interface paths {
          * Change the password
          * @description Change the node's password
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ChangePasswordRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_changepassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -271,30 +137,7 @@ export interface paths {
          * Check an indexer URL
          * @description Check the given indexer URL is valid
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["CheckIndexerUrlRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["CheckIndexerUrlResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_checkindexerurl"];
         delete?: never;
         options?: never;
         head?: never;
@@ -314,30 +157,7 @@ export interface paths {
          * Check a proxy endpoint
          * @description Check the given proxy endpoint is valid
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["CheckProxyEndpointRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_checkproxyendpoint"];
         delete?: never;
         options?: never;
         head?: never;
@@ -357,30 +177,7 @@ export interface paths {
          * Close a channel
          * @description Close a LN channel cooperatively or forcibly
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["CloseChannelRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_closechannel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -400,30 +197,7 @@ export interface paths {
          * Connect to a peer
          * @description Connect to the provided LN peer
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ConnectPeerRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_connectpeer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -443,30 +217,7 @@ export interface paths {
          * Create UTXOs
          * @description Create UTXOs to be used for RGB operations
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["CreateUtxosRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_createutxos"];
         delete?: never;
         options?: never;
         head?: never;
@@ -486,30 +237,7 @@ export interface paths {
          * Decode a LN invoice
          * @description Decode the provided LN invoice string
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["DecodeLNInvoiceRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DecodeLNInvoiceResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_decodelninvoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -529,30 +257,7 @@ export interface paths {
          * Decode an RGB invoice
          * @description Decode the provided RGB invoice string
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["DecodeRGBInvoiceRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["DecodeRGBInvoiceResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_decodergbinvoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -572,30 +277,7 @@ export interface paths {
          * Disconnect from a peer
          * @description Disconnect from the provided LN peer
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["DisconnectPeerRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_disconnectpeer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -615,30 +297,7 @@ export interface paths {
          * Get fee estimation
          * @description Get on-chain fee estimation
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["EstimateFeeRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EstimateFeeResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_estimatefee"];
         delete?: never;
         options?: never;
         head?: never;
@@ -658,30 +317,7 @@ export interface paths {
          * Fail RGB transfers
          * @description Set the status for eligible RGB transfers to `TransferStatus::Failed`.
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["FailTransfersRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["FailTransfersResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_failtransfers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -701,30 +337,7 @@ export interface paths {
          * Get an asset media
          * @description Get the hex string of the media bytes of the provided media digest
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["GetAssetMediaRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["GetAssetMediaResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_getassetmedia"];
         delete?: never;
         options?: never;
         head?: never;
@@ -744,30 +357,7 @@ export interface paths {
          * Get a channel's ID
          * @description Get a channel's ID from its former temporary channel ID
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["GetChannelIdRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["GetChannelIdResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_getchannelid"];
         delete?: never;
         options?: never;
         head?: never;
@@ -787,30 +377,7 @@ export interface paths {
          * Get a payment
          * @description Get a payment by its payment hash
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["GetPaymentRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["GetPaymentResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_getpayment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -830,30 +397,7 @@ export interface paths {
          * Get a swap
          * @description Get a swap by its payment hash
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["GetSwapRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["GetSwapResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_getswap"];
         delete?: never;
         options?: never;
         head?: never;
@@ -873,30 +417,7 @@ export interface paths {
          * Init the node
          * @description Initialize a new node
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["InitRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["InitResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_init"];
         delete?: never;
         options?: never;
         head?: never;
@@ -916,30 +437,7 @@ export interface paths {
          * Get an invoice status
          * @description Get the status of the provided LN invoice
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["InvoiceStatusRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["InvoiceStatusResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_invoicestatus"];
         delete?: never;
         options?: never;
         head?: never;
@@ -959,30 +457,7 @@ export interface paths {
          * Issue an RGB CFA asset
          * @description Issue an RGB CFA asset. To provide a media first call the /postassetmedia API.
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["IssueAssetCFARequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["IssueAssetCFAResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_issueassetcfa"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1002,30 +477,7 @@ export interface paths {
          * Issue an RGB NIA asset
          * @description Issue an RGB NIA asset
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["IssueAssetNIARequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["IssueAssetNIAResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_issueassetnia"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1045,30 +497,7 @@ export interface paths {
          * Issue an RGB UDA asset
          * @description Issue an RGB UDA asset. To provide a media first call the /postassetmedia API.
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["IssueAssetUDARequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["IssueAssetUDAResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_issueassetuda"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1088,30 +517,7 @@ export interface paths {
          * Send to a peer spontaneously
          * @description Send bitcoins and RGB assets to a LN peer spontaneously (without a LN invoice)
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["KeysendRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["KeysendResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_keysend"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1131,30 +537,7 @@ export interface paths {
          * List assets
          * @description List the node's RGB assets
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ListAssetsRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListAssetsResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_listassets"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1172,26 +555,7 @@ export interface paths {
          * List channels
          * @description List the node's LN channels
          */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListChannelsResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["get_listchannels"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1211,26 +575,7 @@ export interface paths {
          * List payments
          * @description List the node's LN payments
          */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListPaymentsResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["get_listpayments"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1250,26 +595,7 @@ export interface paths {
          * List peers
          * @description List the node's LN peers
          */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListPeersResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["get_listpeers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1289,26 +615,7 @@ export interface paths {
          * List swaps
          * @description List the node's swaps
          */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListSwapsResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["get_listswaps"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1330,30 +637,7 @@ export interface paths {
          * List transactions
          * @description List the node's on-chain transactions
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ListTransactionsRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListTransactionsResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_listtransactions"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1373,30 +657,7 @@ export interface paths {
          * List transfers
          * @description List the node's on-chain RGB transfers
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ListTransfersRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListTransfersResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_listtransfers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1416,30 +677,7 @@ export interface paths {
          * List unspents
          * @description List the unspent outputs of the internal BDK wallet
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["ListUnspentsRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ListUnspentsResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_listunspents"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1459,26 +697,7 @@ export interface paths {
          * Lock the node
          * @description Lock an unlocked node
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_lock"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1498,30 +717,7 @@ export interface paths {
          * Get a LN invoice
          * @description Get a LN invoice to receive a payment
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["LNInvoiceRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["LNInvoiceResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_lninvoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1541,30 +737,7 @@ export interface paths {
          * Execute a maker swap
          * @description Execute a swap on the maker side
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["MakerExecuteRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_makerexecute"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1584,30 +757,7 @@ export interface paths {
          * Init a maker swap
          * @description Init a swap on the maker side
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["MakerInitRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["MakerInitResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_makerinit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1625,26 +775,7 @@ export interface paths {
          * Get network info
          * @description Get info on the Bitcoin network where the LN is running
          */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["NetworkInfoResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["get_networkinfo"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1664,26 +795,7 @@ export interface paths {
          * Get node info
          * @description Get the LN node's info
          */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["NodeInfoResponse"];
-                    };
-                };
-            };
-        };
+        get: operations["get_nodeinfo"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1705,73 +817,7 @@ export interface paths {
          * Open a channel
          * @description Open a new LN channel (RGB-enabled when both asset_id and asset_amount are specified). You can optionally provide a 32 bytes temporary channel ID as a hex-encoded string.
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["OpenChannelRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["OpenChannelResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/postassetmedia": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Post an asset media
-         * @description Save the provided media
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "multipart/form-data": components["schemas"]["PostAssetMediaRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["PostAssetMediaResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_openchannel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1791,30 +837,7 @@ export interface paths {
          * Refresh transfers
          * @description Refresh RGB pending transfers
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RefreshRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_refreshtransfers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1834,30 +857,7 @@ export interface paths {
          * Restore the node
          * @description Restore a node from a backup file
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RestoreRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_restore"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1877,30 +877,7 @@ export interface paths {
          * Revoke a token
          * @description Revoke an authentication token
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RevokeTokenRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_revoketoken"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1920,30 +897,7 @@ export interface paths {
          * Get an RGB invoice
          * @description Get an RGB invoice to receive assets on-chain
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["RgbInvoiceRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["RgbInvoiceResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_rgbinvoice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1963,30 +917,7 @@ export interface paths {
          * Send assets
          * @description Send RGB assets on-chain
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["SendAssetRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["SendAssetResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_sendasset"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2006,30 +937,7 @@ export interface paths {
          * Send BTC
          * @description Send bitcoins on-chain
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["SendBtcRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["SendBtcResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_sendbtc"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2049,30 +957,7 @@ export interface paths {
          * Send an onion message
          * @description Send an onion message via the LN
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["SendOnionMessageRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_sendonionmessage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2092,30 +977,7 @@ export interface paths {
          * Send a payment
          * @description Pay the provided LN invoice
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["SendPaymentRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["SendPaymentResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_sendpayment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2135,26 +997,7 @@ export interface paths {
          * Shutdown the node
          * @description Gracefully shutdown the node
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_shutdown"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2174,26 +1017,7 @@ export interface paths {
          * Sync the RGB wallet
          * @description Sync the RGB wallet
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_sync"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2213,30 +1037,7 @@ export interface paths {
          * Sign a message
          * @description Sign the provided message
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["SignMessageRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["SignMessageResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_signmessage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2256,30 +1057,7 @@ export interface paths {
          * Accept a swap
          * @description Accept a swap on the taker side
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["TakerRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_taker"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2299,118 +1077,64 @@ export interface paths {
          * Unlock the node
          * @description Unlock a locked node
          */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["UnlockRequest"];
-                };
-            };
-            responses: {
-                /** @description Successful operation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["EmptyResponse"];
-                    };
-                };
-            };
-        };
+        post: operations["post_unlock"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-}
+};
 export type webhooks = Record<string, never>;
-export interface components {
+export type components = {
     schemas: {
         AddressResponse: {
-            /** @example bcrt1qnc5y6j6dmejrkwy93farhvpezk0lf46gk7aecs */
             address?: string;
         };
         AssetBalanceRequest: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
         };
         AssetBalanceResponse: {
-            /** @example 777 */
             settled?: number;
-            /** @example 777 */
             future?: number;
-            /** @example 777 */
             spendable?: number;
-            /** @example 444 */
             offchain_outbound?: number;
-            /** @example 0 */
             offchain_inbound?: number;
         };
         AssetMetadataRequest: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
         };
         AssetMetadataResponse: {
             asset_schema?: components["schemas"]["AssetSchema"];
-            /** @example 777 */
             initial_supply?: number;
-            /** @example 777 */
             max_supply?: number;
-            /** @example 777 */
             known_circulating_supply?: number;
-            /** @example 1691160565 */
             timestamp?: number;
-            /** @example Collectible */
             name?: string;
-            /** @example 0 */
             precision?: number;
-            /** @example USDT */
             ticker?: string;
-            /** @example asset details */
             details?: string;
             token?: components["schemas"]["Token"];
         };
         AssetCFA: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example Collectible */
             name?: string;
-            /** @example asset details */
             details?: string;
-            /** @example 0 */
             precision?: number;
-            /** @example 777 */
             issued_supply?: number;
-            /** @example 1691160565 */
             timestamp?: number;
-            /** @example 1691161979 */
             added_at?: number;
             balance?: components["schemas"]["AssetBalanceResponse"];
             media?: components["schemas"]["Media"];
         };
         AssetNIA: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example USDT */
             ticker?: string;
-            /** @example Tether */
             name?: string;
-            /** @example asset details */
             details?: string;
-            /** @example 0 */
             precision?: number;
-            /** @example 777 */
             issued_supply?: number;
-            /** @example 1691160565 */
             timestamp?: number;
-            /** @example 1691161979 */
             added_at?: number;
             balance?: components["schemas"]["AssetBalanceResponse"];
             media?: components["schemas"]["Media"];
@@ -2418,19 +1142,12 @@ export interface components {
         /** @enum {string} */
         AssetSchema: "Nia" | "Uda" | "Cfa";
         AssetUDA: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example UNI */
             ticker?: string;
-            /** @example Unique */
             name?: string;
-            /** @example asset details */
             details?: string;
-            /** @example 0 */
             precision?: number;
-            /** @example 1691160565 */
             timestamp?: number;
-            /** @example 1691161979 */
             added_at?: number;
             balance?: components["schemas"]["AssetBalanceResponse"];
             token?: components["schemas"]["TokenLight"];
@@ -2443,19 +1160,12 @@ export interface components {
              */
             type: "Any";
         };
-        /**
-         * @example {
-         *       "type": "Fungible",
-         *       "value": 42
-         *     }
-         */
         AssignmentFungible: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
             type: "Fungible";
-            /** @example 42 */
             value: number;
         };
         AssignmentInflationRight: {
@@ -2464,7 +1174,6 @@ export interface components {
              * @enum {string}
              */
             type: "InflationRight";
-            /** @example 200 */
             value: number;
         };
         AssignmentNonFungible: {
@@ -2482,32 +1191,21 @@ export interface components {
             type: "ReplaceRight";
         };
         BackupRequest: {
-            /** @example /path/where/to/save/the/backup/file */
             backup_path?: string;
-            /** @example nodepassword */
             password?: string;
         };
-        /**
-         * @example Regtest
-         * @enum {string}
-         */
+        /** @enum {string} */
         BitcoinNetwork: "Mainnet" | "Testnet" | "Testnet4" | "Signet" | "Regtest";
         BlockTime: {
-            /** @example 805434 */
             height?: number;
-            /** @example 1691160659 */
             timestamp?: number;
         };
         BtcBalance: {
-            /** @example 777000 */
             settled?: number;
-            /** @example 777000 */
             future?: number;
-            /** @example 777000 */
             spendable?: number;
         };
         BtcBalanceRequest: {
-            /** @example false */
             skip_sync?: boolean;
         };
         BtcBalanceResponse: {
@@ -2515,189 +1213,124 @@ export interface components {
             colored?: components["schemas"]["BtcBalance"];
         };
         ChangePasswordRequest: {
-            /** @example nodepassword */
             old_password?: string;
-            /** @example nodenewpassword */
             new_password?: string;
         };
         Channel: {
-            /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
             channel_id?: string;
-            /** @example 5a106a814fe28404eece1754dfd45e92ec9bb0044cbfe1d560cfd7b1e1af2981 */
             funding_txid?: string;
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             peer_pubkey?: string;
-            /** @example null */
             peer_alias?: string;
-            /** @example 120946279120896 */
             short_channel_id?: number;
             status?: components["schemas"]["ChannelStatus"];
-            /** @example false */
             ready?: boolean;
-            /** @example 30010 */
             capacity_sat?: number;
-            /** @example 28616 */
             local_balance_sat?: number;
-            /** @example 21616000 */
             outbound_balance_msat?: number;
-            /** @example 6394000 */
             inbound_balance_msat?: number;
-            /** @example 3001000 */
             next_outbound_htlc_limit_msat?: number;
-            /** @example 1 */
             next_outbound_htlc_minimum_msat?: number;
-            /** @example false */
             is_usable?: boolean;
-            /** @example true */
             public?: boolean;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example 777 */
             asset_local_amount?: number;
-            /** @example 0 */
             asset_remote_amount?: number;
         };
         /** @enum {string} */
         ChannelStatus: "Opening" | "Opened" | "Closing";
         CheckIndexerUrlRequest: {
-            /** @example 127.0.0.1:50001 */
             indexer_url?: string;
         };
         CheckIndexerUrlResponse: {
             indexer_protocol?: components["schemas"]["IndexerProtocol"];
         };
         CheckProxyEndpointRequest: {
-            /** @example rpc://127.0.0.1:3000/json-rpc */
             proxy_url?: string;
         };
         CloseChannelRequest: {
-            /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
             channel_id?: string;
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             peer_pubkey?: string;
-            /** @example false */
             force?: boolean;
         };
         ConnectPeerRequest: {
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736 */
             peer_pubkey_and_addr?: string;
         };
         CreateUtxosRequest: {
-            /** @example false */
             up_to?: boolean;
-            /** @example 4 */
             num?: number;
-            /** @example 32500 */
             size?: number;
-            /** @example 5 */
             fee_rate?: number;
-            /** @example false */
             skip_sync?: boolean;
         };
         DecodeLNInvoiceRequest: {
-            /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
             invoice?: string;
         };
         DecodeLNInvoiceResponse: {
-            /** @example 3000000 */
             amt_msat?: number;
-            /** @example 420 */
             expiry_sec?: number;
-            /** @example 1691160659 */
             timestamp?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example 42 */
             asset_amount?: number;
-            /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
             payment_hash?: string;
-            /** @example f9fa239a283a72fa351ec6d0d6fdb16f5e59a64cb10e64add0b57123855ff592 */
             payment_secret?: string;
-            /** @example 0343851df9e0e8aff0c10b3498ce723ff4c9b4a855e6c8819adcafbbb3e24ea2af */
             payee_pubkey?: string;
             network?: components["schemas"]["BitcoinNetwork"];
         };
         DecodeRGBInvoiceRequest: {
-            /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1749906951&endpoints=rpcs://proxy.iriswallet.com/0.2/json-rpc */
             invoice?: string;
         };
         DecodeRGBInvoiceResponse: {
-            /** @example bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX */
             recipient_id?: string;
             recipient_type?: components["schemas"]["RecipientType"];
             asset_schema?: components["schemas"]["AssetSchema"];
-            /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
             asset_id?: string;
             assignment?: components["schemas"]["Assignment"];
             network?: components["schemas"]["BitcoinNetwork"];
-            /** @example 1698325849 */
             expiration_timestamp?: number;
             transport_endpoints?: string[];
         };
         DisconnectPeerRequest: {
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             peer_pubkey?: string;
         };
         EmbeddedMedia: {
-            /** @example text/plain */
             mime?: string;
-            /**
-             * @example [
-             *       82,
-             *       76,
-             *       78
-             *     ]
-             */
             data?: number[];
         };
         EmptyResponse: Record<string, never>;
         EstimateFeeRequest: {
-            /** @example 7 */
             blocks?: number;
         };
         EstimateFeeResponse: {
-            /** @example 9.3 */
             fee_rate?: number;
         };
         FailTransfersRequest: {
-            /** @example null */
             batch_transfer_idx?: number;
-            /** @example false */
             no_asset_only?: boolean;
-            /** @example false */
             skip_sync?: boolean;
         };
         FailTransfersResponse: {
-            /** @example true */
             transfers_changed?: boolean;
         };
         GetAssetMediaRequest: {
-            /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
             digest?: string;
         };
         GetAssetMediaResponse: {
-            /** @example 68656c6c6f0a */
             bytes_hex?: string;
         };
         GetChannelIdRequest: {
-            /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
             temporary_channel_id?: string;
         };
         GetChannelIdResponse: {
-            /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
             channel_id?: string;
         };
         GetPaymentRequest: {
-            /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
             payment_hash?: string;
         };
         GetPaymentResponse: {
             payment?: components["schemas"]["Payment"];
         };
         GetSwapRequest: {
-            /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
             payment_hash?: string;
-            /** @example false */
             taker?: boolean;
         };
         GetSwapResponse: {
@@ -2708,107 +1341,61 @@ export interface components {
         /** @enum {string} */
         IndexerProtocol: "Electrum" | "Esplora";
         InitRequest: {
-            /** @example nodepassword */
             password?: string;
         };
         InitResponse: {
-            /** @example skill lamp please gown put season degree collect decline account monitor insane */
             mnemonic?: string;
         };
         /** @enum {string} */
         InvoiceStatus: "Pending" | "Succeeded" | "Failed" | "Expired";
         InvoiceStatusRequest: {
-            /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
             invoice?: string;
         };
         InvoiceStatusResponse: {
             status?: components["schemas"]["InvoiceStatus"];
         };
         IssueAssetCFARequest: {
-            /**
-             * @example [
-             *       1000,
-             *       600
-             *     ]
-             */
             amounts?: number[];
-            /** @example Tether */
             name?: string;
-            /** @example asset details */
             details?: string;
-            /** @example 0 */
             precision?: number;
-            /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
             file_digest?: string;
         };
         IssueAssetCFAResponse: {
             asset?: components["schemas"]["AssetCFA"];
         };
         IssueAssetNIARequest: {
-            /**
-             * @example [
-             *       1000,
-             *       600
-             *     ]
-             */
             amounts?: number[];
-            /** @example USDT */
             ticker?: string;
-            /** @example Tether */
             name?: string;
-            /** @example 0 */
             precision?: number;
         };
         IssueAssetNIAResponse: {
             asset?: components["schemas"]["AssetNIA"];
         };
         IssueAssetUDARequest: {
-            /** @example UNI */
             ticker?: string;
-            /** @example Unique */
             name?: string;
-            /** @example asset details */
             details?: string;
-            /** @example 0 */
             precision?: number;
-            /** @example /path/to/media */
             media_file_digest?: string;
-            /**
-             * @example [
-             *       "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
-             *       "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a"
-             *     ]
-             */
             attachments_file_digests?: string[];
         };
         IssueAssetUDAResponse: {
             asset?: components["schemas"]["AssetUDA"];
         };
         KeysendRequest: {
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             dest_pubkey?: string;
-            /** @example 3000000 */
             amt_msat?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example 42 */
             asset_amount?: number;
         };
         KeysendResponse: {
-            /** @example 8ffd4c0642047bc51ea01a22e6b2ede0fc001aee0e9929b2e84e41cf6589d61e */
             payment_hash?: string;
-            /** @example 89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578 */
             payment_preimage?: string;
             status?: components["schemas"]["HTLCStatus"];
         };
         ListAssetsRequest: {
-            /**
-             * @example [
-             *       "Nia",
-             *       "Uda",
-             *       "Cfa"
-             *     ]
-             */
             filter_asset_schemas?: components["schemas"]["AssetSchema"][];
         };
         ListAssetsResponse: {
@@ -2830,164 +1417,104 @@ export interface components {
             taker?: components["schemas"]["Swap"][];
         };
         ListTransactionsRequest: {
-            /** @example false */
             skip_sync?: boolean;
         };
         ListTransactionsResponse: {
             transactions?: components["schemas"]["Transaction"][];
         };
         ListTransfersRequest: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
         };
         ListTransfersResponse: {
             transfers?: components["schemas"]["Transfer"][];
         };
         ListUnspentsRequest: {
-            /** @example false */
             skip_sync?: boolean;
         };
         ListUnspentsResponse: {
             unspents?: components["schemas"]["Unspent"][];
         };
         LNInvoiceRequest: {
-            /** @example 3000000 */
             amt_msat?: number;
-            /** @example 420 */
             expiry_sec?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example 42 */
             asset_amount?: number;
         };
         LNInvoiceResponse: {
-            /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
             invoice?: string;
         };
         MakerExecuteRequest: {
-            /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
             swapstring?: string;
-            /** @example 777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2 */
             payment_secret?: string;
-            /** @example 02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043 */
             taker_pubkey?: string;
         };
         MakerInitRequest: {
-            /** @example 30 */
             qty_from?: number;
-            /** @example 10 */
             qty_to?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             from_asset?: string;
-            /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
             to_asset?: string;
-            /** @example 100 */
             timeout_sec?: number;
         };
         MakerInitResponse: {
-            /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
             payment_hash?: string;
-            /** @example 777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2 */
             payment_secret?: string;
-            /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
             swapstring?: string;
         };
         Media: {
-            /** @example /path/to/media */
             file_path?: string;
-            /** @example text/plain */
             mime?: string;
         };
         NetworkInfoResponse: {
             network?: components["schemas"]["BitcoinNetwork"];
-            /** @example 805434 */
             height?: number;
         };
         NodeInfoResponse: {
-            /** @example 02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043 */
             pubkey?: string;
-            /** @example 1 */
             num_channels?: number;
-            /** @example 0 */
             num_usable_channels?: number;
-            /** @example 28616 */
             local_balance_sat?: number;
-            /** @example 892 */
             eventual_close_fees_sat?: number;
-            /** @example 7852 */
             pending_outbound_payments_sat?: number;
-            /** @example 1 */
             num_peers?: number;
-            /** @example tpubDDfzqHEET3ksD81qshMHkw35yp6TuLP1kr5rWWeJcLAqDfMXKDJzmDwAnda6DCqw7kkkhPphuDZFE2a6Sw8h5ZA5NwmtTssEnjMqN7xMzSd */
             account_xpub_vanilla?: string;
-            /** @example tpubDDcdKhaxwVV2T6xwigti7dSY1a7LHFwZmKAaLWtNhzrvuTXqjjzo8U7YQkUuPah5yHvnk3cbXmb18ZRFwHEKTFUQmA9dij1nPVA2LCJCiEa */
             account_xpub_colored?: string;
-            /** @example 5 */
             max_media_upload_size_mb?: number;
-            /** @example 3000000 */
             rgb_htlc_min_msat?: number;
-            /** @example 30010 */
             rgb_channel_capacity_min_sat?: number;
-            /** @example 5506 */
             channel_capacity_min_sat?: number;
-            /** @example 16777215 */
             channel_capacity_max_sat?: number;
-            /** @example 1 */
             channel_asset_min_amount?: number;
-            /** @example 18446744073709552000 */
             channel_asset_max_amount?: number;
-            /** @example 987226 */
             network_nodes?: number;
-            /** @example 7812821 */
             network_channels?: number;
         };
         OpenChannelRequest: {
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736 */
             peer_pubkey_and_opt_addr?: string;
-            /** @example 30010 */
             capacity_sat?: number;
-            /** @example 1394000 */
             push_msat?: number;
-            /** @example 333 */
             asset_amount?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example true */
             public?: boolean;
-            /** @example true */
             with_anchors?: boolean;
-            /** @example 1000 */
             fee_base_msat?: number;
-            /** @example 0 */
             fee_proportional_millionths?: number;
-            /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
             temporary_channel_id?: string;
         };
         OpenChannelResponse: {
-            /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
             temporary_channel_id?: string;
         };
         Payment: {
-            /** @example 3000000 */
             amt_msat?: number;
-            /** @example 42 */
             asset_amount?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
-            /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
             payment_hash?: string;
-            /** @example true */
             inbound?: boolean;
             status?: components["schemas"]["HTLCStatus"];
-            /** @example 1691160765 */
             created_at?: number;
-            /** @example 1691162674 */
             updated_at?: number;
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             payee_pubkey?: string;
         };
         Peer: {
-            /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             pubkey?: string;
         };
         PostAssetMediaRequest: {
@@ -2995,288 +1522,170 @@ export interface components {
             file?: string;
         };
         PostAssetMediaResponse: {
-            /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
             digest?: string;
         };
         ProofOfReserves: {
-            /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
             utxo?: string;
-            /**
-             * @example [
-             *       6,
-             *       36,
-             *       87,
-             *       13,
-             *       5,
-             *       17
-             *     ]
-             */
             proof?: number[];
         };
         /** @enum {string} */
         RecipientType: "Blind" | "Witness";
         RefreshRequest: {
-            /** @example false */
             skip_sync?: boolean;
         };
         RestoreRequest: {
-            /** @example /path/to/the/backup/file */
             backup_path?: string;
-            /** @example nodepassword */
             password?: string;
         };
         RevokeTokenRequest: {
-            /** @example EnYKDBgDIggKBggGEgIYDRIkCAASICqCgqtFMIJ1eLCM3raDzqg9UqV-6nJWzGjjJG0S5IIUGkBpF-itmppHcdcSrSCiKklz9VZT4UmIND_0RFc32Imq3bLR_Y7GYaSpJo5lJfU1cA2BG_hy7P1UN4g5jKTKS88GIiIKIAUKXrrx0Ca-rMZa537VOFw2X8q_KVQ6OC4Z0ztro0sQ */
             token?: string;
         };
         RgbAllocation: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
             assignment?: components["schemas"]["AssignmentFungible"];
-            /** @example false */
             settled?: boolean;
         };
         RgbInvoiceRequest: {
-            /** @example 1 */
             min_confirmations?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
             assignment?: components["schemas"]["Assignment"];
-            /** @example 86400 */
             duration_seconds?: number;
-            /** @example false */
             witness?: boolean;
         };
         RgbInvoiceResponse: {
-            /** @example bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX */
             recipient_id?: string;
-            /** @example rgb:~/~/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1695811760&endpoints=rpc://127.0.0.1:3000/json-rpc */
             invoice?: string;
-            /** @example 1695811760 */
             expiration_timestamp?: number;
-            /** @example 1 */
             batch_transfer_idx?: number;
         };
         SendAssetRequest: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
             assignment?: components["schemas"]["AssignmentFungible"];
-            /** @example bcrt:utxob:2FZsSuk-iyVQLVuU4-Gc6J4qkE8-mLS17N4jd-MEx6cWz9F-MFkyE1n */
             recipient_id?: string;
             witness_data?: components["schemas"]["WitnessData"];
-            /** @example false */
             donation?: boolean;
-            /** @example 5 */
             fee_rate?: number;
-            /** @example 1 */
             min_confirmations?: number;
             transport_endpoints?: string[];
-            /** @example false */
             skip_sync?: boolean;
         };
         SendAssetResponse: {
-            /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
             txid?: string;
         };
         SendBtcRequest: {
-            /** @example 16900 */
             amount?: number;
-            /** @example bcrt1qwxht5tut39dws8tjcf649tp908r8fr2j75c94k */
             address?: string;
-            /** @example 5 */
             fee_rate?: number;
-            /** @example false */
             skip_sync?: boolean;
         };
         SendBtcResponse: {
-            /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
             txid?: string;
         };
         SendOnionMessageRequest: {
             node_ids?: string[];
-            /** @example 77 */
             tlv_type?: number;
-            /** @example message to send */
             data?: string;
         };
         SendPaymentRequest: {
-            /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
             invoice?: string;
         };
         SendPaymentResponse: {
-            /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
             payment_hash?: string;
-            /** @example 777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2 */
             payment_secret?: string;
             status?: components["schemas"]["HTLCStatus"];
         };
         SignMessageRequest: {
-            /** @example message to sign */
             message?: string;
         };
         SignMessageResponse: {
-            /** @example signed message */
             signed_message?: string;
         };
         Swap: {
-            /** @example 30 */
             qty_from?: number;
-            /** @example 10 */
             qty_to?: number;
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             from_asset?: string;
-            /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
             to_asset?: string;
-            /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
             payment_hash?: string;
             status?: components["schemas"]["SwapStatus"];
-            /** @example 1691160765 */
             requested_at?: number;
-            /** @example 1691168512 */
             initiated_at?: number;
-            /** @example 1691172703 */
             expires_at?: number;
-            /** @example 1691171075 */
             completed_at?: number;
         };
         /** @enum {string} */
         SwapStatus: "Waiting" | "Pending" | "Succeeded" | "Expired" | "Failed";
         TakerRequest: {
-            /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
             swapstring?: string;
         };
         Token: {
-            /** @example 0 */
             index?: number;
-            /** @example TKN */
             ticker?: string;
-            /** @example Token */
             name?: string;
-            /** @example token details */
             details?: string;
             embedded_media?: components["schemas"]["EmbeddedMedia"];
             media?: components["schemas"]["Media"];
-            /**
-             * @example {
-             *       "0": {
-             *         "file_path": "path/to/attachment0",
-             *         "digest": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
-             *         "mime": "text/plain"
-             *       },
-             *       "1": {
-             *         "file_path": "path/to/attachment1",
-             *         "digest": "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
-             *         "mime": "image/png"
-             *       }
-             *     }
-             */
             attachments?: {
                 [key: string]: components["schemas"]["Media"];
             };
             reserves?: components["schemas"]["ProofOfReserves"];
         };
         TokenLight: {
-            /** @example 0 */
             index?: number;
-            /** @example TKN */
             ticker?: string;
-            /** @example Token */
             name?: string;
-            /** @example token details */
             details?: string;
-            /** @example true */
             embedded_media?: boolean;
             media?: components["schemas"]["Media"];
-            /**
-             * @example {
-             *       "0": {
-             *         "file_path": "path/to/attachment0",
-             *         "digest": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
-             *         "mime": "text/plain"
-             *       },
-             *       "1": {
-             *         "file_path": "path/to/attachment1",
-             *         "digest": "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
-             *         "mime": "image/png"
-             *       }
-             *     }
-             */
             attachments?: {
                 [key: string]: components["schemas"]["Media"];
             };
-            /** @example false */
             reserves?: boolean;
         };
         Transaction: {
             transaction_type?: components["schemas"]["TransactionType"];
-            /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
             txid?: string;
-            /** @example 650 */
             received?: number;
-            /** @example 1050 */
             sent?: number;
-            /** @example 100 */
             fee?: number;
             confirmation_time?: components["schemas"]["BlockTime"];
         };
         /** @enum {string} */
         TransactionType: "RgbSend" | "Drain" | "CreateUtxos" | "User";
         Transfer: {
-            /** @example 1 */
             idx?: number;
-            /** @example 1691160765 */
             created_at?: number;
-            /** @example 1691162674 */
             updated_at?: number;
             status?: components["schemas"]["TransferStatus"];
             requested_assignment?: components["schemas"]["AssignmentFungible"];
             assignments?: components["schemas"]["AssignmentFungible"][];
             kind?: components["schemas"]["TransferKind"];
-            /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
             txid?: string;
-            /** @example 61qsVbWtkNmU54F2i6qtB9uSmEGsPoaeypCi5uC5uctZ */
             recipient_id?: string;
-            /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
             receive_utxo?: string;
-            /** @example null */
             change_utxo?: string;
-            /** @example 1691171612 */
             expiration?: number;
             transport_endpoints?: components["schemas"]["TransferTransportEndpoint"][];
         };
-        /**
-         * @example ReceiveBlind
-         * @enum {string}
-         */
+        /** @enum {string} */
         TransferKind: "Issuance" | "ReceiveBlind" | "ReceiveWitness" | "Send" | "Inflation";
         /** @enum {string} */
         TransferStatus: "WaitingCounterparty" | "WaitingConfirmations" | "Settled" | "Failed";
         TransferTransportEndpoint: {
-            /** @example http://127.0.0.1:3000/json-rpc */
             endpoint?: string;
             transport_type?: components["schemas"]["TransportType"];
-            /** @example false */
             used?: boolean;
         };
         /** @enum {string} */
         TransportType: "JsonRpc";
         UnlockRequest: {
-            /** @example nodepassword */
             password?: string;
-            /** @example user */
             bitcoind_rpc_username?: string;
-            /** @example password */
             bitcoind_rpc_password?: string;
-            /** @example localhost */
             bitcoind_rpc_host?: string;
-            /** @example 18443 */
             bitcoind_rpc_port?: number;
-            /** @example 127.0.0.1:50001 */
             indexer_url?: string;
-            /** @example rpc://127.0.0.1:3000/json-rpc */
             proxy_endpoint?: string;
             announce_addresses?: string[];
-            /** @example nodeAlias */
             announce_alias?: string;
         };
         Unspent: {
@@ -3284,17 +1693,12 @@ export interface components {
             rgb_allocations?: components["schemas"]["RgbAllocation"][];
         };
         Utxo: {
-            /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
             outpoint?: string;
-            /** @example 1000 */
             btc_amount?: number;
-            /** @example true */
             colorable?: boolean;
         };
         WitnessData: {
-            /** @example 1000 */
             amount_sat?: number;
-            /** @example 439017309 */
             blinding?: number;
         };
     };
@@ -3303,6 +1707,1263 @@ export interface components {
     requestBodies: never;
     headers: never;
     pathItems: never;
-}
+};
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    post_address: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressResponse"];
+                };
+            };
+        };
+    };
+    post_assetbalance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AssetBalanceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetBalanceResponse"];
+                };
+            };
+        };
+    };
+    post_assetmetadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AssetMetadataRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetMetadataResponse"];
+                };
+            };
+        };
+    };
+    post_backup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BackupRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_btcbalance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BtcBalanceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BtcBalanceResponse"];
+                };
+            };
+        };
+    };
+    post_changepassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_checkindexerurl: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CheckIndexerUrlRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckIndexerUrlResponse"];
+                };
+            };
+        };
+    };
+    post_checkproxyendpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CheckProxyEndpointRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_closechannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CloseChannelRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_connectpeer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConnectPeerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_createutxos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CreateUtxosRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_decodelninvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DecodeLNInvoiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecodeLNInvoiceResponse"];
+                };
+            };
+        };
+    };
+    post_decodergbinvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DecodeRGBInvoiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecodeRGBInvoiceResponse"];
+                };
+            };
+        };
+    };
+    post_disconnectpeer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DisconnectPeerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_estimatefee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EstimateFeeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EstimateFeeResponse"];
+                };
+            };
+        };
+    };
+    post_failtransfers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["FailTransfersRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FailTransfersResponse"];
+                };
+            };
+        };
+    };
+    post_getassetmedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GetAssetMediaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetAssetMediaResponse"];
+                };
+            };
+        };
+    };
+    post_getchannelid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GetChannelIdRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetChannelIdResponse"];
+                };
+            };
+        };
+    };
+    post_getpayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GetPaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetPaymentResponse"];
+                };
+            };
+        };
+    };
+    post_getswap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GetSwapRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetSwapResponse"];
+                };
+            };
+        };
+    };
+    post_init: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InitResponse"];
+                };
+            };
+        };
+    };
+    post_invoicestatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InvoiceStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceStatusResponse"];
+                };
+            };
+        };
+    };
+    post_issueassetcfa: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["IssueAssetCFARequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssueAssetCFAResponse"];
+                };
+            };
+        };
+    };
+    post_issueassetnia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["IssueAssetNIARequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssueAssetNIAResponse"];
+                };
+            };
+        };
+    };
+    post_issueassetuda: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["IssueAssetUDARequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssueAssetUDAResponse"];
+                };
+            };
+        };
+    };
+    post_keysend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["KeysendRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeysendResponse"];
+                };
+            };
+        };
+    };
+    post_listassets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ListAssetsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListAssetsResponse"];
+                };
+            };
+        };
+    };
+    get_listchannels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListChannelsResponse"];
+                };
+            };
+        };
+    };
+    get_listpayments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListPaymentsResponse"];
+                };
+            };
+        };
+    };
+    get_listpeers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListPeersResponse"];
+                };
+            };
+        };
+    };
+    get_listswaps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListSwapsResponse"];
+                };
+            };
+        };
+    };
+    post_listtransactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ListTransactionsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListTransactionsResponse"];
+                };
+            };
+        };
+    };
+    post_listtransfers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ListTransfersRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListTransfersResponse"];
+                };
+            };
+        };
+    };
+    post_listunspents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ListUnspentsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListUnspentsResponse"];
+                };
+            };
+        };
+    };
+    post_lock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_lninvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["LNInvoiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LNInvoiceResponse"];
+                };
+            };
+        };
+    };
+    post_makerexecute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MakerExecuteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_makerinit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MakerInitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MakerInitResponse"];
+                };
+            };
+        };
+    };
+    get_networkinfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NetworkInfoResponse"];
+                };
+            };
+        };
+    };
+    get_nodeinfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NodeInfoResponse"];
+                };
+            };
+        };
+    };
+    post_openchannel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["OpenChannelRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenChannelResponse"];
+                };
+            };
+        };
+    };
+    post_refreshtransfers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RefreshRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RestoreRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_revoketoken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RevokeTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_rgbinvoice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RgbInvoiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RgbInvoiceResponse"];
+                };
+            };
+        };
+    };
+    post_sendasset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SendAssetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendAssetResponse"];
+                };
+            };
+        };
+    };
+    post_sendbtc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SendBtcRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendBtcResponse"];
+                };
+            };
+        };
+    };
+    post_sendonionmessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SendOnionMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_sendpayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SendPaymentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendPaymentResponse"];
+                };
+            };
+        };
+    };
+    post_shutdown: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_sync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_signmessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SignMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignMessageResponse"];
+                };
+            };
+        };
+    };
+    post_taker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["TakerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+    post_unlock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UnlockRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmptyResponse"];
+                };
+            };
+        };
+    };
+}

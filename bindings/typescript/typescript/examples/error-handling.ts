@@ -61,7 +61,7 @@ async function exampleErrorHierarchy() {
     const client = await KaleidoClient.create({ baseUrl: 'https://invalid-url-that-does-not-exist.com' });
 
     try {
-        await client.listAssets();
+        await client.maker.listAssets();
     } catch (e) {
         // All SDK errors extend KaleidoError
         if (e instanceof KaleidoError) {
@@ -92,7 +92,7 @@ async function exampleRetryStrategy() {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             console.log(`  Attempt ${attempt}/${maxRetries}...`);
-            const assets = await client.listAssets();
+            const assets = await client.maker.listAssets();
             console.log(`  ✅ Success! Found ${assets.length} assets`);
             return;
         } catch (e) {
@@ -158,7 +158,7 @@ async function exampleValidationErrors() {
 
     try {
         // Try to get quote with invalid parameters
-        await client.getQuote(
+        await client.maker.getQuote(
             'INVALID/PAIR',
             null,
             null,  // Both null - should fail validation

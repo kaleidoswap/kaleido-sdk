@@ -7,7 +7,7 @@
  */
 
 // Main client
-export { KaleidoClient } from './client.js';
+export { KaleidoClient, MakerClient, RlnClient } from './client.js';
 
 // Utility functions
 export {
@@ -28,11 +28,9 @@ export type {
 
     // Assets
     Asset,
-    AssetBalance,
 
     // Trading pairs
     TradingPair,
-    TradingPairAsset,
 
     // Quotes
     Quote,
@@ -65,13 +63,11 @@ export type {
     PaymentOnchain,
 
     // Enums
-    SwapOrderSide,
     PaymentState,
     PaymentStatus,
     OrderState,
     AssetDeliveryStatus,
     BitcoinNetwork,
-    AssetIface,
 
     // Advanced: raw generated types
     components,

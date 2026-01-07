@@ -16,15 +16,12 @@ import type { components } from './generated/api-types.js';
 // ============================================================================
 
 // Assets
-// Assets
-export type Asset = components['schemas']['ClientAsset'];
-export type AssetBalance = components['schemas']['AssetBalanceResponse'];
+export type Asset = components['schemas']['Asset'];
 export type AssetsResponse = components['schemas']['AssetsResponse'];
 
 // Trading Pairs
-export type TradingPair = components['schemas']['Pair'];
-export type TradingPairAsset = components['schemas']['Pair']; // This seems redundant or wrong in original, keeping simple
-export type PairsResponse = components['schemas']['PairResponse']; // Note: 'PairResponse' in spec has 'pairs' property
+export type TradingPair = components['schemas']['TradingPair'];
+export type TradingPairsResponse = components['schemas']['TradingPairsResponse'];
 
 // Quotes
 export type Quote = components['schemas']['PairQuoteResponse'];
@@ -62,61 +59,72 @@ export type PaymentOnchain = components['schemas']['PaymentOnchain'];
 // Enum Types (from OpenAPI spec)
 // ============================================================================
 
-export type SwapOrderSide = components['schemas']['SwapOrderSide'];
 export type PaymentState = components['schemas']['PaymentState'];
 export type PaymentStatus = components['schemas']['PaymentStatus'];
 export type OrderState = components['schemas']['OrderState'];
 export type AssetDeliveryStatus = components['schemas']['AssetDeliveryStatus'];
 export type BitcoinNetwork = components['schemas']['BitcoinNetwork'];
-export type AssetIface = components['schemas']['AssetIface'];
 
 // ============================================================================
-// Layer Types (SDK-specific)
+// Layer Types (from OpenAPI spec)
 // ============================================================================
 
 /**
  * Supported network layers for asset transfers
+ * Generated from OpenAPI spec
  */
-/**
- * Supported network layers for asset transfers
- */
-export const Layer = {
-    BTC_L1: 'BTC_L1',
-    BTC_LN: 'BTC_LN',
-    BTC_SPARK: 'BTC_SPARK',
-    BTC_ARKADE: 'BTC_ARKADE',
-    BTC_LIQUID: 'BTC_LIQUID',
-    BTC_CASHU: 'BTC_CASHU',
-    RGB_L1: 'RGB_L1',
-    RGB_LN: 'RGB_LN',
-    TAPASS_L1: 'TAPASS_L1',
-    TAPASS_LN: 'TAPASS_LN',
-    LIQUID_LIQUID: 'LIQUID_LIQUID',
-    ARKADE_ARKADE: 'ARKADE_ARKADE',
-    SPARK_SPARK: 'SPARK_SPARK',
-} as const;
-
-export type Layer = typeof Layer[keyof typeof Layer];
+export type Layer = components['schemas']['Layer'];
 
 /**
  * Receiver address formats for different layers
+ * Generated from OpenAPI spec
  */
-export const ReceiverAddressFormat = {
-    BTC_ADDRESS: 'BTC_ADDRESS',
-    BOLT11: 'BOLT11',
-    BOLT12: 'BOLT12',
-    LN_ADDRESS: 'LN_ADDRESS',
-    RGB_INVOICE: 'RGB_INVOICE',
-    LIQUID_ADDRESS: 'LIQUID_ADDRESS',
-    LIQUID_INVOICE: 'LIQUID_INVOICE',
-    SPARK_ADDRESS: 'SPARK_ADDRESS',
-    SPARK_INVOICE: 'SPARK_INVOICE',
-    ARKADE_ADDRESS: 'ARKADE_ADDRESS',
-    ARKADE_INVOICE: 'ARKADE_INVOICE',
-    CASHU_TOKEN: 'CASHU_TOKEN',
+export type ReceiverAddressFormat = components['schemas']['ReceiverAddressFormat'];
+
+/**
+ * Layer enum values for runtime usage
+ * @deprecated Use type-safe Layer type instead
+ */
+export const LayerEnum = {
+    BTC_L1: 'BTC_L1' as Layer,
+    BTC_LN: 'BTC_LN' as Layer,
+    BTC_SPARK: 'BTC_SPARK' as Layer,
+    BTC_ARKADE: 'BTC_ARKADE' as Layer,
+    BTC_LIQUID: 'BTC_LIQUID' as Layer,
+    BTC_CASHU: 'BTC_CASHU' as Layer,
+    RGB_L1: 'RGB_L1' as Layer,
+    RGB_LN: 'RGB_LN' as Layer,
+    TAPASS_L1: 'TAPASS_L1' as Layer,
+    TAPASS_LN: 'TAPASS_LN' as Layer,
+    LIQUID_LIQUID: 'LIQUID_LIQUID' as Layer,
+    ARKADE_ARKADE: 'ARKADE_ARKADE' as Layer,
+    SPARK_SPARK: 'SPARK_SPARK' as Layer,
 } as const;
 
-export type ReceiverAddressFormat = typeof ReceiverAddressFormat[keyof typeof ReceiverAddressFormat];
+/** @deprecated Use Layer type or LayerEnum const instead */
+export { LayerEnum as Layer };
+
+/**
+ * ReceiverAddressFormat enum values for runtime usage
+ * @deprecated Use type-safe ReceiverAddressFormat type instead
+ */
+export const ReceiverAddressFormatEnum = {
+    BTC_ADDRESS: 'BTC_ADDRESS' as ReceiverAddressFormat,
+    BOLT11: 'BOLT11' as ReceiverAddressFormat,
+    BOLT12: 'BOLT12' as ReceiverAddressFormat,
+    LN_ADDRESS: 'LN_ADDRESS' as ReceiverAddressFormat,
+    RGB_INVOICE: 'RGB_INVOICE' as ReceiverAddressFormat,
+    LIQUID_ADDRESS: 'LIQUID_ADDRESS' as ReceiverAddressFormat,
+    LIQUID_INVOICE: 'LIQUID_INVOICE' as ReceiverAddressFormat,
+    SPARK_ADDRESS: 'SPARK_ADDRESS' as ReceiverAddressFormat,
+    SPARK_INVOICE: 'SPARK_INVOICE' as ReceiverAddressFormat,
+    ARKADE_ADDRESS: 'ARKADE_ADDRESS' as ReceiverAddressFormat,
+    ARKADE_INVOICE: 'ARKADE_INVOICE' as ReceiverAddressFormat,
+    CASHU_TOKEN: 'CASHU_TOKEN' as ReceiverAddressFormat,
+} as const;
+
+/** @deprecated Use ReceiverAddressFormat type or ReceiverAddressFormatEnum const instead */
+export { ReceiverAddressFormatEnum as ReceiverAddressFormat };
 
 // ============================================================================
 // SDK Configuration (SDK-specific)

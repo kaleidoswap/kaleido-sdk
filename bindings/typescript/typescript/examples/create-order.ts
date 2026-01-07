@@ -24,11 +24,13 @@ async function main() {
         timeout: 30,
     });
 
+    client.maker.getQuote()
+
     console.log('\n✓ Client initialized');
 
     // Step 1: Get available trading pairs
     console.log('\n📋 Step 1: Fetching trading pairs...');
-    const pairs = await client.listPairs();
+    const pairs = await client.maker.listPairs();
 
     if (pairs.length === 0) {
         console.log('  ❌ No trading pairs available');
@@ -43,11 +45,11 @@ async function main() {
     console.log('\n💱 Step 2: Getting quote...');
 
     // Use a reasonable amount within the pair's limits
-    const fromAmount = BigInt(100000); // 100k sats
+    const fromAmount = 1000000; // 1000 sats
 
     let quote: Quote;
     try {
-        quote = await client.getQuote(
+        quote = await client.maker.getQuote(
             ticker,
             fromAmount,
             null,
