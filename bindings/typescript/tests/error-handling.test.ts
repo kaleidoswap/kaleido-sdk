@@ -5,7 +5,7 @@
  * Note: Network error tests use a short timeout config to avoid long waits.
  */
 
-import { KaleidoClient, KaleidoConfig } from '../pkg/kaleidoswap_sdk';
+import { KaleidoClient, KaleidoConfig } from '../pkg-node/kaleidoswap_sdk';
 
 // Skip these tests if no test server - they require specific setup
 const SKIP_ERROR_TESTS = process.env.SKIP_ERROR_TESTS === 'true';
@@ -32,7 +32,7 @@ describeErrors('Error Handling', () => {
       testClient.free();
 
       // Operations after free should fail immediately (synchronously)
-      expect(() => testClient.listAssets()).toThrow();
+      expect(() => testClient.maker.listAssets()).toThrow();
     });
   });
 
@@ -87,7 +87,7 @@ describe.skip('Network Error Handling (Manual)', () => {
 
   it('should handle connection errors gracefully', async () => {
     try {
-      await client.listAssets();
+      await client.maker.listAssets();
       fail('Should have thrown an error');
     } catch (error: any) {
       expect(error).toBeDefined();

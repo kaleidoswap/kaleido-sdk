@@ -6,9 +6,9 @@
  * Set SKIP_INTEGRATION_TESTS=true to skip them.
  */
 
-import { KaleidoClient, KaleidoConfig } from '../pkg/kaleidoswap_sdk';
+import { KaleidoClient, KaleidoConfig } from '../pkg-node/kaleidoswap_sdk';
 
-const TEST_API_URL = process.env.TEST_API_URL || 'https://api.regtest.kaleidoswap.com';
+const TEST_API_URL = process.env.TEST_API_URL || 'http://localhost:8000';
 const TEST_NODE_URL = process.env.TEST_NODE_URL || 'http://localhost:3001';
 const SKIP_INTEGRATION = process.env.SKIP_INTEGRATION_TESTS === 'true';
 
@@ -33,7 +33,7 @@ describeIntegration('API Integration', () => {
 
   describe('Assets', () => {
     it('should list all assets', async () => {
-      const assets = await client.listAssets();
+      const assets = await client.maker.listAssets();
 
       expect(Array.isArray(assets)).toBe(true);
 
@@ -48,7 +48,7 @@ describeIntegration('API Integration', () => {
     });
 
     it('should list active assets', async () => {
-      const assets = await client.listActiveAssets();
+      const assets = await client.maker.listActiveAssets();
 
       expect(Array.isArray(assets)).toBe(true);
 
@@ -61,7 +61,7 @@ describeIntegration('API Integration', () => {
     });
 
     it('should get asset by ticker', async () => {
-      const asset = await client.getAssetByTicker('BTC');
+      const asset = await client.maker.getAssetByTicker('BTC');
 
       expect(asset).toBeDefined();
       expect(asset.ticker).toBe('BTC');
@@ -70,7 +70,7 @@ describeIntegration('API Integration', () => {
 
     it('should throw on invalid ticker', async () => {
       try {
-        const result = await client.getAssetByTicker('INVALID_TICKER_123');
+        const result = await client.maker.getAssetByTicker('INVALID_TICKER_123');
         console.log('Invalid ticker result:', result);
         throw new Error('Should have thrown');
       } catch (e: any) {
@@ -82,7 +82,7 @@ describeIntegration('API Integration', () => {
 
   describe('Trading Pairs', () => {
     it('should list all pairs', async () => {
-      const pairs = await client.listPairs();
+      const pairs = await client.maker.listPairs();
 
       expect(Array.isArray(pairs)).toBe(true);
 
@@ -96,7 +96,7 @@ describeIntegration('API Integration', () => {
     });
 
     it('should list active pairs', async () => {
-      const pairs = await client.listActivePairs();
+      const pairs = await client.maker.listActivePairs();
 
       expect(Array.isArray(pairs)).toBe(true);
 
@@ -110,7 +110,7 @@ describeIntegration('API Integration', () => {
 
     it('should get pair by ticker', async () => {
       try {
-        const pair = await client.getPairByTicker('BTC/USDT');
+        const pair = await client.maker.getPairByTicker('BTC/USDT');
 
         expect(pair).toBeDefined();
         // Pair object doesn't have top-level ticker, check base/quote instead
@@ -123,7 +123,7 @@ describeIntegration('API Integration', () => {
 
     it('should throw on invalid pair ticker', async () => {
       try {
-        await client.getPairByTicker('INVALID/PAIR');
+        await client.maker.getPairByTicker('INVALID/PAIR');
         throw new Error('Should have thrown');
       } catch (e: any) {
         if (e.message === 'Should have thrown') throw e;
@@ -134,10 +134,10 @@ describeIntegration('API Integration', () => {
   describe('Quotes', () => {
     it('should get quote by pair', async () => {
       try {
-        const quote = await client.getQuoteByPair(
+        const quote = await client.maker.getQuoteByPair(
           'BTC/USDT',
-          BigInt(100000),
-          null,
+          100000,
+          undefined,
           'BTC_LN',
           'RGB_LN'
         );
@@ -154,11 +154,11 @@ describeIntegration('API Integration', () => {
 
     it('should get quote by assets', async () => {
       try {
-        const quote = await client.getQuoteByAssets(
+        const quote = await client.maker.getQuoteByAssets(
           'BTC',
           'USDT',
-          BigInt(100000),
-          null,
+          100000,
+          undefined,
           'BTC_LN',
           'RGB_LN'
         );
@@ -172,10 +172,10 @@ describeIntegration('API Integration', () => {
 
     it('should support different layers', async () => {
       try {
-        const quote = await client.getQuoteByPair(
+        const quote = await client.maker.getQuoteByPair(
           'BTC/USDT',
-          BigInt(100000),
-          null,
+          100000,
+          undefined,
           'BTC_L1',  // Onchain
           'RGB_LN'   // Lightning
         );
@@ -189,10 +189,10 @@ describeIntegration('API Integration', () => {
 
     it('should throw on invalid layer', async () => {
       try {
-        await client.getQuoteByPair(
+        await client.maker.getQuoteByPair(
           'BTC/USDT',
-          BigInt(100000),
-          null,
+          100000,
+          undefined,
           'INVALID_LAYER' as any,
           'RGB_LN'
         );
@@ -204,10 +204,10 @@ describeIntegration('API Integration', () => {
 
     it('should throw on amount too small', async () => {
       try {
-        await client.getQuoteByPair(
+        await client.maker.getQuoteByPair(
           'BTC/USDT',
-          BigInt(1),  // Too small
-          null,
+          1,  // Too small
+          undefined,
           'BTC_LN',
           'RGB_LN'
         );
@@ -220,7 +220,7 @@ describeIntegration('API Integration', () => {
 
   describe('Order Operations', () => {
     it('should get order history', async () => {
-      const history = await client.getOrderHistory(undefined, 10, 0);
+      const history = await client.maker.getOrderHistory(undefined, 10, 0);
 
       expect(history).toBeDefined();
       expect(history).toHaveProperty('data');
@@ -229,14 +229,14 @@ describeIntegration('API Integration', () => {
     }, 30000);
 
     it('should get order history with status filter', async () => {
-      const history = await client.getOrderHistory('FILLED', 5, 0);
+      const history = await client.maker.getOrderHistory('FILLED', 5, 0);
 
       expect(history).toBeDefined();
       expect(Array.isArray(history.data)).toBe(true);
     }, 30000);
 
     it('should get order analytics', async () => {
-      const analytics = await client.getOrderAnalytics();
+      const analytics = await client.maker.getOrderAnalytics();
 
       expect(analytics).toBeDefined();
       expect(analytics).toHaveProperty('status_counts');
@@ -247,7 +247,7 @@ describeIntegration('API Integration', () => {
 
   describe('LSP Operations', () => {
     it('should get LSP info', async () => {
-      const info = await client.getLspInfo();
+      const info = await client.maker.getLspInfo();
 
       expect(info).toBeDefined();
       expect(info).toHaveProperty('lsp_connection_url');
@@ -256,18 +256,20 @@ describeIntegration('API Integration', () => {
     }, 30000);
 
     it('should get LSP network info', async () => {
-      const info = await client.getLspNetworkInfo();
+      const info = await client.maker.getLspNetworkInfo();
 
       expect(info).toBeDefined();
       expect(info).toHaveProperty('network');
       expect(info).toHaveProperty('height');
+      // Height is u32/u64, serialized as BigInt if large enough or configured
+      // Given serializer config in lib.rs, it likely comes as BigInt
       expect(typeof info.height).toBe('bigint');
     }, 30000);
 
     it('should estimate LSP fees', async () => {
       try {
-        const channelSize = BigInt(1000000); // 1M sats
-        const fees = await client.estimateLspFees(channelSize);
+        const channelSize = 1000000; // number
+        const fees = await client.maker.estimateLspFees(channelSize);
 
         expect(fees).toBeDefined();
         expect(fees).toHaveProperty('setup_fee');
@@ -282,7 +284,7 @@ describeIntegration('API Integration', () => {
 
   describe('Node Operations', () => {
     it('should get node info (maker info)', async () => {
-      const info = await client.getNodeInfo();
+      const info = await client.maker.getNodeInfo();
 
       expect(info).toBeDefined();
       expect(info).toHaveProperty('network');
