@@ -12,7 +12,12 @@ mod error;
 
 use error::to_js_error;
 use kaleidoswap_core::{
-    client::KaleidoClient as CoreClient, models::*, KaleidoConfig as CoreConfig,
+    client::{
+        KaleidoClient as CoreClient, MarketClient as CoreMarketClient, NodeClient as CoreNodeClient,
+    },
+    error::KaleidoError,
+    models::*,
+    KaleidoConfig as CoreConfig,
 };
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::Serializer;
@@ -27,10 +32,10 @@ pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
-/// Serializer configuration - use regular JavaScript numbers for better UX
-/// Numbers are safe up to 2^53 (9 quadrillion), which is sufficient for satoshi amounts
+/// Serializer configuration - use BigInts for large numbers to prevent overflow
+/// JavaScript numbers are only safe up to 2^53, but we can have larger values
 fn serializer() -> Serializer {
-    Serializer::new().serialize_large_number_types_as_bigints(false)
+    Serializer::new().serialize_large_number_types_as_bigints(true)
 }
 
 /// Helper to serialize Rust types to JavaScript objects directly (no JSON)
@@ -159,8 +164,35 @@ impl KaleidoClient {
         self.inner.has_node()
     }
 
-    // === Market Operations ===
+    /// Access the Market (Maker) API
+    #[wasm_bindgen(getter)]
+    pub fn maker(&self) -> MakerClient {
+        MakerClient {
+            inner: self.inner.market.clone(),
+        }
+    }
 
+    /// Access the RGB/Lightning Node API
+    #[wasm_bindgen(getter)]
+    pub fn rln(&self) -> RlnClient {
+        RlnClient {
+            inner: self.inner.node.clone(),
+        }
+    }
+}
+
+// ============================================================================
+// Maker Client (Market Operations)
+// ============================================================================
+
+/// Client for interacting with the Kaleidoswap Maker (Market API)
+#[wasm_bindgen]
+pub struct MakerClient {
+    inner: Arc<CoreMarketClient>,
+}
+
+#[wasm_bindgen]
+impl MakerClient {
     /// List all available assets
     /// Returns a Promise that resolves to an array of Asset objects
     #[wasm_bindgen(js_name = listAssets)]
@@ -171,11 +203,8 @@ impl KaleidoClient {
                 .list_assets()
                 .await
                 .and_then(|assets| {
-                    to_js_value(&assets).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&assets)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -191,11 +220,8 @@ impl KaleidoClient {
                 .list_pairs()
                 .await
                 .and_then(|pairs| {
-                    to_js_value(&pairs).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&pairs)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -210,11 +236,8 @@ impl KaleidoClient {
                 .list_active_assets()
                 .await
                 .and_then(|assets| {
-                    to_js_value(&assets).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&assets)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -229,11 +252,8 @@ impl KaleidoClient {
                 .list_active_pairs()
                 .await
                 .and_then(|pairs| {
-                    to_js_value(&pairs).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&pairs)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -248,11 +268,8 @@ impl KaleidoClient {
                 .find_asset_by_ticker(&ticker)
                 .await
                 .and_then(|asset| {
-                    to_js_value(&asset).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&asset)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -267,11 +284,8 @@ impl KaleidoClient {
                 .find_pair_by_ticker(&ticker)
                 .await
                 .and_then(|pair| {
-                    to_js_value(&pair).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&pair)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -308,11 +322,8 @@ impl KaleidoClient {
                 )
                 .await
                 .and_then(|quote| {
-                    to_js_value(&quote).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&quote)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -352,11 +363,8 @@ impl KaleidoClient {
                 )
                 .await
                 .and_then(|quote| {
-                    to_js_value(&quote).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&quote)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -373,11 +381,8 @@ impl KaleidoClient {
                 .get_node_info()
                 .await
                 .and_then(|info| {
-                    to_js_value(&info).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&info)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -392,11 +397,8 @@ impl KaleidoClient {
                 .get_swap_status(&payment_hash)
                 .await
                 .and_then(|status| {
-                    to_js_value(&status).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&status)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -407,35 +409,16 @@ impl KaleidoClient {
     pub fn init_swap(&self, request: JsValue) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
         future_to_promise(async move {
-            let req: SwapRequest = serde_wasm_bindgen::from_value(request).map_err(|e| {
-                to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                    e.to_string(),
-                ))
-            })?;
+            let req: SwapRequest = serde_wasm_bindgen::from_value(request)
+                .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
 
             inner
                 .init_swap(&req)
                 .await
                 .and_then(|res| {
-                    to_js_value(&res).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&res)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
-                .map_err(to_js_error)
-        })
-    }
-
-    /// Whitelist a trade (if using a User Node)
-    #[wasm_bindgen(js_name = whitelistTrade)]
-    pub fn whitelist_trade(&self, swapstring: String) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
-        future_to_promise(async move {
-            inner
-                .whitelist_trade(&swapstring)
-                .await
-                .map(|_| JsValue::NULL)
                 .map_err(to_js_error)
         })
     }
@@ -445,21 +428,15 @@ impl KaleidoClient {
     pub fn execute_swap(&self, request: JsValue) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
         future_to_promise(async move {
-            let req: ConfirmSwapRequest = serde_wasm_bindgen::from_value(request).map_err(|e| {
-                to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                    e.to_string(),
-                ))
-            })?;
+            let req: ConfirmSwapRequest = serde_wasm_bindgen::from_value(request)
+                .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
 
             inner
                 .execute_swap(&req)
                 .await
                 .and_then(|res| {
-                    to_js_value(&res).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&res)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -473,22 +450,15 @@ impl KaleidoClient {
     pub fn create_swap_order(&self, request: JsValue) -> js_sys::Promise {
         let inner = Arc::clone(&self.inner);
         future_to_promise(async move {
-            let req: CreateSwapOrderRequest =
-                serde_wasm_bindgen::from_value(request).map_err(|e| {
-                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                        e.to_string(),
-                    ))
-                })?;
+            let req: CreateSwapOrderRequest = serde_wasm_bindgen::from_value(request)
+                .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
 
             inner
                 .create_swap_order(&req)
                 .await
                 .and_then(|response| {
-                    to_js_value(&response).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&response)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -503,11 +473,8 @@ impl KaleidoClient {
                 .get_swap_order_status(&order_id)
                 .await
                 .and_then(|status| {
-                    to_js_value(&status).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&status)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -527,11 +494,8 @@ impl KaleidoClient {
                 .get_order_history(status.as_deref(), limit, skip)
                 .await
                 .and_then(|history| {
-                    to_js_value(&history).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&history)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -546,11 +510,8 @@ impl KaleidoClient {
                 .get_order_analytics()
                 .await
                 .and_then(|stats| {
-                    to_js_value(&stats).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&stats)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -567,11 +528,8 @@ impl KaleidoClient {
                 .get_lsp_info()
                 .await
                 .and_then(|info| {
-                    to_js_value(&info).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&info)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -586,11 +544,8 @@ impl KaleidoClient {
                 .get_lsp_network_info()
                 .await
                 .and_then(|info| {
-                    to_js_value(&info).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&info)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
@@ -606,24 +561,33 @@ impl KaleidoClient {
                 .estimate_lsp_fees(channel_size_i64)
                 .await
                 .and_then(|fees| {
-                    to_js_value(&fees).map_err(|e| {
-                        kaleidoswap_core::error::KaleidoError::validation(
-                            e.as_string().unwrap_or_default(),
-                        )
-                    })
+                    to_js_value(&fees)
+                        .map_err(|e| KaleidoError::validation(e.as_string().unwrap_or_default()))
                 })
                 .map_err(to_js_error)
         })
     }
+}
 
-    // === RGB Lightning Node Operations ===
+// ============================================================================
+// RLN Client (Node Operations)
+// ============================================================================
 
+/// Client for interacting with the user's RGB Lightning Node
+#[wasm_bindgen]
+pub struct RlnClient {
+    inner: Option<Arc<CoreNodeClient>>,
+}
+
+#[wasm_bindgen]
+impl RlnClient {
     /// Get RGB node information from the taker's local RGB Lightning Node.
     /// Returns pubkey and other node info needed for swap execution.
     #[wasm_bindgen(js_name = getRgbNodeInfo)]
     pub fn get_rgb_node_info(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .get_rgb_node_info()
                 .await
@@ -636,12 +600,27 @@ impl KaleidoClient {
         })
     }
 
+    /// Whitelist a trade (if using a User Node)
+    #[wasm_bindgen(js_name = whitelistTrade)]
+    pub fn whitelist_trade(&self, swapstring: String) -> js_sys::Promise {
+        let inner_opt = self.inner.clone();
+        future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
+            inner
+                .whitelist_trade(&swapstring)
+                .await
+                .map(|_| JsValue::NULL)
+                .map_err(to_js_error)
+        })
+    }
+
     /// Get the taker's pubkey from the local RGB Lightning Node.
     /// This is a convenience method that extracts just the pubkey from getRgbNodeInfo.
     #[wasm_bindgen(js_name = getTakerPubkey)]
     pub fn get_taker_pubkey(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             let info = inner.get_rgb_node_info().await.map_err(to_js_error)?;
             let pubkey = info
                 .get("pubkey")
@@ -655,8 +634,9 @@ impl KaleidoClient {
     /// List channels on the RGB node
     #[wasm_bindgen(js_name = listChannels)]
     pub fn list_channels(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .list_channels()
                 .await
@@ -668,14 +648,12 @@ impl KaleidoClient {
     /// Open a channel on the RGB node
     #[wasm_bindgen(js_name = openChannel)]
     pub fn open_channel(&self, request: JsValue) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             let req: kaleidoswap_core::models::rln::OpenChannelRequest =
-                serde_wasm_bindgen::from_value(request).map_err(|e| {
-                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                        e.to_string(),
-                    ))
-                })?;
+                serde_wasm_bindgen::from_value(request)
+                    .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
             inner
                 .open_channel(&req)
                 .await
@@ -687,14 +665,12 @@ impl KaleidoClient {
     /// Close a channel on the RGB node
     #[wasm_bindgen(js_name = closeChannel)]
     pub fn close_channel(&self, request: JsValue) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             let req: kaleidoswap_core::models::rln::CloseChannelRequest =
-                serde_wasm_bindgen::from_value(request).map_err(|e| {
-                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                        e.to_string(),
-                    ))
-                })?;
+                serde_wasm_bindgen::from_value(request)
+                    .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
             inner
                 .close_channel(&req)
                 .await
@@ -706,8 +682,9 @@ impl KaleidoClient {
     /// List peers on the RGB node
     #[wasm_bindgen(js_name = listPeers)]
     pub fn list_peers(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .list_peers()
                 .await
@@ -719,14 +696,12 @@ impl KaleidoClient {
     /// Connect to a peer on the RGB node
     #[wasm_bindgen(js_name = connectPeer)]
     pub fn connect_peer(&self, request: JsValue) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             let req: kaleidoswap_core::models::rln::ConnectPeerRequest =
-                serde_wasm_bindgen::from_value(request).map_err(|e| {
-                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                        e.to_string(),
-                    ))
-                })?;
+                serde_wasm_bindgen::from_value(request)
+                    .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
             inner
                 .connect_peer(&req)
                 .await
@@ -738,8 +713,9 @@ impl KaleidoClient {
     /// List RGB assets on the node
     #[wasm_bindgen(js_name = listNodeAssets)]
     pub fn list_node_assets(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .list_node_assets()
                 .await
@@ -751,8 +727,9 @@ impl KaleidoClient {
     /// Get asset balance from the node
     #[wasm_bindgen(js_name = getAssetBalance)]
     pub fn get_asset_balance(&self, asset_id: String) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .get_asset_balance(&asset_id)
                 .await
@@ -764,8 +741,9 @@ impl KaleidoClient {
     /// Get a Bitcoin address from the node
     #[wasm_bindgen(js_name = getOnchainAddress)]
     pub fn get_onchain_address(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .get_onchain_address()
                 .await
@@ -777,8 +755,9 @@ impl KaleidoClient {
     /// Get BTC balance from the node
     #[wasm_bindgen(js_name = getBtcBalance)]
     pub fn get_btc_balance(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .get_btc_balance()
                 .await
@@ -796,8 +775,9 @@ impl KaleidoClient {
         asset_amount: Option<f64>,
         asset_id: Option<String>,
     ) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             let amt_msat_i64 = amt_msat.map(|v| v as i64);
             let expiry_sec_i64 = expiry_sec.map(|v| v as i64);
             let asset_amount_i64 = asset_amount.map(|v| v as i64);
@@ -812,8 +792,9 @@ impl KaleidoClient {
     /// Decode a Lightning invoice
     #[wasm_bindgen(js_name = decodeLnInvoice)]
     pub fn decode_ln_invoice(&self, invoice: String) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .decode_ln_invoice(&invoice)
                 .await
@@ -825,14 +806,12 @@ impl KaleidoClient {
     /// Send a keysend payment
     #[wasm_bindgen(js_name = keysend)]
     pub fn keysend(&self, request: JsValue) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             let req: kaleidoswap_core::models::rln::KeysendRequest =
-                serde_wasm_bindgen::from_value(request).map_err(|e| {
-                    to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-                        e.to_string(),
-                    ))
-                })?;
+                serde_wasm_bindgen::from_value(request)
+                    .map_err(|e| to_js_error(KaleidoError::validation(e.to_string())))?;
             inner
                 .keysend(&req)
                 .await
@@ -844,8 +823,9 @@ impl KaleidoClient {
     /// List payments on the node
     #[wasm_bindgen(js_name = listPayments)]
     pub fn list_payments(&self) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .list_payments()
                 .await
@@ -857,10 +837,39 @@ impl KaleidoClient {
     /// Initialize the node wallet
     #[wasm_bindgen(js_name = initWallet)]
     pub fn init_wallet(&self, password: String) -> js_sys::Promise {
-        let inner = Arc::clone(&self.inner);
+        let inner_opt = self.inner.clone();
         future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
             inner
                 .init_wallet(&password)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Unlock the node wallet
+    #[wasm_bindgen(js_name = unlockWallet)]
+    pub fn unlock_wallet(&self, password: String) -> js_sys::Promise {
+        let inner_opt = self.inner.clone();
+        future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
+            inner
+                .unlock_wallet(&password)
+                .await
+                .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
+                .map_err(to_js_error)
+        })
+    }
+
+    /// Lock the node wallet
+    #[wasm_bindgen(js_name = lockWallet)]
+    pub fn lock_wallet(&self) -> js_sys::Promise {
+        let inner_opt = self.inner.clone();
+        future_to_promise(async move {
+            let inner = inner_opt.ok_or_else(|| to_js_error(KaleidoError::NodeNotConfigured))?;
+            inner
+                .lock_wallet()
                 .await
                 .map(|res| serde_wasm_bindgen::to_value(&res).unwrap())
                 .map_err(to_js_error)
@@ -888,9 +897,10 @@ fn parse_layer(layer: &str) -> Result<Layer, JsValue> {
         "LIQUID_LIQUID" => Ok(Layer::LiquidLiquid),
         "ARKADE_ARKADE" => Ok(Layer::ArkadeArkade),
         "SPARK_SPARK" => Ok(Layer::SparkSpark),
-        _ => Err(to_js_error(kaleidoswap_core::error::KaleidoError::validation(
-            format!("Invalid layer: {}. Expected one of: BTC_L1, BTC_LN, BTC_SPARK, RGB_L1, RGB_LN, etc.", layer)
-        ))),
+        _ => Err(to_js_error(KaleidoError::validation(format!(
+            "Invalid layer: {}. Expected one of: BTC_L1, BTC_LN, BTC_SPARK, RGB_L1, RGB_LN, etc.",
+            layer
+        )))),
     }
 }
 

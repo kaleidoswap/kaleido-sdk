@@ -91,8 +91,7 @@ async def test_complete_swap_legacy(client):
     logger.info(f"Init request payload: {init_request}")
 
     try:
-        init_result_json = client.init_swap(init_request)
-        init_result = json.loads(init_result_json)
+        init_result = client.init_swap(init_request)  # Returns dict now
     except Exception as e:
         logger.error(f"Init swap failed. Error: {e}")
         # DEBUG: Check if it's an environment validation error
@@ -129,8 +128,7 @@ async def test_complete_swap_legacy(client):
         "payment_hash": init_result["payment_hash"],
         "taker_pubkey": taker_pubkey,
     }
-    execute_result_json = client.execute_swap(execute_request)
-    execute_result = json.loads(execute_result_json)
+    execute_result = client.execute_swap(execute_request)  # Returns dict now
     logger.info("Executed maker swap: %s", execute_result)
     assert execute_result is not None
 
@@ -168,8 +166,7 @@ async def test_create_order_legacy(client):
     """Test creating an LSPS1 order (Legacy)."""
     # 0. Connect to LSP Peer (Required for Client Rejected error)
     try:
-        lsp_info_json = client.get_lsp_info()
-        lsp_info = json.loads(lsp_info_json)
+        lsp_info = client.get_lsp_info()  # Returns dict now
         lsp_connection_url = lsp_info.get("lsp_connection_url")
         if lsp_connection_url:
             logger.info(f"Connecting to LSP peer: {lsp_connection_url}")
@@ -188,10 +185,9 @@ async def test_create_order_legacy(client):
         logger.warning(f"Failed to connect to LSP peer: {e}")
         # Continue anyway, maybe already connected
 
-    # Use helper to get pubkey
+    # Use helper to get pubkey - returns NodeInfoResponse object
     node_info = client.get_rgb_node_info()
-    node_info = json.loads(node_info)
-    pubkey = node_info["pubkey"]
+    pubkey = node_info.pubkey  # Access attribute directly
 
     onchain_response = client.node.get_onchain_address()
     onchain_address = onchain_response.address
@@ -209,8 +205,7 @@ async def test_create_order_legacy(client):
     }
 
     try:
-        order_result_json = client.create_order(order_request)
-        order_result = json.loads(order_result_json)
+        order_result = client.create_order(order_request)  # Returns dict now
         logger.info("Created order: %s", order_result)
         assert "order_id" in order_result
         return order_result
@@ -253,8 +248,7 @@ async def test_create_swap_order_legacy(client):
     }
 
     try:
-        swap_order_json = client.create_swap_order(swap_order_request)
-        swap_order = json.loads(swap_order_json)
+        swap_order = client.create_swap_order(swap_order_request)  # Returns dict now
         logger.info("Created swap order: %s", swap_order)
         # Checking for id or order_id
         assert "id" in swap_order or "order_id" in swap_order

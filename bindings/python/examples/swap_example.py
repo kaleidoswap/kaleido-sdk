@@ -173,9 +173,9 @@ def main():
     # Step 4: Get Taker Pubkey
     print("\n🔑 Getting taker pubkey...")
     try:
-        node_info_json = client.get_rgb_node_info()
-        node_info = json.loads(node_info_json)
-        taker_pubkey = node_info.get("pubkey", "")
+        # get_rgb_node_info() now returns a NodeInfoResponse object, not JSON
+        node_info = client.get_rgb_node_info()
+        taker_pubkey = node_info.pubkey if node_info.pubkey else ""
         print(f"   ✅ Pubkey: {taker_pubkey[:20]}...")
     except Exception as e:
         print("   ⚠️  Node info failed (expected u64 overflow)")

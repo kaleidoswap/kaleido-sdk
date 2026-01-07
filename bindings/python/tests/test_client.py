@@ -188,7 +188,8 @@ class TestClientMethodSignatures:
 
     def test_has_websocket_methods(self, client):
         """Test that WebSocket streaming methods exist."""
-        assert hasattr(client, "create_quote_stream")
+        # create_quote_stream was removed from SDK
+        pytest.skip("WebSocket streaming methods were removed from SDK")
 
     def test_method_count(self, client):
         """Test that client has expected number of public methods."""
@@ -231,7 +232,8 @@ class TestExtendedIntegration:
     def test_get_lsp_info(self, client):
         """Test getting LSP info."""
         info = client.get_lsp_info()
-        assert isinstance(info, str)
+        # Returns dict now instead of JSON string
+        assert isinstance(info, dict)
 
     def test_get_lsp_network_info(self, client):
         """Test getting LSP network info."""
@@ -283,34 +285,15 @@ class TestQuoteStreamIntegration:
 
     def test_create_quote_stream(self, client):
         """Test creating a quote stream."""
-        stream = client.create_quote_stream("BTC/USDT")
-
-        assert stream is not None
-        assert hasattr(stream, "recv")
-        assert hasattr(stream, "is_connected")
-        assert hasattr(stream, "close")
-
-        stream.close()
+        pytest.skip("create_quote_stream method was removed from SDK")
 
     def test_quote_stream_connection_status(self, client):
         """Test that connection status is tracked correctly."""
-        stream = client.create_quote_stream("BTC/USDT")
-
-        assert stream.is_connected() is True
-
-        stream.close()
-
-        assert stream.is_connected() is False
+        pytest.skip("create_quote_stream method was removed from SDK")
 
     def test_quote_stream_recv_timeout(self, client):
         """Test that recv returns None on timeout."""
-        stream = client.create_quote_stream("NONEXISTENT/PAIR")
-
-        # Very short timeout should return None
-        quote = stream.recv(0.1)
-        assert quote is None
-
-        stream.close()
+        pytest.skip("create_quote_stream method was removed from SDK")
 
 
 # ============================================================================
@@ -542,7 +525,8 @@ class TestLspOperationsIntegration:
     def test_get_lsp_info(self, client):
         """Test getting LSP info."""
         info = client.get_lsp_info()
-        assert isinstance(info, str)
+        # Returns dict now instead of JSON string
+        assert isinstance(info, dict)
 
     def test_get_lsp_network_info(self, client):
         """Test getting LSP network info."""

@@ -72,6 +72,16 @@ fn test_client_has_node() {
     assert!(!client.has_node());
 }
 
+#[wasm_bindgen_test]
+fn test_client_accessors() {
+    let config = KaleidoConfig::with_defaults("https://api.regtest.kaleidoswap.com".to_string());
+    let client = KaleidoClient::new(config).expect("Failed to create client");
+
+    // Check if we can access sub-clients
+    let _maker = client.maker();
+    let _rln = client.rln();
+}
+
 // Note: The following tests would require actual API calls
 // which we can't do in a unit test context. These should be
 // integration tests run against a test server.

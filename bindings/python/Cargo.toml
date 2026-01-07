@@ -15,9 +15,11 @@ name = "kaleidoswap"
 kaleidoswap-core = { path = "../../crates/kaleidoswap-core" }
 kaleidoswap-uniffi = { path = "../../crates/kaleidoswap-uniffi" }
 uniffi.workspace = true
-pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }
+pyo3 = { version = "0.21", features = ["extension-module", "abi3-py38"] }
+pythonize = "0.21"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tokio = { workspace = true }
 
 [build-dependencies]
 uniffi = { workspace = true, features = ["build"] }

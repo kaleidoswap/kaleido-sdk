@@ -63,11 +63,14 @@ from enum import Enum
 # Import exceptions
 from .exceptions import (APIError, AssetNotFoundError, AuthenticationError,
                          ChannelNotFoundError, InsufficientBalanceError,
-                         KaleidoError, LspError, NetworkError, NodeLockedError,
-                         NodeNotConfiguredError, OrderNotFoundError,
+                         InsufficientLiquidityError, KaleidoError, LspError,
+                         NetworkError, NodeLockedError, NodeNotConfiguredError,
+                         NotFoundError, OrderNotFoundError, PairNotFoundError,
                          QuoteExpiredError, RateLimitError,
-                         ResourceNotFoundError, TradingPairNotFoundError,
-                         ValidationError)
+                         ResourceNotFoundError, ServiceUnavailableError,
+                         SwapError, TimeoutError, TradingPairNotFoundError,
+                         UnauthorizedError, ValidationError,
+                         create_error_from_response)
 
 
 class WsEvent(str, Enum):
@@ -94,6 +97,7 @@ __all__ = [
     "ValidationError",
     "QuoteExpiredError",
     "InsufficientBalanceError",
+    "InsufficientLiquidityError",
     "NodeNotConfiguredError",
     "AuthenticationError",
     "RateLimitError",
@@ -102,8 +106,15 @@ __all__ = [
     "ResourceNotFoundError",
     "AssetNotFoundError",
     "TradingPairNotFoundError",
+    "PairNotFoundError",
+    "NotFoundError",
     "NodeLockedError",
     "LspError",
+    "ServiceUnavailableError",
+    "SwapError",
+    "TimeoutError",
+    "UnauthorizedError",
+    "create_error_from_response",
     # Utilities
     "JsonValue",
     "PyKaleidoClient",
