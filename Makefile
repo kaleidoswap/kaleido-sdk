@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models update-specs
+.PHONY: help build test clean format lint check generate-models generate-python-models generate-ts-types generate-rust-models update-specs
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -37,9 +37,12 @@ help:
 	@echo "  clippy             - Run Rust clippy"
 	@echo ""
 	@echo "Code Generation:"
-	@echo "  generate-models    - Generate Rust models from OpenAPI specs (Docker)"
-	@echo "  regenerate         - Full regen: update-specs + generate-models + check"
-	@echo "  update-specs       - Download latest OpenAPI specs"
+	@echo "  generate-models        - Generate all models (Python + TypeScript)"
+	@echo "  generate-python-models - Generate Python Pydantic models"
+	@echo "  generate-ts-types      - Generate TypeScript types"
+	@echo "  generate-rust-models   - Generate Rust models (Progenitor via build.rs)"
+	@echo "  regenerate             - Full regen: update-specs + generate-models + check"
+	@echo "  update-specs           - Download latest OpenAPI specs"
 	@echo ""
 	@echo "Deployment:"
 	@echo "  deploy-python      - Deploy Python package to PyPI"
@@ -178,10 +181,21 @@ clippy:
 # Code generation targets
 # ============================================================================
 
-generate-models:
+generate-models: generate-python-models generate-ts-types
+	@echo "✅ All models generated (Python + TypeScript)"
+
+generate-python-models:
+	@echo "🐍 Generating Python Pydantic models from OpenAPI specs..."
+	bash scripts/generate_python_models.sh
+
+generate-ts-types:
+	@echo "📦 Generating TypeScript types from OpenAPI specs..."
+	bash scripts/generate_typescript_types.sh
+
+generate-rust-models:
 	@echo "🔄 Generating Rust models from OpenAPI specs (Progenitor)..."
 	./scripts/generate-rust-models.sh
-	@echo "✅ Models generated via build.rs."
+	@echo "✅ Rust models generated via build.rs."
 
 regenerate: update-specs generate-models check
 	@echo "✅ Full regeneration complete!"
