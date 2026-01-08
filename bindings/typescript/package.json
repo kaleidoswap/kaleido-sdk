@@ -38,6 +38,9 @@
     "build:web": "wasm-pack build --target web --out-dir pkg-web",
     "build:nodejs": "wasm-pack build --target nodejs --out-dir pkg-node",
     "build:all": "npm run build && npm run build:web && npm run build:nodejs",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
     "test": "npm run test:unit && npm run test:wasm",
     "test:unit": "npm run build && jest --config jest.config.cjs",
     "test:unit:watch": "npm run build && jest --config jest.config.cjs --watch",
@@ -50,11 +53,16 @@
     "clean": "rm -rf pkg pkg-web pkg-node target dist-test coverage"
   },
   "devDependencies": {
-    "wasm-pack": "^0.13.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
     "jest": "^29.5.0",
+    "prettier": "^3.2.5",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "wasm-pack": "^0.13.0"
   }
 }

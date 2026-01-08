@@ -1,11 +1,11 @@
 /**
  * React Example for Kaleidoswap SDK Web
- * 
+ *
  * This example shows how to use the Kaleidoswap SDK in a React application.
- * 
+ *
  * Installation:
  *   npm install @kaleidoswap/sdk-web react
- * 
+ *
  * Usage:
  *   import { KaleidoswapProvider, useKaleidoswap } from './KaleidoswapProvider';
  */
@@ -154,13 +154,7 @@ export function QuoteForm() {
     try {
       setLoading(true);
       setError(null);
-      const result = await client.getQuoteByPair(
-        pair,
-        parseInt(amount),
-        null,
-        'BTC_LN',
-        'RGB_LN'
-      );
+      const result = await client.getQuoteByPair(pair, parseInt(amount), null, 'BTC_LN', 'RGB_LN');
       setQuote(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get quote');
@@ -209,10 +203,18 @@ export function QuoteForm() {
       {quote && (
         <div style={{ background: '#f5f5f5', padding: '20px', marginTop: '20px' }}>
           <h3>Quote</h3>
-          <p><strong>RFQ ID:</strong> {quote.rfq_id}</p>
-          <p><strong>Exchange Rate:</strong> {quote.exchange_rate}</p>
-          <p><strong>From:</strong> {quote.from_asset.amount} {quote.from_asset.asset_id}</p>
-          <p><strong>To:</strong> {quote.to_asset.amount} {quote.to_asset.asset_id}</p>
+          <p>
+            <strong>RFQ ID:</strong> {quote.rfq_id}
+          </p>
+          <p>
+            <strong>Exchange Rate:</strong> {quote.exchange_rate}
+          </p>
+          <p>
+            <strong>From:</strong> {quote.from_asset.amount} {quote.from_asset.asset_id}
+          </p>
+          <p>
+            <strong>To:</strong> {quote.to_asset.amount} {quote.to_asset.asset_id}
+          </p>
         </div>
       )}
     </div>
@@ -235,4 +237,3 @@ export default function App() {
     </KaleidoswapProvider>
   );
 }
-

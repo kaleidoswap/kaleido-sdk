@@ -6,7 +6,9 @@
 // Polyfill for TextEncoder/TextDecoder in Node.js environment
 import { TextEncoder, TextDecoder } from 'util';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.TextEncoder = TextEncoder as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.TextDecoder = TextDecoder as any;
 
 // Mock fetch for Node.js environment (for tests that don't need real HTTP)
@@ -26,8 +28,7 @@ jest.setTimeout(10000);
 
 // Clear all mocks after each test
 // Polyfill for BigInt serialization in Jest
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
-
-

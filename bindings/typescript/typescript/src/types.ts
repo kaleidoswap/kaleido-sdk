@@ -4,8 +4,9 @@
  * This file re-exports types from the auto-generated OpenAPI types
  * with additional SDK-specific type enhancements.
  *
- * Amount fields use JavaScript `number` from the API.
- * For high-precision operations, convert to BigInt as needed.
+ * Amount fields use JavaScript `number` from the API for compatibility.
+ * Note: JavaScript numbers are safe up to 2^53. For high-precision operations
+ * with very large amounts, consider converting to BigInt as needed.
  */
 
 // Import all generated types
@@ -86,19 +87,19 @@ export type ReceiverAddressFormat = components['schemas']['ReceiverAddressFormat
  * @deprecated Use type-safe Layer type instead
  */
 export const LayerEnum = {
-    BTC_L1: 'BTC_L1' as Layer,
-    BTC_LN: 'BTC_LN' as Layer,
-    BTC_SPARK: 'BTC_SPARK' as Layer,
-    BTC_ARKADE: 'BTC_ARKADE' as Layer,
-    BTC_LIQUID: 'BTC_LIQUID' as Layer,
-    BTC_CASHU: 'BTC_CASHU' as Layer,
-    RGB_L1: 'RGB_L1' as Layer,
-    RGB_LN: 'RGB_LN' as Layer,
-    TAPASS_L1: 'TAPASS_L1' as Layer,
-    TAPASS_LN: 'TAPASS_LN' as Layer,
-    LIQUID_LIQUID: 'LIQUID_LIQUID' as Layer,
-    ARKADE_ARKADE: 'ARKADE_ARKADE' as Layer,
-    SPARK_SPARK: 'SPARK_SPARK' as Layer,
+  BTC_L1: 'BTC_L1' as Layer,
+  BTC_LN: 'BTC_LN' as Layer,
+  BTC_SPARK: 'BTC_SPARK' as Layer,
+  BTC_ARKADE: 'BTC_ARKADE' as Layer,
+  BTC_LIQUID: 'BTC_LIQUID' as Layer,
+  BTC_CASHU: 'BTC_CASHU' as Layer,
+  RGB_L1: 'RGB_L1' as Layer,
+  RGB_LN: 'RGB_LN' as Layer,
+  TAPASS_L1: 'TAPASS_L1' as Layer,
+  TAPASS_LN: 'TAPASS_LN' as Layer,
+  LIQUID_LIQUID: 'LIQUID_LIQUID' as Layer,
+  ARKADE_ARKADE: 'ARKADE_ARKADE' as Layer,
+  SPARK_SPARK: 'SPARK_SPARK' as Layer,
 } as const;
 
 /** @deprecated Use Layer type or LayerEnum const instead */
@@ -109,18 +110,18 @@ export { LayerEnum as Layer };
  * @deprecated Use type-safe ReceiverAddressFormat type instead
  */
 export const ReceiverAddressFormatEnum = {
-    BTC_ADDRESS: 'BTC_ADDRESS' as ReceiverAddressFormat,
-    BOLT11: 'BOLT11' as ReceiverAddressFormat,
-    BOLT12: 'BOLT12' as ReceiverAddressFormat,
-    LN_ADDRESS: 'LN_ADDRESS' as ReceiverAddressFormat,
-    RGB_INVOICE: 'RGB_INVOICE' as ReceiverAddressFormat,
-    LIQUID_ADDRESS: 'LIQUID_ADDRESS' as ReceiverAddressFormat,
-    LIQUID_INVOICE: 'LIQUID_INVOICE' as ReceiverAddressFormat,
-    SPARK_ADDRESS: 'SPARK_ADDRESS' as ReceiverAddressFormat,
-    SPARK_INVOICE: 'SPARK_INVOICE' as ReceiverAddressFormat,
-    ARKADE_ADDRESS: 'ARKADE_ADDRESS' as ReceiverAddressFormat,
-    ARKADE_INVOICE: 'ARKADE_INVOICE' as ReceiverAddressFormat,
-    CASHU_TOKEN: 'CASHU_TOKEN' as ReceiverAddressFormat,
+  BTC_ADDRESS: 'BTC_ADDRESS' as ReceiverAddressFormat,
+  BOLT11: 'BOLT11' as ReceiverAddressFormat,
+  BOLT12: 'BOLT12' as ReceiverAddressFormat,
+  LN_ADDRESS: 'LN_ADDRESS' as ReceiverAddressFormat,
+  RGB_INVOICE: 'RGB_INVOICE' as ReceiverAddressFormat,
+  LIQUID_ADDRESS: 'LIQUID_ADDRESS' as ReceiverAddressFormat,
+  LIQUID_INVOICE: 'LIQUID_INVOICE' as ReceiverAddressFormat,
+  SPARK_ADDRESS: 'SPARK_ADDRESS' as ReceiverAddressFormat,
+  SPARK_INVOICE: 'SPARK_INVOICE' as ReceiverAddressFormat,
+  ARKADE_ADDRESS: 'ARKADE_ADDRESS' as ReceiverAddressFormat,
+  ARKADE_INVOICE: 'ARKADE_INVOICE' as ReceiverAddressFormat,
+  CASHU_TOKEN: 'CASHU_TOKEN' as ReceiverAddressFormat,
 } as const;
 
 /** @deprecated Use ReceiverAddressFormat type or ReceiverAddressFormatEnum const instead */
@@ -135,18 +136,18 @@ export { ReceiverAddressFormatEnum as ReceiverAddressFormat };
  * Note: All config values use regular JavaScript numbers, not BigInt.
  */
 export interface KaleidoConfig {
-    /** Base URL for the Kaleidoswap API */
-    baseUrl: string;
-    /** Optional URL for RGB Lightning Node */
-    nodeUrl?: string;
-    /** Optional API key for authenticated requests */
-    apiKey?: string;
-    /** Request timeout in seconds (default: 30) */
-    timeout?: number;
-    /** Maximum retry attempts (default: 3) */
-    maxRetries?: number;
-    /** Cache TTL in seconds (default: 60) */
-    cacheTtl?: number;
+  /** Base URL for the Kaleidoswap API */
+  baseUrl: string;
+  /** Optional URL for RGB Lightning Node */
+  nodeUrl?: string;
+  /** Optional API key for authenticated requests */
+  apiKey?: string;
+  /** Request timeout in seconds (default: 30) */
+  timeout?: number;
+  /** Maximum retry attempts (default: 3) */
+  maxRetries?: number;
+  /** Cache TTL in seconds (default: 60) */
+  cacheTtl?: number;
 }
 
 // ============================================================================
@@ -170,10 +171,7 @@ import type { components as nodeComponents } from './generated/node-types.js';
 export type { nodeComponents };
 
 /** Node API paths and operations */
-export type {
-    paths as nodePaths,
-    operations as nodeOperations
-} from './generated/node-types.js';
+export type { paths as nodePaths, operations as nodeOperations } from './generated/node-types.js';
 
 // --- Request/Response Types ---
 
@@ -253,4 +251,3 @@ export type SignMessageResponse = nodeComponents['schemas']['SignMessageResponse
 // Misc types
 export type Assignment = nodeComponents['schemas']['Assignment'];
 export type AssignmentFungible = nodeComponents['schemas']['AssignmentFungible'];
-

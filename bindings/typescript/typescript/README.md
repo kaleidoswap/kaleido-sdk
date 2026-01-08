@@ -26,63 +26,60 @@ import { KaleidoClient } from '@kaleidoswap/sdk';
 
 // Create client (async factory)
 const client = await KaleidoClient.create({
-    baseUrl: 'https://api.kaleidoswap.com'
+  baseUrl: 'https://api.kaleidoswap.com',
 });
 
 // List assets
 const assets = await client.listAssets();
-console.log(assets.map(a => a.ticker)); // ["BTC", "USDT", ...]
+console.log(assets.map((a) => a.ticker)); // ["BTC", "USDT", ...]
 
 // Get a quote
 const quote = await client.getQuote(
-    'BTC/USDT',
-    100000n,  // 0.001 BTC in satoshis (BigInt)
-    null,
-    'BTC_LN', // From Lightning
-    'RGB_LN'  // To RGB Lightning
+  'BTC/USDT',
+  100000n, // 0.001 BTC in satoshis (BigInt)
+  null,
+  'BTC_LN', // From Lightning
+  'RGB_LN', // To RGB Lightning
 );
 
 console.log(`Rate: ${quote.rate}`);
 console.log(`You receive: ${quote.to_asset.amount} smallest units`);
 ```
 
-## BigInt for Amounts
+## Amount Handling
 
-All amount fields use JavaScript `BigInt` to preserve precision:
+All amount fields use JavaScript `number` for API compatibility:
 
 ```typescript
 // Amounts are in smallest units (satoshis for BTC)
-const fromAmount = 1_000_000n;  // 0.01 BTC
+const fromAmount = 1_000_000; // 0.01 BTC
 
 // Convert to/from display units
 import { toDisplayUnits, toSmallestUnits } from '@kaleidoswap/sdk';
 
-const displayAmount = await toDisplayUnits(1_000_000n, 8); // 0.01
-const smallestUnits = await toSmallestUnits(0.01, 8);      // 1000000n
+const displayAmount = await toDisplayUnits(1_000_000, 8); // 0.01
+const smallestUnits = await toSmallestUnits(0.01, 8); // 1000000
 ```
+
+> **Note on Precision:** JavaScript numbers are safe up to 2^53 (9,007,199,254,740,991). For amounts exceeding this (e.g., very large satoshi values), consider converting to `BigInt` for precision-critical operations.
 
 ## Error Handling
 
 Errors are typed and can be caught using `instanceof`:
 
 ```typescript
-import { 
-    KaleidoClient, 
-    APIError, 
-    NotFoundError, 
-    ValidationError 
-} from '@kaleidoswap/sdk';
+import { KaleidoClient, APIError, NotFoundError, ValidationError } from '@kaleidoswap/sdk';
 
 try {
-    const asset = await client.getAssetByTicker('INVALID');
+  const asset = await client.getAssetByTicker('INVALID');
 } catch (error) {
-    if (error instanceof NotFoundError) {
-        console.log('Asset not found');
-    } else if (error instanceof APIError) {
-        console.log(`API error (${error.statusCode}): ${error.message}`);
-    } else if (error instanceof ValidationError) {
-        console.log(`Invalid input: ${error.message}`);
-    }
+  if (error instanceof NotFoundError) {
+    console.log('Asset not found');
+  } else if (error instanceof APIError) {
+    console.log(`API error (${error.statusCode}): ${error.message}`);
+  } else if (error instanceof ValidationError) {
+    console.log(`Invalid input: ${error.message}`);
+  }
 }
 ```
 
@@ -120,12 +117,12 @@ try {
 
 ```typescript
 type Layer =
-    | 'BTC_L1'    // Bitcoin on-chain
-    | 'BTC_LN'    // Bitcoin Lightning
-    | 'RGB_L1'    // RGB on-chain
-    | 'RGB_LN'    // RGB Lightning
-    | 'BTC_SPARK' // Bitcoin Spark
-    // ... and more
+  | 'BTC_L1' // Bitcoin on-chain
+  | 'BTC_LN' // Bitcoin Lightning
+  | 'RGB_L1' // RGB on-chain
+  | 'RGB_LN' // RGB Lightning
+  | 'BTC_SPARK'; // Bitcoin Spark
+// ... and more
 ```
 
 ## Building from Source

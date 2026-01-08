@@ -5,6 +5,7 @@ Quick start guide for running Kaleidoswap SDK TypeScript examples.
 ## Setup
 
 ### Prerequisites
+
 - Node.js 18+
 - pnpm (or npm)
 
@@ -56,16 +57,16 @@ npx ts-node --esm examples/swap_example.ts
 ### Quick Asset Lookup
 
 ```typescript
-import { KaleidoClient, KaleidoConfig } from "../pkg-node/kaleidoswap_sdk.js";
+import { KaleidoClient, KaleidoConfig } from '../pkg-node/kaleidoswap_sdk.js';
 
-const config = KaleidoConfig.withDefaults("http://localhost:8000");
+const config = KaleidoConfig.withDefaults('http://localhost:8000');
 const client = new KaleidoClient(config);
 
 // List all assets
 const assets = await client.listAssets();
 
 // Get specific asset
-const usdt = assets.find(a => a.ticker === "USDT");
+const usdt = assets.find((a) => a.ticker === 'USDT');
 console.log(`USDT precision: ${usdt.precision}`);
 ```
 
@@ -74,11 +75,11 @@ console.log(`USDT precision: ${usdt.precision}`);
 ```typescript
 // Get quote using asset IDs and layers
 const quote = await client.getQuoteByPair(
-    "BTC/rgb:...",        // Pair string with RGB asset ID
-    BigInt(600000),       // Amount as BigInt
-    undefined,            // No to_amount (let API calculate)
-    "BTC_LN",
-    "RGB_L1"
+  'BTC/rgb:...', // Pair string with RGB asset ID
+  BigInt(600000), // Amount as BigInt
+  undefined, // No to_amount (let API calculate)
+  'BTC_LN',
+  'RGB_L1',
 );
 
 console.log(`You'll receive: ${quote.to_asset.amount} ${quote.to_asset.ticker}`);
@@ -92,7 +93,7 @@ TypeScript bindings use `BigInt` for large numbers (amounts, u64 values):
 ```typescript
 // Amounts
 const amount = BigInt(600000);
-const quote = await client.getQuoteByPair(ticker, amount, undefined, "BTC_LN", "RGB_L1");
+const quote = await client.getQuoteByPair(ticker, amount, undefined, 'BTC_LN', 'RGB_L1');
 
 // The response includes BigInt for amounts
 console.log(typeof quote.from_asset.amount); // 'bigint'
@@ -115,8 +116,9 @@ If you still encounter errors, use the recovery workaround included in the examp
 **Issue**: Getting quote returns 400 Bad Request.
 
 **Common Causes**:
+
 1. **Amount too small**: Use at least 500,000 sats for most BTC pairs
-2. **Wrong asset identifier**: Extract RGB ID from `protocol_ids` 
+2. **Wrong asset identifier**: Extract RGB ID from `protocol_ids`
 3. **Invalid layer combination**: Ensure pair supports requested layers
 
 ### Type Errors with protocol_ids
@@ -127,19 +129,19 @@ If you still encounter errors, use the recovery workaround included in the examp
 
 ```typescript
 function getAssetId(asset: any): string {
-    if (!asset.protocol_ids) return asset.ticker;
+  if (!asset.protocol_ids) return asset.ticker;
 
-    const entries = asset.protocol_ids instanceof Map 
-        ? Array.from(asset.protocol_ids.entries())
-        : Object.entries(asset.protocol_ids);
+  const entries =
+    asset.protocol_ids instanceof Map
+      ? Array.from(asset.protocol_ids.entries())
+      : Object.entries(asset.protocol_ids);
 
-    // Find RGB ID
-    for (const [key, value] of entries) {
-        if (String(key).toLowerCase().includes("rgb"))
-            return value as string;
-    }
-    
-    return asset.ticker;
+  // Find RGB ID
+  for (const [key, value] of entries) {
+    if (String(key).toLowerCase().includes('rgb')) return value as string;
+  }
+
+  return asset.ticker;
 }
 ```
 

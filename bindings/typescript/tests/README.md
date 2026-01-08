@@ -23,6 +23,7 @@ tests/
 Modern TypeScript tests using Jest with proper WASM support.
 
 **Run:**
+
 ```bash
 # All unit tests
 npm run test:unit
@@ -35,6 +36,7 @@ npm run test:unit:coverage
 ```
 
 **Features:**
+
 - ✅ Fast execution
 - ✅ Code coverage reporting
 - ✅ Watch mode for development
@@ -47,6 +49,7 @@ npm run test:unit:coverage
 Rust tests that run in a headless browser.
 
 **Run:**
+
 ```bash
 # Chrome
 npm run test:wasm
@@ -63,6 +66,7 @@ npm run test:all
 Interactive browser tests with visual feedback.
 
 **Run:**
+
 ```bash
 npm run test:integration
 # Open: http://localhost:8000/tests/integration.html
@@ -127,10 +131,10 @@ describe('Feature Name', () => {
     it('should do something specific', () => {
       // Arrange
       const config = KaleidoConfig.withDefaults('https://api.test.com');
-      
+
       // Act
       const client = new KaleidoClient(config);
-      
+
       // Assert
       expect(client).toBeDefined();
     });
@@ -141,35 +145,38 @@ describe('Feature Name', () => {
 ### Best Practices
 
 1. **Arrange-Act-Assert Pattern**
+
    ```typescript
    it('should validate input', () => {
      // Arrange
      const input = 'test';
-     
+
      // Act
      const result = processInput(input);
-     
+
      // Assert
      expect(result).toBe('TEST');
    });
    ```
 
 2. **Use Descriptive Test Names**
+
    ```typescript
    // Good
-   it('should throw error when amount is negative')
-   
+   it('should throw error when amount is negative');
+
    // Bad
-   it('test amount')
+   it('test amount');
    ```
 
 3. **Test Edge Cases**
+
    ```typescript
    it('should handle zero amount', () => {
      const result = toSmallestUnits(0, 8);
      expect(result).toBe(0);
    });
-   
+
    it('should handle very large amounts', () => {
      const result = toSmallestUnits(21_000_000, 8);
      expect(result).toBe(2_100_000_000_000_000);
@@ -177,6 +184,7 @@ describe('Feature Name', () => {
    ```
 
 4. **Clean Up Resources**
+
    ```typescript
    afterEach(() => {
      if (client) {
@@ -186,9 +194,10 @@ describe('Feature Name', () => {
    ```
 
 5. **Skip Tests Conditionally**
+
    ```typescript
    const describeIntegration = process.env.CI ? describe.skip : describe;
-   
+
    describeIntegration('API Tests', () => {
      // Tests that require test server
    });
@@ -197,12 +206,14 @@ describe('Feature Name', () => {
 ## Test Coverage
 
 View coverage report after running:
+
 ```bash
 npm run test:unit:coverage
 open coverage/index.html
 ```
 
 **Target Coverage:**
+
 - Statements: > 80%
 - Branches: > 75%
 - Functions: > 80%
@@ -226,17 +237,14 @@ export DEBUG=kaleidoswap:*
 ### VS Code
 
 Add to `.vscode/launch.json`:
+
 ```json
 {
   "type": "node",
   "request": "launch",
   "name": "Jest Tests",
   "program": "${workspaceFolder}/node_modules/.bin/jest",
-  "args": [
-    "--runInBand",
-    "--no-cache",
-    "--watchAll=false"
-  ],
+  "args": ["--runInBand", "--no-cache", "--watchAll=false"],
   "console": "integratedTerminal",
   "internalConsoleOptions": "neverOpen"
 }
@@ -265,25 +273,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      
+
       - name: Install dependencies
         run: npm install
         working-directory: bindings/typescript
-      
+
       - name: Run tests
         run: npm run test:unit:coverage
         working-directory: bindings/typescript
         env:
           SKIP_INTEGRATION_TESTS: true
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:

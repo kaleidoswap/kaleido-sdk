@@ -4,164 +4,109 @@
  * Uses Vitest for testing the unified WASM-based TypeScript SDK.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
-import { AddressInfo } from 'net';
+// import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+// import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
+// import { AddressInfo } from 'net';
 
 // Import types (we can't import the actual client in Node.js test env without WASM)
-import type {
-    KaleidoConfig,
-    Asset,
-    TradingPair,
-    Quote,
-    Layer,
-} from '../src/types.js';
+import type { KaleidoConfig, /* Asset, TradingPair, Quote, */ Layer } from '../src/types.js';
 
 // Import error classes (these are pure TypeScript)
 import {
-    KaleidoError,
-    APIError,
-    NetworkError,
-    ValidationError,
-    NotFoundError,
-    TimeoutError,
-    ConfigError,
-    SwapError,
-    mapWasmError,
+  KaleidoError,
+  APIError,
+  NetworkError,
+  ValidationError,
+  NotFoundError,
+  TimeoutError,
+  ConfigError,
+  SwapError,
+  mapWasmError,
 } from '../src/errors.js';
 
 // ============================================================================
 // Mock Data
 // ============================================================================
 
-const mockAssets = [
-    {
-        asset_id: 'btc',
-        ticker: 'BTC',
-        name: 'Bitcoin',
-        precision: 8,
-        issued_supply: 2100000000000000,
-        timestamp: 1230940800,
-        added_at: 1704067200,
-        is_active: true,
-    },
-    {
-        asset_id: 'rgb:usdt...',
-        ticker: 'USDT',
-        name: 'Tether USD',
-        precision: 6,
-        issued_supply: 1000000000000,
-        timestamp: 1704067200,
-        added_at: 1704067200,
-        is_active: true,
-    },
-];
+// ============================================================================
+// Mock Data
+// ============================================================================
 
-const mockPairs = [
-    {
-        id: 'btc-usdt',
-        base_asset: 'BTC',
-        base_asset_id: 'btc',
-        base_precision: 8,
-        quote_asset: 'USDT',
-        quote_asset_id: 'rgb:usdt...',
-        quote_precision: 6,
-        is_active: true,
-    },
-];
-
-const mockQuote = {
-    rfq_id: 'rfq_123456',
-    from_asset: 'BTC',
-    from_amount: 100000,
-    to_asset: 'USDT',
-    to_amount: 9500000,
-    price: 95.0,
-    fee: {
-        base_fee: 100,
-        variable_fee: 500,
-        fee_rate: 0.005,
-        final_fee: 600,
-        fee_asset: 'BTC',
-        fee_asset_precision: 8,
-    },
-    timestamp: 1704067200,
-    expires_at: 1704067260,
-};
+// Mock data removed as it was unused
 
 // ============================================================================
 // Error Classes Tests
 // ============================================================================
 
 describe('Error Classes', () => {
-    describe('KaleidoError', () => {
-        it('should be the base error class', () => {
-            const error = new KaleidoError('TEST_ERROR', 'Test error');
-            expect(error).toBeInstanceOf(Error);
-            expect(error).toBeInstanceOf(KaleidoError);
-            expect(error.message).toBe('Test error');
-            expect(error.name).toBe('KaleidoError');
-        });
+  describe('KaleidoError', () => {
+    it('should be the base error class', () => {
+      const error = new KaleidoError('TEST_ERROR', 'Test error');
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toBeInstanceOf(KaleidoError);
+      expect(error.message).toBe('Test error');
+      expect(error.name).toBe('KaleidoError');
+    });
+  });
+
+  describe('APIError', () => {
+    it('should extend KaleidoError', () => {
+      const error = new APIError('API Error', 400);
+      expect(error).toBeInstanceOf(KaleidoError);
+      expect(error).toBeInstanceOf(APIError);
     });
 
-    describe('APIError', () => {
-        it('should extend KaleidoError', () => {
-            const error = new APIError('API Error', 400);
-            expect(error).toBeInstanceOf(KaleidoError);
-            expect(error).toBeInstanceOf(APIError);
-        });
-
-        it('should include status code', () => {
-            const error = new APIError('Bad request', 400);
-            expect(error.statusCode).toBe(400);
-            expect(error.code).toBe('API_ERROR');
-        });
+    it('should include status code', () => {
+      const error = new APIError('Bad request', 400);
+      expect(error.statusCode).toBe(400);
+      expect(error.code).toBe('API_ERROR');
     });
+  });
 
-    describe('NetworkError', () => {
-        it('should extend KaleidoError', () => {
-            const error = new NetworkError('Connection failed');
-            expect(error).toBeInstanceOf(KaleidoError);
-            expect(error).toBeInstanceOf(NetworkError);
-        });
+  describe('NetworkError', () => {
+    it('should extend KaleidoError', () => {
+      const error = new NetworkError('Connection failed');
+      expect(error).toBeInstanceOf(KaleidoError);
+      expect(error).toBeInstanceOf(NetworkError);
     });
+  });
 
-    describe('ValidationError', () => {
-        it('should have correct code', () => {
-            const error = new ValidationError('Invalid amount');
-            expect(error.code).toBe('VALIDATION_ERROR');
-        });
+  describe('ValidationError', () => {
+    it('should have correct code', () => {
+      const error = new ValidationError('Invalid amount');
+      expect(error.code).toBe('VALIDATION_ERROR');
     });
+  });
 
-    describe('NotFoundError', () => {
-        it('should have 404 status', () => {
-            const error = new NotFoundError('Asset not found');
-            expect(error.statusCode).toBe(404);
-            expect(error.code).toBe('NOT_FOUND');
-        });
+  describe('NotFoundError', () => {
+    it('should have 404 status', () => {
+      const error = new NotFoundError('Asset not found');
+      expect(error.statusCode).toBe(404);
+      expect(error.code).toBe('NOT_FOUND');
     });
+  });
 
-    describe('TimeoutError', () => {
-        it('should have correct code', () => {
-            const error = new TimeoutError('Request timed out');
-            expect(error.code).toBe('TIMEOUT_ERROR');
-        });
+  describe('TimeoutError', () => {
+    it('should have correct code', () => {
+      const error = new TimeoutError('Request timed out');
+      expect(error.code).toBe('TIMEOUT_ERROR');
     });
+  });
 
-    describe('ConfigError', () => {
-        it('should have correct code', () => {
-            const error = new ConfigError('Missing base URL');
-            expect(error.code).toBe('CONFIG_ERROR');
-        });
+  describe('ConfigError', () => {
+    it('should have correct code', () => {
+      const error = new ConfigError('Missing base URL');
+      expect(error.code).toBe('CONFIG_ERROR');
     });
+  });
 
-    describe('SwapError', () => {
-        it('should include swap ID', () => {
-            const error = new SwapError('Swap failed', 'swap-123');
-            expect(error.swapId).toBe('swap-123');
-            expect(error.code).toBe('SWAP_ERROR');
-        });
+  describe('SwapError', () => {
+    it('should include swap ID', () => {
+      const error = new SwapError('Swap failed', 'swap-123');
+      expect(error.swapId).toBe('swap-123');
+      expect(error.code).toBe('SWAP_ERROR');
     });
+  });
 });
 
 // ============================================================================
@@ -169,61 +114,61 @@ describe('Error Classes', () => {
 // ============================================================================
 
 describe('mapWasmError', () => {
-    it('should map API errors with status codes', () => {
-        const wasmError = {
-            code: 'API_ERROR',
-            message: 'Not Found',
-            status_code: 404,
-        };
-        const error = mapWasmError(wasmError);
-        expect(error).toBeInstanceOf(APIError);
-        expect((error as APIError).statusCode).toBe(404);
-    });
+  it('should map API errors with status codes', () => {
+    const wasmError = {
+      code: 'API_ERROR',
+      message: 'Not Found',
+      status_code: 404,
+    };
+    const error = mapWasmError(wasmError);
+    expect(error).toBeInstanceOf(APIError);
+    expect((error as APIError).statusCode).toBe(404);
+  });
 
-    it('should map network errors', () => {
-        const wasmError = {
-            code: 'NETWORK_ERROR',
-            message: 'Connection refused',
-        };
-        const error = mapWasmError(wasmError);
-        expect(error).toBeInstanceOf(NetworkError);
-    });
+  it('should map network errors', () => {
+    const wasmError = {
+      code: 'NETWORK_ERROR',
+      message: 'Connection refused',
+    };
+    const error = mapWasmError(wasmError);
+    expect(error).toBeInstanceOf(NetworkError);
+  });
 
-    it('should map validation errors', () => {
-        const wasmError = {
-            code: 'VALIDATION_ERROR',
-            message: 'Invalid input',
-        };
-        const error = mapWasmError(wasmError);
-        expect(error).toBeInstanceOf(ValidationError);
-    });
+  it('should map validation errors', () => {
+    const wasmError = {
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid input',
+    };
+    const error = mapWasmError(wasmError);
+    expect(error).toBeInstanceOf(ValidationError);
+  });
 
-    it('should map not found errors', () => {
-        const wasmError = {
-            code: 'NOT_FOUND',
-            message: 'Asset not found',
-        };
-        const error = mapWasmError(wasmError);
-        expect(error).toBeInstanceOf(NotFoundError);
-    });
+  it('should map not found errors', () => {
+    const wasmError = {
+      code: 'NOT_FOUND',
+      message: 'Asset not found',
+    };
+    const error = mapWasmError(wasmError);
+    expect(error).toBeInstanceOf(NotFoundError);
+  });
 
-    it('should handle plain Error objects', () => {
-        const plainError = new Error('Something went wrong');
-        const error = mapWasmError(plainError);
-        expect(error).toBeInstanceOf(KaleidoError);
-        expect(error.message).toContain('Something went wrong');
-    });
+  it('should handle plain Error objects', () => {
+    const plainError = new Error('Something went wrong');
+    const error = mapWasmError(plainError);
+    expect(error).toBeInstanceOf(KaleidoError);
+    expect(error.message).toContain('Something went wrong');
+  });
 
-    it('should handle string errors', () => {
-        const error = mapWasmError('Raw error message');
-        expect(error).toBeInstanceOf(KaleidoError);
-        expect(error.message).toContain('Raw error message');
-    });
+  it('should handle string errors', () => {
+    const error = mapWasmError('Raw error message');
+    expect(error).toBeInstanceOf(KaleidoError);
+    expect(error.message).toContain('Raw error message');
+  });
 
-    it('should handle null/undefined', () => {
-        expect(mapWasmError(null)).toBeInstanceOf(KaleidoError);
-        expect(mapWasmError(undefined)).toBeInstanceOf(KaleidoError);
-    });
+  it('should handle null/undefined', () => {
+    expect(mapWasmError(null)).toBeInstanceOf(KaleidoError);
+    expect(mapWasmError(undefined)).toBeInstanceOf(KaleidoError);
+  });
 });
 
 // ============================================================================
@@ -231,39 +176,39 @@ describe('mapWasmError', () => {
 // ============================================================================
 
 describe('Type Definitions', () => {
-    describe('Layer type', () => {
-        it('should include BTC layers', () => {
-            const btcLayers: Layer[] = ['BTC_L1', 'BTC_LN', 'BTC_SPARK', 'BTC_LIQUID'];
-            expect(btcLayers).toHaveLength(4);
-        });
-
-        it('should include RGB layers', () => {
-            const rgbLayers: Layer[] = ['RGB_L1', 'RGB_LN'];
-            expect(rgbLayers).toHaveLength(2);
-        });
+  describe('Layer type', () => {
+    it('should include BTC layers', () => {
+      const btcLayers: Layer[] = ['BTC_L1', 'BTC_LN', 'BTC_SPARK', 'BTC_LIQUID'];
+      expect(btcLayers).toHaveLength(4);
     });
 
-    describe('KaleidoConfig type', () => {
-        it('should accept minimal config', () => {
-            const config: KaleidoConfig = {
-                baseUrl: 'https://api.example.com',
-            };
-            expect(config.baseUrl).toBeDefined();
-        });
-
-        it('should accept full config', () => {
-            const config: KaleidoConfig = {
-                baseUrl: 'https://api.example.com',
-                nodeUrl: 'http://localhost:3001',
-                apiKey: 'secret',
-                timeout: 60,
-                maxRetries: 5,
-                cacheTtl: 120,
-            };
-            expect(config.timeout).toBe(60);
-            expect(config.maxRetries).toBe(5);
-        });
+    it('should include RGB layers', () => {
+      const rgbLayers: Layer[] = ['RGB_L1', 'RGB_LN'];
+      expect(rgbLayers).toHaveLength(2);
     });
+  });
+
+  describe('KaleidoConfig type', () => {
+    it('should accept minimal config', () => {
+      const config: KaleidoConfig = {
+        baseUrl: 'https://api.example.com',
+      };
+      expect(config.baseUrl).toBeDefined();
+    });
+
+    it('should accept full config', () => {
+      const config: KaleidoConfig = {
+        baseUrl: 'https://api.example.com',
+        nodeUrl: 'http://localhost:3001',
+        apiKey: 'secret',
+        timeout: 60,
+        maxRetries: 5,
+        cacheTtl: 120,
+      };
+      expect(config.timeout).toBe(60);
+      expect(config.maxRetries).toBe(5);
+    });
+  });
 });
 
 // ============================================================================
@@ -271,103 +216,101 @@ describe('Type Definitions', () => {
 // ============================================================================
 
 describe('Integration Tests (Local API)', () => {
-    // Tests assume a running Kaleidoswap Maker at localhost:8000
-    // Skip if API is not available (connection refused)
-    const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
-    let isApiAvailable = false;
+  // Tests assume a running Kaleidoswap Maker at localhost:8000
+  // Skip if API is not available (connection refused)
+  const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+  const isApiAvailable = false;
 
-    beforeAll(async () => {
-        try {
-            const res = await fetch(`${API_URL}/health`);
-            // TODO: Local API is outdated (returns nested objects instead of flat, expects objects in request).
-            // Skipping integration tests until API matches OpenAPI spec.
-            // if (res.ok) isApiAvailable = true;
-            console.log('Skipping integration tests - API version mismatch');
-        } catch (e) {
-            console.log('Skipping integration tests - API not available');
-        }
+  beforeAll(async () => {
+    try {
+      await fetch(`${API_URL}/health`);
+      // TODO: Local API is outdated (returns nested objects instead of flat, expects objects in request).
+      // Skipping integration tests until API matches OpenAPI spec.
+      // if (res.ok) isApiAvailable = true;
+      console.log('Skipping integration tests - API version mismatch');
+    } catch (_e) {
+      console.log('Skipping integration tests - API not available');
+    }
+  });
+
+  it('should list assets from real API', async () => {
+    if (!isApiAvailable) return;
+
+    // Since we can't instantiate WASM client in Node.js test environment easily without
+    // complex setup, we'll verify the API structure matches our TypeScript types
+    const _response = await fetch(`${API_URL}/api/v1/market/assets`);
+    const data = await _response.json();
+
+    expect(data).toHaveProperty('assets');
+    expect(Array.isArray(data.assets)).toBe(true);
+
+    if (data.assets.length > 0) {
+      const asset = data.assets[0];
+      // Verify fields match our Asset interface
+      expect(asset).toHaveProperty('ticker');
+      expect(asset).toHaveProperty('name');
+      expect(asset).toHaveProperty('precision');
+      expect(typeof asset.precision).toBe('number');
+    }
+  });
+
+  it('should list pairs from real API', async () => {
+    if (!isApiAvailable) return;
+
+    const response = await fetch(`${API_URL}/api/v1/market/pairs`);
+    const data = await response.json();
+
+    expect(data).toHaveProperty('pairs');
+    expect(Array.isArray(data.pairs)).toBe(true);
+
+    if (data.pairs.length > 0) {
+      // TODO: Local API returns legacy nested 'base'/'quote' objects, while SDK expects flat 'base_asset'/'quote_asset'.
+      // Uncomment when API is updated to match OpenAPI spec.
+      // Verify fields match our TradingPair interface
+      // expect(pair).toHaveProperty('base_asset');
+      // expect(pair).toHaveProperty('quote_asset');
+      // expect(typeof pair.base_asset).toBe('string');
+    }
+  });
+
+  it('should get quote from real API', async () => {
+    if (!isApiAvailable) return;
+
+    // First get a valid pair
+    const pairsResponse = await fetch(`${API_URL}/api/v1/market/pairs`);
+    const pairsData = await pairsResponse.json();
+
+    if (pairsData.pairs.length === 0) return;
+
+    const pair = pairsData.pairs[0];
+
+    // Request quote - API uses POST /api/v1/market/quote for quotes generally or typed endpoints
+    // Using correct endpoint
+    const quoteUrl = `${API_URL}/api/v1/market/quote`;
+    const quoteReq = {
+      from_asset: pair.base_asset,
+      from_amount: 100000,
+      to_asset: pair.quote_asset,
+      to_amount: null,
+    };
+
+    const response = await fetch(quoteUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(quoteReq),
     });
 
-    it('should list assets from real API', async () => {
-        if (!isApiAvailable) return;
-
-        // Since we can't instantiate WASM client in Node.js test environment easily without
-        // complex setup, we'll verify the API structure matches our TypeScript types
-        const response = await fetch(`${API_URL}/api/v1/market/assets`);
-        const data = await response.json();
-
-        expect(data).toHaveProperty('assets');
-        expect(Array.isArray(data.assets)).toBe(true);
-
-        if (data.assets.length > 0) {
-            const asset = data.assets[0];
-            // Verify fields match our Asset interface
-            expect(asset).toHaveProperty('ticker');
-            expect(asset).toHaveProperty('name');
-            expect(asset).toHaveProperty('precision');
-            expect(typeof asset.precision).toBe('number');
-        }
-    });
-
-    it('should list pairs from real API', async () => {
-        if (!isApiAvailable) return;
-
-        const response = await fetch(`${API_URL}/api/v1/market/pairs`);
-        const data = await response.json();
-
-        expect(data).toHaveProperty('pairs');
-        expect(Array.isArray(data.pairs)).toBe(true);
-
-        if (data.pairs.length > 0) {
-            const pair = data.pairs[0];
-            // TODO: Local API returns legacy nested 'base'/'quote' objects, while SDK expects flat 'base_asset'/'quote_asset'.
-            // Uncomment when API is updated to match OpenAPI spec.
-            // Verify fields match our TradingPair interface
-            // expect(pair).toHaveProperty('base_asset');
-            // expect(pair).toHaveProperty('quote_asset');
-            // expect(typeof pair.base_asset).toBe('string');
-        }
-    });
-
-    it('should get quote from real API', async () => {
-        if (!isApiAvailable) return;
-
-        // First get a valid pair
-        const pairsResponse = await fetch(`${API_URL}/api/v1/market/pairs`);
-        const pairsData = await pairsResponse.json();
-
-        if (pairsData.pairs.length === 0) return;
-
-        const pair = pairsData.pairs[0];
-        const ticker = `${pair.base_asset}/${pair.quote_asset}`;
-
-        // Request quote - API uses POST /api/v1/market/quote for quotes generally or typed endpoints
-        // Using correct endpoint
-        const quoteUrl = `${API_URL}/api/v1/market/quote`;
-        const quoteReq = {
-            from_asset: pair.base_asset,
-            from_amount: 100000,
-            to_asset: pair.quote_asset,
-            to_amount: null
-        };
-
-        const response = await fetch(quoteUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(quoteReq)
-        });
-
-        // It might fail if liquidity is low, but we check structure if successful
-        if (response.ok) {
-            const quote = await response.json();
-            // Verify fields match our Quote interface
-            expect(quote).toHaveProperty('rfq_id');
-            expect(quote).toHaveProperty('from_asset');
-            expect(quote).toHaveProperty('to_asset');
-            expect(quote).toHaveProperty('price');
-            expect(quote).toHaveProperty('expires_at');
-        }
-    });
+    // It might fail if liquidity is low, but we check structure if successful
+    if (response.ok) {
+      const quote = await response.json();
+      // Verify fields match our Quote interface
+      expect(quote).toHaveProperty('rfq_id');
+      expect(quote).toHaveProperty('from_asset');
+      expect(quote).toHaveProperty('to_asset');
+      expect(quote).toHaveProperty('price');
+      expect(quote).toHaveProperty('expires_at');
+    }
+  });
 });
 
 // ============================================================================
@@ -375,44 +318,44 @@ describe('Integration Tests (Local API)', () => {
 // ============================================================================
 
 describe('Utility Functions', () => {
-    describe('Amount Conversion', () => {
-        // These would test the WASM utility functions if available in test env
-        it('should convert BTC to satoshis correctly', () => {
-            // 1 BTC = 100,000,000 satoshis
-            const btcAmount = 1.5;
-            const precision = 8;
-            const satoshis = Math.round(btcAmount * Math.pow(10, precision));
-            expect(satoshis).toBe(150000000);
-        });
-
-        it('should convert satoshis to BTC correctly', () => {
-            const satoshis = 150000000;
-            const precision = 8;
-            const btc = satoshis / Math.pow(10, precision);
-            expect(btc).toBe(1.5);
-        });
-
-        it('should handle USDT precision (6 decimals)', () => {
-            const usdtAmount = 100.50;
-            const precision = 6;
-            const smallest = Math.round(usdtAmount * Math.pow(10, precision));
-            expect(smallest).toBe(100500000);
-        });
+  describe('Amount Conversion', () => {
+    // These would test the WASM utility functions if available in test env
+    it('should convert BTC to satoshis correctly', () => {
+      // 1 BTC = 100,000,000 satoshis
+      const btcAmount = 1.5;
+      const precision = 8;
+      const satoshis = Math.round(btcAmount * Math.pow(10, precision));
+      expect(satoshis).toBe(150000000);
     });
 
-    describe('BigInt handling', () => {
-        it('should handle large amounts as BigInt', () => {
-            const largeAmount = BigInt('1000000000000000');
-            expect(largeAmount > BigInt(Number.MAX_SAFE_INTEGER)).toBe(false);
-            expect(Number(largeAmount)).toBe(1000000000000000);
-        });
-
-        it('should convert BigInt to number for display', () => {
-            const satoshis = BigInt(150000000);
-            const btc = Number(satoshis) / 1e8;
-            expect(btc).toBe(1.5);
-        });
+    it('should convert satoshis to BTC correctly', () => {
+      const satoshis = 150000000;
+      const precision = 8;
+      const btc = satoshis / Math.pow(10, precision);
+      expect(btc).toBe(1.5);
     });
+
+    it('should handle USDT precision (6 decimals)', () => {
+      const usdtAmount = 100.5;
+      const precision = 6;
+      const smallest = Math.round(usdtAmount * Math.pow(10, precision));
+      expect(smallest).toBe(100500000);
+    });
+  });
+
+  describe('BigInt handling', () => {
+    it('should handle large amounts as BigInt', () => {
+      const largeAmount = BigInt('1000000000000000');
+      expect(largeAmount > BigInt(Number.MAX_SAFE_INTEGER)).toBe(false);
+      expect(Number(largeAmount)).toBe(1000000000000000);
+    });
+
+    it('should convert BigInt to number for display', () => {
+      const satoshis = BigInt(150000000);
+      const btc = Number(satoshis) / 1e8;
+      expect(btc).toBe(1.5);
+    });
+  });
 });
 
 // ============================================================================
@@ -420,28 +363,28 @@ describe('Utility Functions', () => {
 // ============================================================================
 
 describe('Configuration', () => {
-    it('should validate required baseUrl', () => {
-        // @ts-expect-error - Testing invalid config
-        const badConfig: KaleidoConfig = {};
-        expect(badConfig.baseUrl).toBeUndefined();
-    });
+  it('should validate required baseUrl', () => {
+    // @ts-expect-error - Testing invalid config
+    const badConfig: KaleidoConfig = {};
+    expect(badConfig.baseUrl).toBeUndefined();
+  });
 
-    it('should allow optional nodeUrl', () => {
-        const config: KaleidoConfig = {
-            baseUrl: 'https://api.example.com',
-        };
-        expect(config.nodeUrl).toBeUndefined();
-    });
+  it('should allow optional nodeUrl', () => {
+    const config: KaleidoConfig = {
+      baseUrl: 'https://api.example.com',
+    };
+    expect(config.nodeUrl).toBeUndefined();
+  });
 
-    it('should use number types for timeout/retries', () => {
-        const config: KaleidoConfig = {
-            baseUrl: 'https://api.example.com',
-            timeout: 30,
-            maxRetries: 3,
-            cacheTtl: 60,
-        };
-        expect(typeof config.timeout).toBe('number');
-        expect(typeof config.maxRetries).toBe('number');
-        expect(typeof config.cacheTtl).toBe('number');
-    });
+  it('should use number types for timeout/retries', () => {
+    const config: KaleidoConfig = {
+      baseUrl: 'https://api.example.com',
+      timeout: 30,
+      maxRetries: 3,
+      cacheTtl: 60,
+    };
+    expect(typeof config.timeout).toBe('number');
+    expect(typeof config.maxRetries).toBe('number');
+    expect(typeof config.cacheTtl).toBe('number');
+  });
 });

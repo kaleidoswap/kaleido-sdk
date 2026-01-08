@@ -3,10 +3,14 @@
  * Tests for helper functions like unit conversions
  */
 
-import { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from '../pkg-node/kaleidoswap_sdk';
+import {
+  toSmallestUnits,
+  toDisplayUnits,
+  getVersion,
+  getSdkName,
+} from '../pkg-node/kaleidoswap_sdk';
 
 describe('Utility Functions', () => {
-
   describe('toSmallestUnits', () => {
     it('should convert BTC to satoshis (8 decimals)', () => {
       const result = toSmallestUnits(1.0, 8);

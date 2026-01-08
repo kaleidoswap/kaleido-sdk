@@ -44,10 +44,10 @@ console.log('Available assets:', assets);
 // Get a quote
 const quote = await client.getQuoteByPair(
   'BTC/USDT',
-  100000,  // from_amount
-  null,    // to_amount
+  100000, // from_amount
+  null, // to_amount
   'Lightning', // from_layer
-  'Lightning'  // to_layer
+  'Lightning', // to_layer
 );
 console.log('Quote:', quote);
 ```
@@ -65,18 +65,18 @@ async function main() {
   // Create client
   const config = new KaleidoConfig(
     'https://api.kaleidoswap.com', // base_url
-    null,                           // node_url
-    null,                           // api_key
-    30.0,                           // timeout
-    3,                              // max_retries
-    60                              // cache_ttl
+    null, // node_url
+    null, // api_key
+    30.0, // timeout
+    3, // max_retries
+    60, // cache_ttl
   );
 
   const client = new KaleidoClient(config);
 
   // Use the client
   const assets = await client.listActiveAssets();
-  assets.forEach(asset => {
+  assets.forEach((asset) => {
     console.log(`${asset.ticker}: ${asset.name}`);
   });
 }
@@ -89,36 +89,35 @@ main().catch(console.error);
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Kaleidoswap SDK Example</title>
-</head>
-<body>
-  <h1>Kaleidoswap SDK Web</h1>
-  <div id="assets"></div>
+  <head>
+    <title>Kaleidoswap SDK Example</title>
+  </head>
+  <body>
+    <h1>Kaleidoswap SDK Web</h1>
+    <div id="assets"></div>
 
-  <script type="module">
-    import init, { KaleidoClient, KaleidoConfig } from './pkg/kaleidoswap_web.js';
+    <script type="module">
+      import init, { KaleidoClient, KaleidoConfig } from './pkg/kaleidoswap_web.js';
 
-    async function main() {
-      // Initialize WASM
-      await init();
+      async function main() {
+        // Initialize WASM
+        await init();
 
-      // Create client
-      const config = KaleidoConfig.withDefaults('https://api.kaleidoswap.com');
-      const client = new KaleidoClient(config);
+        // Create client
+        const config = KaleidoConfig.withDefaults('https://api.kaleidoswap.com');
+        const client = new KaleidoClient(config);
 
-      // Fetch and display assets
-      const assets = await client.listActiveAssets();
-      
-      const assetsDiv = document.getElementById('assets');
-      assetsDiv.innerHTML = '<ul>' + 
-        assets.map(a => `<li>${a.ticker}: ${a.name}</li>`).join('') +
-        '</ul>';
-    }
+        // Fetch and display assets
+        const assets = await client.listActiveAssets();
 
-    main().catch(console.error);
-  </script>
-</body>
+        const assetsDiv = document.getElementById('assets');
+        assetsDiv.innerHTML =
+          '<ul>' + assets.map((a) => `<li>${a.ticker}: ${a.name}</li>`).join('') + '</ul>';
+      }
+
+      main().catch(console.error);
+    </script>
+  </body>
 </html>
 ```
 
@@ -137,11 +136,11 @@ const config = KaleidoConfig.withDefaults('https://api.kaleidoswap.com');
 // Or create with custom settings
 const config = new KaleidoConfig(
   'https://api.kaleidoswap.com', // base_url
-  'http://localhost:3001',        // node_url (optional)
-  'your-api-key',                 // api_key (optional)
-  30.0,                           // timeout in seconds
-  3,                              // max_retries
-  60                              // cache_ttl in seconds
+  'http://localhost:3001', // node_url (optional)
+  'your-api-key', // api_key (optional)
+  30.0, // timeout in seconds
+  3, // max_retries
+  60, // cache_ttl in seconds
 );
 
 // Update configuration
@@ -178,21 +177,21 @@ const pair = await client.getPairByTicker('BTC/USDT');
 ```typescript
 // Get quote by pair ticker
 const quote = await client.getQuoteByPair(
-  'BTC/USDT',     // ticker
-  100000,         // from_amount (satoshis)
-  null,           // to_amount
-  'Lightning',    // from_layer
-  'Lightning'     // to_layer
+  'BTC/USDT', // ticker
+  100000, // from_amount (satoshis)
+  null, // to_amount
+  'Lightning', // from_layer
+  'Lightning', // to_layer
 );
 
 // Get quote by asset tickers
 const quote = await client.getQuoteByAssets(
-  'BTC',          // from_ticker
-  'USDT',         // to_ticker
-  100000,         // from_amount
-  null,           // to_amount
-  'Lightning',    // from_layer
-  'Lightning'     // to_layer
+  'BTC', // from_ticker
+  'USDT', // to_ticker
+  100000, // from_amount
+  null, // to_amount
+  'Lightning', // from_layer
+  'Lightning', // to_layer
 );
 ```
 
@@ -272,6 +271,7 @@ import type { Asset, TradingPair, Quote } from '@kaleidoswap/sdk-web';
 ## Examples
 
 See the `examples/` directory for more examples:
+
 - Basic usage
 - React integration
 - Vue integration
@@ -286,4 +286,3 @@ MIT
 - Documentation: https://docs.kaleidoswap.com
 - Issues: https://github.com/kaleidoswap/kaleido-sdk/issues
 - Discord: https://discord.gg/kaleidoswap
-

@@ -6,7 +6,6 @@
 import { KaleidoClient, KaleidoConfig } from '../pkg/kaleidoswap_sdk';
 
 describe('KaleidoClient', () => {
-
   describe('initialization', () => {
     it('should create client with valid config', () => {
       const config = KaleidoConfig.withDefaults('https://api.test.com');
@@ -22,7 +21,7 @@ describe('KaleidoClient', () => {
         null,
         30.0,
         3,
-        60
+        60,
       );
 
       const client = new KaleidoClient(config);
@@ -53,7 +52,7 @@ describe('KaleidoClient', () => {
         null,
         30.0,
         3,
-        60
+        60,
       );
       const client = new KaleidoClient(config);
 
@@ -81,4 +80,3 @@ describe('KaleidoClient', () => {
     });
   });
 });
-

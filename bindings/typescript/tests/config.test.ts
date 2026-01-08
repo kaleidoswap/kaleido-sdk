@@ -6,7 +6,6 @@
 import { KaleidoConfig } from '../pkg/kaleidoswap_sdk';
 
 describe('KaleidoConfig', () => {
-
   describe('withDefaults', () => {
     it('should create config with default values', () => {
       const config = KaleidoConfig.withDefaults('https://api.test.com');
@@ -33,21 +32,14 @@ describe('KaleidoConfig', () => {
         'test_api_key',
         60.0,
         5,
-        120
+        120,
       );
 
       expect(config.getBaseUrl()).toBe('https://api.test.com');
     });
 
     it('should accept null optional parameters', () => {
-      const config = new KaleidoConfig(
-        'https://api.test.com',
-        null,
-        null,
-        30.0,
-        3,
-        60
-      );
+      const config = new KaleidoConfig('https://api.test.com', null, null, 30.0, 3, 60);
 
       expect(config.getBaseUrl()).toBe('https://api.test.com');
     });
@@ -88,11 +80,9 @@ describe('KaleidoConfig', () => {
     //   }).toThrow();
     // });
 
-
     it('should handle special characters in URL', () => {
       const config = KaleidoConfig.withDefaults('https://api.test.com/v1');
       expect(config.getBaseUrl()).toBe('https://api.test.com/v1');
     });
   });
 });
-

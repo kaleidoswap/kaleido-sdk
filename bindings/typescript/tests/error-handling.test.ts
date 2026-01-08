@@ -1,7 +1,7 @@
 /**
  * Error Handling Tests
  * Tests for error scenarios and error message quality
- * 
+ *
  * Note: Network error tests use a short timeout config to avoid long waits.
  */
 
@@ -53,7 +53,7 @@ describeErrors('Error Handling', () => {
         'test-api-key',
         30,
         3,
-        60
+        60,
       );
       expect(config).toBeDefined();
       expect(config.getBaseUrl()).toBe('https://api.kaleidoswap.com');
@@ -74,7 +74,7 @@ describe.skip('Network Error Handling (Manual)', () => {
       null,
       2, // 2 second timeout
       0, // no retries
-      60
+      60,
     );
     client = new KaleidoClient(config);
   });
@@ -89,9 +89,9 @@ describe.skip('Network Error Handling (Manual)', () => {
     try {
       await client.maker.listAssets();
       fail('Should have thrown an error');
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(error).toBeDefined();
-      expect(error.message).toBeDefined();
+      expect((error as Error).message).toBeDefined();
     }
   }, 15000); // 15s timeout for this test
 });

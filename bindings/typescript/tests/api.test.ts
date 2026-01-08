@@ -1,7 +1,7 @@
 /**
  * API Integration Tests
  * Tests for actual API calls (require test server)
- * 
+ *
  * These tests can be skipped in CI if no test server is available.
  * Set SKIP_INTEGRATION_TESTS=true to skip them.
  */
@@ -54,8 +54,8 @@ describeIntegration('API Integration', () => {
 
       if (assets.length > 0) {
         // All assets should be active
-        assets.forEach((asset: any) => {
-          expect(asset.is_active).toBe(true);
+        assets.forEach((asset: unknown) => {
+          expect((asset as { is_active: boolean }).is_active).toBe(true);
         });
       }
     });
@@ -73,8 +73,8 @@ describeIntegration('API Integration', () => {
         const result = await client.maker.getAssetByTicker('INVALID_TICKER_123');
         console.log('Invalid ticker result:', result);
         throw new Error('Should have thrown');
-      } catch (e: any) {
-        if (e.message === 'Should have thrown') throw e;
+      } catch (e: unknown) {
+        if ((e as Error).message === 'Should have thrown') throw e;
         // Expected error
       }
     });
@@ -102,8 +102,8 @@ describeIntegration('API Integration', () => {
 
       if (pairs.length > 0) {
         // All pairs should be active
-        pairs.forEach((pair: any) => {
-          expect(pair.is_active).toBe(true);
+        pairs.forEach((pair: unknown) => {
+          expect((pair as { is_active: boolean }).is_active).toBe(true);
         });
       }
     });
@@ -116,7 +116,7 @@ describeIntegration('API Integration', () => {
         // Pair object doesn't have top-level ticker, check base/quote instead
         expect(pair.base.ticker).toBe('BTC');
         expect(pair.quote.ticker).toBe('USDT');
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.warn('Skipping pair check, BTC/USDT probably missing:', e);
       }
     });
@@ -125,8 +125,8 @@ describeIntegration('API Integration', () => {
       try {
         await client.maker.getPairByTicker('INVALID/PAIR');
         throw new Error('Should have thrown');
-      } catch (e: any) {
-        if (e.message === 'Should have thrown') throw e;
+      } catch (e: unknown) {
+        if ((e as Error).message === 'Should have thrown') throw e;
       }
     });
   });
@@ -139,14 +139,14 @@ describeIntegration('API Integration', () => {
           100000,
           undefined,
           'BTC_LN',
-          'RGB_LN'
+          'RGB_LN',
         );
 
         expect(quote).toBeDefined();
         expect(quote).toHaveProperty('rfq_id');
         expect(quote).toHaveProperty('from_asset');
         expect(quote).toHaveProperty('to_asset');
-      } catch (e: any) {
+      } catch (e: unknown) {
         // Skip if 500/400 error (environment issue)
         console.warn('Skipping quote test due to API error:', e);
       }
@@ -160,12 +160,12 @@ describeIntegration('API Integration', () => {
           100000,
           undefined,
           'BTC_LN',
-          'RGB_LN'
+          'RGB_LN',
         );
 
         expect(quote.from_asset.ticker).toBe('BTC');
         expect(quote.to_asset.ticker).toBe('USDT');
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.warn('Skipping quote test due to API error:', e);
       }
     });
@@ -176,13 +176,13 @@ describeIntegration('API Integration', () => {
           'BTC/USDT',
           100000,
           undefined,
-          'BTC_L1',  // Onchain
-          'RGB_LN'   // Lightning
+          'BTC_L1', // Onchain
+          'RGB_LN', // Lightning
         );
 
         expect(quote).toBeDefined();
         expect(quote.from_asset.layer).toBe('BTC_L1');
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.warn('Skipping quote test due to API error:', e);
       }
     });
@@ -193,12 +193,13 @@ describeIntegration('API Integration', () => {
           'BTC/USDT',
           100000,
           undefined,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           'INVALID_LAYER' as any,
-          'RGB_LN'
+          'RGB_LN',
         );
         throw new Error('Should have thrown');
-      } catch (e: any) {
-        if (e.message === 'Should have thrown') throw e;
+      } catch (e: unknown) {
+        if ((e as Error).message === 'Should have thrown') throw e;
       }
     });
 
@@ -206,14 +207,14 @@ describeIntegration('API Integration', () => {
       try {
         await client.maker.getQuoteByPair(
           'BTC/USDT',
-          1,  // Too small
+          1, // Too small
           undefined,
           'BTC_LN',
-          'RGB_LN'
+          'RGB_LN',
         );
         throw new Error('Should have thrown');
-      } catch (e: any) {
-        if (e.message === 'Should have thrown') throw e;
+      } catch (e: unknown) {
+        if ((e as Error).message === 'Should have thrown') throw e;
       }
     });
   });
@@ -276,7 +277,7 @@ describeIntegration('API Integration', () => {
         expect(fees).toHaveProperty('capacity_fee');
         expect(fees).toHaveProperty('total_fee');
         expect(typeof fees.total_fee).toBe('number');
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.warn('Skipping estimate fees test due to API error:', e);
       }
     }, 30000);

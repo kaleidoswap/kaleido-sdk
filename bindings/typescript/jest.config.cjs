@@ -4,11 +4,7 @@ module.exports = {
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  collectCoverageFrom: [
-    'pkg-node/**/*.ts',
-    '!pkg-node/**/*.d.ts',
-    '!**/node_modules/**',
-  ],
+  collectCoverageFrom: ['pkg-node/**/*.ts', '!pkg-node/**/*.d.ts', '!**/node_modules/**'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
@@ -17,14 +13,16 @@ module.exports = {
     '^../pkg/kaleidoswap_web$': '<rootDir>/pkg-node/kaleidoswap_web.js',
   },
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: {
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+        },
       },
-    }],
+    ],
   },
   testTimeout: 10000,
   verbose: true,
 };
-

@@ -14,15 +14,6 @@
     "resolveJsonModule": true,
     "types": ["jest", "node"]
   },
-  "include": [
-    "tests/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "pkg",
-    "pkg-web",
-    "pkg-node"
-  ]
+  "include": ["tests/**/*", "typescript/tests/**/*"],
+  "exclude": ["node_modules", "dist", "pkg", "pkg-web", "pkg-node"]
 }
-
