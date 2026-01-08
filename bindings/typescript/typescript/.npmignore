@@ -1,0 +1,4 @@
+# Override .gitignore for npm packaging
+# We need to include the generated pkg and pkg-node directories
+!pkg/
+!pkg-node/
