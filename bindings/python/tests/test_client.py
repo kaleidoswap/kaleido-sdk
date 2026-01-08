@@ -1,8 +1,12 @@
 """Tests for the Kaleidoswap Python SDK."""
 
 import pytest
-from kaleidoswap import (NetworkInfoResponse, OrderHistoryResponse,
-                         OrderStatsResponse, PairQuoteResponse)
+from kaleidoswap import (
+    NetworkInfoResponse,
+    OrderHistoryResponse,
+    OrderStatsResponse,
+    PairQuoteResponse,
+)
 
 API_URL = "http://localhost:8000"
 API_NODE_URL = "http://localhost:3001"

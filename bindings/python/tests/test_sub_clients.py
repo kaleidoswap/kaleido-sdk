@@ -3,8 +3,14 @@ Test sub-client access and organization.
 """
 
 import pytest
-from kaleidoswap import (KaleidoClient, KaleidoConfig, LspClient, MarketClient,
-                         NodeClient, OrdersClient)
+from kaleidoswap import (
+    KaleidoClient,
+    KaleidoConfig,
+    LspClient,
+    MarketClient,
+    NodeClient,
+    OrdersClient,
+)
 
 
 def test_sub_client_properties_exist():

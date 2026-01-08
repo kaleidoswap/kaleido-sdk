@@ -6,8 +6,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import (AwareDatetime, BaseModel, ConfigDict, EmailStr, Field,
-                      RootModel)
+from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field, RootModel
 
 
 class AssetDeliveryStatus(Enum):

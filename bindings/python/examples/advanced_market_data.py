@@ -13,9 +13,15 @@ This example demonstrates advanced SDK features:
 import logging
 import os
 
-from kaleidoswap import (Asset, AssetNotFoundError, KaleidoClient,
-                         KaleidoConfig, KaleidoError, TradingPairNotFoundError,
-                         ValidationError)
+from kaleidoswap import (
+    Asset,
+    AssetNotFoundError,
+    KaleidoClient,
+    KaleidoConfig,
+    KaleidoError,
+    TradingPairNotFoundError,
+    ValidationError,
+)
 
 # Configure logging
 logging.basicConfig(

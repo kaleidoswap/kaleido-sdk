@@ -149,7 +149,7 @@ check:
 	@echo "🔍 Running cargo check..."
 	cargo check --all
 
-format: format-rust format-python
+format: format-rust format-python format-typescript
 
 format-rust:
 	@echo "✨ Formatting Rust code..."
@@ -158,10 +158,14 @@ format-rust:
 format-python:
 	@echo "✨ Formatting Python code..."
 	cd $(BINDINGS_PYTHON) && \
-		uv run black . && \
-		uv run isort .
+		uv run isort . && \
+		uv run black .
 
-lint: lint-rust lint-python
+format-typescript:
+	@echo "✨ Formatting TypeScript code..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm run format
+
+lint: lint-rust lint-python lint-typescript
 
 lint-rust:
 	@echo "🔍 Linting Rust code..."
@@ -172,6 +176,10 @@ lint-python:
 	cd $(BINDINGS_PYTHON) && \
 		uv run ruff check . && \
 		uv run black --check .
+
+lint-typescript:
+	@echo "🔍 Linting TypeScript code..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm run lint
 
 clippy:
 	@echo "📎 Running clippy..."

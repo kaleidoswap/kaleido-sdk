@@ -51,5 +51,20 @@ dev = [
     "ruff>=0.1.0",
     "isort>=5.12",
     "datamodel-code-generator[http]>=0.27.3",
+    "schemathesis>=3.20.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[dependency-groups]
+dev = [
+    "schemathesis>=3.39.16",
 ]
 

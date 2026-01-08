@@ -44,7 +44,7 @@ def main():
             quote = client.get_quote_websocket(
                 ticker="BTC/USDT",
                 from_amount=10000000,  # 0.1 BTC in sats
-                layer="BTC_LN"
+                layer="BTC_LN",
             )
 
             print("✅ Quote received:")

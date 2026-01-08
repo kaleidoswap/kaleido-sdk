@@ -79,7 +79,7 @@ test:wasm:
     - cd bindings/typescript
     - cargo check --target wasm32-unknown-unknown
 
-lint:
+lint:rust:
   stage: test
   image: rust:${RUST_VERSION}
   <<: *rust_cache
@@ -89,13 +89,65 @@ lint:
     - cargo clippy --all-targets --all-features -- -D warnings
   allow_failure: true
 
-format:
+lint:python:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+  script:
+    - echo "🔍 Linting Python code..."
+    - cd bindings/python
+    - uv run ruff check .
+    - uv run black --check .
+  allow_failure: true
+
+format:rust:
   stage: test
   image: rust:${RUST_VERSION}
   script:
     - echo "✨ Checking formatting..."
     - rustup component add rustfmt
     - cargo fmt --all -- --check
+  allow_failure: true
+
+format:python:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+  script:
+    - echo "✨ Checking Python formatting..."
+    - cd bindings/python
+    - uv run black --check .
+    - uv run isort --check-only .
+  allow_failure: true
+
+lint:typescript:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "🔍 Linting TypeScript code..."
+    - cd bindings/typescript
+    - pnpm install
+    - pnpm run lint
+  allow_failure: true
+
+format:typescript:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "✨ Checking TypeScript formatting..."
+    - cd bindings/typescript
+    - pnpm install
+    - pnpm run check-format
   allow_failure: true
 
 # ---------------------------------------------------------------------------

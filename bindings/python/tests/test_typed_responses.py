@@ -2,8 +2,13 @@
 Quick test to verify typed response parsing works correctly.
 """
 
-from kaleidoswap import (Asset, KaleidoClient, KaleidoConfig,
-                         PairQuoteResponse, TradingPair)
+from kaleidoswap import (
+    Asset,
+    KaleidoClient,
+    KaleidoConfig,
+    PairQuoteResponse,
+    TradingPair,
+)
 
 
 def test_typed_responses():

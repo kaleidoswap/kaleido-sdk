@@ -5,17 +5,30 @@ Sub-client modules for organized API access.
 from typing import TYPE_CHECKING, Any, List, Optional
 
 if TYPE_CHECKING:
-    from .generated_models import (Asset, NetworkInfoResponse,
-                                   OrderHistoryResponse, OrderStatsResponse,
-                                   PairQuoteResponse, SwapNodeInfoResponse,
-                                   SwapOrderRateDecisionResponse,
-                                   SwapOrderStatusResponse, SwapStatusResponse,
-                                   TradingPair)
-    from .rgb_node_models import (AddressResponse, AssetBalanceResponse,
-                                  BtcBalanceResponse, Channel,
-                                  DecodeLNInvoiceResponse, EmptyResponse,
-                                  InitResponse, NodeInfoResponse, Payment,
-                                  Peer)
+    from .generated_models import (
+        Asset,
+        NetworkInfoResponse,
+        OrderHistoryResponse,
+        OrderStatsResponse,
+        PairQuoteResponse,
+        SwapNodeInfoResponse,
+        SwapOrderRateDecisionResponse,
+        SwapOrderStatusResponse,
+        SwapStatusResponse,
+        TradingPair,
+    )
+    from .rgb_node_models import (
+        AddressResponse,
+        AssetBalanceResponse,
+        BtcBalanceResponse,
+        Channel,
+        DecodeLNInvoiceResponse,
+        EmptyResponse,
+        InitResponse,
+        NodeInfoResponse,
+        Payment,
+        Peer,
+    )
 
 
 class MarketClient:

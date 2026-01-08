@@ -2,15 +2,20 @@ import json
 from typing import Any, Iterator, List, Optional, Union
 
 from .exceptions import NodeNotConfiguredError
-from .generated_models import (Asset, NetworkInfoResponse,
-                               OrderHistoryResponse, OrderStatsResponse,
-                               PairQuoteResponse, SwapNodeInfoResponse,
-                               SwapOrderRateDecisionResponse,
-                               SwapOrderStatusResponse, SwapStatusResponse,
-                               TradingPair)
+from .generated_models import (
+    Asset,
+    NetworkInfoResponse,
+    OrderHistoryResponse,
+    OrderStatsResponse,
+    PairQuoteResponse,
+    SwapNodeInfoResponse,
+    SwapOrderRateDecisionResponse,
+    SwapOrderStatusResponse,
+    SwapStatusResponse,
+    TradingPair,
+)
 from .kaleidoswap import PyKaleidoClient, PyKaleidoConfig
-from .sub_clients import (LspClient, MarketClient, NodeClient, OrdersClient,
-                          SwapsClient)
+from .sub_clients import LspClient, MarketClient, NodeClient, OrdersClient, SwapsClient
 
 
 class QuoteStreamContext:
@@ -507,25 +512,45 @@ class KaleidoClient:
 
     # === Legacy Methods (Strongly Typed Support) ===
 
-    def create_order(self, request: Any) -> str:
+    def create_order(self, request: Any) -> Any:
         """
         Create LSP order.
         Args:
            request: CreateOrderRequest model or dict
         """
-        return self.market.create_order(self._to_json(request))
+        res = self.market.create_order(self._to_json(request))
+        try:
+            return json.loads(res)
+        except (TypeError, ValueError):
+            return res
 
-    def create_swap_order(self, request: Any) -> str:
-        return self.market.create_swap_order(self._to_json(request))
+    def create_swap_order(self, request: Any) -> Any:
+        res = self.market.create_swap_order(self._to_json(request))
+        try:
+            return json.loads(res)
+        except (TypeError, ValueError):
+            return res
 
-    def init_swap(self, request: Any) -> str:
-        return self.market.init_maker_swap(self._to_json(request))
+    def init_swap(self, request: Any) -> Any:
+        res = self.market.init_maker_swap(self._to_json(request))
+        try:
+            return json.loads(res)
+        except (TypeError, ValueError):
+            return res
 
-    def execute_swap(self, request: Any) -> str:
-        return self.market.execute_maker_swap(self._to_json(request))
+    def execute_swap(self, request: Any) -> Any:
+        res = self.market.execute_maker_swap(self._to_json(request))
+        try:
+            return json.loads(res)
+        except (TypeError, ValueError):
+            return res
 
-    def retry_delivery(self, order_id: str) -> str:
-        return self.market.retry_delivery(order_id)
+    def retry_delivery(self, order_id: str) -> Any:
+        res = self.market.retry_delivery(order_id)
+        try:
+            return json.loads(res)
+        except (TypeError, ValueError):
+            return res
 
     def connect_peer(self, request: Any) -> str:
         if self.node:

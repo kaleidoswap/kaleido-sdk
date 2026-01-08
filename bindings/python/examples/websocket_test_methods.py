@@ -29,25 +29,25 @@ def main():
     # Test that methods exist
     print("\n🔍 Checking WebSocket methods...")
 
-    assert hasattr(client, 'connect_websocket'), "Missing connect_websocket"
+    assert hasattr(client, "connect_websocket"), "Missing connect_websocket"
     print("   ✅ connect_websocket exists")
 
-    assert hasattr(client, 'disconnect_websocket'), "Missing disconnect_websocket"
+    assert hasattr(client, "disconnect_websocket"), "Missing disconnect_websocket"
     print("   ✅ disconnect_websocket exists")
 
-    assert hasattr(client, 'is_websocket_connected'), "Missing is_websocket_connected"
+    assert hasattr(client, "is_websocket_connected"), "Missing is_websocket_connected"
     print("   ✅ is_websocket_connected exists")
 
-    assert hasattr(client, 'subscribe_to_pair'), "Missing subscribe_to_pair"
+    assert hasattr(client, "subscribe_to_pair"), "Missing subscribe_to_pair"
     print("   ✅ subscribe_to_pair exists")
 
-    assert hasattr(client, 'unsubscribe_from_pair'), "Missing unsubscribe_from_pair"
+    assert hasattr(client, "unsubscribe_from_pair"), "Missing unsubscribe_from_pair"
     print("   ✅ unsubscribe_from_pair exists")
 
-    assert hasattr(client, 'get_quote_websocket'), "Missing get_quote_websocket"
+    assert hasattr(client, "get_quote_websocket"), "Missing get_quote_websocket"
     print("   ✅ get_quote_websocket exists")
 
-    assert hasattr(client, 'reconnect_websocket'), "Missing reconnect_websocket"
+    assert hasattr(client, "reconnect_websocket"), "Missing reconnect_websocket"
     print("   ✅ reconnect_websocket exists")
 
     # Test WsEvent enum
