@@ -326,12 +326,7 @@ describeRln('RLN Client Integration', () => {
         const assetAmount = 1000;
         const assetId = 'test_asset_id';
 
-        const invoice = await client.rln.createLnInvoice(
-          amtMsat,
-          expirySec,
-          assetAmount,
-          assetId,
-        );
+        const invoice = await client.rln.createLnInvoice(amtMsat, expirySec, assetAmount, assetId);
 
         expect(invoice).toBeDefined();
         expect(invoice).toHaveProperty('invoice');
