@@ -7,6 +7,81 @@
 
 import { HttpClient } from './http-client.js';
 import { mapHttpError } from './errors.js';
+import type {
+    InitWalletRequest,
+    UnlockWalletRequest,
+    ChangePasswordRequest,
+    BackupRequest,
+    RestoreRequest,
+    NodeInfoResponse,
+    NetworkInfoResponse,
+    AddressResponse,
+    BtcBalanceResponse,
+    SendBtcRequest,
+    ListTransactionsResponse,
+    ListUnspentsResponse,
+    CreateUtxosRequest,
+    EstimateFeeRequest,
+    EstimateFeeResponse,
+    ListAssetsResponse,
+    AssetBalanceRequest,
+    AssetBalanceResponse,
+    AssetMetadataRequest,
+    AssetMetadataResponse,
+    AssetMediaRequest,
+    AssetMediaResponse,
+    IssueAssetNIARequest,
+    IssueAssetNIAResponse,
+    IssueAssetCFARequest,
+    IssueAssetCFAResponse,
+    IssueAssetUDARequest,
+    IssueAssetUDAResponse,
+    SendAssetRequest,
+    SendAssetResponse,
+    ListTransfersResponse,
+    RefreshTransfersRequest,
+    FailTransfersRequest,
+    ListChannelsResponse,
+    OpenChannelRequest,
+    OpenChannelResponse,
+    CloseChannelRequest,
+    GetChannelIdRequest,
+    GetChannelIdResponse,
+    ListPeersResponse,
+    ConnectPeerRequest,
+    DisconnectPeerRequest,
+    CreateLNInvoiceRequest,
+    CreateLNInvoiceResponse,
+    CreateRgbInvoiceRequest,
+    CreateRgbInvoiceResponse,
+    DecodeLNInvoiceRequest,
+    DecodeLNInvoiceResponse,
+    DecodeRgbInvoiceRequest,
+    DecodeRgbInvoiceResponse,
+    GetInvoiceStatusRequest,
+    GetInvoiceStatusResponse,
+    SendPaymentRequest,
+    SendPaymentResponse,
+    KeysendRequest,
+    KeysendResponse,
+    ListPaymentsResponse,
+    GetPaymentRequest,
+    GetPaymentResponse,
+    WhitelistTradeRequest,
+    MakerInitRequest,
+    MakerInitResponse,
+    MakerExecuteRequest,
+    MakerExecuteResponse,
+    ListSwapsResponse,
+    GetSwapRequest,
+    GetSwapResponse,
+    SignMessageRequest,
+    SignMessageResponse,
+    SendOnionMessageRequest,
+    CheckIndexerUrlRequest,
+    CheckProxyEndpointRequest,
+    RevokeTokenRequest,
+} from './node-types-ext.js';
 
 function handleError(error: any): never {
     throw mapHttpError({
@@ -27,174 +102,163 @@ export class RlnClient {
     // Wallet Management
     // ============================================================================
 
-    async getNodeInfo(): Promise<any> {
+    async getNodeInfo(): Promise<NodeInfoResponse> {
         const { data, error } = await this.http.node.GET('/nodeinfo');
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async getNetworkInfo(): Promise<any> {
+    async getNetworkInfo(): Promise<NetworkInfoResponse> {
         const { data, error } = await this.http.node.GET('/networkinfo');
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async initWallet(body: { password: string; mnemonic?: string }): Promise<any> {
+    async initWallet(body: InitWalletRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/init', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async unlockWallet(body: { password: string }): Promise<any> {
+    async unlockWallet(body: UnlockWalletRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/unlock', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async lockWallet(): Promise<any> {
+    async lockWallet(): Promise<void> {
         const { data, error } = await this.http.node.POST('/lock');
         if (error) handleError(error);
-        return data;
     }
 
-    async changePassword(body: { old_password: string; new_password: string }): Promise<any> {
+    async changePassword(body: ChangePasswordRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/changepassword', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async backup(body: { backup_path: string; password: string }): Promise<any> {
+    async backup(body: BackupRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/backup', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async restore(body: { backup_path: string; password: string }): Promise<any> {
+    async restore(body: RestoreRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/restore', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async shutdown(): Promise<any> {
+    async shutdown(): Promise<void> {
         const { data, error } = await this.http.node.POST('/shutdown');
         if (error) handleError(error);
-        return data;
     }
 
     // ============================================================================
     // BTC Operations
     // ============================================================================
 
-    async getAddress(): Promise<any> {
+    async getAddress(): Promise<AddressResponse> {
         const { data, error } = await this.http.node.POST('/address');
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async getBtcBalance(): Promise<any> {
+    async getBtcBalance(): Promise<BtcBalanceResponse> {
         const { data, error } = await this.http.node.POST('/btcbalance', { body: {} });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async sendBtc(body: { address: string; amount: number; fee_rate?: number }): Promise<any> {
+    async sendBtc(body: SendBtcRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/sendbtc', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async listTransactions(): Promise<any> {
+    async listTransactions(): Promise<ListTransactionsResponse> {
         const { data, error } = await this.http.node.POST('/listtransactions', { body: {} });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async listUnspents(): Promise<any> {
+    async listUnspents(): Promise<ListUnspentsResponse> {
         const { data, error } = await this.http.node.POST('/listunspents', { body: {} });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async createUtxos(body: { up_to?: boolean; num?: number }): Promise<any> {
+    async createUtxos(body: CreateUtxosRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/createutxos', { body });
         if (error) handleError(error);
-        return data;
     }
 
-    async estimateFee(body: { blocks?: number }): Promise<any> {
+    async estimateFee(body: EstimateFeeRequest): Promise<EstimateFeeResponse> {
         const { data, error } = await this.http.node.POST('/estimatefee', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
     // ============================================================================
     // RGB Asset Operations
     // ============================================================================
 
-    async listAssets(): Promise<any> {
+    async listAssets(): Promise<ListAssetsResponse> {
         const { data, error } = await this.http.node.POST('/listassets', { body: {} });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async getAssetBalance(body: { asset_id: string }): Promise<any> {
+    async getAssetBalance(body: AssetBalanceRequest): Promise<AssetBalanceResponse> {
         const { data, error } = await this.http.node.POST('/assetbalance', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async getAssetMetadata(body: { asset_id?: string }): Promise<any> {
+    async getAssetMetadata(body: AssetMetadataRequest): Promise<AssetMetadataResponse> {
         const { data, error } = await this.http.node.POST('/assetmetadata', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async getAssetMedia(body: { digest?: string }): Promise<any> {
+    async getAssetMedia(body: AssetMediaRequest): Promise<AssetMediaResponse> {
         const { data, error } = await this.http.node.POST('/getassetmedia', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async issueAssetNIA(body: any): Promise<any> {
+    async issueAssetNIA(body: IssueAssetNIARequest): Promise<IssueAssetNIAResponse> {
         const { data, error } = await this.http.node.POST('/issueassetnia', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async issueAssetCFA(body: any): Promise<any> {
+    async issueAssetCFA(body: IssueAssetCFARequest): Promise<IssueAssetCFAResponse> {
         const { data, error } = await this.http.node.POST('/issueassetcfa', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async issueAssetUDA(body: any): Promise<any> {
+    async issueAssetUDA(body: IssueAssetUDARequest): Promise<IssueAssetUDAResponse> {
         const { data, error } = await this.http.node.POST('/issueassetuda', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async sendAsset(body: any): Promise<any> {
+    async sendAsset(body: SendAssetRequest): Promise<SendAssetResponse> {
         const { data, error } = await this.http.node.POST('/sendasset', { body });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async listTransfers(): Promise<any> {
+    async listTransfers(): Promise<ListTransfersResponse> {
         const { data, error } = await this.http.node.POST('/listtransfers', { body: {} });
         if (error) handleError(error);
-        return data;
+        return data!;
     }
 
-    async refreshTransfers(body?: { skip_sync?: boolean }): Promise<any> {
+    async refreshTransfers(body?: RefreshTransfersRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/refreshtransfers', { body: body || {} });
         if (error) handleError(error);
-        return data;
     }
 
-    async failTransfers(body: { batch_transfer_idx?: number; no_asset_only?: boolean; skip_sync?: boolean }): Promise<any> {
+    async failTransfers(body: FailTransfersRequest): Promise<void> {
         const { data, error } = await this.http.node.POST('/failtransfers', { body });
         if (error) handleError(error);
-        return data;
     }
 
     // ============================================================================

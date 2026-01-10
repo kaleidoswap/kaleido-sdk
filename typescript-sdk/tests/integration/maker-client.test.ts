@@ -44,10 +44,16 @@ describe('MakerClient Integration', () => {
         it('should get quote by pair', async () => {
             try {
                 const quote = await client.maker.getQuote({
-                    pair_ticker: 'BTC/USDT',
-                    from_amount: 10000000, // 0.1 BTC in sats
-                    from_layer: 'BTC_LN',
-                    to_layer: 'RGB_LN',
+                    from_asset: {
+                        asset_id: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 10000000, // 0.1 BTC in sats
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: null,
+                    },
                 });
 
                 expect(quote).toBeDefined();

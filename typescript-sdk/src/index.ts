@@ -34,43 +34,10 @@ export { WSClient } from './ws-client.js';
 export type { QuoteResponse, QuoteRequest, PongResponse, Fee, WebSocketResponse } from './ws-types.js';
 
 // Export all type definitions
-export type {
-  // Core types
-  Asset,
-  TradingPair,
-  Quote,
-  CreateSwapOrderRequest,
-  CreateSwapOrderResponse,
-  SwapOrderStatusResponse,
-  OrderHistoryResponse,
-  OrderStatsResponse,
-  LspInfo,
-  NetworkInfo,
-  ChannelFees,
-  KaleidoConfig,
-  Layer,
-  // Node API types
-  RgbNodeInfoResponse,
-  ListChannelsResponse,
-  OpenChannelRequest,
-  OpenChannelResponse,
-  CloseChannelRequest,
-  ListPeersResponse,
-  ConnectPeerRequest,
-  ListAssetsResponse,
-  AssetBalanceResponse,
-  AddressResponse,
-  BtcBalanceResponse,
-  LNInvoiceResponse,
-  DecodeLNInvoiceResponse,
-  KeysendRequest,
-  KeysendResponse,
-  ListPaymentsResponse,
-  InitResponse,
-  UnlockRequest,
-  SendPaymentRequest,
-  SendPaymentResponse,
-} from './types.js';
+// Note: We prefer the extended types which map directly to OpenAPI specs
+export type { KaleidoConfig } from './types.js';
+export * from './api-types-ext.js';
+export * from './node-types-ext.js';
 
 // Export error classes
 export {
