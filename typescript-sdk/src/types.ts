@@ -241,7 +241,7 @@ export type KeysendResponse = nodeComponents['schemas']['KeysendResponse'];
 export type ListPaymentsResponse = nodeComponents['schemas']['ListPaymentsResponse'];
 
 // Node Info & Auth
-export type RgbNodeInfoResponse = nodeComponents['schemas']['NodeInfoResponse'];
+export type NodeInfoResponse = nodeComponents['schemas']['NodeInfoResponse'];
 export type InitRequest = nodeComponents['schemas']['InitRequest'];
 export type InitResponse = nodeComponents['schemas']['InitResponse'];
 export type UnlockRequest = nodeComponents['schemas']['UnlockRequest'];

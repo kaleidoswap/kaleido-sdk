@@ -27,8 +27,17 @@ export class RlnClient {
     // Wallet Management
     // ============================================================================
 
-    // Note: /nodeinfo and /networkinfo endpoints exist but may have different signatures
-    // Commenting out until OpenAPI spec is confirmed
+    async getNodeInfo(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/nodeinfo');
+        if (error) handleError(error);
+        return data;
+    }
+
+    async getNetworkInfo(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/networkinfo');
+        if (error) handleError(error);
+        return data;
+    }
 
     async initWallet(body: { password: string; mnemonic?: string }): Promise<any> {
         const { data, error } = await this.http.node.POST('/init', { body });
@@ -192,8 +201,11 @@ export class RlnClient {
     // Lightning Network - Channels
     // ============================================================================
 
-    // listchannels endpoint not in current OpenAPI spec
-    // Commented out until endpoint is added to spec
+    async listChannels(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/listchannels');
+        if (error) handleError(error);
+        return data;
+    }
 
     async openChannel(body: any): Promise<any> {
         const { data, error } = await this.http.node.POST('/openchannel', { body });
@@ -217,8 +229,11 @@ export class RlnClient {
     // Lightning Network - Peers
     // ============================================================================
 
-    // listpeers endpoint not in current OpenAPI spec
-    // Commented out until endpoint is added to spec
+    async listPeers(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/listpeers');
+        if (error) handleError(error);
+        return data;
+    }
 
     async connectPeer(body: { peer_pubkey_and_addr: string }): Promise<any> {
         const { data, error } = await this.http.node.POST('/connectpeer', { body });
@@ -278,8 +293,11 @@ export class RlnClient {
         return data;
     }
 
-    // listpayments endpoint not in current OpenAPI spec
-    // Commented out until endpoint is added to spec
+    async listPayments(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/listpayments');
+        if (error) handleError(error);
+        return data;
+    }
 
     async getPayment(body: { payment_hash: string }): Promise<any> {
         const { data, error } = await this.http.node.POST('/getpayment', { body });
@@ -290,6 +308,18 @@ export class RlnClient {
     // ============================================================================
     // Maker/Taker Swap Operations
     // ============================================================================
+
+    async getTakerPubkey(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/nodeinfo');
+        if (error) handleError(error);
+        return data.pubkey;
+    }
+
+    async whitelistTrade(body: any): Promise<any> {
+        const { data, error } = await this.http.node.POST('/taker', { body });
+        if (error) handleError(error);
+        return data;
+    }
 
     async makerInit(body: any): Promise<any> {
         const { data, error } = await this.http.node.POST('/makerinit', { body });
@@ -303,8 +333,11 @@ export class RlnClient {
         return data;
     }
 
-    // listswaps endpoint not in current OpenAPI spec
-    // Commented out until endpoint is added to spec
+    async listSwaps(): Promise<any> {
+        const { data, error } = await this.http.node.GET('/listswaps');
+        if (error) handleError(error);
+        return data;
+    }
 
     async getSwap(body: { payment_hash?: string; taker?: boolean }): Promise<any> {
         const { data, error } = await this.http.node.POST('/getswap', { body });

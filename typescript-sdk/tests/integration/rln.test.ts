@@ -1,4 +1,5 @@
-import { KaleidoClient, KaleidoConfig } from '../pkg-node/kaleidoswap_sdk';
+import { KaleidoClient } from '../../src/index.js';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const TEST_API_URL = process.env.TEST_API_URL || 'http://localhost:8000';
 const TEST_NODE_URL = process.env.TEST_NODE_URL || 'http://localhost:3001';
@@ -10,9 +11,10 @@ describeRln('RLN Client Integration', () => {
   let client: KaleidoClient;
 
   beforeAll(async () => {
-    const config = KaleidoConfig.withDefaults(TEST_API_URL);
-    config.setNodeUrl(TEST_NODE_URL);
-    client = new KaleidoClient(config);
+    client = KaleidoClient.create({
+      baseUrl: TEST_API_URL,
+      nodeUrl: TEST_NODE_URL,
+    });
 
     if (!client.hasNode()) {
       console.warn('RLN tests require a configured node URL');
@@ -20,15 +22,13 @@ describeRln('RLN Client Integration', () => {
   });
 
   afterAll(() => {
-    if (client) {
-      client.free();
-    }
+    // Cleanup if needed
   });
 
   describe('Node Information & Identity', () => {
     it('should get RGB node info', async () => {
       try {
-        const info = await client.rln.getRgbNodeInfo();
+        const info = await client.rln.getNodeInfo();
 
         expect(info).toBeDefined();
         expect(info).toHaveProperty('pubkey');
@@ -55,7 +55,7 @@ describeRln('RLN Client Integration', () => {
 
     it('should return consistent pubkey from both methods', async () => {
       try {
-        const nodeInfo = await client.rln.getRgbNodeInfo();
+        const nodeInfo = await client.rln.getNodeInfo();
         const pubkey = await client.rln.getTakerPubkey();
 
         expect(pubkey).toBe(nodeInfo.pubkey);
@@ -118,6 +118,7 @@ describeRln('RLN Client Integration', () => {
       try {
         const request = {
           channel_id: 'test_channel_id',
+          peer_pubkey: '02...', // Test peer pubkey
           force: false,
         };
 
@@ -162,7 +163,7 @@ describeRln('RLN Client Integration', () => {
     it.skip('should connect to a peer', async () => {
       try {
         const request = {
-          peer_connection_string: '02...@127.0.0.1:9735', // Test peer
+          peer_pubkey_and_addr: '02...@127.0.0.1:9735', // Test peer
         };
 
         const response = await client.rln.connectPeer(request);
@@ -176,7 +177,7 @@ describeRln('RLN Client Integration', () => {
     it('should fail to connect with invalid peer string', async () => {
       try {
         const request = {
-          peer_connection_string: 'invalid_peer_string',
+          peer_pubkey_and_addr: 'invalid_peer_string',
         };
 
         await client.rln.connectPeer(request);
@@ -192,7 +193,7 @@ describeRln('RLN Client Integration', () => {
   describe('Asset Management', () => {
     it('should list node assets', async () => {
       try {
-        const assets = await client.rln.listNodeAssets();
+        const assets = await client.rln.listAssets();
 
         expect(Array.isArray(assets)).toBe(true);
 
@@ -222,7 +223,7 @@ describeRln('RLN Client Integration', () => {
     it('should get asset balance for valid asset', async () => {
       try {
         // First get available assets
-        const assets = await client.rln.listNodeAssets();
+        const assets = await client.rln.listAssets();
 
         if (assets.length === 0) {
           console.warn('No assets available to test getAssetBalance');
@@ -242,7 +243,7 @@ describeRln('RLN Client Integration', () => {
 
     it('should fail to get balance for invalid asset', async () => {
       try {
-        await client.rln.getAssetBalance('invalid_asset_id_123');
+        await client.rln.getAssetBalance({ asset_id: 'invalid_asset_id_123' });
         throw new Error('Should have thrown');
       } catch (e: unknown) {
         if ((e as Error).message === 'Should have thrown') throw e;
@@ -255,7 +256,7 @@ describeRln('RLN Client Integration', () => {
   describe('Address Management', () => {
     it('should get onchain address', async () => {
       try {
-        const address = await client.rln.getOnchainAddress();
+        const address = await client.rln.getAddress();
 
         expect(address).toBeDefined();
         expect(address).toHaveProperty('address');
@@ -268,7 +269,7 @@ describeRln('RLN Client Integration', () => {
 
     it('should return valid Bitcoin address format', async () => {
       try {
-        const address = await client.rln.getOnchainAddress();
+        const address = await client.rln.getAddress();
 
         // Bitcoin addresses start with specific prefixes depending on network
         // Mainnet: 1, 3, bc1 | Testnet: m, n, 2, tb1 | Regtest: bcrt1
@@ -282,7 +283,7 @@ describeRln('RLN Client Integration', () => {
   describe('Lightning Operations', () => {
     it('should create lightning invoice without parameters', async () => {
       try {
-        const invoice = await client.rln.createLnInvoice();
+        const invoice = await client.rln.createLNInvoice({ amnt_msat: 10000 });
 
         expect(invoice).toBeDefined();
         expect(invoice).toHaveProperty('invoice');
@@ -295,8 +296,7 @@ describeRln('RLN Client Integration', () => {
 
     it('should create lightning invoice with amount', async () => {
       try {
-        const amtMsat = 10000; // 10 sats
-        const invoice = await client.rln.createLnInvoice(amtMsat);
+        const invoice = await client.rln.createLNInvoice({ amnt_msat: 10000 } );
 
         expect(invoice).toBeDefined();
         expect(invoice).toHaveProperty('invoice');
@@ -308,9 +308,7 @@ describeRln('RLN Client Integration', () => {
 
     it('should create lightning invoice with expiry', async () => {
       try {
-        const amtMsat = 10000;
-        const expirySec = 3600; // 1 hour
-        const invoice = await client.rln.createLnInvoice(amtMsat, expirySec);
+        const invoice = await client.rln.createLNInvoice({ amnt_msat: 10000, expiry_sec: 3600 });
 
         expect(invoice).toBeDefined();
         expect(invoice).toHaveProperty('invoice');
@@ -321,12 +319,13 @@ describeRln('RLN Client Integration', () => {
 
     it('should create RGB lightning invoice', async () => {
       try {
-        const amtMsat = 10000;
-        const expirySec = 3600;
-        const assetAmount = 1000;
-        const assetId = 'test_asset_id';
-
-        const invoice = await client.rln.createLnInvoice(amtMsat, expirySec, assetAmount, assetId);
+        const request = {
+          amnt_msat: 10000,
+          expiry_sec: 3600,
+          asset_amount: 1000,
+          asset_id: 'test_asset_id'
+        };
+        const invoice = await client.rln.createLNInvoice(request);
 
         expect(invoice).toBeDefined();
         expect(invoice).toHaveProperty('invoice');
@@ -339,10 +338,10 @@ describeRln('RLN Client Integration', () => {
     it('should decode lightning invoice', async () => {
       try {
         // First create an invoice
-        const created = await client.rln.createLnInvoice(10000);
+        const created = await client.rln.createLNInvoice({ amnt_msat: 10000 });
 
         // Then decode it
-        const decoded = await client.rln.decodeLnInvoice(created.invoice);
+        const decoded = await client.rln.decodeLNInvoice(created.invoice);
 
         expect(decoded).toBeDefined();
         expect(decoded).toHaveProperty('payment_hash');
@@ -354,7 +353,10 @@ describeRln('RLN Client Integration', () => {
 
     it('should fail to decode invalid invoice', async () => {
       try {
-        await client.rln.decodeLnInvoice('invalid_invoice_string');
+        const request = {
+          invoice: 'invalid_invoice_string'
+        };
+        await client.rln.decodeLNInvoice(request);
         throw new Error('Should have thrown');
       } catch (e: unknown) {
         if ((e as Error).message === 'Should have thrown') throw e;
@@ -420,8 +422,10 @@ describeRln('RLN Client Integration', () => {
     // These tests are skipped by default and should be run in isolated environment
     it.skip('should initialize wallet', async () => {
       try {
-        const password = 'test_password_123';
-        const response = await client.rln.initWallet(password);
+        const request = {
+          password: 'test_password_123'
+        };
+        const response = await client.rln.initWallet(request);
 
         expect(response).toBeDefined();
         // Should return wallet seed or confirmation
@@ -433,8 +437,10 @@ describeRln('RLN Client Integration', () => {
 
     it.skip('should unlock wallet', async () => {
       try {
-        const password = 'test_password_123';
-        const response = await client.rln.unlockWallet(password);
+        const request = {
+          password: 'test_password_123'
+        };
+        const response = await client.rln.unlockWallet(request);
 
         expect(response).toBeDefined();
       } catch (e: unknown) {
@@ -444,7 +450,10 @@ describeRln('RLN Client Integration', () => {
 
     it.skip('should fail to unlock with wrong password', async () => {
       try {
-        await client.rln.unlockWallet('wrong_password');
+        const request = {
+          password: 'wrong_password'
+        };
+        await client.rln.unlockWallet(request);
         throw new Error('Should have thrown');
       } catch (e: unknown) {
         if ((e as Error).message === 'Should have thrown') throw e;
@@ -465,12 +474,14 @@ describeRln('RLN Client Integration', () => {
 
     it.skip('should handle wallet lifecycle', async () => {
       try {
-        const password = 'test_password_lifecycle';
+        const request = {
+          password: 'test_password_lifecycle'
+        };
 
         // Unlock -> Lock -> Unlock again
-        await client.rln.unlockWallet(password);
+        await client.rln.unlockWallet(request);
         await client.rln.lockWallet();
-        await client.rln.unlockWallet(password);
+        await client.rln.unlockWallet(request);
 
         // Should not throw
         expect(true).toBe(true);
@@ -509,12 +520,13 @@ describeRln('RLN Client Integration', () => {
     it('should handle node not configured error', async () => {
       try {
         // Create client without node URL
-        const configNoNode = KaleidoConfig.withDefaults(TEST_API_URL);
-        const clientNoNode = new KaleidoClient(configNoNode);
+        const clientNoNode = KaleidoClient.create({
+          baseUrl: TEST_API_URL,
+        });
 
         expect(clientNoNode.hasNode()).toBe(false);
 
-        await clientNoNode.rln.getRgbNodeInfo();
+        await clientNoNode.rln.getNodeInfo();
         throw new Error('Should have thrown');
       } catch (e: unknown) {
         if ((e as Error).message === 'Should have thrown') throw e;
@@ -526,11 +538,12 @@ describeRln('RLN Client Integration', () => {
     it('should handle network errors gracefully', async () => {
       try {
         // Create client with invalid node URL
-        const configBadNode = KaleidoConfig.withDefaults(TEST_API_URL);
-        configBadNode.setNodeUrl('http://invalid-node-url:9999');
-        const clientBadNode = new KaleidoClient(configBadNode);
+        const clientBadNode = KaleidoClient.create({
+          baseUrl: TEST_API_URL,
+          nodeUrl: 'http://invalid-node-url:9999',
+        });
 
-        await clientBadNode.rln.getRgbNodeInfo();
+        await clientBadNode.rln.getNodeInfo();
         throw new Error('Should have thrown');
       } catch (e: unknown) {
         if ((e as Error).message === 'Should have thrown') throw e;
@@ -541,7 +554,10 @@ describeRln('RLN Client Integration', () => {
 
     it('should preserve error details', async () => {
       try {
-        await client.rln.getAssetBalance('definitely_invalid_asset_id');
+        const request = {
+          asset_id: 'definitely_invalid_asset_id'
+        };
+        await client.rln.getAssetBalance(request);
         throw new Error('Should have thrown');
       } catch (e: unknown) {
         if ((e as Error).message === 'Should have thrown') throw e;
@@ -558,7 +574,7 @@ describeRln('RLN Client Integration', () => {
       try {
         const channels = await client.rln.listChannels();
         const peers = await client.rln.listPeers();
-        const assets = await client.rln.listNodeAssets();
+        const assets = await client.rln.listAssets();
         const payments = await client.rln.listPayments();
 
         // TypeScript should enforce these are arrays
@@ -574,15 +590,22 @@ describeRln('RLN Client Integration', () => {
     it('should handle optional parameters correctly', async () => {
       try {
         // All parameters optional
-        const invoice1 = await client.rln.createLnInvoice();
+        const invoice1 = await client.rln.createLNInvoice({});
         expect(invoice1).toBeDefined();
 
         // Some parameters
-        const invoice2 = await client.rln.createLnInvoice(10000);
+        const invoice2 = await client.rln.createLNInvoice({
+          amount_msat: 10000
+        });
         expect(invoice2).toBeDefined();
 
         // All parameters
-        const invoice3 = await client.rln.createLnInvoice(10000, 3600, undefined, undefined);
+        const invoice3 = await client.rln.createLNInvoice({
+          amount_msat: 10000,
+          timeout_seconds: 3600,
+          description: undefined,
+          description_hash: undefined
+        });
         expect(invoice3).toBeDefined();
       } catch (e: unknown) {
         console.warn('Skipping optional parameters test - node unavailable:', e);
