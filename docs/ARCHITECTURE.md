@@ -210,7 +210,7 @@ print(f"Found assets: {assets}")
 Native Node.js addon:
 
 ```typescript
-import { KaleidoClient, KaleidoConfig } from '@kaleidoswap/sdk';
+import { KaleidoClient, KaleidoConfig } from 'kaleidoswap-sdk';
 
 const config = new KaleidoConfig({ baseUrl: 'https://api.kaleidoswap.com' });
 const client = new KaleidoClient(config);

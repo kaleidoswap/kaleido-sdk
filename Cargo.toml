@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "crates/kaleidoswap-core",
     "bindings/python",
-    "bindings/typescript",
 ]
 
 [workspace.package]

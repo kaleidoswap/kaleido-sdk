@@ -53,7 +53,7 @@ help:
 
 # Directories
 BINDINGS_PYTHON := bindings/python
-BINDINGS_TYPESCRIPT := bindings/typescript
+BINDINGS_TYPESCRIPT := typescript-sdk
 
 # ============================================================================
 # Build targets
@@ -71,7 +71,7 @@ build-python:
 
 build-typescript:
 	@echo "📦 Building TypeScript bindings..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build:nodejs
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
 
 # ============================================================================
 # Test targets

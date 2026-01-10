@@ -3,7 +3,7 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
-OUTPUT_DIR="$ROOT_DIR/bindings/typescript/typescript/src/generated"
+OUTPUT_DIR="$ROOT_DIR/typescript-sdk/src/generated"
 
 echo "🔧 Generating TypeScript types from OpenAPI specs..."
 

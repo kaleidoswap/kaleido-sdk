@@ -10,7 +10,7 @@ The SDK is built in **Rust** with bindings for multiple languages:
 |----------|--------|---------|
 | **Rust** | ✅ Ready | `kaleidoswap-core` |
 | **Python** | ✅ Ready | `kaleidoswap` |
-| **TypeScript** | ✅ Ready | `@kaleidoswap/sdk` |
+| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` |
 | **Swift** | 🚧 Planned | - |
 
 ## ✨ Features
@@ -44,7 +44,7 @@ pip install kaleidoswap
 ### TypeScript/Node.js
 
 ```bash
-pnpm add @kaleidoswap/sdk
+pnpm add kaleidoswap-sdk
 ```
 
 ## Quick Start
@@ -161,7 +161,7 @@ except InsufficientBalanceError as e:
 ### TypeScript/Node.js
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 const config = {
     baseUrl: 'https://api.regtest.kaleidoswap.com',

@@ -1,0 +1,216 @@
+/**
+ * Kaleidoswap SDK Error Classes
+ *
+ * Structured exception hierarchy for proper error handling.
+ * Errors from HTTP responses are automatically mapped to these classes.
+ */
+
+/**
+ * Base error class for all Kaleidoswap SDK errors
+ */
+export class KaleidoError extends Error {
+  /** Error code for programmatic handling */
+  readonly code: string;
+  /** HTTP status code (if applicable) */
+  readonly statusCode?: number;
+  /** Additional error details */
+  readonly details?: string;
+
+  constructor(code: string, message: string, statusCode?: number, details?: string) {
+    super(message);
+    this.name = 'KaleidoError';
+    this.code = code;
+    this.statusCode = statusCode;
+    this.details = details;
+
+    // Maintains proper stack trace for where error was thrown
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+
+  /** Check if this error is retryable */
+  isRetryable(): boolean {
+    return (
+      this.code === 'NETWORK_ERROR' ||
+      this.code === 'TIMEOUT_ERROR' ||
+      (this.statusCode !== undefined && (this.statusCode >= 500 || this.statusCode === 429))
+    );
+  }
+}
+
+/**
+ * API request failed with an error response
+ */
+export class APIError extends KaleidoError {
+  constructor(message: string, statusCode: number, details?: string) {
+    super('API_ERROR', `API Error (${statusCode}): ${message}`, statusCode, details);
+    this.name = 'APIError';
+  }
+}
+
+/**
+ * Network connectivity error
+ */
+export class NetworkError extends KaleidoError {
+  constructor(message: string) {
+    super('NETWORK_ERROR', message);
+    this.name = 'NetworkError';
+  }
+}
+
+/**
+ * Request or input validation failed
+ */
+export class ValidationError extends KaleidoError {
+  constructor(message: string) {
+    super('VALIDATION_ERROR', message);
+    this.name = 'ValidationError';
+  }
+}
+
+/**
+ * Request timed out
+ */
+export class TimeoutError extends KaleidoError {
+  constructor(message: string) {
+    super('TIMEOUT_ERROR', message);
+    this.name = 'TimeoutError';
+  }
+}
+
+/**
+ * WebSocket connection or communication error
+ */
+export class WebSocketError extends KaleidoError {
+  constructor(message: string) {
+    super('WEBSOCKET_ERROR', message);
+    this.name = 'WebSocketError';
+  }
+}
+
+/**
+ * Resource not found (404)
+ */
+export class NotFoundError extends KaleidoError {
+  constructor(message: string) {
+    super('NOT_FOUND', message, 404);
+    this.name = 'NotFoundError';
+  }
+}
+
+/**
+ * Configuration error
+ */
+export class ConfigError extends KaleidoError {
+  constructor(message: string) {
+    super('CONFIG_ERROR', message);
+    this.name = 'ConfigError';
+  }
+}
+
+/**
+ * Swap operation failed
+ */
+export class SwapError extends KaleidoError {
+  readonly swapId?: string;
+
+  constructor(message: string, swapId?: string) {
+    super('SWAP_ERROR', message, undefined, swapId);
+    this.name = 'SwapError';
+    this.swapId = swapId;
+  }
+}
+
+/**
+ * RGB Node not configured but required for operation
+ */
+export class NodeNotConfiguredError extends KaleidoError {
+  constructor() {
+    super(
+      'NODE_NOT_CONFIGURED',
+      'RGB Node not configured. This operation requires a connected RGB Lightning Node.',
+    );
+    this.name = 'NodeNotConfiguredError';
+  }
+}
+
+/**
+ * Quote has expired
+ */
+export class QuoteExpiredError extends KaleidoError {
+  constructor() {
+    super('QUOTE_EXPIRED', 'Quote has expired');
+    this.name = 'QuoteExpiredError';
+  }
+}
+
+/**
+ * Insufficient balance for operation
+ */
+export class InsufficientBalanceError extends KaleidoError {
+  readonly requiredAmount: bigint;
+  readonly availableAmount: bigint;
+  readonly asset?: string;
+
+  constructor(requiredAmount: bigint, availableAmount: bigint, asset?: string) {
+    const msg = asset
+      ? `Insufficient ${asset} balance: need ${requiredAmount}, have ${availableAmount}`
+      : `Insufficient balance: need ${requiredAmount}, have ${availableAmount}`;
+    super('INSUFFICIENT_BALANCE', msg);
+    this.name = 'InsufficientBalanceError';
+    this.requiredAmount = requiredAmount;
+    this.availableAmount = availableAmount;
+    this.asset = asset;
+  }
+}
+
+/**
+ * Rate limit exceeded
+ */
+export class RateLimitError extends APIError {
+  readonly retryAfter?: number;
+
+  constructor(retryAfter?: number) {
+    const msg = retryAfter
+      ? `Rate limit exceeded. Retry after ${retryAfter} seconds`
+      : 'Rate limit exceeded';
+    super(msg, 429);
+    this.name = 'RateLimitError';
+    this.retryAfter = retryAfter;
+  }
+}
+
+/**
+ * Map HTTP errors to typed SDK errors
+ * @param error - HTTP error data from fetch
+ */
+export function mapHttpError(error: {
+  status: number;
+  statusText: string;
+  data?: { message?: string; code?: string; error?: string };
+}): KaleidoError {
+  const message = error.data?.message || error.data?.error || error.statusText;
+
+  // Map HTTP status codes to specific error types
+  switch (error.status) {
+    case 400:
+      return new ValidationError(message);
+    case 404:
+      return new NotFoundError(message);
+    case 408:
+    case 504:
+      return new TimeoutError(message);
+    case 429:
+      return new RateLimitError();
+    case 500:
+    case 502:
+    case 503:
+      return new APIError(message, error.status);
+    default:
+      if (error.status >= 400 && error.status < 500) {
+        return new APIError(message, error.status);
+      }
+      return new NetworkError(message);
+  }
+}

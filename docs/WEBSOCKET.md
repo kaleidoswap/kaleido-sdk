@@ -59,7 +59,7 @@ if __name__ == "__main__":
 #### TypeScript
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 async function basicWebSocket() {
     const client = new KaleidoClient({

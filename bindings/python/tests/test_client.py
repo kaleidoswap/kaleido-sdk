@@ -521,7 +521,7 @@ class TestLspOperationsIntegration:
         from kaleidoswap import KaleidoClient, KaleidoConfig
 
         config = KaleidoConfig(
-            base_url="https://api.regtest.kaleidoswap.com",
+            base_url="http://localhost:8000",
             timeout=30.0,
         )
         return KaleidoClient(config)
