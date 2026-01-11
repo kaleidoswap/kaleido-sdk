@@ -94,10 +94,6 @@ test-typescript:
 	@echo "🧪 Running TypeScript tests..."
 	cd $(BINDINGS_TYPESCRIPT) && pnpm test
 
-test-wasm:
-	@echo "🧪 Running Web (WASM) tests..."
-	cd bindings/typescript && wasm-pack test --headless --chrome
-
 # ============================================================================
 # Example & Development targets
 # ============================================================================
@@ -109,18 +105,39 @@ run-python-example: dev-python
 	@cd $(BINDINGS_PYTHON) && uv run examples/swap_example.py
 
 run-ts-example: dev-typescript
-	@echo "📦 Running TypeScript swap example..."
+	@echo "📦 Running TypeScript examples..."
 	@echo "   API URL: $(KALEIDO_API_URL)"
-	@echo "   Node URL: $(KALEIDO_NODE_URL)"
-	@cd $(BINDINGS_TYPESCRIPT) && npx ts-node --esm examples/swap_example.ts
+	@echo ""
+	@echo "Available examples:"
+	@echo "  make run-ts-hello      - Basic client setup"
+	@echo "  make run-ts-quote      - Get a swap quote"
+	@echo "  make run-ts-websocket  - WebSocket streaming"
+	@echo ""
+	@echo "Running hello example by default..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/01_hello.ts
+
+run-ts-hello: dev-typescript
+	@echo "📦 Running TypeScript hello example..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/01_hello.ts
+
+run-ts-quote: dev-typescript
+	@echo "📦 Running TypeScript quote example..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/02_get_quote.ts
+
+run-ts-websocket: dev-typescript
+	@echo "📦 Running TypeScript WebSocket example..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/03_websocket.ts
 
 dev-setup: dev-python dev-typescript check-services
 	@echo "✅ Development environment ready!"
 	@echo ""
 	@echo "Quick commands:"
 	@echo "  make run-python-example  - Run Python example"
-	@echo "  make run-ts-example      - Run TypeScript example"
+	@echo "  make run-ts-example      - Run TypeScript examples"
+	@echo "  make run-ts-hello        - Run TypeScript hello example"
+	@echo "  make run-ts-quote        - Run TypeScript quote example"
 	@echo "  make check-services      - Verify services are running"
+
 
 check-services:
 	@echo "🔍 Checking services..."
@@ -251,8 +268,8 @@ dev-python:
 		uv run maturin develop --uv
 
 dev-typescript:
-	@echo "📦 Installing TypeScript bindings in development mode..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build:nodejs
+	@echo "📦 Installing TypeScript SDK dependencies..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install
 
 # Watch for changes and rebuild
 watch:

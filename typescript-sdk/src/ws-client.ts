@@ -8,7 +8,7 @@
  */
 
 import { EventEmitter } from 'events';
-import type { WebSocketMessage, WebSocketResponse, QuoteRequest, QuoteResponse, PongResponse } from './ws-types.js';
+import type { WebSocketMessage, WebSocketResponse, QuoteRequest, QuoteResponse } from './ws-types.js';
 
 export interface WSClientConfig {
     url: string;
@@ -68,7 +68,7 @@ export class WSClient extends EventEmitter {
                     }
                 };
 
-                this.ws.onerror = (error) => {
+                this.ws.onerror = (_error) => {
                     this.isConnecting = false;
                     // Don't emit error here - let it be handled by onclose
                 };

@@ -9,7 +9,7 @@ import { KaleidoClient } from '../../src/index.js';
 import type { QuoteResponse } from '../../src/ws-types.js';
 
 const TEST_API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
-const TEST_WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe';
+const TEST_WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe';
 
 describe('WebSocket Integration', () => {
     let client: KaleidoClient;
