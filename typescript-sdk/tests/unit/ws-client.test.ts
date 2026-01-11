@@ -1,6 +1,6 @@
 /**
  * Unit Tests - WebSocket Client
- * 
+ *
  * Tests WebSocket connectivity, reconnection, and message handling
  */
 

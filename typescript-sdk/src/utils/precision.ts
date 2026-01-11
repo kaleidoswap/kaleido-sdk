@@ -1,6 +1,6 @@
 /**
  * Precision Handling Utilities
- * 
+ *
  * Handles conversion between display amounts (human-readable) and raw amounts (atomic units).
  * For example: 1.5 BTC (display) <-> 150000000 satoshis (raw, precision=8)
  */

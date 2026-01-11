@@ -1,6 +1,6 @@
 /**
  * Unit Tests - Precision Utilities
- * 
+ *
  * Tests precision conversion functions
  */
 
@@ -50,7 +50,7 @@ describe('Precision Utilities', () => {
                 ticker: 'BTC',
                 name: 'Bitcoin',
                 precision: 8,
-                min_order_size: 1000,    // 0.00001 BTC
+                min_order_size: 1000, // 0.00001 BTC
                 max_order_size: 100000000, // 1 BTC
                 is_active: true,
             },

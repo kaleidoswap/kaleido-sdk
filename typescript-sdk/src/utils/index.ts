@@ -1,6 +1,6 @@
 /**
  * Utility Functions
- * 
+ *
  * Re-exports all utility functions and classes
  */
 

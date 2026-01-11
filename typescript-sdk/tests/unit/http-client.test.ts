@@ -1,6 +1,6 @@
 /**
  * Unit Tests - HTTP Client
- * 
+ *
  * Tests the core HTTP client functionality with openapi-fetch
  */
 

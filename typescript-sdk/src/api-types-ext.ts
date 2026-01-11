@@ -1,6 +1,6 @@
 /**
  * Extended API Types
- * 
+ *
  * Re-exports types from generated API types for easier consumption.
  * This file extracts operation types (request/response) from the generated
  * OpenAPI types and exports them with simpler names.
@@ -9,17 +9,19 @@
 import type { operations, components } from './generated/api-types.js';
 
 // Helper types (internal)
-type RequestBody<T extends keyof operations> =
-    operations[T] extends { requestBody?: { content: { 'application/json': infer R } } }
+type RequestBody<T extends keyof operations> = operations[T] extends {
+    requestBody?: { content: { 'application/json': infer R } };
+}
     ? R
     : never;
 
-type ResponseSuccess<T extends keyof operations> =
-    operations[T] extends { responses: { 200: { content: { 'application/json': infer R } } } }
+type ResponseSuccess<T extends keyof operations> = operations[T] extends {
+    responses: { 200: { content: { 'application/json': infer R } } };
+}
     ? R
     : operations[T] extends { responses: { 201: { content: { 'application/json': infer R } } } }
-    ? R
-    : never;
+      ? R
+      : never;
 
 // Market API Types
 export type MarketListAssetsResponse = ResponseSuccess<'list_assets'>;

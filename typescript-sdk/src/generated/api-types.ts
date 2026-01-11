@@ -4,7 +4,7 @@
  */
 
 export type paths = {
-    "/api/v1/lsps1/get_info": {
+    '/api/v1/lsps1/get_info': {
         parameters: {
             query?: never;
             header?: never;
@@ -12,7 +12,7 @@ export type paths = {
             cookie?: never;
         };
         /** Get Info */
-        get: operations["get_info"];
+        get: operations['get_info'];
         put?: never;
         post?: never;
         delete?: never;
@@ -21,7 +21,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/lsps1/network_info": {
+    '/api/v1/lsps1/network_info': {
         parameters: {
             query?: never;
             header?: never;
@@ -32,7 +32,7 @@ export type paths = {
          * Get Network Info
          * @description Get network information including current blockchain height and network type.
          */
-        get: operations["get_network_info"];
+        get: operations['get_network_info'];
         put?: never;
         post?: never;
         delete?: never;
@@ -41,7 +41,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/lsps1/create_order": {
+    '/api/v1/lsps1/create_order': {
         parameters: {
             query?: never;
             header?: never;
@@ -51,14 +51,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Create Order */
-        post: operations["create_order"];
+        post: operations['create_order'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/lsps1/estimate_fees": {
+    '/api/v1/lsps1/estimate_fees': {
         parameters: {
             query?: never;
             header?: never;
@@ -72,14 +72,14 @@ export type paths = {
          * @description Estimate channel fees based on the provided parameters without creating an order.
          *     For asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.
          */
-        post: operations["estimate_fees"];
+        post: operations['estimate_fees'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/lsps1/get_order": {
+    '/api/v1/lsps1/get_order': {
         parameters: {
             query?: never;
             header?: never;
@@ -89,14 +89,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Get Order */
-        post: operations["get_order"];
+        post: operations['get_order'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/lsps1/rate_decision": {
+    '/api/v1/lsps1/rate_decision': {
         parameters: {
             query?: never;
             header?: never;
@@ -110,14 +110,14 @@ export type paths = {
          * @description Handle user decision on rate change for LSPS1 orders.
          *     User can either accept the new market rate or request a refund.
          */
-        post: operations["handle_rate_decision"];
+        post: operations['handle_rate_decision'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/lsps1/retry_delivery": {
+    '/api/v1/lsps1/retry_delivery': {
         parameters: {
             query?: never;
             header?: never;
@@ -141,14 +141,14 @@ export type paths = {
          *     Returns:
          *         RetryDeliveryResponse with status and message
          */
-        post: operations["retry_delivery"];
+        post: operations['retry_delivery'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/nodeinfo": {
+    '/api/v1/swaps/nodeinfo': {
         parameters: {
             query?: never;
             header?: never;
@@ -156,7 +156,7 @@ export type paths = {
             cookie?: never;
         };
         /** Get Node Info */
-        get: operations["get_node_info"];
+        get: operations['get_node_info'];
         put?: never;
         post?: never;
         delete?: never;
@@ -165,7 +165,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/init": {
+    '/api/v1/swaps/init': {
         parameters: {
             query?: never;
             header?: never;
@@ -175,14 +175,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Initiate Swap */
-        post: operations["initiate_swap"];
+        post: operations['initiate_swap'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/execute": {
+    '/api/v1/swaps/execute': {
         parameters: {
             query?: never;
             header?: never;
@@ -192,14 +192,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Confirm Swap */
-        post: operations["confirm_swap"];
+        post: operations['confirm_swap'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/atomic/status": {
+    '/api/v1/swaps/atomic/status': {
         parameters: {
             query?: never;
             header?: never;
@@ -209,14 +209,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Get Swap Status */
-        post: operations["get_swap_status"];
+        post: operations['get_swap_status'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/assets": {
+    '/api/v1/market/assets': {
         parameters: {
             query?: never;
             header?: never;
@@ -238,7 +238,7 @@ export type paths = {
          *     - GET /assets?protocol=RGB&network=LN   → RGB assets on Lightning
          *     - GET /assets?limit=10&offset=20        → Pagination (page 3, 10 items per page)
          */
-        get: operations["list_assets"];
+        get: operations['list_assets'];
         put?: never;
         post?: never;
         delete?: never;
@@ -247,7 +247,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/pairs": {
+    '/api/v1/market/pairs': {
         parameters: {
             query?: never;
             header?: never;
@@ -275,7 +275,7 @@ export type paths = {
          *
          *     Always returns TradingPairsResponse with pagination metadata.
          */
-        get: operations["get_pairs"];
+        get: operations['get_pairs'];
         put?: never;
         post?: never;
         delete?: never;
@@ -284,7 +284,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/pairs/routes": {
+    '/api/v1/market/pairs/routes': {
         parameters: {
             query?: never;
             header?: never;
@@ -310,14 +310,14 @@ export type paths = {
          *     - Destination network and protocol
          *     - Submarine swap indicator (same asset, different networks)
          */
-        post: operations["get_pair_routes"];
+        post: operations['get_pair_routes'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/routes": {
+    '/api/v1/market/routes': {
         parameters: {
             query?: never;
             header?: never;
@@ -343,14 +343,14 @@ export type paths = {
          *     - steps: List of RouteStep objects with asset, layer, and indicative price
          *     - total_hops: Number of hops in the route
          */
-        post: operations["discover_routes"];
+        post: operations['discover_routes'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/routes/matrix": {
+    '/api/v1/market/routes/matrix': {
         parameters: {
             query?: never;
             header?: never;
@@ -364,7 +364,7 @@ export type paths = {
          *     Returns a matrix showing which assets can reach which,
          *     with available layer combinations and minimum hops required.
          */
-        get: operations["get_route_matrix"];
+        get: operations['get_route_matrix'];
         put?: never;
         post?: never;
         delete?: never;
@@ -373,7 +373,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/market/quote": {
+    '/api/v1/market/quote': {
         parameters: {
             query?: never;
             header?: never;
@@ -395,14 +395,14 @@ export type paths = {
          *     - Calculated amounts and fees
          *     - Submarine swap indicator (if same asset on different networks)
          */
-        post: operations["get_quote"];
+        post: operations['get_quote'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/orders": {
+    '/api/v1/swaps/orders': {
         parameters: {
             query?: never;
             header?: never;
@@ -412,14 +412,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Create Swap Order */
-        post: operations["create_swap_order"];
+        post: operations['create_swap_order'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/orders/status": {
+    '/api/v1/swaps/orders/status': {
         parameters: {
             query?: never;
             header?: never;
@@ -429,14 +429,14 @@ export type paths = {
         get?: never;
         put?: never;
         /** Get Swap Order Status */
-        post: operations["get_swap_order_status"];
+        post: operations['get_swap_order_status'];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/orders/history": {
+    '/api/v1/swaps/orders/history': {
         parameters: {
             query?: never;
             header?: never;
@@ -447,7 +447,7 @@ export type paths = {
          * Get Order History
          * @description Get order history with optional status filtering and pagination
          */
-        get: operations["get_order_history"];
+        get: operations['get_order_history'];
         put?: never;
         post?: never;
         delete?: never;
@@ -456,7 +456,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/orders/analytics": {
+    '/api/v1/swaps/orders/analytics': {
         parameters: {
             query?: never;
             header?: never;
@@ -467,7 +467,7 @@ export type paths = {
          * Get Order Stats
          * @description Get order statistics including counts by status and volume information
          */
-        get: operations["get_order_stats"];
+        get: operations['get_order_stats'];
         put?: never;
         post?: never;
         delete?: never;
@@ -476,7 +476,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/swaps/orders/rate_decision": {
+    '/api/v1/swaps/orders/rate_decision': {
         parameters: {
             query?: never;
             header?: never;
@@ -490,7 +490,7 @@ export type paths = {
          * @description Handle user decision on rate change for swap orders.
          *     User can either accept the new market rate or request a refund.
          */
-        post: operations["handle_swap_order_rate_decision"];
+        post: operations['handle_swap_order_rate_decision'];
         delete?: never;
         options?: never;
         head?: never;
@@ -541,7 +541,7 @@ export type components = {
                 [key: string]: string;
             };
             /** @description Logo/media */
-            media?: components["schemas"]["Media"] | null;
+            media?: components['schemas']['Media'] | null;
             /**
              * Issued Supply
              * Format: int64
@@ -557,7 +557,7 @@ export type components = {
              * Endpoints
              * @description Layer endpoints with trading limits
              */
-            endpoints?: components["schemas"]["TradingLimits"][];
+            endpoints?: components['schemas']['TradingLimits'][];
             /**
              * Is Active
              * @description Active for trading
@@ -580,7 +580,13 @@ export type components = {
          * @description Status of asset delivery via keysend after channel opening
          * @enum {string}
          */
-        AssetDeliveryStatus: "NOT_REQUIRED" | "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED" | "RATE_CHANGED";
+        AssetDeliveryStatus:
+            | 'NOT_REQUIRED'
+            | 'PENDING'
+            | 'IN_PROGRESS'
+            | 'COMPLETED'
+            | 'FAILED'
+            | 'RATE_CHANGED';
         /** AssetsOptions */
         AssetsOptions: {
             /**
@@ -652,7 +658,7 @@ export type components = {
          */
         AssetsResponse: {
             /** Assets */
-            assets: components["schemas"]["Asset"][];
+            assets: components['schemas']['Asset'][];
             /**
              * Network
              * @default regtest
@@ -671,7 +677,7 @@ export type components = {
          * BitcoinNetwork
          * @enum {string}
          */
-        BitcoinNetwork: "Mainnet" | "Testnet" | "Signet" | "Regtest";
+        BitcoinNetwork: 'Mainnet' | 'Testnet' | 'Signet' | 'Regtest';
         /** ChannelDetails */
         ChannelDetails: {
             /** Channel Id */
@@ -734,9 +740,9 @@ export type components = {
             created_at?: string;
             /** Announce Channel */
             announce_channel: boolean;
-            order_state: components["schemas"]["OrderState"];
-            payment: components["schemas"]["PaymentDetails"];
-            channel?: components["schemas"]["ChannelDetails"] | null;
+            order_state: components['schemas']['OrderState'];
+            payment: components['schemas']['PaymentDetails'];
+            channel?: components['schemas']['ChannelDetails'] | null;
             /** Asset Id */
             asset_id?: string | null;
             /** Lsp Asset Amount */
@@ -747,7 +753,7 @@ export type components = {
             rfq_id?: string | null;
             /** Asset Price Sat */
             asset_price_sat?: number | null;
-            asset_delivery_status?: components["schemas"]["AssetDeliveryStatus"] | null;
+            asset_delivery_status?: components['schemas']['AssetDeliveryStatus'] | null;
             /** Asset Delivery Payment Hash */
             asset_delivery_payment_hash?: string | null;
             /**
@@ -836,11 +842,11 @@ export type components = {
              */
             rfq_id: string;
             /** @description Complete input specification: asset, ticker, network, protocol, and amount */
-            from_asset: components["schemas"]["SwapLeg"];
+            from_asset: components['schemas']['SwapLeg'];
             /** @description Complete output specification: asset, ticker, network, protocol, and amount */
-            to_asset: components["schemas"]["SwapLeg"];
+            to_asset: components['schemas']['SwapLeg'];
             /** @description Destination address/invoice for receiving the to_asset payout */
-            receiver_address: components["schemas"]["ReceiverAddress"];
+            receiver_address: components['schemas']['ReceiverAddress'];
             /**
              * Min Onchain Conf
              * @default 1
@@ -861,8 +867,8 @@ export type components = {
             id: string;
             /** Rfq Id */
             rfq_id: string;
-            deposit_address?: components["schemas"]["ReceiverAddress"] | null;
-            status: components["schemas"]["SwapOrderStatus"];
+            deposit_address?: components['schemas']['ReceiverAddress'] | null;
+            status: components['schemas']['SwapOrderStatus'];
         };
         /** Fee */
         Fee: {
@@ -904,9 +910,9 @@ export type components = {
         GetInfoResponseModel: {
             /** Lsp Connection Url */
             lsp_connection_url: string;
-            options: components["schemas"]["OrderOptions"];
+            options: components['schemas']['OrderOptions'];
             /** Assets */
-            assets: components["schemas"]["AssetsOptions"][];
+            assets: components['schemas']['AssetsOptions'][];
         };
         /** GetOrderRequest */
         GetOrderRequest: {
@@ -916,7 +922,7 @@ export type components = {
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
+            detail?: components['schemas']['ValidationError'][];
         };
         /**
          * Layer
@@ -928,7 +934,20 @@ export type components = {
          *     The layer encodes both WHAT protocol the asset uses and WHERE it settles.
          * @enum {string}
          */
-        Layer: "BTC_L1" | "BTC_LN" | "BTC_SPARK" | "BTC_ARKADE" | "BTC_LIQUID" | "BTC_CASHU" | "RGB_L1" | "RGB_LN" | "TAPASS_L1" | "TAPASS_LN" | "LIQUID_LIQUID" | "ARKADE_ARKADE" | "SPARK_SPARK";
+        Layer:
+            | 'BTC_L1'
+            | 'BTC_LN'
+            | 'BTC_SPARK'
+            | 'BTC_ARKADE'
+            | 'BTC_LIQUID'
+            | 'BTC_CASHU'
+            | 'RGB_L1'
+            | 'RGB_LN'
+            | 'TAPASS_L1'
+            | 'TAPASS_LN'
+            | 'LIQUID_LIQUID'
+            | 'ARKADE_ARKADE'
+            | 'SPARK_SPARK';
         /** Media */
         Media: {
             /**
@@ -956,7 +975,7 @@ export type components = {
              * Steps
              * @description Ordered list of route steps
              */
-            steps: components["schemas"]["RouteStep"][];
+            steps: components['schemas']['RouteStep'][];
             /**
              * Total Hops
              * @description Number of hops in the route
@@ -965,7 +984,7 @@ export type components = {
         };
         /** NetworkInfoResponse */
         NetworkInfoResponse: {
-            network: components["schemas"]["BitcoinNetwork"];
+            network: components['schemas']['BitcoinNetwork'];
             /**
              * Height
              * @example 805434
@@ -978,8 +997,8 @@ export type components = {
              * Data
              * @description List of orders
              */
-            data: components["schemas"]["OrderHistorySummary"][];
-            pagination: components["schemas"]["PaginationMeta"];
+            data: components['schemas']['OrderHistorySummary'][];
+            pagination: components['schemas']['PaginationMeta'];
         };
         /**
          * OrderHistorySummary
@@ -992,7 +1011,7 @@ export type components = {
              */
             id: string;
             /** @description Order status */
-            status: components["schemas"]["SwapOrderStatus"];
+            status: components['schemas']['SwapOrderStatus'];
             /**
              * From Asset
              * @description Asset being swapped from
@@ -1094,7 +1113,12 @@ export type components = {
          * OrderState
          * @enum {string}
          */
-        OrderState: "CREATED" | "CHANNEL_OPENING" | "COMPLETED" | "FAILED" | "PENDING_RATE_DECISION";
+        OrderState:
+            | 'CREATED'
+            | 'CHANNEL_OPENING'
+            | 'COMPLETED'
+            | 'FAILED'
+            | 'PENDING_RATE_DECISION';
         /** OrderStatsResponse */
         OrderStatsResponse: {
             /**
@@ -1162,9 +1186,9 @@ export type components = {
          */
         PairQuoteRequest: {
             /** @description Source leg specification (asset_id, layer, amount) */
-            from_asset: components["schemas"]["SwapLegInput"];
+            from_asset: components['schemas']['SwapLegInput'];
             /** @description Destination leg specification (asset_id, layer, amount) */
-            to_asset: components["schemas"]["SwapLegInput"];
+            to_asset: components['schemas']['SwapLegInput'];
         };
         /**
          * PairQuoteResponse
@@ -1180,9 +1204,9 @@ export type components = {
              */
             rfq_id: string;
             /** @description Complete source leg specification with amount and details */
-            from_asset: components["schemas"]["SwapLeg"];
+            from_asset: components['schemas']['SwapLeg'];
             /** @description Complete destination leg specification with amount and details */
-            to_asset: components["schemas"]["SwapLeg"];
+            to_asset: components['schemas']['SwapLeg'];
             /**
              * Price
              * Format: int64
@@ -1190,7 +1214,7 @@ export type components = {
              * @example 50000123456
              */
             price: number;
-            fee: components["schemas"]["Fee"];
+            fee: components['schemas']['Fee'];
             /**
              * Timestamp
              * @description Quote creation timestamp (seconds since epoch)
@@ -1204,7 +1228,7 @@ export type components = {
         };
         /** PaymentBolt11 */
         PaymentBolt11: {
-            state: components["schemas"]["PaymentState"];
+            state: components['schemas']['PaymentState'];
             /**
              * Expires At
              * Format: date-time
@@ -1219,12 +1243,12 @@ export type components = {
         };
         /** PaymentDetails */
         PaymentDetails: {
-            bolt11: components["schemas"]["PaymentBolt11"];
-            onchain: components["schemas"]["PaymentOnchain"];
+            bolt11: components['schemas']['PaymentBolt11'];
+            onchain: components['schemas']['PaymentOnchain'];
         };
         /** PaymentOnchain */
         PaymentOnchain: {
-            state: components["schemas"]["PaymentState"];
+            state: components['schemas']['PaymentState'];
             /**
              * Expires At
              * Format: date-time
@@ -1256,13 +1280,13 @@ export type components = {
          * PaymentState
          * @enum {string}
          */
-        PaymentState: "EXPECT_PAYMENT" | "HOLD" | "PAID" | "REFUNDED" | "TO_REFUND";
+        PaymentState: 'EXPECT_PAYMENT' | 'HOLD' | 'PAID' | 'REFUNDED' | 'TO_REFUND';
         /**
          * PaymentStatus
          * @description Payment status for onchain payments with support for partial payments.
          * @enum {string}
          */
-        PaymentStatus: "NOT_PAID" | "UNDERPAID" | "PAID" | "OVERPAID";
+        PaymentStatus: 'NOT_PAID' | 'UNDERPAID' | 'PAID' | 'OVERPAID';
         /**
          * RateDecisionRequest
          * @description Request for user to accept new rate or request refund
@@ -1322,7 +1346,7 @@ export type components = {
              * Matrix
              * @description Reachability cells
              */
-            matrix: components["schemas"]["ReachabilityCell"][];
+            matrix: components['schemas']['ReachabilityCell'][];
             /**
              * Assets
              * @description All assets in the matrix
@@ -1348,7 +1372,7 @@ export type components = {
              */
             address: string;
             /** @description Format of the receiver address */
-            format: components["schemas"]["ReceiverAddressFormat"];
+            format: components['schemas']['ReceiverAddressFormat'];
         };
         /**
          * ReceiverAddressFormat
@@ -1358,7 +1382,19 @@ export type components = {
          *     for receiving payments.
          * @enum {string}
          */
-        ReceiverAddressFormat: "BTC_ADDRESS" | "BOLT11" | "BOLT12" | "LN_ADDRESS" | "RGB_INVOICE" | "LIQUID_ADDRESS" | "LIQUID_INVOICE" | "SPARK_ADDRESS" | "SPARK_INVOICE" | "ARKADE_ADDRESS" | "ARKADE_INVOICE" | "CASHU_TOKEN";
+        ReceiverAddressFormat:
+            | 'BTC_ADDRESS'
+            | 'BOLT11'
+            | 'BOLT12'
+            | 'LN_ADDRESS'
+            | 'RGB_INVOICE'
+            | 'LIQUID_ADDRESS'
+            | 'LIQUID_INVOICE'
+            | 'SPARK_ADDRESS'
+            | 'SPARK_INVOICE'
+            | 'ARKADE_ADDRESS'
+            | 'ARKADE_INVOICE'
+            | 'CASHU_TOKEN';
         /**
          * RetryDeliveryRequest
          * @description Request model for /retry_delivery endpoint to trigger immediate keysend retry
@@ -1376,7 +1412,7 @@ export type components = {
          */
         RetryDeliveryResponse: {
             /** @description Status of the request */
-            status: components["schemas"]["RetryDeliveryStatus"];
+            status: components['schemas']['RetryDeliveryStatus'];
             /**
              * Message
              * @description Human-readable message about the result
@@ -1388,7 +1424,7 @@ export type components = {
          * @description Status codes for /retry_delivery endpoint responses
          * @enum {string}
          */
-        RetryDeliveryStatus: "processing" | "not_found" | "no_pending_delivery" | "error";
+        RetryDeliveryStatus: 'processing' | 'not_found' | 'no_pending_delivery' | 'error';
         /**
          * RouteStep
          * @description Single step in a route (one swap within a trading pair).
@@ -1400,14 +1436,14 @@ export type components = {
              */
             from_asset: string;
             /** @description Source layer */
-            from_layer: components["schemas"]["Layer"];
+            from_layer: components['schemas']['Layer'];
             /**
              * To Asset
              * @description Destination asset ticker
              */
             to_asset: string;
             /** @description Destination layer */
-            to_layer: components["schemas"]["Layer"];
+            to_layer: components['schemas']['Layer'];
             /**
              * Pair Ticker
              * @description Trading pair ticker (e.g., 'USDT/BTC')
@@ -1430,14 +1466,14 @@ export type components = {
              */
             from_asset: string;
             /** @description Filter by source layer (optional) */
-            from_layer?: components["schemas"]["Layer"] | null;
+            from_layer?: components['schemas']['Layer'] | null;
             /**
              * To Asset
              * @description Destination asset (if None, returns all reachable assets)
              */
             to_asset?: string | null;
             /** @description Filter by destination layer (optional) */
-            to_layer?: components["schemas"]["Layer"] | null;
+            to_layer?: components['schemas']['Layer'] | null;
             /**
              * Max Hops
              * @description Maximum number of hops (1-5)
@@ -1454,7 +1490,7 @@ export type components = {
              * Routes
              * @description List of discovered routes
              */
-            routes: components["schemas"]["MultiHopRoute"][];
+            routes: components['schemas']['MultiHopRoute'][];
             /**
              * Timestamp
              * @description Response timestamp
@@ -1488,7 +1524,7 @@ export type components = {
              * @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664
              */
             payment_hash: string;
-            status: components["schemas"]["SwapStatus"];
+            status: components['schemas']['SwapStatus'];
             /**
              * Requested At
              * @example 1691160765
@@ -1537,7 +1573,7 @@ export type components = {
              */
             ticker: string;
             /** @description Settlement layer (e.g., 'BTC_LN', 'RGB_L1') */
-            layer: components["schemas"]["Layer"];
+            layer: components['schemas']['Layer'];
             /**
              * Amount
              * Format: int64
@@ -1570,7 +1606,7 @@ export type components = {
              * @description Settlement layer (e.g., 'BTC_LN', 'RGB_L1')
              * @example BTC_LN
              */
-            layer: components["schemas"]["Layer"];
+            layer: components['schemas']['Layer'];
             /**
              * Amount
              * Format: int64
@@ -1615,15 +1651,15 @@ export type components = {
              */
             maker_pubkey?: string | null;
             /** @description Complete specification for input: asset, ticker, network, protocol, and amount */
-            from_asset: components["schemas"]["SwapLeg"];
+            from_asset: components['schemas']['SwapLeg'];
             /** @description Complete specification for output: asset, ticker, network, protocol, and amount */
-            to_asset: components["schemas"]["SwapLeg"];
+            to_asset: components['schemas']['SwapLeg'];
             /** Price */
             price: number;
             /** @description Address/Invoice for the user to deposit funds into */
-            deposit_address?: components["schemas"]["ReceiverAddress"] | null;
+            deposit_address?: components['schemas']['ReceiverAddress'] | null;
             /** @description Destination address/invoice for receiving the to_asset payout */
-            payout_address?: components["schemas"]["ReceiverAddress"] | null;
+            payout_address?: components['schemas']['ReceiverAddress'] | null;
             /**
              * Refund Address
              * @description Onchain refund address if provided
@@ -1633,7 +1669,7 @@ export type components = {
              * @description Current order status
              * @default OPEN
              */
-            status: components["schemas"]["SwapOrderStatus"];
+            status: components['schemas']['SwapOrderStatus'];
             /**
              * Created At
              * @description Creation timestamp (seconds since epoch)
@@ -1663,7 +1699,7 @@ export type components = {
              */
             requires_manual_refund: boolean | null;
             /** @description Status of onchain payment verification */
-            payment_status?: components["schemas"]["PaymentStatus"] | null;
+            payment_status?: components['schemas']['PaymentStatus'] | null;
             /**
              * Payment Difference
              * @description Payment difference in satoshis (positive for overpayment, negative for underpayment)
@@ -1686,7 +1722,7 @@ export type components = {
              */
             failure_reason?: string | null;
             /** @description Fee information from the quote */
-            fee: components["schemas"]["Fee"];
+            fee: components['schemas']['Fee'];
         };
         /**
          * SwapOrderRateDecisionRequest
@@ -1725,7 +1761,16 @@ export type components = {
          * SwapOrderStatus
          * @enum {string}
          */
-        SwapOrderStatus: "OPEN" | "PENDING_PAYMENT" | "PAID" | "EXECUTING" | "FILLED" | "CANCELLED" | "EXPIRED" | "FAILED" | "PENDING_RATE_DECISION";
+        SwapOrderStatus:
+            | 'OPEN'
+            | 'PENDING_PAYMENT'
+            | 'PAID'
+            | 'EXECUTING'
+            | 'FILLED'
+            | 'CANCELLED'
+            | 'EXPIRED'
+            | 'FAILED'
+            | 'PENDING_RATE_DECISION';
         /** SwapOrderStatusRequest */
         SwapOrderStatusRequest: {
             /** Order Id */
@@ -1735,8 +1780,8 @@ export type components = {
         SwapOrderStatusResponse: {
             /** Order Id */
             order_id: string;
-            status: components["schemas"]["SwapOrderStatus"];
-            order: components["schemas"]["SwapOrder"];
+            status: components['schemas']['SwapOrderStatus'];
+            order: components['schemas']['SwapOrder'];
         };
         /** SwapRequest */
         SwapRequest: {
@@ -1796,7 +1841,7 @@ export type components = {
          * SwapStatus
          * @enum {string}
          */
-        SwapStatus: "Waiting" | "Pending" | "Succeeded" | "Expired" | "Failed";
+        SwapStatus: 'Waiting' | 'Pending' | 'Succeeded' | 'Expired' | 'Failed';
         /** SwapStatusRequest */
         SwapStatusRequest: {
             /**
@@ -1807,7 +1852,7 @@ export type components = {
         };
         /** SwapStatusResponse */
         SwapStatusResponse: {
-            swap?: components["schemas"]["Swap"] | null;
+            swap?: components['schemas']['Swap'] | null;
         };
         /**
          * TradableAsset
@@ -1841,7 +1886,7 @@ export type components = {
                 [key: string]: string;
             };
             /** @description Logo/media */
-            media?: components["schemas"]["Media"] | null;
+            media?: components['schemas']['Media'] | null;
             /**
              * Issued Supply
              * Format: int64
@@ -1857,7 +1902,7 @@ export type components = {
              * Endpoints
              * @description Layer endpoints with trading limits
              */
-            endpoints?: components["schemas"]["TradingLimits"][];
+            endpoints?: components['schemas']['TradingLimits'][];
         };
         /**
          * TradingLimits
@@ -1900,12 +1945,12 @@ export type components = {
         TradingPair: {
             /** Id */
             id?: string;
-            base: components["schemas"]["TradableAsset"];
-            quote: components["schemas"]["TradableAsset"];
+            base: components['schemas']['TradableAsset'];
+            quote: components['schemas']['TradableAsset'];
             /** Price */
             price?: string | null;
             /** Routes */
-            routes?: components["schemas"]["SwapRoute"][];
+            routes?: components['schemas']['SwapRoute'][];
             /**
              * Is Active
              * @default true
@@ -1918,7 +1963,7 @@ export type components = {
          */
         TradingPairsResponse: {
             /** Pairs */
-            pairs: components["schemas"]["TradingPair"][];
+            pairs: components['schemas']['TradingPair'][];
             /** Total */
             total: number;
             /** Limit */
@@ -1961,7 +2006,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GetInfoResponseModel"];
+                    'application/json': components['schemas']['GetInfoResponseModel'];
                 };
             };
             /** @description Validation Error */
@@ -1970,7 +2015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -1990,7 +2035,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NetworkInfoResponse"];
+                    'application/json': components['schemas']['NetworkInfoResponse'];
                 };
             };
         };
@@ -2004,7 +2049,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateOrderRequest"];
+                'application/json': components['schemas']['CreateOrderRequest'];
             };
         };
         responses: {
@@ -2014,7 +2059,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChannelOrderResponse"];
+                    'application/json': components['schemas']['ChannelOrderResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2023,7 +2068,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2037,7 +2082,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateOrderRequest"];
+                'application/json': components['schemas']['CreateOrderRequest'];
             };
         };
         responses: {
@@ -2047,7 +2092,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChannelFees"];
+                    'application/json': components['schemas']['ChannelFees'];
                 };
             };
             /** @description Validation Error */
@@ -2056,7 +2101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2070,7 +2115,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GetOrderRequest"];
+                'application/json': components['schemas']['GetOrderRequest'];
             };
         };
         responses: {
@@ -2080,7 +2125,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChannelOrderResponse"];
+                    'application/json': components['schemas']['ChannelOrderResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2089,7 +2134,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2103,7 +2148,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RateDecisionRequest"];
+                'application/json': components['schemas']['RateDecisionRequest'];
             };
         };
         responses: {
@@ -2113,7 +2158,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RateDecisionResponse"];
+                    'application/json': components['schemas']['RateDecisionResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2122,7 +2167,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2136,7 +2181,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RetryDeliveryRequest"];
+                'application/json': components['schemas']['RetryDeliveryRequest'];
             };
         };
         responses: {
@@ -2146,7 +2191,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RetryDeliveryResponse"];
+                    'application/json': components['schemas']['RetryDeliveryResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2155,7 +2200,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2175,7 +2220,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SwapNodeInfoResponse"];
+                    'application/json': components['schemas']['SwapNodeInfoResponse'];
                 };
             };
         };
@@ -2189,7 +2234,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SwapRequest"];
+                'application/json': components['schemas']['SwapRequest'];
             };
         };
         responses: {
@@ -2199,7 +2244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SwapResponse"];
+                    'application/json': components['schemas']['SwapResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2208,7 +2253,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2222,7 +2267,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ConfirmSwapRequest"];
+                'application/json': components['schemas']['ConfirmSwapRequest'];
             };
         };
         responses: {
@@ -2232,7 +2277,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConfirmSwapResponse"];
+                    'application/json': components['schemas']['ConfirmSwapResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2241,7 +2286,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2255,7 +2300,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SwapStatusRequest"];
+                'application/json': components['schemas']['SwapStatusRequest'];
             };
         };
         responses: {
@@ -2265,7 +2310,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SwapStatusResponse"];
+                    'application/json': components['schemas']['SwapStatusResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2274,7 +2319,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2311,7 +2356,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AssetsResponse"];
+                    'application/json': components['schemas']['AssetsResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2320,7 +2365,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2363,7 +2408,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TradingPairsResponse"];
+                    'application/json': components['schemas']['TradingPairsResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2372,7 +2417,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2386,7 +2431,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": {
+                'application/json': {
                     [key: string]: unknown;
                 };
             };
@@ -2398,7 +2443,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SwapRoute"][];
+                    'application/json': components['schemas']['SwapRoute'][];
                 };
             };
             /** @description Validation Error */
@@ -2407,7 +2452,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2421,7 +2466,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RoutesRequest"];
+                'application/json': components['schemas']['RoutesRequest'];
             };
         };
         responses: {
@@ -2431,7 +2476,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RoutesResponse"];
+                    'application/json': components['schemas']['RoutesResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2440,7 +2485,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2460,7 +2505,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReachabilityMatrixResponse"];
+                    'application/json': components['schemas']['ReachabilityMatrixResponse'];
                 };
             };
         };
@@ -2474,7 +2519,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PairQuoteRequest"];
+                'application/json': components['schemas']['PairQuoteRequest'];
             };
         };
         responses: {
@@ -2484,7 +2529,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PairQuoteResponse"];
+                    'application/json': components['schemas']['PairQuoteResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2493,7 +2538,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2507,7 +2552,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateSwapOrderRequest"];
+                'application/json': components['schemas']['CreateSwapOrderRequest'];
             };
         };
         responses: {
@@ -2517,7 +2562,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateSwapOrderResponse"];
+                    'application/json': components['schemas']['CreateSwapOrderResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2526,7 +2571,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2540,7 +2585,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SwapOrderStatusRequest"];
+                'application/json': components['schemas']['SwapOrderStatusRequest'];
             };
         };
         responses: {
@@ -2550,7 +2595,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SwapOrderStatusResponse"];
+                    'application/json': components['schemas']['SwapOrderStatusResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2559,7 +2604,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2567,7 +2612,7 @@ export interface operations {
     get_order_history: {
         parameters: {
             query?: {
-                status?: components["schemas"]["SwapOrderStatus"] | null;
+                status?: components['schemas']['SwapOrderStatus'] | null;
                 limit?: number;
                 skip?: number;
             };
@@ -2583,7 +2628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderHistoryResponse"];
+                    'application/json': components['schemas']['OrderHistoryResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2592,7 +2637,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2612,7 +2657,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OrderStatsResponse"];
+                    'application/json': components['schemas']['OrderStatsResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2621,7 +2666,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };
@@ -2635,7 +2680,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SwapOrderRateDecisionRequest"];
+                'application/json': components['schemas']['SwapOrderRateDecisionRequest'];
             };
         };
         responses: {
@@ -2645,7 +2690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SwapOrderRateDecisionResponse"];
+                    'application/json': components['schemas']['SwapOrderRateDecisionResponse'];
                 };
             };
             /** @description Validation Error */
@@ -2654,7 +2699,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
         };

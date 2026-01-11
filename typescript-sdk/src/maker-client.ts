@@ -1,6 +1,6 @@
 /**
  * Maker Client - Market Operations
- * 
+ *
  * Type-safe client matching the exact OpenAPI specification.
  * All methods correspond directly to actual API endpoints.
  */
@@ -20,7 +20,6 @@ import type {
     GetPairRoutesResponse,
     DiscoverRoutesRequest,
     DiscoverRoutesResponse,
-
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
     GetSwapOrderStatusRequest,
@@ -98,7 +97,7 @@ export class MakerClient {
 
     /**
      * Stream real-time quote updates
-     * 
+     *
      * @example
      * ```typescript
      * const unsubscribe = await client.maker.streamQuotes(
@@ -109,7 +108,7 @@ export class MakerClient {
      *   'RGB_LN',
      *   (quote) => console.log('Quote:', quote)
      * );
-     * 
+     *
      * // Later: unsubscribe();
      * ```
      */
@@ -119,7 +118,7 @@ export class MakerClient {
         from_amount: number | null,
         from_layer: Layer | null,
         to_layer: Layer | null,
-        onUpdate: (quote: QuoteResponse) => void
+        onUpdate: (quote: QuoteResponse) => void,
     ): Promise<() => void> {
         if (!this.ws) {
             throw new Error('WebSocket not enabled. Call enableWebSocket() first.');
@@ -193,17 +192,23 @@ export class MakerClient {
         limit?: number;
         skip?: number;
     }): Promise<GetOrderHistoryResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/swaps/orders/history', {
-            params: params ? { query: params as Record<string, unknown> } : undefined
-        }));
+        return unwrapResponse(
+            await this.http.maker.GET('/api/v1/swaps/orders/history', {
+                params: params ? { query: params as Record<string, unknown> } : undefined,
+            }),
+        );
     }
 
     async getOrderAnalytics(): Promise<GetOrderStatsResponse> {
         return unwrapResponse(await this.http.maker.GET('/api/v1/swaps/orders/analytics'));
     }
 
-    async submitRateDecision(body: SwapOrderRateDecisionRequest): Promise<SwapOrderRateDecisionResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/swaps/orders/rate_decision', { body }));
+    async submitRateDecision(
+        body: SwapOrderRateDecisionRequest,
+    ): Promise<SwapOrderRateDecisionResponse> {
+        return unwrapResponse(
+            await this.http.maker.POST('/api/v1/swaps/orders/rate_decision', { body }),
+        );
     }
 
     // ============================================================================
@@ -262,10 +267,7 @@ export class MakerClient {
     // Convenience Methods
     // ============================================================================
 
-    async waitForSwapCompletion(
-        orderId: string,
-        options: SwapCompletionOptions = {},
-    ) {
+    async waitForSwapCompletion(orderId: string, options: SwapCompletionOptions = {}) {
         const { timeout = 300000, pollInterval = 2000, onStatusUpdate } = options;
         const startTime = Date.now();
 
@@ -278,19 +280,20 @@ export class MakerClient {
                     onStatusUpdate(order.status);
                 }
 
-                if (order && (
-                    order.status === 'FILLED' ||
-                    order.status === 'FAILED' ||
-                    order.status === 'EXPIRED' ||
-                    order.status === 'CANCELLED'
-                )) {
+                if (
+                    order &&
+                    (order.status === 'FILLED' ||
+                        order.status === 'FAILED' ||
+                        order.status === 'EXPIRED' ||
+                        order.status === 'CANCELLED')
+                ) {
                     return order;
                 }
             } catch (error) {
                 console.warn('Error checking swap status:', error);
             }
 
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
         }
 
         throw new Error(`Swap completion timeout after ${timeout}ms for order ${orderId}`);

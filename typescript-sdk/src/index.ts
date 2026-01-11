@@ -27,11 +27,22 @@ export { HttpClient } from './http-client.js';
 
 // Export utility functions
 export { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from './client.js';
-export { toRawAmount, toDisplayAmount, PrecisionHandler, createPrecisionHandler } from './utils/index.js';
+export {
+    toRawAmount,
+    toDisplayAmount,
+    PrecisionHandler,
+    createPrecisionHandler,
+} from './utils/index.js';
 
-// WebSocket client and types  
+// WebSocket client and types
 export { WSClient } from './ws-client.js';
-export type { QuoteResponse, QuoteRequest, PongResponse, Fee, WebSocketResponse } from './ws-types.js';
+export type {
+    QuoteResponse,
+    QuoteRequest,
+    PongResponse,
+    Fee,
+    WebSocketResponse,
+} from './ws-types.js';
 
 // Export all type definitions
 // Note: We prefer the extended types which map directly to OpenAPI specs
@@ -41,18 +52,18 @@ export * from './node-types-ext.js';
 
 // Export error classes
 export {
-  KaleidoError,
-  APIError,
-  NetworkError,
-  ValidationError,
-  TimeoutError,
-  WebSocketError,
-  NotFoundError,
-  ConfigError,
-  SwapError,
-  NodeNotConfiguredError,
-  QuoteExpiredError,
-  InsufficientBalanceError,
-  RateLimitError,
-  mapHttpError,
+    KaleidoError,
+    APIError,
+    NetworkError,
+    ValidationError,
+    TimeoutError,
+    WebSocketError,
+    NotFoundError,
+    ConfigError,
+    SwapError,
+    NodeNotConfiguredError,
+    QuoteExpiredError,
+    InsufficientBalanceError,
+    RateLimitError,
+    mapHttpError,
 } from './errors.js';

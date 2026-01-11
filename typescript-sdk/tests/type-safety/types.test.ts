@@ -1,6 +1,6 @@
 /**
  * Type Safety Tests
- * 
+ *
  * Tests to verify TypeScript type inference and type safety
  * These tests primarily check compilation, not runtime behavior
  */

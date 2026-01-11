@@ -1,6 +1,6 @@
 /**
  * Integration Tests - MakerClient
- * 
+ *
  * Tests MakerClient methods against a live or mocked API
  */
 
@@ -19,49 +19,61 @@ describe('MakerClient Integration', () => {
     });
 
     describe('Market Data', () => {
-        it('should list assets', async () => {
-            try {
-                const response = await client.maker.listAssets();
-                expect(response).toBeDefined();
-                expect(response.assets).toBeInstanceOf(Array);
-            } catch (error) {
-                console.warn('Skipping - API not available:', error);
-            }
-        }, { timeout: 10000 });
+        it(
+            'should list assets',
+            async () => {
+                try {
+                    const response = await client.maker.listAssets();
+                    expect(response).toBeDefined();
+                    expect(response.assets).toBeInstanceOf(Array);
+                } catch (error) {
+                    console.warn('Skipping - API not available:', error);
+                }
+            },
+            { timeout: 10000 },
+        );
 
-        it('should list trading pairs', async () => {
-            try {
-                const response = await client.maker.listPairs();
-                expect(response).toBeDefined();
-                expect(response.pairs).toBeInstanceOf(Array);
-            } catch (error) {
-                console.warn('Skipping - API not available:', error);
-            }
-        }, { timeout: 10000 });
+        it(
+            'should list trading pairs',
+            async () => {
+                try {
+                    const response = await client.maker.listPairs();
+                    expect(response).toBeDefined();
+                    expect(response.pairs).toBeInstanceOf(Array);
+                } catch (error) {
+                    console.warn('Skipping - API not available:', error);
+                }
+            },
+            { timeout: 10000 },
+        );
     });
 
     describe('Quote Operations', () => {
-        it('should get quote by pair', async () => {
-            try {
-                const quote = await client.maker.getQuote({
-                    from_asset: {
-                        asset_id: 'BTC',
-                        layer: 'BTC_LN',
-                        amount: 10000000, // 0.1 BTC in sats
-                    },
-                    to_asset: {
-                        asset_id: 'USDT',
-                        layer: 'RGB_LN',
-                        amount: null,
-                    },
-                });
+        it(
+            'should get quote by pair',
+            async () => {
+                try {
+                    const quote = await client.maker.getQuote({
+                        from_asset: {
+                            asset_id: 'BTC',
+                            layer: 'BTC_LN',
+                            amount: 10000000, // 0.1 BTC in sats
+                        },
+                        to_asset: {
+                            asset_id: 'USDT',
+                            layer: 'RGB_LN',
+                            amount: null,
+                        },
+                    });
 
-                expect(quote).toBeDefined();
-                expect(quote.rfq_id).toBeDefined();
-            } catch (error) {
-                console.warn('Skipping - API not available:', error);
-            }
-        }, { timeout: 10000 });
+                    expect(quote).toBeDefined();
+                    expect(quote.rfq_id).toBeDefined();
+                } catch (error) {
+                    console.warn('Skipping - API not available:', error);
+                }
+            },
+            { timeout: 10000 },
+        );
     });
 
     describe('Convenience Methods', () => {

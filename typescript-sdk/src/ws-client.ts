@@ -1,14 +1,19 @@
 /**
  * WebSocket Client for Real-time Updates
- * 
+ *
  * Provides WebSocket connectivity with automatic reconnection
  * and event-based message handling.
- * 
+ *
  * Protocol matches kaleidoswap-maker WebSocket implementation
  */
 
 import { EventEmitter } from 'events';
-import type { WebSocketMessage, WebSocketResponse, QuoteRequest, QuoteResponse } from './ws-types.js';
+import type {
+    WebSocketMessage,
+    WebSocketResponse,
+    QuoteRequest,
+    QuoteResponse,
+} from './ws-types.js';
 
 export interface WSClientConfig {
     url: string;
@@ -40,7 +45,7 @@ export class WSClient extends EventEmitter {
      * Connect to WebSocket server
      */
     async connect(): Promise<void> {
-        if (this.isConnecting || (this.ws?.readyState === WebSocket.OPEN)) {
+        if (this.isConnecting || this.ws?.readyState === WebSocket.OPEN) {
             return;
         }
 
@@ -128,7 +133,7 @@ export class WSClient extends EventEmitter {
         this.send({
             action: 'quote_request',
             ...request,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         } as WebSocketMessage);
     }
 
@@ -138,7 +143,7 @@ export class WSClient extends EventEmitter {
     ping(): void {
         this.send({
             action: 'ping',
-            timestamp: Date.now()
+            timestamp: Date.now(),
         } as WebSocketMessage);
     }
 

@@ -1,6 +1,6 @@
 /**
  * HTTP Client for Kaleidoswap API
- * 
+ *
  * Type-safe wrapper using openapi-fetch for automatic type inference
  */
 
@@ -30,7 +30,7 @@ export class HttpClient {
         // Create type-safe Maker API client
         this.makerClient = createClient<paths>({
             baseUrl: config.baseUrl,
-            headers: config.apiKey ? { 'Authorization': `Bearer ${config.apiKey}` } : undefined,
+            headers: config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : undefined,
         });
 
         // Create Node API client if URL provided

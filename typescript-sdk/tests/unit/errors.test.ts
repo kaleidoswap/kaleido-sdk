@@ -1,6 +1,6 @@
 /**
  * Unit Tests - Error Handling
- * 
+ *
  * Tests error mapping and custom error classes
  */
 

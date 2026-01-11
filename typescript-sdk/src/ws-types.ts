@@ -1,6 +1,6 @@
 /**
  * WebSocket Message Types
- * 
+ *
  * Type definitions for WebSocket communication
  * Based on kaleidoswap-maker WebSocket protocol
  */

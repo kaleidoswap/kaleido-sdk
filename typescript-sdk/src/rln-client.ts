@@ -1,6 +1,6 @@
 /**
  * RLN Client - RGB Lightning Node Operations
- * 
+ *
  * Type-safe client matching the exact OpenAPI specification.
  * All Node API endpoints use POST method.
  */
@@ -41,8 +41,53 @@ import type {
     ListTransfersResponse,
     RefreshTransfersRequest,
     FailTransfersRequest,
+    // Lightning Network - Channels
+    ListChannelsResponse,
+    OpenChannelRequest,
+    OpenChannelResponse,
+    CloseChannelRequest,
+    GetChannelIdRequest,
+    GetChannelIdResponse,
+    // Lightning Network - Peers
+    ListPeersResponse,
+    ConnectPeerRequest,
+    ConnectPeerResponse,
+    DisconnectPeerRequest,
+    // Lightning Network - Invoices & Payments
+    CreateLNInvoiceRequest,
+    CreateLNInvoiceResponse,
+    CreateRgbInvoiceRequest,
+    CreateRgbInvoiceResponse,
+    DecodeLNInvoiceRequest,
+    DecodeLNInvoiceResponse,
+    DecodeRgbInvoiceRequest,
+    DecodeRgbInvoiceResponse,
+    GetInvoiceStatusRequest,
+    GetInvoiceStatusResponse,
+    SendPaymentRequest,
+    SendPaymentResponse,
+    KeysendRequest,
+    KeysendResponse,
+    ListPaymentsResponse,
+    GetPaymentRequest,
+    GetPaymentResponse,
+    // Maker/Taker Swaps
+    WhitelistTradeRequest,
+    MakerInitRequest,
+    MakerInitResponse,
+    MakerExecuteRequest,
+    MakerExecuteResponse,
+    ListSwapsResponse,
+    GetSwapRequest,
+    GetSwapResponse,
+    // Utility Methods
+    SignMessageRequest,
+    SignMessageResponse,
+    SendOnionMessageRequest,
+    CheckIndexerUrlRequest,
+    CheckProxyEndpointRequest,
+    RevokeTokenRequest,
 } from './node-types-ext.js';
-
 
 /**
  * Check for error and throw if present (for void methods)
@@ -232,181 +277,178 @@ export class RlnClient {
     // Lightning Network - Channels
     // ============================================================================
 
-    async listChannels(): Promise<any> {
+    async listChannels(): Promise<ListChannelsResponse> {
         const { data, error } = await this.http.node.GET('/listchannels');
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async openChannel(body: any): Promise<any> {
+    async openChannel(body: OpenChannelRequest): Promise<OpenChannelResponse> {
         const { data, error } = await this.http.node.POST('/openchannel', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async closeChannel(body: { channel_id: string; peer_pubkey: string; force?: boolean }): Promise<any> {
-        const { data, error } = await this.http.node.POST('/closechannel', { body });
+    async closeChannel(body: CloseChannelRequest): Promise<void> {
+        const { error } = await this.http.node.POST('/closechannel', { body });
         checkError({ error });
-        return data;
     }
 
-    async getChannelId(body: { temporary_channel_id: string }): Promise<any> {
+    async getChannelId(body: GetChannelIdRequest): Promise<GetChannelIdResponse> {
         const { data, error } = await this.http.node.POST('/getchannelid', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
     // ============================================================================
     // Lightning Network - Peers
     // ============================================================================
 
-    async listPeers(): Promise<any> {
+    async listPeers(): Promise<ListPeersResponse> {
         const { data, error } = await this.http.node.GET('/listpeers');
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async connectPeer(body: { peer_pubkey_and_addr: string }): Promise<any> {
+    async connectPeer(body: ConnectPeerRequest): Promise<ConnectPeerResponse> {
         const { data, error } = await this.http.node.POST('/connectpeer', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async disconnectPeer(body: { peer_pubkey: string }): Promise<any> {
-        const { data, error } = await this.http.node.POST('/disconnectpeer', { body });
+    async disconnectPeer(body: DisconnectPeerRequest): Promise<void> {
+        const { error } = await this.http.node.POST('/disconnectpeer', { body });
         checkError({ error });
-        return data;
     }
 
     // ============================================================================
     // Lightning Network - Invoices & Payments
     // ============================================================================
 
-    async createLNInvoice(body: any): Promise<any> {
+    async createLNInvoice(body: CreateLNInvoiceRequest): Promise<CreateLNInvoiceResponse> {
         const { data, error } = await this.http.node.POST('/lninvoice', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async createRgbInvoice(body: any): Promise<any> {
+    async createRgbInvoice(body: CreateRgbInvoiceRequest): Promise<CreateRgbInvoiceResponse> {
         const { data, error } = await this.http.node.POST('/rgbinvoice', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async decodeLNInvoice(body: { invoice: string }): Promise<any> {
-        const { data, error } = await this.http.node.POST('/decodelninvoice', { body });
+    async decodeLNInvoice(body: DecodeLNInvoiceRequest | string): Promise<DecodeLNInvoiceResponse> {
+        const requestBody = typeof body === 'string' ? { invoice: body } : body;
+        const { data, error } = await this.http.node.POST('/decodelninvoice', {
+            body: requestBody,
+        });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async decodeRgbInvoice(body: { invoice: string }): Promise<any> {
+    async decodeRgbInvoice(body: DecodeRgbInvoiceRequest): Promise<DecodeRgbInvoiceResponse> {
         const { data, error } = await this.http.node.POST('/decodergbinvoice', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async getInvoiceStatus(body: { invoice?: string }): Promise<any> {
+    async getInvoiceStatus(body: GetInvoiceStatusRequest): Promise<GetInvoiceStatusResponse> {
         const { data, error } = await this.http.node.POST('/invoicestatus', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async sendPayment(body: any): Promise<any> {
+    async sendPayment(body: SendPaymentRequest): Promise<SendPaymentResponse> {
         const { data, error } = await this.http.node.POST('/sendpayment', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async keysend(body: any): Promise<any> {
+    async keysend(body: KeysendRequest): Promise<KeysendResponse> {
         const { data, error } = await this.http.node.POST('/keysend', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async listPayments(): Promise<any> {
+    async listPayments(): Promise<ListPaymentsResponse> {
         const { data, error } = await this.http.node.GET('/listpayments');
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async getPayment(body: { payment_hash: string }): Promise<any> {
+    async getPayment(body: GetPaymentRequest): Promise<GetPaymentResponse> {
         const { data, error } = await this.http.node.POST('/getpayment', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
     // ============================================================================
     // Maker/Taker Swap Operations
     // ============================================================================
 
-    async getTakerPubkey(): Promise<any> {
+    async getTakerPubkey(): Promise<string> {
         const { data, error } = await this.http.node.GET('/nodeinfo');
         checkError({ error });
-        return data.pubkey;
+        return data!.pubkey!;
     }
 
-    async whitelistTrade(body: any): Promise<any> {
-        const { data, error } = await this.http.node.POST('/taker', { body });
+    async whitelistTrade(body: WhitelistTradeRequest | string): Promise<void> {
+        const requestBody = typeof body === 'string' ? { swapstring: body } : body;
+        const { error } = await this.http.node.POST('/taker', { body: requestBody });
         checkError({ error });
-        return data;
     }
 
-    async makerInit(body: any): Promise<any> {
+    async makerInit(body: MakerInitRequest): Promise<MakerInitResponse> {
         const { data, error } = await this.http.node.POST('/makerinit', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async makerExecute(body: any): Promise<any> {
+    async makerExecute(body: MakerExecuteRequest): Promise<MakerExecuteResponse> {
         const { data, error } = await this.http.node.POST('/makerexecute', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async listSwaps(): Promise<any> {
+    async listSwaps(): Promise<ListSwapsResponse> {
         const { data, error } = await this.http.node.GET('/listswaps');
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async getSwap(body: { payment_hash?: string; taker?: boolean }): Promise<any> {
+    async getSwap(body: GetSwapRequest): Promise<GetSwapResponse> {
         const { data, error } = await this.http.node.POST('/getswap', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
     // ============================================================================
     // Utility Methods
     // ============================================================================
 
-    async signMessage(body: { message: string }): Promise<any> {
+    async signMessage(body: SignMessageRequest): Promise<SignMessageResponse> {
         const { data, error } = await this.http.node.POST('/signmessage', { body });
         checkError({ error });
-        return data;
+        return data!;
     }
 
-    async sendOnionMessage(body: any): Promise<any> {
-        const { data, error } = await this.http.node.POST('/sendonionmessage', { body });
+    async sendOnionMessage(body: SendOnionMessageRequest): Promise<void> {
+        const { error } = await this.http.node.POST('/sendonionmessage', { body });
         checkError({ error });
-        return data;
     }
 
-    async checkIndexerUrl(body: { indexer_url?: string }): Promise<any> {
-        const { data, error } = await this.http.node.POST('/checkindexerurl', { body });
+    async checkIndexerUrl(body: CheckIndexerUrlRequest): Promise<void> {
+        const { error } = await this.http.node.POST('/checkindexerurl', { body });
         checkError({ error });
-        return data;
     }
 
-    async checkProxyEndpoint(body: { proxy_url?: string }): Promise<any> {
-        const { data, error } = await this.http.node.POST('/checkproxyendpoint', { body });
+    async checkProxyEndpoint(body: CheckProxyEndpointRequest): Promise<void> {
+        const { error } = await this.http.node.POST('/checkproxyendpoint', { body });
         checkError({ error });
-        return data;
     }
 
-    async revokeToken(body: any): Promise<any> {
-        const { data, error } = await this.http.node.POST('/revoketoken', { body });
+    async revokeToken(body: RevokeTokenRequest): Promise<void> {
+        const { error } = await this.http.node.POST('/revoketoken', { body });
         checkError({ error });
-        return data;
     }
 }

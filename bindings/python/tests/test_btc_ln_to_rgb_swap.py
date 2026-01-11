@@ -112,5 +112,7 @@ class TestBtcLnToRgbSwap:
         except Exception as e:
             msg = str(e)
             if "Unexpected Response" in msg and "400" in msg:
-                 pytest.skip(f"Skipping due to backend rejection (likely missing RGB invoice support): {msg}")
+                pytest.skip(
+                    f"Skipping due to backend rejection (likely missing RGB invoice support): {msg}"
+                )
             pytest.fail(f"Failed to create swap order: {e}")

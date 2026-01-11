@@ -1,6 +1,6 @@
 /**
  * Unit Tests - MakerClient Quote Methods
- * 
+ *
  * Tests for quote-related functionality
  */
 
@@ -78,23 +78,20 @@ describe('MakerClient - Quote Methods', () => {
             });
 
             // Verify POST was called with correct endpoint and body
-            expect(mockHttpClient.maker.POST).toHaveBeenCalledWith(
-                '/api/v1/market/quote',
-                {
-                    body: {
-                        from_asset: {
-                            asset_id: 'BTC',
-                            layer: 'BTC_LN',
-                            amount: 21000000,
-                        },
-                        to_asset: {
-                            asset_id: 'USDT',
-                            layer: 'RGB_LN',
-                            amount: null,
-                        },
+            expect(mockHttpClient.maker.POST).toHaveBeenCalledWith('/api/v1/market/quote', {
+                body: {
+                    from_asset: {
+                        asset_id: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 21000000,
                     },
-                }
-            );
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: null,
+                    },
+                },
+            });
 
             // Verify response
             expect(result).toEqual(mockQuoteResponse);
@@ -180,7 +177,7 @@ describe('MakerClient - Quote Methods', () => {
                         layer: 'RGB_LN',
                         amount: null,
                     },
-                })
+                }),
             ).rejects.toThrow();
         });
 
@@ -224,7 +221,7 @@ describe('MakerClient - Quote Methods', () => {
                             from_asset: expect.objectContaining({ layer: from }),
                             to_asset: expect.objectContaining({ layer: to }),
                         }),
-                    })
+                    }),
                 );
             }
         });
