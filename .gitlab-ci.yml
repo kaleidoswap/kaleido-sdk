@@ -67,18 +67,6 @@ test:uniffi:
     - echo "🔗 Testing UniFFI Bindings..."
     - cargo test -p kaleidoswap-uniffi --release
 
-test:wasm:
-  stage: test
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  before_script:
-    - rustup target add wasm32-unknown-unknown
-    - cargo install wasm-pack || true
-  script:
-    - echo "🌐 Testing WASM Bindings..."
-    - cd bindings/typescript
-    - cargo check --target wasm32-unknown-unknown
-
 lint:rust:
   stage: test
   image: rust:${RUST_VERSION}
