@@ -95,7 +95,7 @@ describeRln('RLN Client Integration', () => {
 
         // Note: openChannel and closeChannel tests are commented out as they modify state
         // and require careful setup/teardown with a test node
-        it.skip('should open a channel', async () => {
+        it('should open a channel', async () => {
             try {
                 const request = {
                     peer_pubkey: '02...', // Test peer pubkey
@@ -114,7 +114,7 @@ describeRln('RLN Client Integration', () => {
             }
         }, 60000);
 
-        it.skip('should close a channel', async () => {
+        it('should close a channel', async () => {
             try {
                 const request = {
                     channel_id: 'test_channel_id',
@@ -160,7 +160,7 @@ describeRln('RLN Client Integration', () => {
         }, 30000);
 
         // Note: connectPeer test is skipped as it modifies state
-        it.skip('should connect to a peer', async () => {
+        it('should connect to a peer', async () => {
             try {
                 const request = {
                     peer_pubkey_and_addr: '02...@127.0.0.1:9735', // Test peer
@@ -280,7 +280,6 @@ describeRln('RLN Client Integration', () => {
             }
         }, 30000);
     });
-
     describe('Lightning Operations', () => {
         it('should create lightning invoice without parameters', async () => {
             try {
@@ -386,7 +385,7 @@ describeRln('RLN Client Integration', () => {
         }, 30000);
 
         // Note: keysend test is skipped as it requires a recipient and modifies state
-        it.skip('should send keysend payment', async () => {
+        it('should send keysend payment', async () => {
             try {
                 const request = {
                     dest_pubkey: '02...', // Test recipient pubkey
@@ -424,7 +423,7 @@ describeRln('RLN Client Integration', () => {
     describe('Wallet Operations', () => {
         // Note: Wallet tests are sensitive and can lock the wallet
         // These tests are skipped by default and should be run in isolated environment
-        it.skip('should initialize wallet', async () => {
+        it('should initialize wallet', async () => {
             try {
                 const request = {
                     password: 'test_password_123',
@@ -439,7 +438,7 @@ describeRln('RLN Client Integration', () => {
             }
         }, 30000);
 
-        it.skip('should unlock wallet', async () => {
+        it('should unlock wallet', async () => {
             try {
                 const request = {
                     password: 'test_password_123',
@@ -452,7 +451,7 @@ describeRln('RLN Client Integration', () => {
             }
         }, 30000);
 
-        it.skip('should fail to unlock with wrong password', async () => {
+        it('should fail to unlock with wrong password', async () => {
             try {
                 const request = {
                     password: 'wrong_password',
@@ -466,7 +465,7 @@ describeRln('RLN Client Integration', () => {
             }
         }, 30000);
 
-        it.skip('should lock wallet', async () => {
+        it('should lock wallet', async () => {
             try {
                 const response = await client.rln.lockWallet();
 
@@ -476,7 +475,7 @@ describeRln('RLN Client Integration', () => {
             }
         }, 30000);
 
-        it.skip('should handle wallet lifecycle', async () => {
+        it('should handle wallet lifecycle', async () => {
             try {
                 const request = {
                     password: 'test_password_lifecycle',
@@ -496,7 +495,7 @@ describeRln('RLN Client Integration', () => {
     });
 
     describe('Trade Operations', () => {
-        it.skip('should whitelist trade', async () => {
+        it('should whitelist trade', async () => {
             try {
                 const swapstring = 'test_swap_string'; // Would need real swap string
                 await client.rln.whitelistTrade(swapstring);
