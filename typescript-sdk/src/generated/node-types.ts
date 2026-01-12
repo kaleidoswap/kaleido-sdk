@@ -4,7 +4,7 @@
  */
 
 export type paths = {
-    '/address': {
+    "/address": {
         parameters: {
             query?: never;
             header?: never;
@@ -17,14 +17,14 @@ export type paths = {
          * Get a Bitcoin address
          * @description Get a new Bitcoin address from the internal BDK wallet
          */
-        post: operations['post_address'];
+        post: operations["post_address"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/assetbalance': {
+    "/assetbalance": {
         parameters: {
             query?: never;
             header?: never;
@@ -37,14 +37,14 @@ export type paths = {
          * Get the balance of an asset
          * @description Get the balance for the provided RGB asset
          */
-        post: operations['post_assetbalance'];
+        post: operations["post_assetbalance"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/assetmetadata': {
+    "/assetmetadata": {
         parameters: {
             query?: never;
             header?: never;
@@ -57,14 +57,14 @@ export type paths = {
          * Get the metadata of an asset
          * @description Get the metadata for the provided RGB asset
          */
-        post: operations['post_assetmetadata'];
+        post: operations["post_assetmetadata"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/backup': {
+    "/backup": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,14 +77,14 @@ export type paths = {
          * Backup the node
          * @description Create a backup of the node's data
          */
-        post: operations['post_backup'];
+        post: operations["post_backup"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/btcbalance': {
+    "/btcbalance": {
         parameters: {
             query?: never;
             header?: never;
@@ -97,14 +97,14 @@ export type paths = {
          * Get the BTC balance
          * @description Get the node's bitcoin balance for the vanilla and colored wallets
          */
-        post: operations['post_btcbalance'];
+        post: operations["post_btcbalance"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/changepassword': {
+    "/changepassword": {
         parameters: {
             query?: never;
             header?: never;
@@ -117,14 +117,14 @@ export type paths = {
          * Change the password
          * @description Change the node's password
          */
-        post: operations['post_changepassword'];
+        post: operations["post_changepassword"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/checkindexerurl': {
+    "/checkindexerurl": {
         parameters: {
             query?: never;
             header?: never;
@@ -137,14 +137,14 @@ export type paths = {
          * Check an indexer URL
          * @description Check the given indexer URL is valid
          */
-        post: operations['post_checkindexerurl'];
+        post: operations["post_checkindexerurl"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/checkproxyendpoint': {
+    "/checkproxyendpoint": {
         parameters: {
             query?: never;
             header?: never;
@@ -157,14 +157,14 @@ export type paths = {
          * Check a proxy endpoint
          * @description Check the given proxy endpoint is valid
          */
-        post: operations['post_checkproxyendpoint'];
+        post: operations["post_checkproxyendpoint"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/closechannel': {
+    "/closechannel": {
         parameters: {
             query?: never;
             header?: never;
@@ -177,14 +177,14 @@ export type paths = {
          * Close a channel
          * @description Close a LN channel cooperatively or forcibly
          */
-        post: operations['post_closechannel'];
+        post: operations["post_closechannel"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/connectpeer': {
+    "/connectpeer": {
         parameters: {
             query?: never;
             header?: never;
@@ -197,14 +197,14 @@ export type paths = {
          * Connect to a peer
          * @description Connect to the provided LN peer
          */
-        post: operations['post_connectpeer'];
+        post: operations["post_connectpeer"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/createutxos': {
+    "/createutxos": {
         parameters: {
             query?: never;
             header?: never;
@@ -217,14 +217,14 @@ export type paths = {
          * Create UTXOs
          * @description Create UTXOs to be used for RGB operations
          */
-        post: operations['post_createutxos'];
+        post: operations["post_createutxos"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/decodelninvoice': {
+    "/decodelninvoice": {
         parameters: {
             query?: never;
             header?: never;
@@ -237,14 +237,14 @@ export type paths = {
          * Decode a LN invoice
          * @description Decode the provided LN invoice string
          */
-        post: operations['post_decodelninvoice'];
+        post: operations["post_decodelninvoice"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/decodergbinvoice': {
+    "/decodergbinvoice": {
         parameters: {
             query?: never;
             header?: never;
@@ -257,14 +257,14 @@ export type paths = {
          * Decode an RGB invoice
          * @description Decode the provided RGB invoice string
          */
-        post: operations['post_decodergbinvoice'];
+        post: operations["post_decodergbinvoice"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/disconnectpeer': {
+    "/disconnectpeer": {
         parameters: {
             query?: never;
             header?: never;
@@ -277,14 +277,14 @@ export type paths = {
          * Disconnect from a peer
          * @description Disconnect from the provided LN peer
          */
-        post: operations['post_disconnectpeer'];
+        post: operations["post_disconnectpeer"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/estimatefee': {
+    "/estimatefee": {
         parameters: {
             query?: never;
             header?: never;
@@ -297,14 +297,14 @@ export type paths = {
          * Get fee estimation
          * @description Get on-chain fee estimation
          */
-        post: operations['post_estimatefee'];
+        post: operations["post_estimatefee"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/failtransfers': {
+    "/failtransfers": {
         parameters: {
             query?: never;
             header?: never;
@@ -317,14 +317,14 @@ export type paths = {
          * Fail RGB transfers
          * @description Set the status for eligible RGB transfers to `TransferStatus::Failed`.
          */
-        post: operations['post_failtransfers'];
+        post: operations["post_failtransfers"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/getassetmedia': {
+    "/getassetmedia": {
         parameters: {
             query?: never;
             header?: never;
@@ -337,14 +337,14 @@ export type paths = {
          * Get an asset media
          * @description Get the hex string of the media bytes of the provided media digest
          */
-        post: operations['post_getassetmedia'];
+        post: operations["post_getassetmedia"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/getchannelid': {
+    "/getchannelid": {
         parameters: {
             query?: never;
             header?: never;
@@ -357,14 +357,14 @@ export type paths = {
          * Get a channel's ID
          * @description Get a channel's ID from its former temporary channel ID
          */
-        post: operations['post_getchannelid'];
+        post: operations["post_getchannelid"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/getpayment': {
+    "/getpayment": {
         parameters: {
             query?: never;
             header?: never;
@@ -377,14 +377,14 @@ export type paths = {
          * Get a payment
          * @description Get a payment by its payment hash
          */
-        post: operations['post_getpayment'];
+        post: operations["post_getpayment"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/getswap': {
+    "/getswap": {
         parameters: {
             query?: never;
             header?: never;
@@ -397,14 +397,14 @@ export type paths = {
          * Get a swap
          * @description Get a swap by its payment hash
          */
-        post: operations['post_getswap'];
+        post: operations["post_getswap"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/init': {
+    "/init": {
         parameters: {
             query?: never;
             header?: never;
@@ -417,14 +417,14 @@ export type paths = {
          * Init the node
          * @description Initialize a new node
          */
-        post: operations['post_init'];
+        post: operations["post_init"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/invoicestatus': {
+    "/invoicestatus": {
         parameters: {
             query?: never;
             header?: never;
@@ -437,14 +437,14 @@ export type paths = {
          * Get an invoice status
          * @description Get the status of the provided LN invoice
          */
-        post: operations['post_invoicestatus'];
+        post: operations["post_invoicestatus"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/issueassetcfa': {
+    "/issueassetcfa": {
         parameters: {
             query?: never;
             header?: never;
@@ -457,14 +457,14 @@ export type paths = {
          * Issue an RGB CFA asset
          * @description Issue an RGB CFA asset. To provide a media first call the /postassetmedia API.
          */
-        post: operations['post_issueassetcfa'];
+        post: operations["post_issueassetcfa"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/issueassetnia': {
+    "/issueassetnia": {
         parameters: {
             query?: never;
             header?: never;
@@ -477,14 +477,14 @@ export type paths = {
          * Issue an RGB NIA asset
          * @description Issue an RGB NIA asset
          */
-        post: operations['post_issueassetnia'];
+        post: operations["post_issueassetnia"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/issueassetuda': {
+    "/issueassetuda": {
         parameters: {
             query?: never;
             header?: never;
@@ -497,14 +497,14 @@ export type paths = {
          * Issue an RGB UDA asset
          * @description Issue an RGB UDA asset. To provide a media first call the /postassetmedia API.
          */
-        post: operations['post_issueassetuda'];
+        post: operations["post_issueassetuda"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/keysend': {
+    "/keysend": {
         parameters: {
             query?: never;
             header?: never;
@@ -517,14 +517,14 @@ export type paths = {
          * Send to a peer spontaneously
          * @description Send bitcoins and RGB assets to a LN peer spontaneously (without a LN invoice)
          */
-        post: operations['post_keysend'];
+        post: operations["post_keysend"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/listassets': {
+    "/listassets": {
         parameters: {
             query?: never;
             header?: never;
@@ -537,14 +537,14 @@ export type paths = {
          * List assets
          * @description List the node's RGB assets
          */
-        post: operations['post_listassets'];
+        post: operations["post_listassets"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/listchannels': {
+    "/listchannels": {
         parameters: {
             query?: never;
             header?: never;
@@ -555,7 +555,7 @@ export type paths = {
          * List channels
          * @description List the node's LN channels
          */
-        get: operations['get_listchannels'];
+        get: operations["get_listchannels"];
         put?: never;
         post?: never;
         delete?: never;
@@ -564,7 +564,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/listpayments': {
+    "/listpayments": {
         parameters: {
             query?: never;
             header?: never;
@@ -575,7 +575,7 @@ export type paths = {
          * List payments
          * @description List the node's LN payments
          */
-        get: operations['get_listpayments'];
+        get: operations["get_listpayments"];
         put?: never;
         post?: never;
         delete?: never;
@@ -584,7 +584,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/listpeers': {
+    "/listpeers": {
         parameters: {
             query?: never;
             header?: never;
@@ -595,7 +595,7 @@ export type paths = {
          * List peers
          * @description List the node's LN peers
          */
-        get: operations['get_listpeers'];
+        get: operations["get_listpeers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -604,7 +604,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/listswaps': {
+    "/listswaps": {
         parameters: {
             query?: never;
             header?: never;
@@ -615,7 +615,7 @@ export type paths = {
          * List swaps
          * @description List the node's swaps
          */
-        get: operations['get_listswaps'];
+        get: operations["get_listswaps"];
         put?: never;
         post?: never;
         delete?: never;
@@ -624,7 +624,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/listtransactions': {
+    "/listtransactions": {
         parameters: {
             query?: never;
             header?: never;
@@ -637,14 +637,14 @@ export type paths = {
          * List transactions
          * @description List the node's on-chain transactions
          */
-        post: operations['post_listtransactions'];
+        post: operations["post_listtransactions"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/listtransfers': {
+    "/listtransfers": {
         parameters: {
             query?: never;
             header?: never;
@@ -657,14 +657,14 @@ export type paths = {
          * List transfers
          * @description List the node's on-chain RGB transfers
          */
-        post: operations['post_listtransfers'];
+        post: operations["post_listtransfers"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/listunspents': {
+    "/listunspents": {
         parameters: {
             query?: never;
             header?: never;
@@ -677,14 +677,14 @@ export type paths = {
          * List unspents
          * @description List the unspent outputs of the internal BDK wallet
          */
-        post: operations['post_listunspents'];
+        post: operations["post_listunspents"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/lock': {
+    "/lock": {
         parameters: {
             query?: never;
             header?: never;
@@ -697,14 +697,14 @@ export type paths = {
          * Lock the node
          * @description Lock an unlocked node
          */
-        post: operations['post_lock'];
+        post: operations["post_lock"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/lninvoice': {
+    "/lninvoice": {
         parameters: {
             query?: never;
             header?: never;
@@ -717,14 +717,14 @@ export type paths = {
          * Get a LN invoice
          * @description Get a LN invoice to receive a payment
          */
-        post: operations['post_lninvoice'];
+        post: operations["post_lninvoice"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/makerexecute': {
+    "/makerexecute": {
         parameters: {
             query?: never;
             header?: never;
@@ -737,14 +737,14 @@ export type paths = {
          * Execute a maker swap
          * @description Execute a swap on the maker side
          */
-        post: operations['post_makerexecute'];
+        post: operations["post_makerexecute"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/makerinit': {
+    "/makerinit": {
         parameters: {
             query?: never;
             header?: never;
@@ -757,14 +757,14 @@ export type paths = {
          * Init a maker swap
          * @description Init a swap on the maker side
          */
-        post: operations['post_makerinit'];
+        post: operations["post_makerinit"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/networkinfo': {
+    "/networkinfo": {
         parameters: {
             query?: never;
             header?: never;
@@ -775,7 +775,7 @@ export type paths = {
          * Get network info
          * @description Get info on the Bitcoin network where the LN is running
          */
-        get: operations['get_networkinfo'];
+        get: operations["get_networkinfo"];
         put?: never;
         post?: never;
         delete?: never;
@@ -784,7 +784,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/nodeinfo': {
+    "/nodeinfo": {
         parameters: {
             query?: never;
             header?: never;
@@ -795,7 +795,7 @@ export type paths = {
          * Get node info
          * @description Get the LN node's info
          */
-        get: operations['get_nodeinfo'];
+        get: operations["get_nodeinfo"];
         put?: never;
         post?: never;
         delete?: never;
@@ -804,7 +804,7 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/openchannel': {
+    "/openchannel": {
         parameters: {
             query?: never;
             header?: never;
@@ -817,14 +817,14 @@ export type paths = {
          * Open a channel
          * @description Open a new LN channel (RGB-enabled when both asset_id and asset_amount are specified). You can optionally provide a 32 bytes temporary channel ID as a hex-encoded string.
          */
-        post: operations['post_openchannel'];
+        post: operations["post_openchannel"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/refreshtransfers': {
+    "/refreshtransfers": {
         parameters: {
             query?: never;
             header?: never;
@@ -837,14 +837,14 @@ export type paths = {
          * Refresh transfers
          * @description Refresh RGB pending transfers
          */
-        post: operations['post_refreshtransfers'];
+        post: operations["post_refreshtransfers"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/restore': {
+    "/restore": {
         parameters: {
             query?: never;
             header?: never;
@@ -857,14 +857,14 @@ export type paths = {
          * Restore the node
          * @description Restore a node from a backup file
          */
-        post: operations['post_restore'];
+        post: operations["post_restore"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/revoketoken': {
+    "/revoketoken": {
         parameters: {
             query?: never;
             header?: never;
@@ -877,14 +877,14 @@ export type paths = {
          * Revoke a token
          * @description Revoke an authentication token
          */
-        post: operations['post_revoketoken'];
+        post: operations["post_revoketoken"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/rgbinvoice': {
+    "/rgbinvoice": {
         parameters: {
             query?: never;
             header?: never;
@@ -897,14 +897,14 @@ export type paths = {
          * Get an RGB invoice
          * @description Get an RGB invoice to receive assets on-chain
          */
-        post: operations['post_rgbinvoice'];
+        post: operations["post_rgbinvoice"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/sendasset': {
+    "/sendasset": {
         parameters: {
             query?: never;
             header?: never;
@@ -917,14 +917,14 @@ export type paths = {
          * Send assets
          * @description Send RGB assets on-chain
          */
-        post: operations['post_sendasset'];
+        post: operations["post_sendasset"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/sendbtc': {
+    "/sendbtc": {
         parameters: {
             query?: never;
             header?: never;
@@ -937,14 +937,14 @@ export type paths = {
          * Send BTC
          * @description Send bitcoins on-chain
          */
-        post: operations['post_sendbtc'];
+        post: operations["post_sendbtc"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/sendonionmessage': {
+    "/sendonionmessage": {
         parameters: {
             query?: never;
             header?: never;
@@ -957,14 +957,14 @@ export type paths = {
          * Send an onion message
          * @description Send an onion message via the LN
          */
-        post: operations['post_sendonionmessage'];
+        post: operations["post_sendonionmessage"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/sendpayment': {
+    "/sendpayment": {
         parameters: {
             query?: never;
             header?: never;
@@ -977,14 +977,14 @@ export type paths = {
          * Send a payment
          * @description Pay the provided LN invoice
          */
-        post: operations['post_sendpayment'];
+        post: operations["post_sendpayment"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/shutdown': {
+    "/shutdown": {
         parameters: {
             query?: never;
             header?: never;
@@ -997,14 +997,14 @@ export type paths = {
          * Shutdown the node
          * @description Gracefully shutdown the node
          */
-        post: operations['post_shutdown'];
+        post: operations["post_shutdown"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/sync': {
+    "/sync": {
         parameters: {
             query?: never;
             header?: never;
@@ -1017,14 +1017,14 @@ export type paths = {
          * Sync the RGB wallet
          * @description Sync the RGB wallet
          */
-        post: operations['post_sync'];
+        post: operations["post_sync"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/signmessage': {
+    "/signmessage": {
         parameters: {
             query?: never;
             header?: never;
@@ -1037,14 +1037,14 @@ export type paths = {
          * Sign a message
          * @description Sign the provided message
          */
-        post: operations['post_signmessage'];
+        post: operations["post_signmessage"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/taker': {
+    "/taker": {
         parameters: {
             query?: never;
             header?: never;
@@ -1057,14 +1057,14 @@ export type paths = {
          * Accept a swap
          * @description Accept a swap on the taker side
          */
-        post: operations['post_taker'];
+        post: operations["post_taker"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    '/unlock': {
+    "/unlock": {
         parameters: {
             query?: never;
             header?: never;
@@ -1077,7 +1077,7 @@ export type paths = {
          * Unlock the node
          * @description Unlock a locked node
          */
-        post: operations['post_unlock'];
+        post: operations["post_unlock"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1105,7 +1105,7 @@ export type components = {
             asset_id?: string;
         };
         AssetMetadataResponse: {
-            asset_schema?: components['schemas']['AssetSchema'];
+            asset_schema?: components["schemas"]["AssetSchema"];
             initial_supply?: number;
             max_supply?: number;
             known_circulating_supply?: number;
@@ -1114,7 +1114,7 @@ export type components = {
             precision?: number;
             ticker?: string;
             details?: string;
-            token?: components['schemas']['Token'];
+            token?: components["schemas"]["Token"];
         };
         AssetCFA: {
             asset_id?: string;
@@ -1124,8 +1124,8 @@ export type components = {
             issued_supply?: number;
             timestamp?: number;
             added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            media?: components['schemas']['Media'];
+            balance?: components["schemas"]["AssetBalanceResponse"];
+            media?: components["schemas"]["Media"];
         };
         AssetNIA: {
             asset_id?: string;
@@ -1136,11 +1136,11 @@ export type components = {
             issued_supply?: number;
             timestamp?: number;
             added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            media?: components['schemas']['Media'];
+            balance?: components["schemas"]["AssetBalanceResponse"];
+            media?: components["schemas"]["Media"];
         };
         /** @enum {string} */
-        AssetSchema: 'Nia' | 'Uda' | 'Cfa';
+        AssetSchema: "Nia" | "Uda" | "Cfa";
         AssetUDA: {
             asset_id?: string;
             ticker?: string;
@@ -1149,28 +1149,23 @@ export type components = {
             precision?: number;
             timestamp?: number;
             added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            token?: components['schemas']['TokenLight'];
+            balance?: components["schemas"]["AssetBalanceResponse"];
+            token?: components["schemas"]["TokenLight"];
         };
-        Assignment:
-            | components['schemas']['AssignmentFungible']
-            | components['schemas']['AssignmentNonFungible']
-            | components['schemas']['AssignmentInflationRight']
-            | components['schemas']['AssignmentReplaceRight']
-            | components['schemas']['AssignmentAny'];
+        Assignment: components["schemas"]["AssignmentFungible"] | components["schemas"]["AssignmentNonFungible"] | components["schemas"]["AssignmentInflationRight"] | components["schemas"]["AssignmentReplaceRight"] | components["schemas"]["AssignmentAny"];
         AssignmentAny: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'Any';
+            type: "Any";
         };
         AssignmentFungible: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'Fungible';
+            type: "Fungible";
             value: number;
         };
         AssignmentInflationRight: {
@@ -1178,7 +1173,7 @@ export type components = {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'InflationRight';
+            type: "InflationRight";
             value: number;
         };
         AssignmentNonFungible: {
@@ -1186,21 +1181,21 @@ export type components = {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'NonFungible';
+            type: "NonFungible";
         };
         AssignmentReplaceRight: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'ReplaceRight';
+            type: "ReplaceRight";
         };
         BackupRequest: {
             backup_path?: string;
             password?: string;
         };
         /** @enum {string} */
-        BitcoinNetwork: 'Mainnet' | 'Testnet' | 'Testnet4' | 'Signet' | 'Regtest';
+        BitcoinNetwork: "Mainnet" | "Testnet" | "Testnet4" | "Signet" | "Regtest";
         BlockTime: {
             height?: number;
             timestamp?: number;
@@ -1214,8 +1209,8 @@ export type components = {
             skip_sync?: boolean;
         };
         BtcBalanceResponse: {
-            vanilla?: components['schemas']['BtcBalance'];
-            colored?: components['schemas']['BtcBalance'];
+            vanilla?: components["schemas"]["BtcBalance"];
+            colored?: components["schemas"]["BtcBalance"];
         };
         ChangePasswordRequest: {
             old_password?: string;
@@ -1227,7 +1222,7 @@ export type components = {
             peer_pubkey?: string;
             peer_alias?: string;
             short_channel_id?: number;
-            status?: components['schemas']['ChannelStatus'];
+            status?: components["schemas"]["ChannelStatus"];
             ready?: boolean;
             capacity_sat?: number;
             local_balance_sat?: number;
@@ -1242,12 +1237,12 @@ export type components = {
             asset_remote_amount?: number;
         };
         /** @enum {string} */
-        ChannelStatus: 'Opening' | 'Opened' | 'Closing';
+        ChannelStatus: "Opening" | "Opened" | "Closing";
         CheckIndexerUrlRequest: {
             indexer_url?: string;
         };
         CheckIndexerUrlResponse: {
-            indexer_protocol?: components['schemas']['IndexerProtocol'];
+            indexer_protocol?: components["schemas"]["IndexerProtocol"];
         };
         CheckProxyEndpointRequest: {
             proxy_url?: string;
@@ -1279,18 +1274,18 @@ export type components = {
             payment_hash?: string;
             payment_secret?: string;
             payee_pubkey?: string;
-            network?: components['schemas']['BitcoinNetwork'];
+            network?: components["schemas"]["BitcoinNetwork"];
         };
         DecodeRGBInvoiceRequest: {
             invoice?: string;
         };
         DecodeRGBInvoiceResponse: {
             recipient_id?: string;
-            recipient_type?: components['schemas']['RecipientType'];
-            asset_schema?: components['schemas']['AssetSchema'];
+            recipient_type?: components["schemas"]["RecipientType"];
+            asset_schema?: components["schemas"]["AssetSchema"];
             asset_id?: string;
-            assignment?: components['schemas']['Assignment'];
-            network?: components['schemas']['BitcoinNetwork'];
+            assignment?: components["schemas"]["Assignment"];
+            network?: components["schemas"]["BitcoinNetwork"];
             expiration_timestamp?: number;
             transport_endpoints?: string[];
         };
@@ -1332,19 +1327,19 @@ export type components = {
             payment_hash?: string;
         };
         GetPaymentResponse: {
-            payment?: components['schemas']['Payment'];
+            payment?: components["schemas"]["Payment"];
         };
         GetSwapRequest: {
             payment_hash?: string;
             taker?: boolean;
         };
         GetSwapResponse: {
-            swap?: components['schemas']['Swap'];
+            swap?: components["schemas"]["Swap"];
         };
         /** @enum {string} */
-        HTLCStatus: 'Pending' | 'Succeeded' | 'Failed';
+        HTLCStatus: "Pending" | "Succeeded" | "Failed";
         /** @enum {string} */
-        IndexerProtocol: 'Electrum' | 'Esplora';
+        IndexerProtocol: "Electrum" | "Esplora";
         InitRequest: {
             password?: string;
         };
@@ -1352,12 +1347,12 @@ export type components = {
             mnemonic?: string;
         };
         /** @enum {string} */
-        InvoiceStatus: 'Pending' | 'Succeeded' | 'Failed' | 'Expired';
+        InvoiceStatus: "Pending" | "Succeeded" | "Failed" | "Expired";
         InvoiceStatusRequest: {
             invoice?: string;
         };
         InvoiceStatusResponse: {
-            status?: components['schemas']['InvoiceStatus'];
+            status?: components["schemas"]["InvoiceStatus"];
         };
         IssueAssetCFARequest: {
             amounts?: number[];
@@ -1367,7 +1362,7 @@ export type components = {
             file_digest?: string;
         };
         IssueAssetCFAResponse: {
-            asset?: components['schemas']['AssetCFA'];
+            asset?: components["schemas"]["AssetCFA"];
         };
         IssueAssetNIARequest: {
             amounts?: number[];
@@ -1376,7 +1371,7 @@ export type components = {
             precision?: number;
         };
         IssueAssetNIAResponse: {
-            asset?: components['schemas']['AssetNIA'];
+            asset?: components["schemas"]["AssetNIA"];
         };
         IssueAssetUDARequest: {
             ticker?: string;
@@ -1387,7 +1382,7 @@ export type components = {
             attachments_file_digests?: string[];
         };
         IssueAssetUDAResponse: {
-            asset?: components['schemas']['AssetUDA'];
+            asset?: components["schemas"]["AssetUDA"];
         };
         KeysendRequest: {
             dest_pubkey?: string;
@@ -1398,46 +1393,46 @@ export type components = {
         KeysendResponse: {
             payment_hash?: string;
             payment_preimage?: string;
-            status?: components['schemas']['HTLCStatus'];
+            status?: components["schemas"]["HTLCStatus"];
         };
         ListAssetsRequest: {
-            filter_asset_schemas?: components['schemas']['AssetSchema'][];
+            filter_asset_schemas?: components["schemas"]["AssetSchema"][];
         };
         ListAssetsResponse: {
-            nia?: components['schemas']['AssetNIA'][];
-            uda?: components['schemas']['AssetUDA'][];
-            cfa?: components['schemas']['AssetCFA'][];
+            nia?: components["schemas"]["AssetNIA"][];
+            uda?: components["schemas"]["AssetUDA"][];
+            cfa?: components["schemas"]["AssetCFA"][];
         };
         ListChannelsResponse: {
-            channels?: components['schemas']['Channel'][];
+            channels?: components["schemas"]["Channel"][];
         };
         ListPaymentsResponse: {
-            payments?: components['schemas']['Payment'][];
+            payments?: components["schemas"]["Payment"][];
         };
         ListPeersResponse: {
-            peers?: components['schemas']['Peer'][];
+            peers?: components["schemas"]["Peer"][];
         };
         ListSwapsResponse: {
-            maker?: components['schemas']['Swap'][];
-            taker?: components['schemas']['Swap'][];
+            maker?: components["schemas"]["Swap"][];
+            taker?: components["schemas"]["Swap"][];
         };
         ListTransactionsRequest: {
             skip_sync?: boolean;
         };
         ListTransactionsResponse: {
-            transactions?: components['schemas']['Transaction'][];
+            transactions?: components["schemas"]["Transaction"][];
         };
         ListTransfersRequest: {
             asset_id?: string;
         };
         ListTransfersResponse: {
-            transfers?: components['schemas']['Transfer'][];
+            transfers?: components["schemas"]["Transfer"][];
         };
         ListUnspentsRequest: {
             skip_sync?: boolean;
         };
         ListUnspentsResponse: {
-            unspents?: components['schemas']['Unspent'][];
+            unspents?: components["schemas"]["Unspent"][];
         };
         LNInvoiceRequest: {
             amt_msat?: number;
@@ -1470,7 +1465,7 @@ export type components = {
             mime?: string;
         };
         NetworkInfoResponse: {
-            network?: components['schemas']['BitcoinNetwork'];
+            network?: components["schemas"]["BitcoinNetwork"];
             height?: number;
         };
         NodeInfoResponse: {
@@ -1514,7 +1509,7 @@ export type components = {
             asset_id?: string;
             payment_hash?: string;
             inbound?: boolean;
-            status?: components['schemas']['HTLCStatus'];
+            status?: components["schemas"]["HTLCStatus"];
             created_at?: number;
             updated_at?: number;
             payee_pubkey?: string;
@@ -1534,7 +1529,7 @@ export type components = {
             proof?: number[];
         };
         /** @enum {string} */
-        RecipientType: 'Blind' | 'Witness';
+        RecipientType: "Blind" | "Witness";
         RefreshRequest: {
             skip_sync?: boolean;
         };
@@ -1547,13 +1542,13 @@ export type components = {
         };
         RgbAllocation: {
             asset_id?: string;
-            assignment?: components['schemas']['AssignmentFungible'];
+            assignment?: components["schemas"]["AssignmentFungible"];
             settled?: boolean;
         };
         RgbInvoiceRequest: {
             min_confirmations?: number;
             asset_id?: string;
-            assignment?: components['schemas']['Assignment'];
+            assignment?: components["schemas"]["Assignment"];
             duration_seconds?: number;
             witness?: boolean;
         };
@@ -1565,9 +1560,9 @@ export type components = {
         };
         SendAssetRequest: {
             asset_id?: string;
-            assignment?: components['schemas']['AssignmentFungible'];
+            assignment?: components["schemas"]["AssignmentFungible"];
             recipient_id?: string;
-            witness_data?: components['schemas']['WitnessData'];
+            witness_data?: components["schemas"]["WitnessData"];
             donation?: boolean;
             fee_rate?: number;
             min_confirmations?: number;
@@ -1597,7 +1592,7 @@ export type components = {
         SendPaymentResponse: {
             payment_hash?: string;
             payment_secret?: string;
-            status?: components['schemas']['HTLCStatus'];
+            status?: components["schemas"]["HTLCStatus"];
         };
         SignMessageRequest: {
             message?: string;
@@ -1611,14 +1606,14 @@ export type components = {
             from_asset?: string;
             to_asset?: string;
             payment_hash?: string;
-            status?: components['schemas']['SwapStatus'];
+            status?: components["schemas"]["SwapStatus"];
             requested_at?: number;
             initiated_at?: number;
             expires_at?: number;
             completed_at?: number;
         };
         /** @enum {string} */
-        SwapStatus: 'Waiting' | 'Pending' | 'Succeeded' | 'Expired' | 'Failed';
+        SwapStatus: "Waiting" | "Pending" | "Succeeded" | "Expired" | "Failed";
         TakerRequest: {
             swapstring?: string;
         };
@@ -1627,12 +1622,12 @@ export type components = {
             ticker?: string;
             name?: string;
             details?: string;
-            embedded_media?: components['schemas']['EmbeddedMedia'];
-            media?: components['schemas']['Media'];
+            embedded_media?: components["schemas"]["EmbeddedMedia"];
+            media?: components["schemas"]["Media"];
             attachments?: {
-                [key: string]: components['schemas']['Media'];
+                [key: string]: components["schemas"]["Media"];
             };
-            reserves?: components['schemas']['ProofOfReserves'];
+            reserves?: components["schemas"]["ProofOfReserves"];
         };
         TokenLight: {
             index?: number;
@@ -1640,48 +1635,48 @@ export type components = {
             name?: string;
             details?: string;
             embedded_media?: boolean;
-            media?: components['schemas']['Media'];
+            media?: components["schemas"]["Media"];
             attachments?: {
-                [key: string]: components['schemas']['Media'];
+                [key: string]: components["schemas"]["Media"];
             };
             reserves?: boolean;
         };
         Transaction: {
-            transaction_type?: components['schemas']['TransactionType'];
+            transaction_type?: components["schemas"]["TransactionType"];
             txid?: string;
             received?: number;
             sent?: number;
             fee?: number;
-            confirmation_time?: components['schemas']['BlockTime'];
+            confirmation_time?: components["schemas"]["BlockTime"];
         };
         /** @enum {string} */
-        TransactionType: 'RgbSend' | 'Drain' | 'CreateUtxos' | 'User';
+        TransactionType: "RgbSend" | "Drain" | "CreateUtxos" | "User";
         Transfer: {
             idx?: number;
             created_at?: number;
             updated_at?: number;
-            status?: components['schemas']['TransferStatus'];
-            requested_assignment?: components['schemas']['AssignmentFungible'];
-            assignments?: components['schemas']['AssignmentFungible'][];
-            kind?: components['schemas']['TransferKind'];
+            status?: components["schemas"]["TransferStatus"];
+            requested_assignment?: components["schemas"]["AssignmentFungible"];
+            assignments?: components["schemas"]["AssignmentFungible"][];
+            kind?: components["schemas"]["TransferKind"];
             txid?: string;
             recipient_id?: string;
             receive_utxo?: string;
             change_utxo?: string;
             expiration?: number;
-            transport_endpoints?: components['schemas']['TransferTransportEndpoint'][];
+            transport_endpoints?: components["schemas"]["TransferTransportEndpoint"][];
         };
         /** @enum {string} */
-        TransferKind: 'Issuance' | 'ReceiveBlind' | 'ReceiveWitness' | 'Send' | 'Inflation';
+        TransferKind: "Issuance" | "ReceiveBlind" | "ReceiveWitness" | "Send" | "Inflation";
         /** @enum {string} */
-        TransferStatus: 'WaitingCounterparty' | 'WaitingConfirmations' | 'Settled' | 'Failed';
+        TransferStatus: "WaitingCounterparty" | "WaitingConfirmations" | "Settled" | "Failed";
         TransferTransportEndpoint: {
             endpoint?: string;
-            transport_type?: components['schemas']['TransportType'];
+            transport_type?: components["schemas"]["TransportType"];
             used?: boolean;
         };
         /** @enum {string} */
-        TransportType: 'JsonRpc';
+        TransportType: "JsonRpc";
         UnlockRequest: {
             password?: string;
             bitcoind_rpc_username?: string;
@@ -1694,8 +1689,8 @@ export type components = {
             announce_alias?: string;
         };
         Unspent: {
-            utxo?: components['schemas']['Utxo'];
-            rgb_allocations?: components['schemas']['RgbAllocation'][];
+            utxo?: components["schemas"]["Utxo"];
+            rgb_allocations?: components["schemas"]["RgbAllocation"][];
         };
         Utxo: {
             outpoint?: string;
@@ -1730,7 +1725,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['AddressResponse'];
+                    "application/json": components["schemas"]["AddressResponse"];
                 };
             };
         };
@@ -1744,7 +1739,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['AssetBalanceRequest'];
+                "application/json": components["schemas"]["AssetBalanceRequest"];
             };
         };
         responses: {
@@ -1754,7 +1749,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['AssetBalanceResponse'];
+                    "application/json": components["schemas"]["AssetBalanceResponse"];
                 };
             };
         };
@@ -1768,7 +1763,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['AssetMetadataRequest'];
+                "application/json": components["schemas"]["AssetMetadataRequest"];
             };
         };
         responses: {
@@ -1778,7 +1773,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['AssetMetadataResponse'];
+                    "application/json": components["schemas"]["AssetMetadataResponse"];
                 };
             };
         };
@@ -1792,7 +1787,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['BackupRequest'];
+                "application/json": components["schemas"]["BackupRequest"];
             };
         };
         responses: {
@@ -1802,7 +1797,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -1816,7 +1811,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['BtcBalanceRequest'];
+                "application/json": components["schemas"]["BtcBalanceRequest"];
             };
         };
         responses: {
@@ -1826,7 +1821,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['BtcBalanceResponse'];
+                    "application/json": components["schemas"]["BtcBalanceResponse"];
                 };
             };
         };
@@ -1840,7 +1835,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['ChangePasswordRequest'];
+                "application/json": components["schemas"]["ChangePasswordRequest"];
             };
         };
         responses: {
@@ -1850,7 +1845,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -1864,7 +1859,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['CheckIndexerUrlRequest'];
+                "application/json": components["schemas"]["CheckIndexerUrlRequest"];
             };
         };
         responses: {
@@ -1874,7 +1869,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['CheckIndexerUrlResponse'];
+                    "application/json": components["schemas"]["CheckIndexerUrlResponse"];
                 };
             };
         };
@@ -1888,7 +1883,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['CheckProxyEndpointRequest'];
+                "application/json": components["schemas"]["CheckProxyEndpointRequest"];
             };
         };
         responses: {
@@ -1898,7 +1893,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -1912,7 +1907,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['CloseChannelRequest'];
+                "application/json": components["schemas"]["CloseChannelRequest"];
             };
         };
         responses: {
@@ -1922,7 +1917,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -1936,7 +1931,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['ConnectPeerRequest'];
+                "application/json": components["schemas"]["ConnectPeerRequest"];
             };
         };
         responses: {
@@ -1946,7 +1941,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -1960,7 +1955,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['CreateUtxosRequest'];
+                "application/json": components["schemas"]["CreateUtxosRequest"];
             };
         };
         responses: {
@@ -1970,7 +1965,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -1984,7 +1979,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['DecodeLNInvoiceRequest'];
+                "application/json": components["schemas"]["DecodeLNInvoiceRequest"];
             };
         };
         responses: {
@@ -1994,7 +1989,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['DecodeLNInvoiceResponse'];
+                    "application/json": components["schemas"]["DecodeLNInvoiceResponse"];
                 };
             };
         };
@@ -2008,7 +2003,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['DecodeRGBInvoiceRequest'];
+                "application/json": components["schemas"]["DecodeRGBInvoiceRequest"];
             };
         };
         responses: {
@@ -2018,7 +2013,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['DecodeRGBInvoiceResponse'];
+                    "application/json": components["schemas"]["DecodeRGBInvoiceResponse"];
                 };
             };
         };
@@ -2032,7 +2027,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['DisconnectPeerRequest'];
+                "application/json": components["schemas"]["DisconnectPeerRequest"];
             };
         };
         responses: {
@@ -2042,7 +2037,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2056,7 +2051,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['EstimateFeeRequest'];
+                "application/json": components["schemas"]["EstimateFeeRequest"];
             };
         };
         responses: {
@@ -2066,7 +2061,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EstimateFeeResponse'];
+                    "application/json": components["schemas"]["EstimateFeeResponse"];
                 };
             };
         };
@@ -2080,7 +2075,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['FailTransfersRequest'];
+                "application/json": components["schemas"]["FailTransfersRequest"];
             };
         };
         responses: {
@@ -2090,7 +2085,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['FailTransfersResponse'];
+                    "application/json": components["schemas"]["FailTransfersResponse"];
                 };
             };
         };
@@ -2104,7 +2099,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['GetAssetMediaRequest'];
+                "application/json": components["schemas"]["GetAssetMediaRequest"];
             };
         };
         responses: {
@@ -2114,7 +2109,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['GetAssetMediaResponse'];
+                    "application/json": components["schemas"]["GetAssetMediaResponse"];
                 };
             };
         };
@@ -2128,7 +2123,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['GetChannelIdRequest'];
+                "application/json": components["schemas"]["GetChannelIdRequest"];
             };
         };
         responses: {
@@ -2138,7 +2133,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['GetChannelIdResponse'];
+                    "application/json": components["schemas"]["GetChannelIdResponse"];
                 };
             };
         };
@@ -2152,7 +2147,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['GetPaymentRequest'];
+                "application/json": components["schemas"]["GetPaymentRequest"];
             };
         };
         responses: {
@@ -2162,7 +2157,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['GetPaymentResponse'];
+                    "application/json": components["schemas"]["GetPaymentResponse"];
                 };
             };
         };
@@ -2176,7 +2171,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['GetSwapRequest'];
+                "application/json": components["schemas"]["GetSwapRequest"];
             };
         };
         responses: {
@@ -2186,7 +2181,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['GetSwapResponse'];
+                    "application/json": components["schemas"]["GetSwapResponse"];
                 };
             };
         };
@@ -2200,7 +2195,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['InitRequest'];
+                "application/json": components["schemas"]["InitRequest"];
             };
         };
         responses: {
@@ -2210,7 +2205,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['InitResponse'];
+                    "application/json": components["schemas"]["InitResponse"];
                 };
             };
         };
@@ -2224,7 +2219,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['InvoiceStatusRequest'];
+                "application/json": components["schemas"]["InvoiceStatusRequest"];
             };
         };
         responses: {
@@ -2234,7 +2229,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['InvoiceStatusResponse'];
+                    "application/json": components["schemas"]["InvoiceStatusResponse"];
                 };
             };
         };
@@ -2248,7 +2243,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['IssueAssetCFARequest'];
+                "application/json": components["schemas"]["IssueAssetCFARequest"];
             };
         };
         responses: {
@@ -2258,7 +2253,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['IssueAssetCFAResponse'];
+                    "application/json": components["schemas"]["IssueAssetCFAResponse"];
                 };
             };
         };
@@ -2272,7 +2267,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['IssueAssetNIARequest'];
+                "application/json": components["schemas"]["IssueAssetNIARequest"];
             };
         };
         responses: {
@@ -2282,7 +2277,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['IssueAssetNIAResponse'];
+                    "application/json": components["schemas"]["IssueAssetNIAResponse"];
                 };
             };
         };
@@ -2296,7 +2291,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['IssueAssetUDARequest'];
+                "application/json": components["schemas"]["IssueAssetUDARequest"];
             };
         };
         responses: {
@@ -2306,7 +2301,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['IssueAssetUDAResponse'];
+                    "application/json": components["schemas"]["IssueAssetUDAResponse"];
                 };
             };
         };
@@ -2320,7 +2315,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['KeysendRequest'];
+                "application/json": components["schemas"]["KeysendRequest"];
             };
         };
         responses: {
@@ -2330,7 +2325,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['KeysendResponse'];
+                    "application/json": components["schemas"]["KeysendResponse"];
                 };
             };
         };
@@ -2344,7 +2339,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['ListAssetsRequest'];
+                "application/json": components["schemas"]["ListAssetsRequest"];
             };
         };
         responses: {
@@ -2354,7 +2349,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListAssetsResponse'];
+                    "application/json": components["schemas"]["ListAssetsResponse"];
                 };
             };
         };
@@ -2374,7 +2369,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListChannelsResponse'];
+                    "application/json": components["schemas"]["ListChannelsResponse"];
                 };
             };
         };
@@ -2394,7 +2389,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListPaymentsResponse'];
+                    "application/json": components["schemas"]["ListPaymentsResponse"];
                 };
             };
         };
@@ -2414,7 +2409,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListPeersResponse'];
+                    "application/json": components["schemas"]["ListPeersResponse"];
                 };
             };
         };
@@ -2434,7 +2429,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListSwapsResponse'];
+                    "application/json": components["schemas"]["ListSwapsResponse"];
                 };
             };
         };
@@ -2448,7 +2443,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['ListTransactionsRequest'];
+                "application/json": components["schemas"]["ListTransactionsRequest"];
             };
         };
         responses: {
@@ -2458,7 +2453,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListTransactionsResponse'];
+                    "application/json": components["schemas"]["ListTransactionsResponse"];
                 };
             };
         };
@@ -2472,7 +2467,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['ListTransfersRequest'];
+                "application/json": components["schemas"]["ListTransfersRequest"];
             };
         };
         responses: {
@@ -2482,7 +2477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListTransfersResponse'];
+                    "application/json": components["schemas"]["ListTransfersResponse"];
                 };
             };
         };
@@ -2496,7 +2491,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['ListUnspentsRequest'];
+                "application/json": components["schemas"]["ListUnspentsRequest"];
             };
         };
         responses: {
@@ -2506,7 +2501,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ListUnspentsResponse'];
+                    "application/json": components["schemas"]["ListUnspentsResponse"];
                 };
             };
         };
@@ -2526,7 +2521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2540,7 +2535,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['LNInvoiceRequest'];
+                "application/json": components["schemas"]["LNInvoiceRequest"];
             };
         };
         responses: {
@@ -2550,7 +2545,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['LNInvoiceResponse'];
+                    "application/json": components["schemas"]["LNInvoiceResponse"];
                 };
             };
         };
@@ -2564,7 +2559,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['MakerExecuteRequest'];
+                "application/json": components["schemas"]["MakerExecuteRequest"];
             };
         };
         responses: {
@@ -2574,7 +2569,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2588,7 +2583,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['MakerInitRequest'];
+                "application/json": components["schemas"]["MakerInitRequest"];
             };
         };
         responses: {
@@ -2598,7 +2593,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['MakerInitResponse'];
+                    "application/json": components["schemas"]["MakerInitResponse"];
                 };
             };
         };
@@ -2618,7 +2613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['NetworkInfoResponse'];
+                    "application/json": components["schemas"]["NetworkInfoResponse"];
                 };
             };
         };
@@ -2638,7 +2633,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['NodeInfoResponse'];
+                    "application/json": components["schemas"]["NodeInfoResponse"];
                 };
             };
         };
@@ -2652,7 +2647,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['OpenChannelRequest'];
+                "application/json": components["schemas"]["OpenChannelRequest"];
             };
         };
         responses: {
@@ -2662,7 +2657,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['OpenChannelResponse'];
+                    "application/json": components["schemas"]["OpenChannelResponse"];
                 };
             };
         };
@@ -2676,7 +2671,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['RefreshRequest'];
+                "application/json": components["schemas"]["RefreshRequest"];
             };
         };
         responses: {
@@ -2686,7 +2681,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2700,7 +2695,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['RestoreRequest'];
+                "application/json": components["schemas"]["RestoreRequest"];
             };
         };
         responses: {
@@ -2710,7 +2705,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2724,7 +2719,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['RevokeTokenRequest'];
+                "application/json": components["schemas"]["RevokeTokenRequest"];
             };
         };
         responses: {
@@ -2734,7 +2729,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2748,7 +2743,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['RgbInvoiceRequest'];
+                "application/json": components["schemas"]["RgbInvoiceRequest"];
             };
         };
         responses: {
@@ -2758,7 +2753,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['RgbInvoiceResponse'];
+                    "application/json": components["schemas"]["RgbInvoiceResponse"];
                 };
             };
         };
@@ -2772,7 +2767,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['SendAssetRequest'];
+                "application/json": components["schemas"]["SendAssetRequest"];
             };
         };
         responses: {
@@ -2782,7 +2777,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['SendAssetResponse'];
+                    "application/json": components["schemas"]["SendAssetResponse"];
                 };
             };
         };
@@ -2796,7 +2791,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['SendBtcRequest'];
+                "application/json": components["schemas"]["SendBtcRequest"];
             };
         };
         responses: {
@@ -2806,7 +2801,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['SendBtcResponse'];
+                    "application/json": components["schemas"]["SendBtcResponse"];
                 };
             };
         };
@@ -2820,7 +2815,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['SendOnionMessageRequest'];
+                "application/json": components["schemas"]["SendOnionMessageRequest"];
             };
         };
         responses: {
@@ -2830,7 +2825,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2844,7 +2839,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['SendPaymentRequest'];
+                "application/json": components["schemas"]["SendPaymentRequest"];
             };
         };
         responses: {
@@ -2854,7 +2849,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['SendPaymentResponse'];
+                    "application/json": components["schemas"]["SendPaymentResponse"];
                 };
             };
         };
@@ -2874,7 +2869,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2894,7 +2889,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2908,7 +2903,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['SignMessageRequest'];
+                "application/json": components["schemas"]["SignMessageRequest"];
             };
         };
         responses: {
@@ -2918,7 +2913,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['SignMessageResponse'];
+                    "application/json": components["schemas"]["SignMessageResponse"];
                 };
             };
         };
@@ -2932,7 +2927,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['TakerRequest'];
+                "application/json": components["schemas"]["TakerRequest"];
             };
         };
         responses: {
@@ -2942,7 +2937,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
@@ -2956,7 +2951,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                'application/json': components['schemas']['UnlockRequest'];
+                "application/json": components["schemas"]["UnlockRequest"];
             };
         };
         responses: {
@@ -2966,7 +2961,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    "application/json": components["schemas"]["EmptyResponse"];
                 };
             };
         };
