@@ -149,6 +149,154 @@ export class MakerClient {
         };
     }
 
+    /**
+     * Get available routes for a trading pair by ticker symbols
+     *
+     * @example
+     * ```typescript
+     * const routes = await client.maker.getAvailableRoutes('BTC', 'USDT');
+     * console.log('Available routes:', routes);
+     * // [{ from_layer: 'BTC_LN', to_layer: 'RGB_LN' }, ...]
+     * ```
+     */
+    async getAvailableRoutes(
+        fromTicker: string,
+        toTicker: string,
+    ): Promise<Array<{ from_layer: string; to_layer: string }>> {
+        const pairsResponse = await this.listPairs();
+
+        // Find matching pair (case-insensitive)
+        const pair = pairsResponse.pairs.find(
+            (p) =>
+                p.base.ticker.toUpperCase() === fromTicker.toUpperCase() &&
+                p.quote.ticker.toUpperCase() === toTicker.toUpperCase(),
+        );
+
+        if (!pair || !pair.routes) {
+            return [];
+        }
+
+        return pair.routes;
+    }
+
+    /**
+     * Stream quotes using ticker symbols with automatic route discovery
+     *
+     * @example
+     * ```typescript
+     * // Stream quotes for BTC -> USDT using first available route
+     * const unsubscribe = await client.maker.streamQuotesByTicker(
+     *   'BTC',
+     *   'USDT',
+     *   10000000, // 0.1 BTC
+     *   (quote) => console.log('Quote:', quote)
+     * );
+     *
+     * // With preferred layers
+     * const unsubscribe2 = await client.maker.streamQuotesByTicker(
+     *   'BTC',
+     *   'USDT',
+     *   10000000,
+     *   (quote) => console.log('Quote:', quote),
+     *   { preferredFromLayer: 'BTC_LN', preferredToLayer: 'RGB_LN' }
+     * );
+     * ```
+     */
+    async streamQuotesByTicker(
+        fromTicker: string,
+        toTicker: string,
+        amount: number,
+        onUpdate: (quote: QuoteResponse) => void,
+        options?: {
+            preferredFromLayer?: Layer;
+            preferredToLayer?: Layer;
+        },
+    ): Promise<() => void> {
+        const routes = await this.getAvailableRoutes(fromTicker, toTicker);
+
+        if (routes.length === 0) {
+            throw new Error(
+                `No routes found for ${fromTicker}/${toTicker}. Pair may not exist or is not active.`,
+            );
+        }
+
+        // Find preferred route or use first available
+        let selectedRoute = routes[0];
+        if (options?.preferredFromLayer && options?.preferredToLayer) {
+            const preferredRoute = routes.find(
+                (r) =>
+                    r.from_layer === options.preferredFromLayer &&
+                    r.to_layer === options.preferredToLayer,
+            );
+            if (preferredRoute) {
+                selectedRoute = preferredRoute;
+            }
+        }
+
+        // Stream quotes using the selected route
+        return this.streamQuotes(
+            fromTicker.toLowerCase(),
+            toTicker.toLowerCase(),
+            amount,
+            selectedRoute.from_layer as Layer,
+            selectedRoute.to_layer as Layer,
+            onUpdate,
+        );
+    }
+
+    /**
+     * Stream quotes for all available routes of a trading pair
+     *
+     * @example
+     * ```typescript
+     * const unsubscribers = await client.maker.streamQuotesForAllRoutes(
+     *   'BTC',
+     *   'USDT',
+     *   10000000,
+     *   (route, quote) => {
+     *     console.log(`Quote for ${route}:`, quote);
+     *   }
+     * );
+     *
+     * // Later: unsubscribe from all routes
+     * unsubscribers.forEach((unsubscribe) => unsubscribe());
+     * ```
+     */
+    async streamQuotesForAllRoutes(
+        fromTicker: string,
+        toTicker: string,
+        amount: number,
+        onUpdate: (route: string, quote: QuoteResponse) => void,
+    ): Promise<Map<string, () => void>> {
+        const routes = await this.getAvailableRoutes(fromTicker, toTicker);
+
+        if (routes.length === 0) {
+            throw new Error(
+                `No routes found for ${fromTicker}/${toTicker}. Pair may not exist or is not active.`,
+            );
+        }
+
+        const unsubscribers = new Map<string, () => void>();
+
+        // Subscribe to each route
+        for (const route of routes) {
+            const routeKey = `${route.from_layer}->${route.to_layer}`;
+
+            const unsubscribe = await this.streamQuotes(
+                fromTicker.toLowerCase(),
+                toTicker.toLowerCase(),
+                amount,
+                route.from_layer as Layer,
+                route.to_layer as Layer,
+                (quote) => onUpdate(routeKey, quote),
+            );
+
+            unsubscribers.set(routeKey, unsubscribe);
+        }
+
+        return unsubscribers;
+    }
+
     // ============================================================================
     // Market API - /api/v1/market/*
     // ============================================================================
