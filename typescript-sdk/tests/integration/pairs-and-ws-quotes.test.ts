@@ -81,7 +81,9 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
             expect(response.pairs.length).toBeGreaterThan(0);
 
             // Check that at least some pairs have routes with layer info
-            const pairsWithRoutes = response.pairs.filter((pair) => pair.routes && pair.routes.length > 0);
+            const pairsWithRoutes = response.pairs.filter(
+                (pair) => pair.routes && pair.routes.length > 0,
+            );
             expect(pairsWithRoutes.length).toBeGreaterThan(0);
 
             pairsWithRoutes.forEach((pair) => {
@@ -129,55 +131,55 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
             toLayer: Layer;
             amount: number;
         }> = [
-                {
-                    name: 'BTC_LN to RGB_LN',
-                    fromAsset: 'btc',
-                    toAsset: 'usdt',
-                    fromLayer: 'BTC_LN',
-                    toLayer: 'RGB_LN',
-                    amount: 10000000, // 0.1 BTC
-                },
-                {
-                    name: 'BTC_L1 to RGB_L1',
-                    fromAsset: 'btc',
-                    toAsset: 'usdt',
-                    fromLayer: 'BTC_L1',
-                    toLayer: 'RGB_L1',
-                    amount: 10000000, // 0.1 BTC
-                },
-                {
-                    name: 'RGB_LN to BTC_LN',
-                    fromAsset: 'usdt',
-                    toAsset: 'btc',
-                    fromLayer: 'RGB_LN',
-                    toLayer: 'BTC_LN',
-                    amount: 10000000000, // 10000 USDT (assuming 6 decimals)
-                },
-                {
-                    name: 'RGB_L1 to BTC_L1',
-                    fromAsset: 'usdt',
-                    toAsset: 'btc',
-                    fromLayer: 'RGB_L1',
-                    toLayer: 'BTC_L1',
-                    amount: 10000000000, // 10000 USDT (assuming 6 decimals)
-                },
-                {
-                    name: 'BTC_L1 to BTC_LN (submarine swap)',
-                    fromAsset: 'btc',
-                    toAsset: 'btc',
-                    fromLayer: 'BTC_L1',
-                    toLayer: 'BTC_LN',
-                    amount: 10000000, // 0.1 BTC
-                },
-                {
-                    name: 'RGB_L1 to RGB_LN (submarine swap)',
-                    fromAsset: 'usdt',
-                    toAsset: 'usdt',
-                    fromLayer: 'RGB_L1',
-                    toLayer: 'RGB_LN',
-                    amount: 10000000000, // 10000 USDT
-                },
-            ];
+            {
+                name: 'BTC_LN to RGB_LN',
+                fromAsset: 'btc',
+                toAsset: 'usdt',
+                fromLayer: 'BTC_LN',
+                toLayer: 'RGB_LN',
+                amount: 10000000, // 0.1 BTC
+            },
+            {
+                name: 'BTC_L1 to RGB_L1',
+                fromAsset: 'btc',
+                toAsset: 'usdt',
+                fromLayer: 'BTC_L1',
+                toLayer: 'RGB_L1',
+                amount: 10000000, // 0.1 BTC
+            },
+            {
+                name: 'RGB_LN to BTC_LN',
+                fromAsset: 'usdt',
+                toAsset: 'btc',
+                fromLayer: 'RGB_LN',
+                toLayer: 'BTC_LN',
+                amount: 10000000000, // 10000 USDT (assuming 6 decimals)
+            },
+            {
+                name: 'RGB_L1 to BTC_L1',
+                fromAsset: 'usdt',
+                toAsset: 'btc',
+                fromLayer: 'RGB_L1',
+                toLayer: 'BTC_L1',
+                amount: 10000000000, // 10000 USDT (assuming 6 decimals)
+            },
+            {
+                name: 'BTC_L1 to BTC_LN (submarine swap)',
+                fromAsset: 'btc',
+                toAsset: 'btc',
+                fromLayer: 'BTC_L1',
+                toLayer: 'BTC_LN',
+                amount: 10000000, // 0.1 BTC
+            },
+            {
+                name: 'RGB_L1 to RGB_LN (submarine swap)',
+                fromAsset: 'usdt',
+                toAsset: 'usdt',
+                fromLayer: 'RGB_L1',
+                toLayer: 'RGB_LN',
+                amount: 10000000000, // 10000 USDT
+            },
+        ];
 
         testCases.forEach(({ name, fromAsset, toAsset, fromLayer, toLayer, amount }) => {
             it(`should stream quotes for ${name}`, async () => {
@@ -340,7 +342,14 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
             const freshClient = KaleidoClient.create({ baseUrl: TEST_API_URL });
 
             await expect(
-                freshClient.maker.streamQuotes('btc', 'usdt', 10000000, 'BTC_LN', 'RGB_LN', () => { }),
+                freshClient.maker.streamQuotes(
+                    'btc',
+                    'usdt',
+                    10000000,
+                    'BTC_LN',
+                    'RGB_LN',
+                    () => {},
+                ),
             ).rejects.toThrow('WebSocket not enabled');
         });
     });
@@ -357,7 +366,9 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                 expect(pairsResponse.pairs.length).toBeGreaterThan(0);
 
                 // Find a pair with routes
-                const pairWithRoutes = pairsResponse.pairs.find((pair) => pair.routes && pair.routes.length > 0);
+                const pairWithRoutes = pairsResponse.pairs.find(
+                    (pair) => pair.routes && pair.routes.length > 0,
+                );
                 expect(pairWithRoutes).toBeDefined();
 
                 if (!pairWithRoutes || !pairWithRoutes.routes) return;
@@ -376,12 +387,15 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     route.from_layer as Layer,
                     route.to_layer as Layer,
                     (quote) => {
-                        console.log(`\n📊 Quote for ${pairWithRoutes.base.ticker}/${pairWithRoutes.quote.ticker}:`, {
-                            route: `${route.from_layer} → ${route.to_layer}`,
-                            from: `${quote.from_amount} ${quote.from_asset}`,
-                            to: `${quote.to_amount} ${quote.to_asset}`,
-                            price: quote.price,
-                        });
+                        console.log(
+                            `\n📊 Quote for ${pairWithRoutes.base.ticker}/${pairWithRoutes.quote.ticker}:`,
+                            {
+                                route: `${route.from_layer} → ${route.to_layer}`,
+                                from: `${quote.from_amount} ${quote.from_asset}`,
+                                to: `${quote.to_amount} ${quote.to_asset}`,
+                                price: quote.price,
+                            },
+                        );
                         quotes.push(quote);
                     },
                 );
