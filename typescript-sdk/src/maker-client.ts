@@ -62,12 +62,12 @@ export interface SwapCompletionOptions {
  * Unwrap openapi-fetch response - returns data or throws error
  * This eliminates non-null assertions throughout the codebase
  */
-function unwrapResponse<T>(result: { data?: T; error?: unknown }): T {
+function unwrapResponse<T>(result: { data?: T; error?: unknown; response?: Response }): T {
     if (result.error) {
-        const err = result.error as { status?: number };
+        console.error('[SDK DEBUG] unwrapResponse error result:', JSON.stringify(result, null, 2));
         throw mapHttpError({
-            status: err?.status || 500,
-            statusText: 'API Error',
+            status: result.response?.status || 500,
+            statusText: result.response?.statusText || 'API Error',
             data: result.error,
         });
     }

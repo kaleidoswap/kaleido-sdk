@@ -171,8 +171,10 @@ export class RlnClient {
         return data!;
     }
 
-    async getBtcBalance(): Promise<BtcBalanceResponse> {
-        const { data, error } = await this.http.node.POST('/btcbalance', { body: {} });
+    async getBtcBalance(skipSync: boolean = false): Promise<BtcBalanceResponse> {
+        const { data, error } = await this.http.node.POST('/btcbalance', {
+            body: { skip_sync: skipSync },
+        });
         checkError({ error });
         return data!;
     }
@@ -209,8 +211,12 @@ export class RlnClient {
     // RGB Asset Operations
     // ============================================================================
 
-    async listAssets(): Promise<ListAssetsResponse> {
-        const { data, error } = await this.http.node.POST('/listassets', { body: {} });
+    async listAssets(
+        filterAssetSchemas: ('Nia' | 'Uda' | 'Cfa')[] = [],
+    ): Promise<ListAssetsResponse> {
+        const { data, error } = await this.http.node.POST('/listassets', {
+            body: { filter_asset_schemas: filterAssetSchemas },
+        });
         checkError({ error });
         return data!;
     }

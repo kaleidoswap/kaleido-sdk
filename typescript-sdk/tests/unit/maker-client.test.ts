@@ -48,7 +48,7 @@ describe('MakerClient - Quote Methods', () => {
                 price_precision: 6,
                 fee: {
                     fee_asset: 'BTC',
-                    fee_precision: 8,
+                    fee_asset_precision: 8,
                     base_fee: 0,
                     variable_fee: 0,
                     fee_rate: 0.001,
@@ -123,7 +123,7 @@ describe('MakerClient - Quote Methods', () => {
                 price_precision: 6,
                 fee: {
                     fee_asset: 'BTC',
-                    fee_precision: 8,
+                    fee_asset_precision: 8,
                     base_fee: 0,
                     variable_fee: 0,
                     fee_rate: 0.001,
@@ -224,6 +224,353 @@ describe('MakerClient - Quote Methods', () => {
                     }),
                 );
             }
+        });
+    });
+
+    describe('Error Handling - Quote Validation', () => {
+        it('should throw ValidationError when amount is below minimum', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'BTC amount must be between 1000 and 100000',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: {
+                        asset_id: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 500, // Below minimum
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: null,
+                    },
+                }),
+            ).rejects.toThrow('must be between');
+        });
+
+        it('should throw ValidationError when amount is above maximum', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'BTC amount must be between 1000 and 100000',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: {
+                        asset_id: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 200000, // Above maximum
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: null,
+                    },
+                }),
+            ).rejects.toThrow('must be between');
+        });
+
+        it('should throw ValidationError when both amounts are provided', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'Exactly one of from_amount or to_amount must be provided',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: {
+                        asset_id: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 10000,
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: 500000000, // Both provided - should error
+                    },
+                }),
+            ).rejects.toThrow(/exactly one of.*amount.*must be provided/i);
+        });
+
+        it('should throw ValidationError when neither amount is provided', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'Either from_amount or to_amount must be provided',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: {
+                        asset_id: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: null,
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: null, // Neither provided - should error
+                    },
+                }),
+            ).rejects.toThrow(/either.*amount.*must be provided/i);
+        });
+
+        it('should throw ValidationError for invalid asset/layer combination', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'NONEXISTENT cannot use layer BTC_LN',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: {
+                        asset_id: 'NONEXISTENT',
+                        layer: 'BTC_LN',
+                        amount: 10000,
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: null,
+                    },
+                }),
+            ).rejects.toThrow(/cannot use layer/i);
+        });
+    });
+
+    describe('Error Handling - Error Type Mapping', () => {
+        it('should map 400 status to ValidationError with correct properties', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'Invalid amount',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            try {
+                await makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: -1 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                });
+                expect.fail('Should have thrown an error');
+            } catch (error: any) {
+                expect(error.name).toBe('ValidationError');
+                expect(error.code).toBe('VALIDATION_ERROR');
+            }
+        });
+
+        it('should map 404 status to NotFoundError', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'Asset not found: NONEXISTENT',
+                },
+                response: {
+                    status: 404,
+                    statusText: 'Not Found',
+                },
+            });
+
+            try {
+                await makerClient.getQuote({
+                    from_asset: { asset_id: 'NONEXISTENT', layer: 'BTC_LN', amount: 10000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                });
+                expect.fail('Should have thrown an error');
+            } catch (error: any) {
+                expect(error.name).toBe('NotFoundError');
+                expect(error.code).toBe('NOT_FOUND');
+                expect(error.statusCode).toBe(404);
+            }
+        });
+
+        it('should map 422 status to ValidationError for missing fields', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: [
+                        {
+                            loc: ['body', 'receiver_address'],
+                            msg: 'Field required',
+                            type: 'missing',
+                        },
+                    ],
+                },
+                response: {
+                    status: 422,
+                    statusText: 'Unprocessable Entity',
+                },
+            });
+
+            try {
+                await makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                });
+                expect.fail('Should have thrown an error');
+            } catch (error: any) {
+                expect(error.name).toBe('ValidationError');
+                expect(error.message).toContain('receiver_address');
+                expect(error.message).toContain('Field required');
+            }
+        });
+
+        it('should map 503 status to APIError for service unavailable', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'Service temporarily unavailable',
+                },
+                response: {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                },
+            });
+
+            try {
+                await makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                });
+                expect.fail('Should have thrown an error');
+            } catch (error: any) {
+                expect(error.name).toBe('APIError');
+                expect(error.statusCode).toBe(503);
+                expect(error.message).toContain('Service temporarily unavailable');
+            }
+        });
+    });
+
+    describe('Error Handling - Message Extraction', () => {
+        it('should extract detail field from error response', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: 'Detailed error message',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                }),
+            ).rejects.toThrow('Detailed error message');
+        });
+
+        it('should extract message field from error response', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    message: 'Error message field',
+                },
+                response: {
+                    status: 400,
+                    statusText: 'Bad Request',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                }),
+            ).rejects.toThrow('Error message field');
+        });
+
+        it('should handle FastAPI validation array format', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {
+                    detail: [
+                        {
+                            loc: ['body', 'from_asset', 'amount'],
+                            msg: 'value must be positive',
+                            type: 'value_error',
+                        },
+                        {
+                            loc: ['body', 'to_asset', 'layer'],
+                            msg: 'invalid layer value',
+                            type: 'value_error',
+                        },
+                    ],
+                },
+                response: {
+                    status: 422,
+                    statusText: 'Unprocessable Entity',
+                },
+            });
+
+            try {
+                await makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: -1000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                });
+                expect.fail('Should have thrown an error');
+            } catch (error: any) {
+                // Should combine multiple validation errors
+                expect(error.message).toContain('from_asset.amount');
+                expect(error.message).toContain('value must be positive');
+                expect(error.message).toContain('to_asset.layer');
+                expect(error.message).toContain('invalid layer value');
+            }
+        });
+
+        it('should fall back to statusText when no error details available', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: null,
+                error: {},
+                response: {
+                    status: 500,
+                    statusText: 'Internal Server Error',
+                },
+            });
+
+            await expect(
+                makerClient.getQuote({
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
+                    to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
+                }),
+            ).rejects.toThrow('Internal Server Error');
         });
     });
 

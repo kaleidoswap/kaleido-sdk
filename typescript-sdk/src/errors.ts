@@ -188,13 +188,41 @@ export class RateLimitError extends APIError {
 export function mapHttpError(error: {
     status: number;
     statusText: string;
-    data?: { message?: string; code?: string; error?: string };
+    data?: {
+        message?: string;
+        code?: string;
+        error?: string;
+        detail?: string | any;
+        details?: any;
+    };
 }): KaleidoError {
-    const message = error.data?.message || error.data?.error || error.statusText;
+    let message = error.statusText;
+
+    if (error.data) {
+        if (typeof error.data === 'string') {
+            message = error.data;
+        } else {
+            // Check formatted error fields in order of preference
+            message =
+                error.data.detail ||
+                error.data.message ||
+                error.data.error ||
+                (error.data.details ? JSON.stringify(error.data.details) : undefined) ||
+                error.statusText;
+
+            // Handle FastAPI validation errors which return detail as array
+            if (Array.isArray(error.data.detail)) {
+                message = error.data.detail
+                    .map((err: any) => `${err.loc.join('.')}: ${err.msg}`)
+                    .join('; ');
+            }
+        }
+    }
 
     // Map HTTP status codes to specific error types
     switch (error.status) {
         case 400:
+        case 422: // Unprocessable Entity - FastAPI validation errors
             return new ValidationError(message);
         case 404:
             return new NotFoundError(message);
