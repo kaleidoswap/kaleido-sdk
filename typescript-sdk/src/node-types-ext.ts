@@ -20,8 +20,8 @@ type ResponseSuccess<T extends keyof operations> = operations[T] extends {
 }
     ? R
     : operations[T] extends { responses: { 201: { content: { 'application/json': infer R } } } }
-      ? R
-      : never;
+    ? R
+    : never;
 
 // Authentication & Wallet
 export type InitWalletRequest = RequestBody<'post_init'>;
@@ -137,3 +137,9 @@ export type UnlockWalletRequest = UnlockRequest;
 export type LNInvoiceResponse = CreateLNInvoiceResponse;
 export type AssetMediaRequest = GetAssetMediaRequest;
 export type AssetMediaResponse = GetAssetMediaResponse;
+
+// Schema types for direct use
+export type Channel = components['schemas']['Channel'];
+export type NodeAsset = components['schemas']['AssetNIA'];
+// Alias for backward compatibility (NiaAsset is more common in desktop-app)
+export type NiaAsset = NodeAsset;

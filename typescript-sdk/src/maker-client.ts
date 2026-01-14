@@ -235,8 +235,8 @@ export class MakerClient {
 
         // Stream quotes using the selected route
         return this.streamQuotes(
-            fromTicker.toLowerCase(),
-            toTicker.toLowerCase(),
+            fromTicker.toUpperCase(),
+            toTicker.toUpperCase(),
             amount,
             selectedRoute.from_layer as Layer,
             selectedRoute.to_layer as Layer,
@@ -283,8 +283,8 @@ export class MakerClient {
             const routeKey = `${route.from_layer}->${route.to_layer}`;
 
             const unsubscribe = await this.streamQuotes(
-                fromTicker.toLowerCase(),
-                toTicker.toLowerCase(),
+                fromTicker.toUpperCase(),
+                toTicker.toUpperCase(),
                 amount,
                 route.from_layer as Layer,
                 route.to_layer as Layer,
