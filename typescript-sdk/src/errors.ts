@@ -63,8 +63,8 @@ export class NetworkError extends KaleidoError {
  * Request or input validation failed
  */
 export class ValidationError extends KaleidoError {
-    constructor(message: string) {
-        super('VALIDATION_ERROR', message);
+    constructor(message: string, statusCode: number = 400) {
+        super('VALIDATION_ERROR', message, statusCode);
         this.name = 'ValidationError';
     }
 }
@@ -223,7 +223,7 @@ export function mapHttpError(error: {
     switch (error.status) {
         case 400:
         case 422: // Unprocessable Entity - FastAPI validation errors
-            return new ValidationError(message);
+            return new ValidationError(message, error.status);
         case 404:
             return new NotFoundError(message);
         case 408:
