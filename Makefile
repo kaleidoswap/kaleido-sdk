@@ -1,4 +1,8 @@
-.PHONY: help build test clean format lint check generate-models update-specs
+.PHONY: help build test clean format lint check generate-models generate-python-models generate-ts-types generate-rust-models update-specs
+
+# Environment variables with defaults for local development
+export KALEIDO_API_URL ?= http://localhost:8000
+export KALEIDO_NODE_URL ?= http://localhost:3001
 
 # Default target
 help:
@@ -16,6 +20,16 @@ help:
 	@echo "  test-python        - Run Python binding tests (uv)"
 	@echo "  test-typescript    - Run TypeScript binding tests"
 	@echo ""
+	@echo "Examples & Development:"
+	@echo "  run-python-example - Run Python swap example (local env)"
+	@echo "  run-ts-example     - Run TypeScript swap example (local env)"
+	@echo "  dev-setup          - One-command setup for local development"
+	@echo "  check-services     - Verify API and Node are running"
+	@echo ""
+	@echo "Quick Utilities:"
+	@echo "  list-swaps         - List pending swaps (requires API)"
+	@echo "  node-info          - Get local node information"
+	@echo ""
 	@echo "Code Quality:"
 	@echo "  check              - Run cargo check"
 	@echo "  format             - Format all code"
@@ -23,9 +37,12 @@ help:
 	@echo "  clippy             - Run Rust clippy"
 	@echo ""
 	@echo "Code Generation:"
-	@echo "  generate-models    - Generate Rust models from OpenAPI specs (Docker)"
-	@echo "  regenerate         - Full regen: update-specs + generate-models + check"
-	@echo "  update-specs       - Download latest OpenAPI specs"
+	@echo "  generate-models        - Generate all models (Python + TypeScript)"
+	@echo "  generate-python-models - Generate Python Pydantic models"
+	@echo "  generate-ts-types      - Generate TypeScript types"
+	@echo "  generate-rust-models   - Generate Rust models (Progenitor via build.rs)"
+	@echo "  regenerate             - Full regen: update-specs + generate-models + check"
+	@echo "  update-specs           - Download latest OpenAPI specs"
 	@echo ""
 	@echo "Deployment:"
 	@echo "  deploy-python      - Deploy Python package to PyPI"
@@ -36,7 +53,7 @@ help:
 
 # Directories
 BINDINGS_PYTHON := bindings/python
-BINDINGS_TYPESCRIPT := bindings/typescript
+BINDINGS_TYPESCRIPT := typescript-sdk
 
 # ============================================================================
 # Build targets
@@ -78,6 +95,70 @@ test-typescript:
 	cd $(BINDINGS_TYPESCRIPT) && pnpm test
 
 # ============================================================================
+# Example & Development targets
+# ============================================================================
+
+run-python-example: dev-python
+	@echo "🐍 Running Python swap example..."
+	@echo "   API URL: $(KALEIDO_API_URL)"
+	@echo "   Node URL: $(KALEIDO_NODE_URL)"
+	@cd $(BINDINGS_PYTHON) && uv run examples/swap_example.py
+
+run-ts-example: dev-typescript
+	@echo "📦 Running TypeScript examples..."
+	@echo "   API URL: $(KALEIDO_API_URL)"
+	@echo ""
+	@echo "Available examples:"
+	@echo "  make run-ts-hello      - Basic client setup"
+	@echo "  make run-ts-quote      - Get a swap quote"
+	@echo "  make run-ts-websocket  - WebSocket streaming"
+	@echo ""
+	@echo "Running hello example by default..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/01_hello.ts
+
+run-ts-hello: dev-typescript
+	@echo "📦 Running TypeScript hello example..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/01_hello.ts
+
+run-ts-quote: dev-typescript
+	@echo "📦 Running TypeScript quote example..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/02_get_quote.ts
+
+run-ts-websocket: dev-typescript
+	@echo "📦 Running TypeScript WebSocket example..."
+	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/03_websocket.ts
+
+dev-setup: dev-python dev-typescript check-services
+	@echo "✅ Development environment ready!"
+	@echo ""
+	@echo "Quick commands:"
+	@echo "  make run-python-example  - Run Python example"
+	@echo "  make run-ts-example      - Run TypeScript examples"
+	@echo "  make run-ts-hello        - Run TypeScript hello example"
+	@echo "  make run-ts-quote        - Run TypeScript quote example"
+	@echo "  make check-services      - Verify services are running"
+
+
+check-services:
+	@echo "🔍 Checking services..."
+	@echo -n "  API ($(KALEIDO_API_URL)): "
+	@curl -s -o /dev/null -w "%{http_code}" $(KALEIDO_API_URL)/health 2>/dev/null | grep -q 200 && echo "✅ Running" || echo "❌ Not available"
+	@echo -n "  Node ($(KALEIDO_NODE_URL)): "
+	@curl -s -o /dev/null -w "%{http_code}" $(KALEIDO_NODE_URL)/nodeinfo 2>/dev/null | grep -q 200 && echo "✅ Running" || echo "❌ Not available"
+
+# ============================================================================
+# Quick Utility targets
+# ============================================================================
+
+list-swaps:
+	@echo "📋 Listing pending swaps..."
+	@curl -s $(KALEIDO_API_URL)/api/v1/swaps?status=pending | jq '.' || echo "Failed to fetch swaps"
+
+node-info:
+	@echo "🔑 Getting node information..."
+	@curl -s $(KALEIDO_NODE_URL)/nodeinfo | jq '.' || echo "Failed to fetch node info"
+
+# ============================================================================
 # Code quality targets
 # ============================================================================
 
@@ -85,7 +166,7 @@ check:
 	@echo "🔍 Running cargo check..."
 	cargo check --all
 
-format: format-rust format-python
+format: format-rust format-python format-typescript
 
 format-rust:
 	@echo "✨ Formatting Rust code..."
@@ -94,10 +175,14 @@ format-rust:
 format-python:
 	@echo "✨ Formatting Python code..."
 	cd $(BINDINGS_PYTHON) && \
-		uv run black . && \
-		uv run isort .
+		uv run isort . && \
+		uv run black .
 
-lint: lint-rust lint-python
+format-typescript:
+	@echo "✨ Formatting TypeScript code..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm run format
+
+lint: lint-rust lint-python lint-typescript
 
 lint-rust:
 	@echo "🔍 Linting Rust code..."
@@ -109,6 +194,10 @@ lint-python:
 		uv run ruff check . && \
 		uv run black --check .
 
+lint-typescript:
+	@echo "🔍 Linting TypeScript code..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm run lint
+
 clippy:
 	@echo "📎 Running clippy..."
 	cargo clippy --all-targets -- -D warnings
@@ -117,10 +206,21 @@ clippy:
 # Code generation targets
 # ============================================================================
 
-generate-models:
-	@echo "🔄 Generating Rust models from OpenAPI specs (Docker)..."
+generate-models: generate-python-models generate-ts-types
+	@echo "✅ All models generated (Python + TypeScript)"
+
+generate-python-models:
+	@echo "🐍 Generating Python Pydantic models from OpenAPI specs..."
+	bash scripts/generate_python_models.sh
+
+generate-ts-types:
+	@echo "📦 Generating TypeScript types from OpenAPI specs..."
+	bash scripts/generate_typescript_types.sh
+
+generate-rust-models:
+	@echo "🔄 Generating Rust models from OpenAPI specs (Progenitor)..."
 	./scripts/generate-rust-models.sh
-	@echo "✅ Models generated. Run 'cargo check' to verify."
+	@echo "✅ Rust models generated via build.rs."
 
 regenerate: update-specs generate-models check
 	@echo "✅ Full regeneration complete!"
@@ -168,8 +268,8 @@ dev-python:
 		uv run maturin develop --uv
 
 dev-typescript:
-	@echo "📦 Installing TypeScript bindings in development mode..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
+	@echo "📦 Installing TypeScript SDK dependencies..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm install
 
 # Watch for changes and rebuild
 watch:

@@ -1,0 +1,27 @@
+# Source files
+src/
+Cargo.toml
+Cargo.lock
+target/
+
+# Development files
+tests/
+examples/
+*.test.ts
+*.test.js
+
+# Build artifacts
+node_modules/
+.DS_Store
+*.log
+
+# Documentation
+WASM_NOTES.md
+MIGRATION_GUIDE.md
+README.md
+
+# Only include the built artifacts
+!dist/
+!pkg/
+!pkg-node/
+

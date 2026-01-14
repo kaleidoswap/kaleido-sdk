@@ -1,10 +1,18 @@
-//! Auto-generated models from OpenAPI specifications.
+//! Auto-generated models from OpenAPI specifications via Progenitor.
 //!
-//! DO NOT EDIT - Regenerate with: ./scripts/generate-rust-models.sh
+//! DO NOT EDIT - Generated at build time via build.rs
+//!
+//! Progenitor generates both HTTP clients and type definitions from OpenAPI specs:
+//! - maker: Kaleidoswap Maker API client + types
+//! - rln: RGB Lightning Node API client + types
+//!
+//! To regenerate: make regenerate
 
-pub mod kaleidoswap;
-pub mod rgb_node;
+// Generated Clients + Types (via build.rs + progenitor)
+pub mod maker {
+    include!(concat!(env!("OUT_DIR"), "/maker_api.rs"));
+}
 
-// Re-export commonly used types from generated modules
-pub use kaleidoswap::models as kaleido;
-pub use rgb_node::models as rgb;
+pub mod rln {
+    include!(concat!(env!("OUT_DIR"), "/rln_api.rs"));
+}

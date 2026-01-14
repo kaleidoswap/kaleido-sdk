@@ -90,7 +90,9 @@ def main():
                         break
 
             print(f"  Requesting quote for {from_amount} {base_ticker}...")
-            quote = client.get_quote_by_pair(ticker, from_amount, None, "BTC_LN", "RGB_LN")
+            quote = client.get_quote_by_pair(
+                ticker, from_amount, None, "BTC_LN", "RGB_LN"
+            )
 
             from_amount = quote.from_asset.amount if quote.from_asset else 0
             to_amount = quote.to_asset.amount if quote.to_asset else 0

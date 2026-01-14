@@ -1,16 +1,11 @@
 //! Data models for the Kaleidoswap SDK.
 //!
-//! Models are auto-generated from OpenAPI specifications.
-//! To regenerate: ./scripts/generate-rust-models.sh
+//! Models are auto-generated from OpenAPI specifications via Progenitor.
+//! To regenerate: make regenerate
 
-// Re-export generated models directly
-pub use crate::generated::kaleidoswap::models::*;
-
-pub use crate::generated::rgb_node::models as rgb_node;
-
-// ============================================================================
-// Utility types (not from OpenAPI)
-// ============================================================================
+// Re-export Progenitor-generated types (from build.rs)
+pub use crate::generated::maker::types::*;
+pub use crate::generated::rln::types as rln;
 
 /// Validation result for amount validation.
 #[derive(Debug, Clone)]

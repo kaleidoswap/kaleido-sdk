@@ -1,4 +1,4 @@
-# GitLab CI/CD Pipeline for Kaleidoswap SDK (UniFFI)
+# GitLab CI/CD Pipeline for Kaleidoswap SDK (UniFFI + WASM)
 # This pipeline builds and publishes the Rust-based SDKs with UniFFI bindings
 #
 # On tag push:
@@ -67,7 +67,7 @@ test:uniffi:
     - echo "🔗 Testing UniFFI Bindings..."
     - cargo test -p kaleidoswap-uniffi --release
 
-lint:
+lint:rust:
   stage: test
   image: rust:${RUST_VERSION}
   <<: *rust_cache
@@ -77,13 +77,85 @@ lint:
     - cargo clippy --all-targets --all-features -- -D warnings
   allow_failure: true
 
-format:
+lint:python:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+  script:
+    - echo "🔍 Linting Python code..."
+    - cd bindings/python
+    - uv run ruff check .
+    - uv run black --check .
+  allow_failure: true
+
+format:rust:
   stage: test
   image: rust:${RUST_VERSION}
   script:
     - echo "✨ Checking formatting..."
     - rustup component add rustfmt
     - cargo fmt --all -- --check
+  allow_failure: true
+
+format:python:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+  script:
+    - echo "✨ Checking Python formatting..."
+    - cd bindings/python
+    - uv run black --check .
+    - uv run isort --check-only .
+  allow_failure: true
+
+
+# ---------------------------------------------------------------------------
+# TypeScript SDK (openapi-fetch based)
+# ---------------------------------------------------------------------------
+
+test:typescript-sdk:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "🧪 Testing TypeScript SDK..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm test
+  artifacts:
+    reports:
+      junit: typescript-sdk/test-results.xml
+    when: always
+
+lint:typescript-sdk:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "🔍 Linting TypeScript SDK..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm run lint
+  allow_failure: true
+
+format:typescript-sdk:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "✨ Checking TypeScript SDK formatting..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm run format:check
   allow_failure: true
 
 # ---------------------------------------------------------------------------
@@ -164,31 +236,6 @@ build:python:
       - target/wheels/
     expire_in: 1 week
 
-build:typescript:
-  stage: build
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  needs:
-    - job: build:core
-      optional: true
-    - job: generate-models
-      optional: true
-      artifacts: true
-  before_script:
-    - apt-get update && apt-get install -y nodejs npm
-    - npm install -g pnpm
-  script:
-    - echo "📦 Building TypeScript Bindings..."
-    - cargo build -p kaleidoswap-typescript --release
-    # Generate TypeScript types (requires uniffi-bindgen-ts when available)
-    - cd bindings/typescript
-    - pnpm install || true
-  artifacts:
-    paths:
-      - bindings/typescript/
-    exclude:
-      - bindings/typescript/node_modules/**
-    expire_in: 1 week
 
 # ---------------------------------------------------------------------------
 # DEPLOY STAGE
@@ -214,18 +261,19 @@ deploy:pypi:
     name: pypi
     url: https://pypi.org/project/kaleidoswap/
 
+# Deploy TypeScript SDK to npm
 deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
   needs:
-    - job: build:typescript
-      artifacts: true
+    - job: test:typescript-sdk
   before_script:
     - npm install -g pnpm
   script:
-    - echo "🚀 Publishing to npm..."
-    - cd bindings/typescript
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - echo "🚀 Publishing TypeScript SDK to npm..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm run build
     
     # Determine tag based on version pattern
     - |
@@ -237,9 +285,12 @@ deploy:npm:
         TAG="latest"
       fi
       echo "Publishing with tag: $TAG"
-      pnpm publish --tag $TAG --access public --no-git-checks --ignore-scripts
+    
+    # Publish to npm
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - pnpm publish --tag $TAG --access public --no-git-checks
   rules:
     - if: $CI_COMMIT_TAG
   environment:
     name: npm
-    url: https://www.npmjs.com/package/@kaleidoswap/sdk
+    url: https://www.npmjs.com/package/kaleidoswap-sdk

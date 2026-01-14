@@ -58,7 +58,7 @@ if __name__ == "__main__":
 #### TypeScript
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 async function exploreMarket() {
     const client = new KaleidoClient({
@@ -210,7 +210,7 @@ if __name__ == "__main__":
 #### TypeScript
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 async function simpleMakerSwap() {
     const client = new KaleidoClient({

@@ -28,22 +28,26 @@
 //! }
 //! ```
 
-pub mod api;
+// pub mod api; (Removed)
 pub mod client;
 pub mod error;
 pub mod generated;
-pub mod http;
+// pub mod http; (Removed)
 pub mod models;
 pub mod retry;
+pub mod time;
 pub mod websocket;
 
 // Re-exports for convenience
-pub use client::KaleidoClient;
+pub use client::{KaleidoClient, MarketClient, NodeClient};
 pub use error::{KaleidoError, Result};
 pub use models::*;
 
-// Export API modules for bindings
-pub use api::{LspApi, MarketApi, NodeApi, OrdersApi, SwapsApi};
+// Export configuration (defined below in this file)
+// pub use KaleidoConfig; // This is defined in this file, so it's already public
+
+// Export API modules for bindings (Removed)
+// pub use api::{LspApi, MarketApi, NodeApi, OrdersApi, SwapsApi};
 
 // Export WebSocket types
 pub use websocket::{ConnectionState, WebSocketClient, WebSocketConfig, WsEvent, WsMessage};

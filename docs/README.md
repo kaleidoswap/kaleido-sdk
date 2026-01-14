@@ -48,10 +48,10 @@ pip install -e .
 
 ```bash
 # Install via npm
-npm install @kaleidoswap/sdk
+npm install kaleidoswap-sdk
 
 # Install via yarn
-yarn add @kaleidoswap/sdk
+yarn add kaleidoswap-sdk
 
 # Or install from source
 git clone https://github.com/kaleidoswap/kaleido-sdk.git
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 ### TypeScript
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 async function main() {
     const client = new KaleidoClient({
@@ -233,7 +233,7 @@ client = KaleidoClient(
 #### TypeScript
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 const client = new KaleidoClient({
     baseUrl: 'https://api.kaleidoswap.com',
