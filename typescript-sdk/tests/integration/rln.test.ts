@@ -75,7 +75,7 @@ describeRln('RLN Client Integration', () => {
                 if (channels.length > 0) {
                     const channel = channels[0];
                     expect(channel).toHaveProperty('channel_id');
-                    expect(channel).toHaveProperty('counterparty');
+                    expect(channel).toHaveProperty('peer_pubkey');
                 }
             } catch (e: unknown) {
                 console.warn('Skipping listChannels test - node unavailable:', e);
@@ -98,7 +98,7 @@ describeRln('RLN Client Integration', () => {
         it('should open a channel', async () => {
             try {
                 const request = {
-                    peer_pubkey: '02...', // Test peer pubkey
+                    peer_pubkey_and_opt_addr: '02...@127.0.0.1:9735', // Correct parameter name
                     capacity_sat: 100000,
                     push_msat: 0,
                     asset_amount: undefined,
@@ -108,7 +108,7 @@ describeRln('RLN Client Integration', () => {
                 const response = await client.rln.openChannel(request);
 
                 expect(response).toBeDefined();
-                expect(response).toHaveProperty('channel_id');
+                expect(response).toHaveProperty('temporary_channel_id');
             } catch (e: unknown) {
                 console.warn('Skipping openChannel test - requires test setup:', e);
             }
@@ -283,7 +283,7 @@ describeRln('RLN Client Integration', () => {
     describe('Lightning Operations', () => {
         it('should create lightning invoice without parameters', async () => {
             try {
-                const invoice = await client.rln.createLNInvoice({ amnt_msat: 10000 });
+                const invoice = await client.rln.createLNInvoice({ amnt_msat: 10000, expiry_sec: 3600 });
 
                 expect(invoice).toBeDefined();
                 expect(invoice).toHaveProperty('invoice');
