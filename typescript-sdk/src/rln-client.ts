@@ -38,6 +38,7 @@ import type {
     IssueAssetUDAResponse,
     SendAssetRequest,
     SendAssetResponse,
+    ListTransfersRequest,
     ListTransfersResponse,
     RefreshTransfersRequest,
     FailTransfersRequest,
@@ -263,8 +264,8 @@ export class RlnClient {
         return data!;
     }
 
-    async listTransfers(): Promise<ListTransfersResponse> {
-        const { data, error } = await this.http.node.POST('/listtransfers', { body: {} });
+    async listTransfers(body: ListTransfersRequest): Promise<ListTransfersResponse> {
+        const { data, error } = await this.http.node.POST('/listtransfers', { body });
         checkError({ error });
         return data!;
     }
