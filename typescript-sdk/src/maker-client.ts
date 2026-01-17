@@ -165,12 +165,29 @@ export class MakerClient {
     ): Promise<Array<{ from_layer: string; to_layer: string }>> {
         const pairsResponse = await this.listPairs();
 
-        // Find matching pair (case-insensitive)
-        const pair = pairsResponse.pairs.find(
+        // Find matching pair (case-insensitive) - try direct match first
+        let pair = pairsResponse.pairs.find(
             (p) =>
                 p.base.ticker.toUpperCase() === fromTicker.toUpperCase() &&
                 p.quote.ticker.toUpperCase() === toTicker.toUpperCase(),
         );
+
+        // If not found, try inverse pair
+        if (!pair) {
+            const inversePair = pairsResponse.pairs.find(
+                (p) =>
+                    p.base.ticker.toUpperCase() === toTicker.toUpperCase() &&
+                    p.quote.ticker.toUpperCase() === fromTicker.toUpperCase(),
+            );
+
+            // If inverse pair found, swap the layers in the routes
+            if (inversePair && inversePair.routes) {
+                return inversePair.routes.map((route) => ({
+                    from_layer: route.to_layer,
+                    to_layer: route.from_layer,
+                }));
+            }
+        }
 
         if (!pair || !pair.routes) {
             return [];

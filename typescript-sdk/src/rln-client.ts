@@ -186,13 +186,17 @@ export class RlnClient {
     }
 
     async listTransactions(): Promise<ListTransactionsResponse> {
-        const { data, error } = await this.http.node.POST('/listtransactions', { body: {} });
+        const { data, error } = await this.http.node.POST('/listtransactions', {
+            body: { skip_sync: false },
+        });
         checkError({ error });
         return data!;
     }
 
     async listUnspents(): Promise<ListUnspentsResponse> {
-        const { data, error } = await this.http.node.POST('/listunspents', { body: {} });
+        const { data, error } = await this.http.node.POST('/listunspents', {
+            body: { skip_sync: false },
+        });
         checkError({ error });
         return data!;
     }
