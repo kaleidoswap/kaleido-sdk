@@ -18,6 +18,7 @@ import type {
     AddressResponse,
     BtcBalanceResponse,
     SendBtcRequest,
+    ListTransactionsRequest,
     ListTransactionsResponse,
     ListUnspentsResponse,
     CreateUtxosRequest,
@@ -185,9 +186,9 @@ export class RlnClient {
         checkError({ error });
     }
 
-    async listTransactions(): Promise<ListTransactionsResponse> {
+    async listTransactions(request?: ListTransactionsRequest): Promise<ListTransactionsResponse> {
         const { data, error } = await this.http.node.POST('/listtransactions', {
-            body: { skip_sync: false },
+            body: { skip_sync: false, ...request },
         });
         checkError({ error });
         return data!;
