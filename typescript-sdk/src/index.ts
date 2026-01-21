@@ -32,6 +32,8 @@ export {
     toDisplayAmount,
     PrecisionHandler,
     createPrecisionHandler,
+    AssetPairMapper,
+    createAssetPairMapper,
 } from './utils/index.js';
 
 // WebSocket client and types

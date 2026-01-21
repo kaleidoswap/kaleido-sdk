@@ -13,3 +13,9 @@ export {
     type ValidationResult,
     type OrderSizeLimits,
 } from './precision.js';
+
+export {
+    AssetPairMapper,
+    createAssetPairMapper,
+    type MappedAsset as AssetPairMappedAsset,
+} from './asset-pair-mapper.js';
