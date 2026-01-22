@@ -28,7 +28,7 @@ class TestErrorClasses:
         assert isinstance(error, Exception)
         assert isinstance(error, KaleidoError)
         assert error.code == "TEST_ERROR"
-        assert error.message == "Test message"
+        assert str(error) == "Test message"
         assert str(error) == "Test message"
 
     def test_api_error_extends_kaleido_error(self) -> None:
@@ -126,7 +126,7 @@ class TestHttpErrorMapping:
         """400 status should map to ValidationError."""
         error = map_http_error(400, "Bad Request", {"message": "Invalid parameters"})
         assert isinstance(error, ValidationError)
-        assert error.message == "Invalid parameters"
+        assert str(error) == "Invalid parameters"
 
     def test_map_404_to_not_found_error(self) -> None:
         """404 status should map to NotFoundError."""
@@ -168,17 +168,17 @@ class TestHttpErrorMapping:
         error = map_http_error(
             400, "Bad Request", {"message": "Custom error message"}
         )
-        assert error.message == "Custom error message"
+        assert str(error) == "Custom error message"
 
     def test_extract_detail_field_from_data(self) -> None:
         """Should extract detail field from response data."""
         error = map_http_error(400, "Bad Request", {"detail": "Detailed error"})
-        assert error.message == "Detailed error"
+        assert str(error) == "Detailed error"
 
     def test_fallback_to_status_text(self) -> None:
         """Should fallback to statusText when no data."""
         error = map_http_error(503, "Service Unavailable", {})
-        assert "Service Unavailable" in error.message
+        assert "Service Unavailable" in str(error)
 
     def test_handle_fastapi_validation_array(self) -> None:
         """Should handle FastAPI validation error format."""
@@ -201,7 +201,7 @@ class TestHttpErrorMapping:
             },
         )
         assert isinstance(error, ValidationError)
-        assert "from_asset.amount" in error.message
-        assert "value must be positive" in error.message
-        assert "to_asset.layer" in error.message
-        assert "invalid layer value" in error.message
+        assert "from_asset.amount" in str(error)
+        assert "value must be positive" in str(error)
+        assert "to_asset.layer" in str(error)
+        assert "invalid layer value" in str(error)
