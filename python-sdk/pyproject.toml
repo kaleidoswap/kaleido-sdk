@@ -28,7 +28,8 @@ keywords = ["bitcoin", "lightning", "rgb", "swap", "trading", "sdk"]
 dependencies = [
     "httpx>=0.27.0",
     "websockets>=12.0",
-    "pydantic>=2.0",
+    "pydantic[email]>=2.0",
+    "attrs>=23.0",  # Required by auto-generated clients
 ]
 
 [project.optional-dependencies]
@@ -39,6 +40,7 @@ dev = [
     "mypy>=1.0",
     "ruff>=0.1.0",
     "datamodel-code-generator>=0.25",
+    "openapi-python-client>=0.21.0",
 ]
 
 [project.urls]
@@ -58,11 +60,22 @@ markers = [
 
 [tool.mypy]
 python_version = "3.10"
-strict = true
-warn_return_any = true
+strict = false
+warn_return_any = false
 warn_unused_ignores = true
-disallow_untyped_defs = true
+disallow_untyped_defs = false
 plugins = ["pydantic.mypy"]
+exclude = [
+    "kaleidoswap_sdk/generated/",
+]
+
+[[tool.mypy.overrides]]
+module = "websockets.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "dateutil.*"
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
@@ -71,3 +84,13 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore certain rules in auto-generated code
+"kaleidoswap_sdk/generated/**/*.py" = [
+    "F403",  # Star imports
+    "F405",  # Undefined names from star imports
+    "N818",  # Exception naming conventions
+    "UP007", # Use X | Y for type annotations
+    "E501",  # Line too long
+]

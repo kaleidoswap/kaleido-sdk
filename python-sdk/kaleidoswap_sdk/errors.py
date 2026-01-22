@@ -182,12 +182,7 @@ def map_http_error(
             message = data
         elif isinstance(data, dict):
             # Check formatted error fields in order of preference
-            message = (
-                data.get("detail")
-                or data.get("message")
-                or data.get("error")
-                or status_text
-            )
+            message = data.get("detail") or data.get("message") or data.get("error") or status_text
 
             # Handle FastAPI validation errors which return detail as array
             detail = data.get("detail")
@@ -197,7 +192,7 @@ def map_http_error(
                     if isinstance(err, dict):
                         loc = err.get("loc", [])
                         msg = err.get("msg", "")
-                        loc_str = ".".join(str(l) for l in loc)
+                        loc_str = ".".join(str(item) for item in loc)
                         error_parts.append(f"{loc_str}: {msg}")
                 if error_parts:
                     message = "; ".join(error_parts)

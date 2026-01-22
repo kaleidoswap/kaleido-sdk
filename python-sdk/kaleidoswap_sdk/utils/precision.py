@@ -87,7 +87,7 @@ class PrecisionHandler:
         if precision is None:
             raise KeyError(f"Asset {asset_id} not found in precision handler")
 
-        return math.floor(display_amount * (10 ** precision))
+        return math.floor(display_amount * (10**precision))
 
     def to_display_amount(self, raw_amount: int, asset_id: str) -> float:
         """
@@ -107,7 +107,7 @@ class PrecisionHandler:
         if precision is None:
             raise KeyError(f"Asset {asset_id} not found in precision handler")
 
-        return raw_amount / (10 ** precision)
+        return raw_amount / (10**precision)
 
     def get_asset_precision(self, asset_id: str) -> int:
         """
@@ -141,9 +141,7 @@ class PrecisionHandler:
         precision = self.get_asset_precision(asset_id)
         return f"{display_amount:.{precision}f}"
 
-    def validate_order_size(
-        self, display_amount: float, asset: MappedAsset
-    ) -> ValidationResult:
+    def validate_order_size(self, display_amount: float, asset: MappedAsset) -> ValidationResult:
         """
         Validate that an order size is within the asset's limits.
 
@@ -194,12 +192,8 @@ class PrecisionHandler:
             Limits in both display and raw formats
         """
         return OrderSizeLimits(
-            min_display_amount=self.to_display_amount(
-                asset["min_order_size"], asset["asset_id"]
-            ),
-            max_display_amount=self.to_display_amount(
-                asset["max_order_size"], asset["asset_id"]
-            ),
+            min_display_amount=self.to_display_amount(asset["min_order_size"], asset["asset_id"]),
+            max_display_amount=self.to_display_amount(asset["max_order_size"], asset["asset_id"]),
             min_raw_amount=asset["min_order_size"],
             max_raw_amount=asset["max_order_size"],
             precision=asset["precision"],
@@ -230,7 +224,7 @@ def to_raw_amount(display_amount: float, precision: int) -> int:
     Returns:
         Raw amount in atomic units
     """
-    return math.floor(display_amount * (10 ** precision))
+    return math.floor(display_amount * (10**precision))
 
 
 def to_display_amount(raw_amount: int, precision: int) -> float:
@@ -244,4 +238,4 @@ def to_display_amount(raw_amount: int, precision: int) -> float:
     Returns:
         Human-readable amount
     """
-    return raw_amount / (10 ** precision)
+    return raw_amount / (10**precision)

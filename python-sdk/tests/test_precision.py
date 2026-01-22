@@ -3,12 +3,13 @@ Tests for precision utilities.
 """
 
 import pytest
+
 from kaleidoswap_sdk import (
+    MappedAsset,
     PrecisionHandler,
     create_precision_handler,
-    to_raw_amount,
     to_display_amount,
-    MappedAsset,
+    to_raw_amount,
 )
 
 
@@ -64,9 +65,7 @@ class TestPrecisionHandler:
         }
 
     @pytest.fixture
-    def handler(
-        self, btc_asset: MappedAsset, usdt_asset: MappedAsset
-    ) -> PrecisionHandler:
+    def handler(self, btc_asset: MappedAsset, usdt_asset: MappedAsset) -> PrecisionHandler:
         """PrecisionHandler fixture with BTC and USDT."""
         return PrecisionHandler([btc_asset, usdt_asset])
 
@@ -85,16 +84,12 @@ class TestPrecisionHandler:
         handler = create_precision_handler([btc_asset])
         assert handler is not None
 
-    def test_to_raw_amount(
-        self, handler: PrecisionHandler, btc_asset: MappedAsset
-    ) -> None:
+    def test_to_raw_amount(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test handler to_raw_amount method."""
         raw = handler.to_raw_amount(1.5, btc_asset["asset_id"])
         assert raw == 150_000_000
 
-    def test_to_display_amount(
-        self, handler: PrecisionHandler, btc_asset: MappedAsset
-    ) -> None:
+    def test_to_display_amount(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test handler to_display_amount method."""
         display = handler.to_display_amount(150_000_000, btc_asset["asset_id"])
         assert display == 1.5
@@ -107,16 +102,12 @@ class TestPrecisionHandler:
         with pytest.raises(KeyError):
             handler.to_display_amount(1, "unknown-asset")
 
-    def test_get_asset_precision(
-        self, handler: PrecisionHandler, btc_asset: MappedAsset
-    ) -> None:
+    def test_get_asset_precision(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test getting asset precision."""
         precision = handler.get_asset_precision(btc_asset["asset_id"])
         assert precision == 8
 
-    def test_format_display_amount(
-        self, handler: PrecisionHandler, btc_asset: MappedAsset
-    ) -> None:
+    def test_format_display_amount(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test formatting display amount."""
         formatted = handler.format_display_amount(1.5, btc_asset["asset_id"])
         assert formatted == "1.50000000"
@@ -147,9 +138,7 @@ class TestPrecisionHandler:
         assert result.error is not None
         assert "above maximum" in result.error
 
-    def test_get_order_size_limits(
-        self, handler: PrecisionHandler, btc_asset: MappedAsset
-    ) -> None:
+    def test_get_order_size_limits(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test getting order size limits."""
         limits = handler.get_order_size_limits(btc_asset)
         assert limits.min_raw_amount == 10000

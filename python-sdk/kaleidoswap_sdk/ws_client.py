@@ -12,15 +12,15 @@ from __future__ import annotations
 import asyncio
 import json
 import time
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, TypedDict
+from typing import Any, TypedDict
 
 import websockets
-from websockets.client import WebSocketClientProtocol
+from websockets.asyncio.client import ClientConnection
 
 from .errors import WebSocketError
-
 
 # =============================================================================
 # WebSocket Types
@@ -156,7 +156,7 @@ class WSClient:
         self._reconnect_delay = reconnect_delay
         self._ping_interval = ping_interval
 
-        self._ws: WebSocketClientProtocol | None = None
+        self._ws: ClientConnection | None = None
         self._reconnect_attempts = 0
         self._is_connecting = False
         self._is_closed = False
@@ -300,10 +300,12 @@ class WSClient:
 
     def ping(self) -> None:
         """Send ping to keep connection alive."""
-        self._send({
-            "action": "ping",
-            "timestamp": int(time.time() * 1000),
-        })
+        self._send(
+            {
+                "action": "ping",
+                "timestamp": int(time.time() * 1000),
+            }
+        )
 
     # =========================================================================
     # Quote Requests
@@ -316,11 +318,13 @@ class WSClient:
         Args:
             request: Quote request with from_asset, to_asset, amounts, layers
         """
-        self._send({
-            "action": "quote_request",
-            **request,
-            "timestamp": int(time.time() * 1000),
-        })
+        self._send(
+            {
+                "action": "quote_request",
+                **request,
+                "timestamp": int(time.time() * 1000),
+            }
+        )
 
     # =========================================================================
     # Message Sending
@@ -340,7 +344,7 @@ class WSClient:
     def _attempt_reconnect(self) -> None:
         """Attempt to reconnect after disconnect."""
         if self._reconnect_attempts < self._max_reconnect_attempts:
-            delay = self._reconnect_delay * (2 ** self._reconnect_attempts)
+            delay = self._reconnect_delay * (2**self._reconnect_attempts)
             self._reconnect_attempts += 1
 
             self._emit("reconnecting", self._reconnect_attempts)

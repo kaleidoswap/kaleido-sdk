@@ -3,6 +3,7 @@ Tests for MakerClient.
 """
 
 import pytest
+
 from kaleidoswap_sdk import (
     KaleidoClient,
     MakerClient,

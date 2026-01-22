@@ -3,6 +3,7 @@ Test fixtures and configuration for Kaleidoswap SDK tests.
 """
 
 import pytest
+
 from kaleidoswap_sdk import KaleidoClient, KaleidoConfig
 
 

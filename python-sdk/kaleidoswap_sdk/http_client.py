@@ -7,8 +7,7 @@ Async HTTP wrapper using httpx for API communication.
 from __future__ import annotations
 
 import asyncio
-from typing import Any, TypeVar, Generic
-from urllib.parse import urljoin
+from typing import Any, TypeVar
 
 import httpx
 from pydantic import BaseModel
@@ -160,16 +159,16 @@ class HttpClient:
             except httpx.TimeoutException as e:
                 last_error = TimeoutError(f"Request timed out: {e}")
                 if attempt < retries:
-                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                    await asyncio.sleep(2**attempt)  # Exponential backoff
             except httpx.RequestError as e:
                 last_error = NetworkError(f"Network error: {e}")
                 if attempt < retries:
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
             except KaleidoError as e:
                 # Only retry on retryable errors
                 if e.is_retryable() and attempt < retries:
                     last_error = e
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
                 else:
                     raise
 
@@ -223,9 +222,7 @@ class HttpClient:
                 json_data = data.model_dump(exclude_none=True)
             else:
                 json_data = data
-        return await self._request_with_retry(
-            client, "POST", path, json=json_data, params=params
-        )
+        return await self._request_with_retry(client, "POST", path, json=json_data, params=params)
 
     # =========================================================================
     # Node API Methods
@@ -273,9 +270,7 @@ class HttpClient:
                 json_data = data.model_dump(exclude_none=True)
             else:
                 json_data = data
-        return await self._request_with_retry(
-            client, "POST", path, json=json_data, params=params
-        )
+        return await self._request_with_retry(client, "POST", path, json=json_data, params=params)
 
     # =========================================================================
     # Lifecycle Methods
@@ -290,7 +285,7 @@ class HttpClient:
             await self._node_client.aclose()
             self._node_client = None
 
-    async def __aenter__(self) -> "HttpClient":
+    async def __aenter__(self) -> HttpClient:
         """Async context manager entry."""
         return self
 

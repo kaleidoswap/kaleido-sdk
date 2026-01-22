@@ -3,14 +3,15 @@ Tests for KaleidoClient.
 """
 
 import pytest
+
 from kaleidoswap_sdk import (
     KaleidoClient,
     KaleidoConfig,
     NodeNotConfiguredError,
-    to_smallest_units,
-    to_display_units,
-    get_version,
     get_sdk_name,
+    get_version,
+    to_display_units,
+    to_smallest_units,
 )
 
 

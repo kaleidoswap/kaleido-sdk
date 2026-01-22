@@ -1,0 +1,19 @@
+# Configuration for openapi-python-client
+# https://github.com/openapi-generators/openapi-python-client
+
+class_overrides: {}
+project_name_override: ""
+package_name_override: ""
+
+# Field customization
+field_customization:
+  use_pydantic_v2: true
+  
+# Python version
+python_version: "3.10"
+
+# HTTP library to use (httpx recommended)
+http_client: httpx
+
+# Additional options
+use_path_prefixes_for_title_model_names: false

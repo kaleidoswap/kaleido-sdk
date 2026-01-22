@@ -3,10 +3,11 @@ Tests for RlnClient.
 """
 
 import pytest
+
 from kaleidoswap_sdk import (
     KaleidoClient,
-    RlnClient,
     NodeNotConfiguredError,
+    RlnClient,
 )
 
 

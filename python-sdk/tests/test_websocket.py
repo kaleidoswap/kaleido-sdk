@@ -3,10 +3,10 @@ Tests for WebSocket client.
 """
 
 import pytest
+
 from kaleidoswap_sdk import (
-    WSClient,
-    WSClientConfig,
     WSAction,
+    WSClient,
 )
 
 

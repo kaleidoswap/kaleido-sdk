@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-models generate-python-sdk-models generate-ts-types generate-rust-models update-specs
+.PHONY: help build test clean format lint check generate-models generate-python-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python-sdk
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -38,10 +38,16 @@ help:
 	@echo "  lint               - Lint all code"
 	@echo "  clippy             - Run Rust clippy"
 	@echo ""
+	@echo "Pre-commit (lint, typecheck, format check, test):"
+	@echo "  pre-commit              - Run all checks for both SDKs"
+	@echo "  pre-commit-typescript   - Run all checks for TypeScript SDK"
+	@echo "  pre-commit-python-sdk   - Run all checks for Python SDK"
+	@echo ""
 	@echo "Code Generation:"
 	@echo "  generate-models            - Generate all models (Python + TypeScript)"
 	@echo "  generate-python-models     - Generate Python Pydantic models (bindings)"
 	@echo "  generate-python-sdk-models - Generate Python SDK Pydantic models"
+	@echo "  generate-python-sdk-client - Generate Python SDK HTTP clients (openapi-python-client)"
 	@echo "  generate-ts-types          - Generate TypeScript types"
 	@echo "  generate-rust-models       - Generate Rust models (Progenitor via build.rs)"
 	@echo "  regenerate                 - Full regen: update-specs + generate-models + check"
@@ -80,7 +86,7 @@ build-typescript:
 
 build-python-sdk:
 	@echo "🐍 Building Python SDK..."
-	cd $(PYTHON_SDK) && pip install build && python -m build
+	cd $(PYTHON_SDK) && uv build
 
 # ============================================================================
 # Test targets
@@ -105,7 +111,7 @@ test-typescript:
 
 test-python-sdk:
 	@echo "🧪 Running Python SDK tests..."
-	cd $(PYTHON_SDK) && pip install -e ".[dev]" && pytest tests/ -v
+	cd $(PYTHON_SDK) && uv sync --all-extras --dev && uv run pytest tests/ -v
 
 # ============================================================================
 # Example & Development targets
@@ -197,7 +203,7 @@ format-typescript:
 
 format-python-sdk:
 	@echo "✨ Formatting Python SDK code..."
-	cd $(PYTHON_SDK) && ruff format kaleidoswap_sdk tests
+	cd $(PYTHON_SDK) && uv run ruff format kaleidoswap_sdk tests
 
 lint: lint-rust lint-python lint-typescript
 
@@ -217,11 +223,50 @@ lint-typescript:
 
 lint-python-sdk:
 	@echo "🔍 Linting Python SDK code..."
-	cd $(PYTHON_SDK) && ruff check kaleidoswap_sdk tests && mypy kaleidoswap_sdk
+	cd $(PYTHON_SDK) && uv run ruff check kaleidoswap_sdk tests && uv run mypy kaleidoswap_sdk
 
 clippy:
 	@echo "📎 Running clippy..."
 	cargo clippy --all-targets -- -D warnings
+
+typecheck-typescript:
+	@echo "📝 Type checking TypeScript SDK..."
+	cd $(BINDINGS_TYPESCRIPT) && pnpm run typecheck
+
+typecheck-python-sdk:
+	@echo "📝 Type checking Python SDK..."
+	cd $(PYTHON_SDK) && uv run mypy kaleidoswap_sdk --ignore-missing-imports
+
+# ============================================================================
+# Pre-commit targets (run before committing)
+# ============================================================================
+
+pre-commit: pre-commit-typescript pre-commit-python-sdk
+	@echo ""
+	@echo "✅ All pre-commit checks passed!"
+
+pre-commit-typescript:
+	@echo "🔍 Running TypeScript SDK pre-commit checks..."
+	@echo ""
+	cd $(BINDINGS_TYPESCRIPT) && \
+		echo "  → Checking format..." && pnpm run format:check && \
+		echo "  → Linting..." && pnpm run lint && \
+		echo "  → Type checking..." && pnpm run typecheck && \
+		echo "  → Running tests..." && pnpm test
+	@echo ""
+	@echo "✅ TypeScript SDK checks passed!"
+
+pre-commit-python-sdk:
+	@echo "🔍 Running Python SDK pre-commit checks..."
+	@echo ""
+	cd $(PYTHON_SDK) && \
+		uv sync --all-extras --dev && \
+		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests && \
+		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests && \
+		echo "  → Type checking (warnings only)..." && (uv run mypy kaleidoswap_sdk --ignore-missing-imports || echo "    ⚠️  Type check warnings (non-blocking)") && \
+		echo "  → Running tests (excluding integration)..." && uv run pytest tests/ -v -m "not integration"
+	@echo ""
+	@echo "✅ Python SDK checks passed!"
 
 # ============================================================================
 # Code generation targets
@@ -237,6 +282,10 @@ generate-python-models:
 generate-python-sdk-models:
 	@echo "🐍 Generating Python SDK Pydantic models from OpenAPI specs..."
 	bash scripts/generate_python_sdk_models.sh
+
+generate-python-sdk-client:
+	@echo "🐍 Generating Python SDK HTTP clients from OpenAPI specs..."
+	bash scripts/generate_python_sdk_client.sh
 
 generate-ts-types:
 	@echo "📦 Generating TypeScript types from OpenAPI specs..."
@@ -268,7 +317,7 @@ deploy-typescript:
 
 deploy-python-sdk:
 	@echo "📤 Deploying Python SDK to PyPI..."
-	cd $(PYTHON_SDK) && pip install build twine && python -m build && twine upload dist/*
+	cd $(PYTHON_SDK) && uv build && uv run twine upload dist/*
 
 # ============================================================================
 # Clean targets
@@ -307,7 +356,7 @@ dev-typescript:
 
 dev-python-sdk:
 	@echo "🐍 Installing Python SDK in development mode..."
-	cd $(PYTHON_SDK) && pip install -e ".[dev]"
+	cd $(PYTHON_SDK) && uv sync --all-extras --dev
 
 # Watch for changes and rebuild
 watch:

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+# Import NetworkInfoResponse from generated types
+from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
 from .types import (
     AddressResponse,
     AssetBalanceRequest,
@@ -24,13 +26,12 @@ from .types import (
     CheckProxyEndpointRequest,
     CloseChannelRequest,
     ConnectPeerRequest,
-    ConnectPeerResponse,
     CreateUtxosRequest,
     DecodeLNInvoiceRequest,
     DecodeLNInvoiceResponse,
-    DecodeRgbInvoiceRequest,
-    DecodeRgbInvoiceResponse,
+    DecodeRGBInvoiceRequest,
     DisconnectPeerRequest,
+    EmptyResponse,
     EstimateFeeRequest,
     EstimateFeeResponse,
     FailTransfersRequest,
@@ -43,8 +44,8 @@ from .types import (
     GetPaymentResponse,
     GetSwapRequest,
     GetSwapResponse,
-    InitWalletRequest,
-    InitWalletResponse,
+    InitRequest,
+    InitResponse,
     InvoiceStatusRequest,
     InvoiceStatusResponse,
     IssueAssetCFARequest,
@@ -70,14 +71,12 @@ from .types import (
     LNInvoiceRequest,
     LNInvoiceResponse,
     MakerExecuteRequest,
-    MakerExecuteResponse,
     MakerInitRequest,
     MakerInitResponse,
-    NetworkInfoResponse,
     NodeInfoResponse,
     OpenChannelRequest,
     OpenChannelResponse,
-    RefreshTransfersRequest,
+    RefreshRequest,
     RestoreRequest,
     RevokeTokenRequest,
     RgbInvoiceRequest,
@@ -91,8 +90,7 @@ from .types import (
     SendPaymentResponse,
     SignMessageRequest,
     SignMessageResponse,
-    UnlockWalletRequest,
-    WhitelistTradeRequest,
+    UnlockRequest,
 )
 
 if TYPE_CHECKING:
@@ -114,7 +112,7 @@ class RlnClient:
     - Utility methods (sign message, check URLs, etc.)
     """
 
-    def __init__(self, http: "HttpClient") -> None:
+    def __init__(self, http: HttpClient) -> None:
         """
         Initialize RlnClient.
 
@@ -132,12 +130,12 @@ class RlnClient:
         data = await self._http.node_get("/nodeinfo")
         return NodeInfoResponse.model_validate(data)
 
-    async def get_network_info(self) -> NetworkInfoResponse:
+    async def get_network_info(self) -> NodeNetworkInfoResponse:
         """Get network information."""
         data = await self._http.node_get("/networkinfo")
-        return NetworkInfoResponse.model_validate(data)
+        return NodeNetworkInfoResponse.model_validate(data)
 
-    async def init_wallet(self, body: InitWalletRequest) -> InitWalletResponse:
+    async def init_wallet(self, body: InitRequest) -> InitResponse:
         """
         Initialize a new wallet.
 
@@ -145,9 +143,9 @@ class RlnClient:
             body: Wallet initialization request with password
         """
         data = await self._http.node_post("/init", body)
-        return InitWalletResponse.model_validate(data)
+        return InitResponse.model_validate(data)
 
-    async def unlock_wallet(self, body: UnlockWalletRequest) -> None:
+    async def unlock_wallet(self, body: UnlockRequest) -> None:
         """
         Unlock the wallet.
 
@@ -207,9 +205,7 @@ class RlnClient:
         Args:
             skip_sync: Skip blockchain sync before getting balance
         """
-        data = await self._http.node_post(
-            "/btcbalance", BtcBalanceRequest(skip_sync=skip_sync)
-        )
+        data = await self._http.node_post("/btcbalance", BtcBalanceRequest(skip_sync=skip_sync))
         return BtcBalanceResponse.model_validate(data)
 
     async def send_btc(self, body: SendBtcRequest) -> SendBtcResponse:
@@ -284,9 +280,7 @@ class RlnClient:
         data = await self._http.node_post("/listassets", body)
         return ListAssetsResponse.model_validate(data)
 
-    async def get_asset_balance(
-        self, body: AssetBalanceRequest
-    ) -> AssetBalanceResponse:
+    async def get_asset_balance(self, body: AssetBalanceRequest) -> AssetBalanceResponse:
         """
         Get balance for an RGB asset.
 
@@ -296,9 +290,7 @@ class RlnClient:
         data = await self._http.node_post("/assetbalance", body)
         return AssetBalanceResponse.model_validate(data)
 
-    async def get_asset_metadata(
-        self, body: AssetMetadataRequest
-    ) -> AssetMetadataResponse:
+    async def get_asset_metadata(self, body: AssetMetadataRequest) -> AssetMetadataResponse:
         """
         Get metadata for an RGB asset.
 
@@ -318,9 +310,7 @@ class RlnClient:
         data = await self._http.node_post("/getassetmedia", body)
         return GetAssetMediaResponse.model_validate(data)
 
-    async def issue_asset_nia(
-        self, body: IssueAssetNIARequest
-    ) -> IssueAssetNIAResponse:
+    async def issue_asset_nia(self, body: IssueAssetNIARequest) -> IssueAssetNIAResponse:
         """
         Issue an RGB NIA (fungible) asset.
 
@@ -330,9 +320,7 @@ class RlnClient:
         data = await self._http.node_post("/issueassetnia", body)
         return IssueAssetNIAResponse.model_validate(data)
 
-    async def issue_asset_cfa(
-        self, body: IssueAssetCFARequest
-    ) -> IssueAssetCFAResponse:
+    async def issue_asset_cfa(self, body: IssueAssetCFARequest) -> IssueAssetCFAResponse:
         """
         Issue an RGB CFA (collectible) asset.
 
@@ -342,9 +330,7 @@ class RlnClient:
         data = await self._http.node_post("/issueassetcfa", body)
         return IssueAssetCFAResponse.model_validate(data)
 
-    async def issue_asset_uda(
-        self, body: IssueAssetUDARequest
-    ) -> IssueAssetUDAResponse:
+    async def issue_asset_uda(self, body: IssueAssetUDARequest) -> IssueAssetUDAResponse:
         """
         Issue an RGB UDA (unique digital) asset.
 
@@ -374,9 +360,7 @@ class RlnClient:
         data = await self._http.node_post("/listtransfers", body)
         return ListTransfersResponse.model_validate(data)
 
-    async def refresh_transfers(
-        self, body: RefreshTransfersRequest | None = None
-    ) -> None:
+    async def refresh_transfers(self, body: RefreshRequest | None = None) -> None:
         """
         Refresh pending RGB transfers.
 
@@ -442,7 +426,7 @@ class RlnClient:
         data = await self._http.node_get("/listpeers")
         return ListPeersResponse.model_validate(data)
 
-    async def connect_peer(self, body: ConnectPeerRequest) -> ConnectPeerResponse:
+    async def connect_peer(self, body: ConnectPeerRequest) -> EmptyResponse:
         """
         Connect to a Lightning peer.
 
@@ -450,7 +434,7 @@ class RlnClient:
             body: Request with peer_pubkey_and_addr
         """
         data = await self._http.node_post("/connectpeer", body)
-        return ConnectPeerResponse.model_validate(data)
+        return EmptyResponse.model_validate(data)
 
     async def disconnect_peer(self, body: DisconnectPeerRequest) -> None:
         """
@@ -499,9 +483,7 @@ class RlnClient:
         data = await self._http.node_post("/decodelninvoice", body)
         return DecodeLNInvoiceResponse.model_validate(data)
 
-    async def decode_rgb_invoice(
-        self, body: DecodeRgbInvoiceRequest
-    ) -> DecodeRgbInvoiceResponse:
+    async def decode_rgb_invoice(self, body: DecodeRGBInvoiceRequest) -> RgbInvoiceResponse:
         """
         Decode an RGB invoice.
 
@@ -509,11 +491,9 @@ class RlnClient:
             body: Request with invoice string
         """
         data = await self._http.node_post("/decodergbinvoice", body)
-        return DecodeRgbInvoiceResponse.model_validate(data)
+        return RgbInvoiceResponse.model_validate(data)
 
-    async def get_invoice_status(
-        self, body: InvoiceStatusRequest
-    ) -> InvoiceStatusResponse:
+    async def get_invoice_status(self, body: InvoiceStatusRequest) -> InvoiceStatusResponse:
         """
         Get invoice status.
 
@@ -567,7 +547,7 @@ class RlnClient:
         node_info = await self.get_node_info()
         return node_info.pubkey or ""
 
-    async def whitelist_trade(self, body: WhitelistTradeRequest | str) -> None:
+    async def whitelist_trade(self, body: MakerExecuteRequest | str) -> None:
         """
         Whitelist a trade (accept swap on taker side).
 
@@ -575,7 +555,7 @@ class RlnClient:
             body: Request with swapstring, or just the swapstring
         """
         if isinstance(body, str):
-            body = WhitelistTradeRequest(swapstring=body)
+            body = MakerExecuteRequest(swapstring=body)
         await self._http.node_post("/taker", body)
 
     async def maker_init(self, body: MakerInitRequest) -> MakerInitResponse:
@@ -588,7 +568,7 @@ class RlnClient:
         data = await self._http.node_post("/makerinit", body)
         return MakerInitResponse.model_validate(data)
 
-    async def maker_execute(self, body: MakerExecuteRequest) -> MakerExecuteResponse:
+    async def maker_execute(self, body: MakerExecuteRequest) -> EmptyResponse:
         """
         Execute a maker swap.
 
@@ -596,7 +576,7 @@ class RlnClient:
             body: Maker swap execution request
         """
         data = await self._http.node_post("/makerexecute", body)
-        return MakerExecuteResponse.model_validate(data)
+        return EmptyResponse.model_validate(data)
 
     async def list_swaps(self) -> ListSwapsResponse:
         """List all swaps (maker and taker)."""

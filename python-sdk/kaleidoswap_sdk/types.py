@@ -1,15 +1,16 @@
 """
 Kaleidoswap SDK Type Definitions
 
-This file provides SDK configuration and re-exports types from generated OpenAPI models.
+Re-exports types from auto-generated OpenAPI models.
+Run `make generate-python-sdk-models` to regenerate from OpenAPI specs.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-# Re-export all generated API types
+# Re-export all generated API types (from maker.json OpenAPI spec)
 from .generated.api_types import (
     Asset,
     AssetDeliveryStatus,
@@ -20,37 +21,15 @@ from .generated.api_types import (
     ChannelOrderResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
-    CreateLspOrderRequest,
-    CreateLspOrderResponse,
+    CreateOrderRequest,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
-    DiscoverRoutesRequest,
-    DiscoverRoutesResponse,
-    EstimateLspFeesRequest,
-    EstimateLspFeesResponse,
     Fee,
-    GetLspInfoResponse,
-    GetLspNetworkInfoResponse,
-    GetLspOrderRequest,
-    GetLspOrderResponse,
-    GetNodeInfoResponse,
-    GetOrderHistoryResponse,
-    GetOrderStatsResponse,
-    GetPairRoutesRequest,
-    GetPairRoutesResponse,
-    GetQuoteRequest,
-    GetQuoteResponse,
-    GetRouteMatrixResponse,
-    GetSwapStatusRequest,
-    GetSwapStatusResponse,
-    InitiateSwapRequest,
-    InitiateSwapResponse,
+    GetInfoResponseModel,
+    GetOrderRequest,
     Layer,
-    ListPairsResponse,
-    LspRateDecisionRequest,
-    LspRateDecisionResponse,
-    MarketListAssetsResponse,
     MultiHopRoute,
+    NetworkInfoResponse,
     OrderHistoryResponse,
     OrderHistorySummary,
     OrderState,
@@ -63,6 +42,8 @@ from .generated.api_types import (
     PaymentOnchain,
     PaymentState,
     PaymentStatus,
+    RateDecisionRequest,
+    RateDecisionResponse,
     ReachabilityCell,
     ReachabilityMatrixResponse,
     ReceiverAddress,
@@ -70,12 +51,13 @@ from .generated.api_types import (
     RetryDeliveryRequest,
     RetryDeliveryResponse,
     RetryDeliveryStatus,
-    RouteStep,
     RoutesRequest,
     RoutesResponse,
+    RouteStep,
     Swap,
     SwapLeg,
     SwapLegInput,
+    SwapNodeInfoResponse,
     SwapOrder,
     SwapOrderRateDecisionRequest,
     SwapOrderRateDecisionResponse,
@@ -94,7 +76,7 @@ from .generated.api_types import (
     TradingPairsResponse,
 )
 
-# Re-export node types
+# Re-export node types (from rln.yaml OpenAPI spec)
 from .generated.node_types import (
     AddressResponse,
     AssetBalanceRequest,
@@ -109,21 +91,20 @@ from .generated.node_types import (
     BtcBalance,
     BtcBalanceRequest,
     BtcBalanceResponse,
+    ChangePasswordRequest,
     Channel,
     ChannelStatus,
-    ChangePasswordRequest,
     CheckIndexerUrlRequest,
     CheckIndexerUrlResponse,
     CheckProxyEndpointRequest,
     CloseChannelRequest,
     ConnectPeerRequest,
-    ConnectPeerResponse,
     CreateUtxosRequest,
     DecodeLNInvoiceRequest,
     DecodeLNInvoiceResponse,
-    DecodeRgbInvoiceRequest,
-    DecodeRgbInvoiceResponse,
+    DecodeRGBInvoiceRequest,
     DisconnectPeerRequest,
+    EmptyResponse,
     EstimateFeeRequest,
     EstimateFeeResponse,
     FailTransfersRequest,
@@ -138,8 +119,8 @@ from .generated.node_types import (
     GetSwapResponse,
     HTLCStatus,
     IndexerProtocol,
-    InitWalletRequest,
-    InitWalletResponse,
+    InitRequest,
+    InitResponse,
     InvoiceStatus,
     InvoiceStatusRequest,
     InvoiceStatusResponse,
@@ -166,16 +147,14 @@ from .generated.node_types import (
     LNInvoiceRequest,
     LNInvoiceResponse,
     MakerExecuteRequest,
-    MakerExecuteResponse,
     MakerInitRequest,
     MakerInitResponse,
-    NetworkInfoResponse,
     NodeInfoResponse,
     OpenChannelRequest,
     OpenChannelResponse,
     Payment,
     Peer,
-    RefreshTransfersRequest,
+    RefreshRequest,
     RestoreRequest,
     RevokeTokenRequest,
     RgbInvoiceRequest,
@@ -193,13 +172,21 @@ from .generated.node_types import (
     Transfer,
     TransferKind,
     TransferStatus,
-    UnlockWalletRequest,
+    UnlockRequest,
     Unspent,
-    WhitelistTradeRequest,
+)
+
+# Note: node_types also has Swap and NetworkInfoResponse but with different schemas
+# Import them with prefix to avoid conflicts
+from .generated.node_types import (
+    NetworkInfoResponse as NodeNetworkInfoResponse,
+)
+from .generated.node_types import (
+    Swap as NodeSwap,
 )
 
 if TYPE_CHECKING:
-    from httpx import AsyncClient
+    pass
 
 
 # =============================================================================
@@ -229,82 +216,10 @@ class KaleidoConfig:
     cache_ttl: int = 60
 
 
-# =============================================================================
-# Layer Enum Constants (for runtime usage)
-# =============================================================================
-
-# Layer enum values for runtime usage
-LAYER_BTC_L1 = Layer.BTC_L1
-LAYER_BTC_LN = Layer.BTC_LN
-LAYER_BTC_SPARK = Layer.BTC_SPARK
-LAYER_BTC_ARKADE = Layer.BTC_ARKADE
-LAYER_BTC_LIQUID = Layer.BTC_LIQUID
-LAYER_BTC_CASHU = Layer.BTC_CASHU
-LAYER_RGB_L1 = Layer.RGB_L1
-LAYER_RGB_LN = Layer.RGB_LN
-LAYER_TAPASS_L1 = Layer.TAPASS_L1
-LAYER_TAPASS_LN = Layer.TAPASS_LN
-LAYER_LIQUID_LIQUID = Layer.LIQUID_LIQUID
-LAYER_ARKADE_ARKADE = Layer.ARKADE_ARKADE
-LAYER_SPARK_SPARK = Layer.SPARK_SPARK
-
-# ReceiverAddressFormat enum values for runtime usage
-FORMAT_BTC_ADDRESS = ReceiverAddressFormat.BTC_ADDRESS
-FORMAT_BOLT11 = ReceiverAddressFormat.BOLT11
-FORMAT_BOLT12 = ReceiverAddressFormat.BOLT12
-FORMAT_LN_ADDRESS = ReceiverAddressFormat.LN_ADDRESS
-FORMAT_RGB_INVOICE = ReceiverAddressFormat.RGB_INVOICE
-FORMAT_LIQUID_ADDRESS = ReceiverAddressFormat.LIQUID_ADDRESS
-FORMAT_LIQUID_INVOICE = ReceiverAddressFormat.LIQUID_INVOICE
-FORMAT_SPARK_ADDRESS = ReceiverAddressFormat.SPARK_ADDRESS
-FORMAT_SPARK_INVOICE = ReceiverAddressFormat.SPARK_INVOICE
-FORMAT_ARKADE_ADDRESS = ReceiverAddressFormat.ARKADE_ADDRESS
-FORMAT_ARKADE_INVOICE = ReceiverAddressFormat.ARKADE_INVOICE
-FORMAT_CASHU_TOKEN = ReceiverAddressFormat.CASHU_TOKEN
-
-
-# =============================================================================
-# Type Aliases
-# =============================================================================
-
-# Quote alias
-Quote = PairQuoteResponse
-
-# LSP aliases
-LspInfo = GetLspInfoResponse
-NetworkInfo = NetworkInfoResponse
-
 __all__ = [
     # Config
     "KaleidoConfig",
-    # Layer constants
-    "LAYER_BTC_L1",
-    "LAYER_BTC_LN",
-    "LAYER_BTC_SPARK",
-    "LAYER_BTC_ARKADE",
-    "LAYER_BTC_LIQUID",
-    "LAYER_BTC_CASHU",
-    "LAYER_RGB_L1",
-    "LAYER_RGB_LN",
-    "LAYER_TAPASS_L1",
-    "LAYER_TAPASS_LN",
-    "LAYER_LIQUID_LIQUID",
-    "LAYER_ARKADE_ARKADE",
-    "LAYER_SPARK_SPARK",
-    # Format constants
-    "FORMAT_BTC_ADDRESS",
-    "FORMAT_BOLT11",
-    "FORMAT_BOLT12",
-    "FORMAT_LN_ADDRESS",
-    "FORMAT_RGB_INVOICE",
-    "FORMAT_LIQUID_ADDRESS",
-    "FORMAT_LIQUID_INVOICE",
-    "FORMAT_SPARK_ADDRESS",
-    "FORMAT_SPARK_INVOICE",
-    "FORMAT_ARKADE_ADDRESS",
-    "FORMAT_ARKADE_INVOICE",
-    "FORMAT_CASHU_TOKEN",
-    # Enums
+    # Enums (API)
     "Layer",
     "ReceiverAddressFormat",
     "BitcoinNetwork",
@@ -314,6 +229,8 @@ __all__ = [
     "PaymentStatus",
     "AssetDeliveryStatus",
     "SwapStatus",
+    "RetryDeliveryStatus",
+    # Enums (Node)
     "AssetSchema",
     "ChannelStatus",
     "HTLCStatus",
@@ -321,178 +238,161 @@ __all__ = [
     "TransferStatus",
     "TransferKind",
     "IndexerProtocol",
-    # API Types
+    # API Types - Assets & Pairs
     "Asset",
     "AssetsResponse",
     "TradingPair",
     "TradingPairsResponse",
     "TradableAsset",
     "TradingLimits",
+    # API Types - Quotes & Routes
     "Fee",
-    "Quote",
     "SwapLeg",
     "SwapLegInput",
     "SwapRoute",
     "ReceiverAddress",
     "MultiHopRoute",
     "RouteStep",
-    # Request/Response types
     "PairQuoteRequest",
     "PairQuoteResponse",
-    "GetQuoteRequest",
-    "GetQuoteResponse",
     "RoutesRequest",
     "RoutesResponse",
-    "GetPairRoutesRequest",
-    "GetPairRoutesResponse",
-    "DiscoverRoutesRequest",
-    "DiscoverRoutesResponse",
+    "ReachabilityCell",
+    "ReachabilityMatrixResponse",
+    # API Types - Swap Orders
     "CreateSwapOrderRequest",
     "CreateSwapOrderResponse",
     "SwapOrder",
     "SwapOrderStatusRequest",
     "SwapOrderStatusResponse",
+    "SwapOrderRateDecisionRequest",
+    "SwapOrderRateDecisionResponse",
     "OrderHistoryResponse",
     "OrderHistorySummary",
     "OrderStatsResponse",
-    "GetOrderHistoryResponse",
-    "GetOrderStatsResponse",
     "PaginationMeta",
-    "SwapOrderRateDecisionRequest",
-    "SwapOrderRateDecisionResponse",
-    # Atomic swap types
+    # API Types - Atomic Swaps
     "SwapRequest",
     "SwapResponse",
     "ConfirmSwapRequest",
     "ConfirmSwapResponse",
     "SwapStatusRequest",
     "SwapStatusResponse",
-    "InitiateSwapRequest",
-    "InitiateSwapResponse",
-    "GetSwapStatusRequest",
-    "GetSwapStatusResponse",
     "Swap",
-    "GetNodeInfoResponse",
-    # LSP types
-    "LspInfo",
-    "NetworkInfo",
-    "GetLspInfoResponse",
-    "GetLspNetworkInfoResponse",
+    "SwapNodeInfoResponse",
+    # API Types - LSP
+    "GetInfoResponseModel",
+    "NetworkInfoResponse",
     "ChannelFees",
     "ChannelDetails",
     "PaymentDetails",
     "PaymentBolt11",
     "PaymentOnchain",
-    "CreateLspOrderRequest",
-    "CreateLspOrderResponse",
+    "CreateOrderRequest",
     "ChannelOrderResponse",
-    "GetLspOrderRequest",
-    "GetLspOrderResponse",
-    "EstimateLspFeesRequest",
-    "EstimateLspFeesResponse",
-    "LspRateDecisionRequest",
-    "LspRateDecisionResponse",
+    "GetOrderRequest",
+    "RateDecisionRequest",
+    "RateDecisionResponse",
     "RetryDeliveryRequest",
     "RetryDeliveryResponse",
-    "RetryDeliveryStatus",
-    # Route matrix
-    "ReachabilityCell",
-    "ReachabilityMatrixResponse",
-    "GetRouteMatrixResponse",
-    "MarketListAssetsResponse",
-    "ListPairsResponse",
-    # Node types
-    "AddressResponse",
-    "AssetBalanceRequest",
-    "AssetBalanceResponse",
-    "AssetCFA",
-    "AssetMetadataRequest",
-    "AssetMetadataResponse",
-    "AssetNIA",
-    "AssetUDA",
+    # Node Types - Wallet
+    "InitRequest",
+    "InitResponse",
+    "UnlockRequest",
     "BackupRequest",
+    "RestoreRequest",
+    "ChangePasswordRequest",
+    # Node Types - BTC
+    "AddressResponse",
     "BtcBalance",
     "BtcBalanceRequest",
     "BtcBalanceResponse",
-    "Channel",
-    "ChangePasswordRequest",
-    "CheckIndexerUrlRequest",
-    "CheckIndexerUrlResponse",
-    "CheckProxyEndpointRequest",
-    "CloseChannelRequest",
-    "ConnectPeerRequest",
-    "ConnectPeerResponse",
+    "SendBtcRequest",
+    "SendBtcResponse",
+    "ListTransactionsRequest",
+    "ListTransactionsResponse",
+    "Transaction",
+    "ListUnspentsRequest",
+    "ListUnspentsResponse",
+    "Unspent",
     "CreateUtxosRequest",
-    "DecodeLNInvoiceRequest",
-    "DecodeLNInvoiceResponse",
-    "DecodeRgbInvoiceRequest",
-    "DecodeRgbInvoiceResponse",
-    "DisconnectPeerRequest",
     "EstimateFeeRequest",
     "EstimateFeeResponse",
-    "FailTransfersRequest",
-    "FailTransfersResponse",
+    # Node Types - RGB Assets
+    "AssetCFA",
+    "AssetNIA",
+    "AssetUDA",
+    "AssetBalanceRequest",
+    "AssetBalanceResponse",
+    "AssetMetadataRequest",
+    "AssetMetadataResponse",
     "GetAssetMediaRequest",
     "GetAssetMediaResponse",
-    "GetChannelIdRequest",
-    "GetChannelIdResponse",
-    "GetPaymentRequest",
-    "GetPaymentResponse",
-    "GetSwapRequest",
-    "GetSwapResponse",
-    "InitWalletRequest",
-    "InitWalletResponse",
-    "InvoiceStatusRequest",
-    "InvoiceStatusResponse",
     "IssueAssetCFARequest",
     "IssueAssetCFAResponse",
     "IssueAssetNIARequest",
     "IssueAssetNIAResponse",
     "IssueAssetUDARequest",
     "IssueAssetUDAResponse",
-    "KeysendRequest",
-    "KeysendResponse",
     "ListAssetsRequest",
     "ListAssetsResponse",
-    "ListChannelsResponse",
-    "ListPaymentsResponse",
-    "ListPeersResponse",
-    "ListSwapsResponse",
-    "ListTransactionsRequest",
-    "ListTransactionsResponse",
-    "ListTransfersRequest",
-    "ListTransfersResponse",
-    "ListUnspentsRequest",
-    "ListUnspentsResponse",
-    "LNInvoiceRequest",
-    "LNInvoiceResponse",
-    "MakerExecuteRequest",
-    "MakerExecuteResponse",
-    "MakerInitRequest",
-    "MakerInitResponse",
-    "NetworkInfoResponse",
-    "NodeInfoResponse",
-    "OpenChannelRequest",
-    "OpenChannelResponse",
-    "Payment",
-    "Peer",
-    "RefreshTransfersRequest",
-    "RestoreRequest",
-    "RevokeTokenRequest",
-    "RgbInvoiceRequest",
-    "RgbInvoiceResponse",
     "SendAssetRequest",
     "SendAssetResponse",
-    "SendBtcRequest",
-    "SendBtcResponse",
-    "SendOnionMessageRequest",
+    "ListTransfersRequest",
+    "ListTransfersResponse",
+    "Transfer",
+    "RefreshRequest",
+    "FailTransfersRequest",
+    "FailTransfersResponse",
+    # Node Types - Channels
+    "Channel",
+    "ListChannelsResponse",
+    "OpenChannelRequest",
+    "OpenChannelResponse",
+    "CloseChannelRequest",
+    "GetChannelIdRequest",
+    "GetChannelIdResponse",
+    # Node Types - Peers
+    "Peer",
+    "ListPeersResponse",
+    "ConnectPeerRequest",
+    "DisconnectPeerRequest",
+    # Node Types - Invoices
+    "LNInvoiceRequest",
+    "LNInvoiceResponse",
+    "RgbInvoiceRequest",
+    "RgbInvoiceResponse",
+    "DecodeLNInvoiceRequest",
+    "DecodeLNInvoiceResponse",
+    "DecodeRGBInvoiceRequest",
+    "InvoiceStatusRequest",
+    "InvoiceStatusResponse",
+    # Node Types - Payments
+    "Payment",
+    "ListPaymentsResponse",
     "SendPaymentRequest",
     "SendPaymentResponse",
+    "KeysendRequest",
+    "KeysendResponse",
+    "GetPaymentRequest",
+    "GetPaymentResponse",
+    # Node Types - Swaps
+    "NodeSwap",
+    "ListSwapsResponse",
+    "GetSwapRequest",
+    "GetSwapResponse",
+    "MakerInitRequest",
+    "MakerInitResponse",
+    "MakerExecuteRequest",
+    # Node Types - Other
+    "NodeInfoResponse",
+    "NodeNetworkInfoResponse",
+    "EmptyResponse",
     "SignMessageRequest",
     "SignMessageResponse",
-    "Transaction",
-    "Transfer",
-    "UnlockWalletRequest",
-    "Unspent",
-    "WhitelistTradeRequest",
+    "SendOnionMessageRequest",
+    "CheckIndexerUrlRequest",
+    "CheckIndexerUrlResponse",
+    "CheckProxyEndpointRequest",
+    "RevokeTokenRequest",
 ]

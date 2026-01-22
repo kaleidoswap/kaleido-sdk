@@ -6,14 +6,11 @@ Main client class that coordinates Maker and RLN operations.
 
 from __future__ import annotations
 
-import math
-
 from .errors import NodeNotConfiguredError
 from .http_client import HttpClient
 from .maker_client import MakerClient
 from .rln_client import RlnClient
 from .types import KaleidoConfig
-
 
 __version__ = "0.4.0"
 __sdk_name__ = "kaleidoswap-sdk"
@@ -48,9 +45,15 @@ class KaleidoClient:
             config: Client configuration
         """
         self._config = config
-        self._http = HttpClient(config)
-        self._maker = MakerClient(self._http)
-        self._rln = RlnClient(self._http)
+        # Initialize clients with base URL and credentials
+        self._maker = MakerClient(
+            base_url=config.base_url,
+            api_key=config.api_key,
+            timeout=config.timeout,
+        )
+        # Note: RlnClient needs similar refactoring
+        self._http = HttpClient(config)  # Temporary, for RlnClient
+        self._rln = RlnClient(self._http)  # TODO: Refactor RlnClient
 
     @classmethod
     def create(
@@ -61,7 +64,7 @@ class KaleidoClient:
         timeout: float = 30.0,
         max_retries: int = 3,
         cache_ttl: int = 60,
-    ) -> "KaleidoClient":
+    ) -> KaleidoClient:
         """
         Create a new KaleidoClient instance.
 
@@ -101,7 +104,7 @@ class KaleidoClient:
         return cls(config)
 
     @classmethod
-    def from_config(cls, config: KaleidoConfig) -> "KaleidoClient":
+    def from_config(cls, config: KaleidoConfig) -> KaleidoClient:
         """
         Create a new KaleidoClient instance from a config object.
 
@@ -151,7 +154,7 @@ class KaleidoClient:
         """Close all HTTP connections."""
         await self._http.close()
 
-    async def __aenter__(self) -> "KaleidoClient":
+    async def __aenter__(self) -> KaleidoClient:
         """Async context manager entry."""
         return self
 
@@ -181,7 +184,7 @@ def to_smallest_units(amount: float, precision: int) -> int:
         sats = to_smallest_units(1.5, 8)  # 150000000
         ```
     """
-    return round(amount * (10 ** precision))
+    return round(amount * (10**precision))
 
 
 def to_display_units(amount: int, precision: int) -> float:
@@ -200,7 +203,7 @@ def to_display_units(amount: int, precision: int) -> float:
         btc = to_display_units(150000000, 8)  # 1.5
         ```
     """
-    return amount / (10 ** precision)
+    return amount / (10**precision)
 
 
 def get_version() -> str:
