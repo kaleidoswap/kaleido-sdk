@@ -5,9 +5,10 @@
  * For example: 1.5 BTC (display) <-> 150000000 satoshis (raw, precision=8)
  */
 
-import type { Asset } from '../types.js';
-
-export interface MappedAsset extends Asset {
+/**
+ * Asset with precision and order size info (compatible with AssetPairMapper.MappedAsset)
+ */
+export interface MappedAsset {
     asset_id: string;
     ticker: string;
     precision: number;
