@@ -12,13 +12,16 @@ from __future__ import annotations
 import asyncio
 import json
 import time
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, TypedDict
+from urllib.parse import urlparse, urlunparse
 
 import websockets
 from websockets.asyncio.client import ClientConnection
+from websockets.protocol import State
 
 from .errors import WebSocketError
 
@@ -141,17 +144,20 @@ class WSClient:
         max_reconnect_attempts: int = 5,
         reconnect_delay: float = 1.0,
         ping_interval: float = 30.0,
+        user_id: str | None = None,
     ) -> None:
         """
         Initialize WebSocket client.
 
         Args:
-            url: WebSocket server URL
+            url: WebSocket server URL (e.g. ws://localhost:8000/ws)
             max_reconnect_attempts: Maximum reconnection attempts
             reconnect_delay: Base delay between reconnection attempts (exponential backoff)
             ping_interval: Interval between ping messages (seconds)
+            user_id: Optional client/user UUID; if not provided, a UUID is generated automatically.
         """
-        self._url = url
+        self._client_id = user_id or str(uuid.uuid4())
+        self._url = self._build_url_with_client_id(url, self._client_id)
         self._max_reconnect_attempts = max_reconnect_attempts
         self._reconnect_delay = reconnect_delay
         self._ping_interval = ping_interval
@@ -166,13 +172,34 @@ class WSClient:
         # Event handlers
         self._listeners: dict[str, list[EventCallback]] = {}
 
+    @property
+    def client_id(self) -> str:
+        """Client UUID used for the WebSocket path (user-provided or auto-generated)."""
+        return self._client_id
+
+    @staticmethod
+    def _build_url_with_client_id(url: str, client_id: str) -> str:
+        """Append client_id as path segment: .../ws/{client_id}."""
+        parsed = urlparse(url)
+        path = parsed.path.rstrip("/") + "/" + client_id
+        return urlunparse(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                path,
+                parsed.params,
+                parsed.query,
+                parsed.fragment,
+            )
+        )
+
     # =========================================================================
     # Connection Management
     # =========================================================================
 
     async def connect(self) -> None:
         """Connect to WebSocket server."""
-        if self._is_connecting or (self._ws and not self._ws.closed):
+        if self._is_connecting or (self._ws and self._ws.state is not State.CLOSED):
             return
 
         self._is_connecting = True
@@ -219,7 +246,7 @@ class WSClient:
 
     def is_connected(self) -> bool:
         """Check if connected to WebSocket server."""
-        return self._ws is not None and not self._ws.closed
+        return self._ws is not None and self._ws.state is not State.CLOSED
 
     # =========================================================================
     # Message Handling
@@ -240,7 +267,7 @@ class WSClient:
     async def _receive_loop(self) -> None:
         """Receive messages from WebSocket."""
         try:
-            while self._ws and not self._ws.closed:
+            while self._ws and self._ws.state is not State.CLOSED:
                 try:
                     message = await self._ws.recv()
                     try:
@@ -332,7 +359,7 @@ class WSClient:
 
     def _send(self, message: dict[str, Any]) -> None:
         """Send message to WebSocket server."""
-        if self._ws and not self._ws.closed:
+        if self._ws and self._ws.state is not State.CLOSED:
             asyncio.create_task(self._ws.send(json.dumps(message)))
         else:
             self._emit("error", WebSocketError("WebSocket not connected"))

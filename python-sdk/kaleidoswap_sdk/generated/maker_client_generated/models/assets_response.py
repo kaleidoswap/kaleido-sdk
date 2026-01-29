@@ -83,11 +83,9 @@ class AssetsResponse:
 
             assets.append(assets_item)
 
-        total = d.pop("total")
-
-        limit = d.pop("limit")
-
-        offset = d.pop("offset")
+        total = d.pop("total", len(assets))
+        limit = d.pop("limit", len(assets))
+        offset = d.pop("offset", 0)
 
         network = d.pop("network", UNSET)
 

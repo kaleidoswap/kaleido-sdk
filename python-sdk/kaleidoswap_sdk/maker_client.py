@@ -11,6 +11,7 @@ convenience methods and backward compatibility.
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -20,6 +21,8 @@ from .errors import SwapError
 # Fallback to old generated types for models that weren't generated
 from .generated.api_types import (
     SwapRoute,
+    TradableAsset,
+    TradingPair,
     TradingPairsResponse,
 )
 from .generated.maker_client_generated.api.lsps1 import (
@@ -52,6 +55,9 @@ from .generated.maker_client_generated.api.market import (
     get_quote,
     list_assets,
 )
+from .generated.maker_client_generated.api.market.get_quote import (
+    _build_response as _get_quote_build_response,
+)
 from .generated.maker_client_generated.api.swap_orders import (
     create_swap_order,
     get_order_history,
@@ -69,6 +75,7 @@ from .generated.maker_client_generated.api.swaps import (
 )
 from .generated.maker_client_generated.client import Client as GeneratedMakerClient
 from .generated.maker_client_generated.models import (
+    HTTPValidationError,
     AssetsResponse,
     ChannelFees,
     ChannelOrderResponse,
@@ -129,7 +136,9 @@ class MakerClient:
     - WebSocket streaming for real-time quotes
     """
 
-    def __init__(self, base_url: str, api_key: str | None = None, timeout: float = 30.0) -> None:
+    def __init__(
+        self, base_url: str, api_key: str | None = None, timeout: float = 30.0
+    ) -> None:
         """
         Initialize MakerClient.
 
@@ -154,19 +163,20 @@ class MakerClient:
     # WebSocket Support
     # =========================================================================
 
-    def enable_websocket(self, ws_url: str) -> WSClient:
+    def enable_websocket(self, ws_url: str, user_id: str | None = None) -> WSClient:
         """
         Enable WebSocket for real-time updates.
 
         Args:
-            ws_url: WebSocket server URL
+            ws_url: WebSocket server URL (e.g. ws://localhost:8000/ws)
+            user_id: Optional client/user UUID for the path .../ws/<user_id>. If not provided, the client generates one.
 
         Returns:
-            WSClient instance
+            WSClient instance (use ws.client_id to read the UUID used)
         """
         from .ws_client import WSClient
 
-        self._ws = WSClient(url=ws_url)
+        self._ws = WSClient(url=ws_url, user_id=user_id)
         return self._ws
 
     async def stream_quotes(
@@ -246,25 +256,34 @@ class MakerClient:
 
         pair = None
         for p in pairs_response.pairs:
-            if p.base.ticker.upper() == from_upper and p.quote.ticker.upper() == to_upper:
+            if (
+                p.base.ticker.upper() == from_upper
+                and p.quote.ticker.upper() == to_upper
+            ):
                 pair = p
                 break
 
         # If not found, try inverse pair
         if not pair:
             for p in pairs_response.pairs:
-                if p.base.ticker.upper() == to_upper and p.quote.ticker.upper() == from_upper:
+                if (
+                    p.base.ticker.upper() == to_upper
+                    and p.quote.ticker.upper() == from_upper
+                ):
                     # Inverse pair found, swap the layers in routes
                     if p.routes:
                         return [
-                            {"from_layer": r.to_layer, "to_layer": r.from_layer} for r in p.routes
+                            {"from_layer": r.to_layer, "to_layer": r.from_layer}
+                            for r in p.routes
                         ]
                     return []
 
         if not pair or not pair.routes:
             return []
 
-        return [{"from_layer": r.from_layer, "to_layer": r.to_layer} for r in pair.routes]
+        return [
+            {"from_layer": r.from_layer, "to_layer": r.to_layer} for r in pair.routes
+        ]
 
     async def stream_quotes_by_ticker(
         self,
@@ -386,27 +405,105 @@ class MakerClient:
 
     async def list_pairs(self) -> TradingPairsResponse:
         """List all trading pairs."""
-        # Note: Generated client may not have this endpoint due to schema issues
-        # Fallback to manual call if needed
-        try:
-            response = await get_pairs.asyncio(client=self._client)
-            if response is None:
-                raise SwapError("Failed to list pairs")
-            return response
-        except AttributeError:
-            # Endpoint not generated, use direct HTTP call
-            raise SwapError("list_pairs endpoint not available in generated client")
+        # Generated get_pairs only parses 422; 200 is returned as None. Parse 200 manually.
+        response = await get_pairs.asyncio_detailed(client=self._client)
+        if response.status_code == 200:
+            data = json.loads(response.content.decode())
+            pairs_list = data.get("pairs") or []
+            normalized_pairs = [self._normalize_pair(p) for p in pairs_list]
+            return TradingPairsResponse(
+                pairs=normalized_pairs,
+                total=data.get("total", len(normalized_pairs)),
+                limit=data.get("limit", len(normalized_pairs)),
+                offset=data.get("offset", 0),
+                timestamp=data.get("timestamp", 0),
+            )
+        if response.parsed is not None:
+            raise SwapError(f"Validation error: {response.parsed}")
+        raise SwapError("Failed to list pairs")
+
+    def _normalize_pair(self, raw: dict[str, Any]) -> TradingPair:
+        """Build TradingPair from API shape (may have base/quote or base_ticker/quote_ticker)."""
+        if "base" in raw and "quote" in raw:
+            base_val, quote_val = raw["base"], raw["quote"]
+            if isinstance(base_val, dict) and isinstance(quote_val, dict):
+                return TradingPair.model_validate(raw)
+        base_ticker = raw.get("base_ticker")
+        quote_ticker = raw.get("quote_ticker")
+        if not base_ticker and "base" in raw:
+            b = raw["base"]
+            base_ticker = (
+                b.get("ticker", b.get("ticker_symbol")) if isinstance(b, dict) else None
+            )
+        if not quote_ticker and "quote" in raw:
+            q = raw["quote"]
+            quote_ticker = (
+                q.get("ticker", q.get("ticker_symbol")) if isinstance(q, dict) else None
+            )
+        if not base_ticker or not quote_ticker:
+            pair_ticker = raw.get("pair_ticker") or raw.get("ticker") or ""
+            parts = pair_ticker.replace("-", "/").split("/")
+            base_ticker = base_ticker or (parts[0].strip() if len(parts) > 0 else None)
+            quote_ticker = quote_ticker or (
+                parts[1].strip() if len(parts) > 1 else None
+            )
+        if not base_ticker:
+            base_ticker = raw.get("base_asset_id") or raw.get("base_asset") or "?"
+        if not quote_ticker:
+            quote_ticker = raw.get("quote_asset_id") or raw.get("quote_asset") or "?"
+        if isinstance(base_ticker, dict):
+            base_ticker = base_ticker.get("ticker", "?")
+        if isinstance(quote_ticker, dict):
+            quote_ticker = quote_ticker.get("ticker", "?")
+        base = TradableAsset(ticker=base_ticker, name=base_ticker, precision=8)
+        quote = TradableAsset(ticker=quote_ticker, name=quote_ticker, precision=8)
+        price = raw.get("price")
+        if price is not None and not isinstance(price, str):
+            price = str(price)
+        return TradingPair(
+            id=raw.get("id"),
+            base=base,
+            quote=quote,
+            price=price,
+            routes=None,
+            is_active=raw.get("is_active", True),
+        )
 
     async def get_quote(self, body: PairQuoteRequest) -> PairQuoteResponse:
         """
         Get a quote for a trading pair.
 
         Args:
-            body: Quote request with from/to asset details
+            body: Quote request with from/to asset details (Pydantic or generated attrs type)
         """
-        response = await get_quote.asyncio(client=self._client, body=body)
+        # Convert Pydantic to generated attrs if needed (public API exposes Pydantic types)
+        body_for_api = body
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body_for_api = PairQuoteRequest.from_dict(body.model_dump(mode="json"))
+        body_dict = body_for_api.to_dict()
+        # Send from_asset and to_asset as nested objects (server expects dicts, not JSON strings)
+        payload = dict(body_dict)
+        httpx_client = self._client.get_async_httpx_client()
+        resp = await httpx_client.request(
+            method="post",
+            url="/api/v1/market/quote",
+            json=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        result = _get_quote_build_response(client=self._client, response=resp)
+        response = result.parsed
         if response is None:
-            raise SwapError("Failed to get quote")
+            msg = f"Failed to get quote (HTTP {resp.status_code})"
+            if resp.content:
+                try:
+                    err_body = resp.json()
+                    msg += f": {err_body}"
+                except Exception:
+                    msg += f": {resp.text[:200]!r}"
+            raise SwapError(msg)
+        if isinstance(response, HTTPValidationError):
+            detail = getattr(response, "detail", response)
+            raise SwapError(f"Quote validation failed: {detail}")
         return response
 
     async def get_pair_routes(self, body: dict[str, Any]) -> list[SwapRoute]:
@@ -419,7 +516,11 @@ class MakerClient:
         response = await get_pair_routes.asyncio(client=self._client, body=body)
         if response is None:
             raise SwapError("Failed to get pair routes")
-        return [SwapRoute.model_validate(r) for r in response] if isinstance(response, list) else []
+        return (
+            [SwapRoute.model_validate(r) for r in response]
+            if isinstance(response, list)
+            else []
+        )
 
     async def get_market_routes(self, body: RoutesRequest) -> RoutesResponse:
         """
@@ -437,7 +538,9 @@ class MakerClient:
     # Swap Orders API - /api/v1/swaps/orders/*
     # =========================================================================
 
-    async def create_swap_order(self, body: CreateSwapOrderRequest) -> CreateSwapOrderResponse:
+    async def create_swap_order(
+        self, body: CreateSwapOrderRequest
+    ) -> CreateSwapOrderResponse:
         """
         Create a new swap order.
 
@@ -449,7 +552,9 @@ class MakerClient:
             raise SwapError("Failed to create swap order")
         return response
 
-    async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
+    async def get_swap_order_status(
+        self, body: SwapOrderStatusRequest
+    ) -> SwapOrderStatusResponse:
         """
         Get the status of a swap order.
 
@@ -502,7 +607,9 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        response = await handle_swap_order_rate_decision.asyncio(client=self._client, body=body)
+        response = await handle_swap_order_rate_decision.asyncio(
+            client=self._client, body=body
+        )
         if response is None:
             raise SwapError("Failed to submit rate decision")
         return response
@@ -535,7 +642,9 @@ class MakerClient:
             raise SwapError("Failed to execute swap")
         return response
 
-    async def get_atomic_swap_status(self, body: SwapStatusRequest) -> SwapStatusResponse:
+    async def get_atomic_swap_status(
+        self, body: SwapStatusRequest
+    ) -> SwapStatusResponse:
         """
         Get the status of an atomic swap.
 
@@ -608,19 +717,25 @@ class MakerClient:
             raise SwapError("Failed to estimate LSP fees")
         return response
 
-    async def submit_lsp_rate_decision(self, body: RateDecisionRequest) -> RateDecisionResponse:
+    async def submit_lsp_rate_decision(
+        self, body: RateDecisionRequest
+    ) -> RateDecisionResponse:
         """
         Submit rate decision for LSP order.
 
         Args:
             body: Rate decision request
         """
-        response = await handle_lsp_rate_decision.asyncio(client=self._client, body=body)
+        response = await handle_lsp_rate_decision.asyncio(
+            client=self._client, body=body
+        )
         if response is None:
             raise SwapError("Failed to submit LSP rate decision")
         return response
 
-    async def retry_asset_delivery(self, body: RetryDeliveryRequest) -> RetryDeliveryResponse:
+    async def retry_asset_delivery(
+        self, body: RetryDeliveryRequest
+    ) -> RetryDeliveryResponse:
         """
         Retry asset delivery for a failed order.
 

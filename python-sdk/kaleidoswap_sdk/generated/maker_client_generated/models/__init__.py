@@ -30,6 +30,7 @@ from .order_stats_response import OrderStatsResponse
 from .pagination_meta import PaginationMeta
 from .pair_quote_request import PairQuoteRequest
 from .pair_quote_response import PairQuoteResponse
+from .protocol_ids import ProtocolIds
 from .payment_bolt_11 import PaymentBolt11
 from .payment_details import PaymentDetails
 from .payment_onchain import PaymentOnchain
@@ -98,6 +99,7 @@ __all__ = (
     "PaginationMeta",
     "PairQuoteRequest",
     "PairQuoteResponse",
+    "ProtocolIds",
     "PaymentBolt11",
     "PaymentDetails",
     "PaymentOnchain",
