@@ -27,13 +27,12 @@ class KaleidoError(Exception):
 
     def is_retryable(self) -> bool:
         """Check if this error is retryable."""
+        if self.code == "RATE_LIMIT_ERROR":
+            return False
         return (
             self.code == "NETWORK_ERROR"
             or self.code == "TIMEOUT_ERROR"
-            or (
-                self.status_code is not None
-                and (self.status_code >= 500 or self.status_code == 429)
-            )
+            or (self.status_code is not None and self.status_code >= 500)
         )
 
     def __repr__(self) -> str:
@@ -140,22 +139,30 @@ class InsufficientBalanceError(KaleidoError):
         if asset:
             msg = f"Insufficient {asset} balance: need {required_amount}, have {available_amount}"
         else:
-            msg = f"Insufficient balance: need {required_amount}, have {available_amount}"
+            msg = (
+                f"Insufficient balance: need {required_amount}, have {available_amount}"
+            )
         super().__init__(code="INSUFFICIENT_BALANCE", message=msg)
         self.required_amount = required_amount
         self.available_amount = available_amount
         self.asset = asset
 
 
-class RateLimitError(APIError):
-    """Rate limit exceeded."""
+class RateLimitError(KaleidoError):
+    """Rate limit exceeded (429)."""
 
-    def __init__(self, retry_after: int | None = None) -> None:
-        if retry_after:
+    def __init__(
+        self,
+        message: str | None = None,
+        retry_after: int | None = None,
+    ) -> None:
+        if message:
+            msg = message
+        elif retry_after is not None:
             msg = f"Rate limit exceeded. Retry after {retry_after} seconds"
         else:
             msg = "Rate limit exceeded"
-        super().__init__(message=msg, status_code=429)
+        super().__init__(code="RATE_LIMIT_ERROR", message=msg, status_code=429)
         self.retry_after = retry_after
 
 
@@ -182,7 +189,12 @@ def map_http_error(
             message = data
         elif isinstance(data, dict):
             # Check formatted error fields in order of preference
-            message = data.get("detail") or data.get("message") or data.get("error") or status_text
+            message = (
+                data.get("detail")
+                or data.get("message")
+                or data.get("error")
+                or status_text
+            )
 
             # Handle FastAPI validation errors which return detail as array
             detail = data.get("detail")
