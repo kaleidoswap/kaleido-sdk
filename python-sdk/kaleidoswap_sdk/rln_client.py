@@ -205,7 +205,9 @@ class RlnClient:
         Args:
             skip_sync: Skip blockchain sync before getting balance
         """
-        data = await self._http.node_post("/btcbalance", BtcBalanceRequest(skip_sync=skip_sync))
+        data = await self._http.node_post(
+            "/btcbalance", BtcBalanceRequest(skip_sync=skip_sync)
+        )
         return BtcBalanceResponse.model_validate(data)
 
     async def send_btc(self, body: SendBtcRequest) -> SendBtcResponse:
@@ -280,7 +282,9 @@ class RlnClient:
         data = await self._http.node_post("/listassets", body)
         return ListAssetsResponse.model_validate(data)
 
-    async def get_asset_balance(self, body: AssetBalanceRequest) -> AssetBalanceResponse:
+    async def get_asset_balance(
+        self, body: AssetBalanceRequest
+    ) -> AssetBalanceResponse:
         """
         Get balance for an RGB asset.
 
@@ -290,7 +294,9 @@ class RlnClient:
         data = await self._http.node_post("/assetbalance", body)
         return AssetBalanceResponse.model_validate(data)
 
-    async def get_asset_metadata(self, body: AssetMetadataRequest) -> AssetMetadataResponse:
+    async def get_asset_metadata(
+        self, body: AssetMetadataRequest
+    ) -> AssetMetadataResponse:
         """
         Get metadata for an RGB asset.
 
@@ -300,7 +306,9 @@ class RlnClient:
         data = await self._http.node_post("/assetmetadata", body)
         return AssetMetadataResponse.model_validate(data)
 
-    async def get_asset_media(self, body: GetAssetMediaRequest) -> GetAssetMediaResponse:
+    async def get_asset_media(
+        self, body: GetAssetMediaRequest
+    ) -> GetAssetMediaResponse:
         """
         Get media for an RGB asset.
 
@@ -310,7 +318,9 @@ class RlnClient:
         data = await self._http.node_post("/getassetmedia", body)
         return GetAssetMediaResponse.model_validate(data)
 
-    async def issue_asset_nia(self, body: IssueAssetNIARequest) -> IssueAssetNIAResponse:
+    async def issue_asset_nia(
+        self, body: IssueAssetNIARequest
+    ) -> IssueAssetNIAResponse:
         """
         Issue an RGB NIA (fungible) asset.
 
@@ -320,7 +330,9 @@ class RlnClient:
         data = await self._http.node_post("/issueassetnia", body)
         return IssueAssetNIAResponse.model_validate(data)
 
-    async def issue_asset_cfa(self, body: IssueAssetCFARequest) -> IssueAssetCFAResponse:
+    async def issue_asset_cfa(
+        self, body: IssueAssetCFARequest
+    ) -> IssueAssetCFAResponse:
         """
         Issue an RGB CFA (collectible) asset.
 
@@ -330,7 +342,9 @@ class RlnClient:
         data = await self._http.node_post("/issueassetcfa", body)
         return IssueAssetCFAResponse.model_validate(data)
 
-    async def issue_asset_uda(self, body: IssueAssetUDARequest) -> IssueAssetUDAResponse:
+    async def issue_asset_uda(
+        self, body: IssueAssetUDARequest
+    ) -> IssueAssetUDAResponse:
         """
         Issue an RGB UDA (unique digital) asset.
 
@@ -368,6 +382,10 @@ class RlnClient:
             body: Optional refresh request
         """
         await self._http.node_post("/refreshtransfers", body or {})
+
+    async def sync_rgb_wallet(self) -> None:
+        """Sync the RGB wallet with the blockchain."""
+        await self._http.node_post("/sync")
 
     async def fail_transfers(self, body: FailTransfersRequest) -> FailTransfersResponse:
         """
@@ -483,7 +501,9 @@ class RlnClient:
         data = await self._http.node_post("/decodelninvoice", body)
         return DecodeLNInvoiceResponse.model_validate(data)
 
-    async def decode_rgb_invoice(self, body: DecodeRGBInvoiceRequest) -> RgbInvoiceResponse:
+    async def decode_rgb_invoice(
+        self, body: DecodeRGBInvoiceRequest
+    ) -> RgbInvoiceResponse:
         """
         Decode an RGB invoice.
 
@@ -493,7 +513,9 @@ class RlnClient:
         data = await self._http.node_post("/decodergbinvoice", body)
         return RgbInvoiceResponse.model_validate(data)
 
-    async def get_invoice_status(self, body: InvoiceStatusRequest) -> InvoiceStatusResponse:
+    async def get_invoice_status(
+        self, body: InvoiceStatusRequest
+    ) -> InvoiceStatusResponse:
         """
         Get invoice status.
 

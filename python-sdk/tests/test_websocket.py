@@ -104,7 +104,7 @@ class TestWSClientIntegration:
     @pytest.mark.integration
     async def test_connect_disconnect(self) -> None:
         """Test connecting and disconnecting."""
-        client = WSClient(url="wss://api.kaleidoswap.com/ws")
+        client = WSClient(url="ws://localhost:8000/api/v1/market/ws")
         await client.connect()
         assert client.is_connected()
 
