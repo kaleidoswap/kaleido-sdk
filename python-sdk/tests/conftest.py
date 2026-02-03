@@ -16,13 +16,13 @@ def base_url() -> str:
 @pytest.fixture
 def node_url() -> str:
     """Node URL for test API."""
-    return "http://localhost:3001"
+    return "http://localhost:3002"
 
 
 @pytest.fixture
 def second_node_url() -> str:
     """Second node URL for test API."""
-    return "http://localhost:3002"
+    return "http://localhost:3001"
 
 
 @pytest.fixture

@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import NetworkInfoResponse from generated types
-from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
+from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse, TakerRequest
 from .types import (
     AddressResponse,
     AssetBalanceRequest,
@@ -569,15 +569,15 @@ class RlnClient:
         node_info = await self.get_node_info()
         return node_info.pubkey or ""
 
-    async def whitelist_trade(self, body: MakerExecuteRequest | str) -> None:
+    async def whitelist_swap(self, body: TakerRequest | str) -> None:
         """
-        Whitelist a trade (accept swap on taker side).
+        Whitelist a swap (accept swap on taker side).
 
         Args:
             body: Request with swapstring, or just the swapstring
         """
         if isinstance(body, str):
-            body = MakerExecuteRequest(swapstring=body)
+            body = TakerRequest(swapstring=body)
         await self._http.node_post("/taker", body)
 
     async def maker_init(self, body: MakerInitRequest) -> MakerInitResponse:

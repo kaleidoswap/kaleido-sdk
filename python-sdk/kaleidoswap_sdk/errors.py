@@ -19,11 +19,13 @@ class KaleidoError(Exception):
         message: str,
         status_code: int | None = None,
         details: str | None = None,
+        response_body: dict[str, Any] | str | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.status_code = status_code
         self.details = details
+        self.response_body = response_body
 
     def is_retryable(self) -> bool:
         """Check if this error is retryable."""
@@ -166,6 +168,39 @@ class RateLimitError(KaleidoError):
         self.retry_after = retry_after
 
 
+def _extract_message_from_body(
+    data: dict[str, Any] | str | None,
+    status_text: str,
+) -> str:
+    """Extract a clear, server-driven error message from response data."""
+    if not data:
+        return status_text
+    if isinstance(data, str):
+        return data.strip() or status_text
+    # Prefer structured fields (API / FastAPI conventions)
+    detail = data.get("detail")
+    if detail is not None:
+        if isinstance(detail, str):
+            return detail
+        if isinstance(detail, list):
+            parts = []
+            for err in detail:
+                if isinstance(err, dict):
+                    loc = err.get("loc", [])
+                    msg = err.get("msg", "")
+                    loc_str = ".".join(str(x) for x in loc)
+                    parts.append(f"{loc_str}: {msg}" if loc_str else msg)
+            if parts:
+                return "; ".join(parts)
+        if isinstance(detail, dict) and "msg" in detail:
+            return str(detail["msg"])
+    return (
+        data.get("message")
+        or data.get("error")
+        or (str(detail) if detail is not None else status_text)
+    )
+
+
 def map_http_error(
     status: int,
     status_text: str,
@@ -174,53 +209,36 @@ def map_http_error(
     """
     Map HTTP errors to typed SDK errors.
 
+    Uses the server response body to build a clear message when available.
+    The raw response_body is attached to the exception for debugging.
+
     Args:
         status: HTTP status code
-        status_text: HTTP status text
-        data: Response data (may contain error details)
+        status_text: HTTP status text (e.g. "Not Found")
+        data: Response body (JSON dict or string)
 
     Returns:
-        Appropriate KaleidoError subclass
+        Appropriate KaleidoError subclass with message from server when possible
     """
-    message = status_text
-
-    if data:
-        if isinstance(data, str):
-            message = data
-        elif isinstance(data, dict):
-            # Check formatted error fields in order of preference
-            message = (
-                data.get("detail")
-                or data.get("message")
-                or data.get("error")
-                or status_text
-            )
-
-            # Handle FastAPI validation errors which return detail as array
-            detail = data.get("detail")
-            if isinstance(detail, list):
-                error_parts = []
-                for err in detail:
-                    if isinstance(err, dict):
-                        loc = err.get("loc", [])
-                        msg = err.get("msg", "")
-                        loc_str = ".".join(str(item) for item in loc)
-                        error_parts.append(f"{loc_str}: {msg}")
-                if error_parts:
-                    message = "; ".join(error_parts)
+    message = _extract_message_from_body(data, status_text)
 
     # Map HTTP status codes to specific error types
     if status in (400, 422):
-        return ValidationError(message, status_code=status)
+        err = ValidationError(message, status_code=status)
     elif status == 404:
-        return NotFoundError(message)
+        err = NotFoundError(message)
     elif status in (408, 504):
-        return TimeoutError(message)
+        err = TimeoutError(message)
     elif status == 429:
-        return RateLimitError()
+        err = RateLimitError(
+            message=message if message != "Rate limit exceeded" else None
+        )
     elif status in (500, 502, 503):
-        return APIError(message, status)
+        err = APIError(message, status)
     elif 400 <= status < 500:
-        return APIError(message, status)
+        err = APIError(message, status)
     else:
-        return NetworkError(message)
+        err = NetworkError(message)
+
+    err.response_body = data
+    return err
