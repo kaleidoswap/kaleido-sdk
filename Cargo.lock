@@ -1097,7 +1097,7 @@ dependencies = [
 
 [[package]]
 name = "kaleidoswap-core"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "async-trait",
  "backoff",
@@ -1132,7 +1132,7 @@ dependencies = [
 
 [[package]]
 name = "kaleidoswap-python"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "kaleidoswap-core",
  "kaleidoswap-uniffi",
@@ -1146,7 +1146,7 @@ dependencies = [
 
 [[package]]
 name = "kaleidoswap-uniffi"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "futures",
  "kaleidoswap-core",
