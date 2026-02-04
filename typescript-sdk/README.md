@@ -28,7 +28,7 @@ yarn add kaleidoswap-sdk
 ## Quick Start
 
 ```typescript
-import { KaleidoClient } from 'kaleidoswap-sdk';
+import { KaleidoClient, createAssetPairMapper, createPrecisionHandler } from 'kaleidoswap-sdk';
 
 // Create client
 const client = KaleidoClient.create({
@@ -38,16 +38,22 @@ const client = KaleidoClient.create({
 // List available assets
 const assets = await client.maker.listAssets();
 
+// Get trading pairs and create helpers
+const pairs = await client.maker.listPairs();
+const mapper = createAssetPairMapper(pairs);
+const precision = createPrecisionHandler(mapper.getAllAssets());
+
+// Find assets by ticker
+const btc = mapper.findByTicker('BTC');
+const usdt = mapper.findByTicker('USDT');
+
 // Get a quote
 const quote = await client.maker.getQuote({
-  from_asset: { asset_id: 'btc', layer: 'BTC_LN', amount: '0.1' },
-  to_asset: { asset_id: 'usdt', layer: 'RGB_LN' }
+  from_asset: { asset_id: btc.asset_id, layer: 'BTC_LN', amount: 10000000 },
+  to_asset: { asset_id: usdt.asset_id, layer: 'RGB_LN' }
 });
 
-// Create swap order
-const order = await client.maker.createSwapOrder({
-  rfq_id: quote.rfq_id
-});
+console.log(`Quote: ${quote.from_asset.amount} ${quote.from_asset.ticker} → ${quote.to_asset.amount} ${quote.to_asset.ticker}`);
 ```
 
 ## WebSocket - Real-time Quotes
@@ -138,13 +144,54 @@ ws.on('error', (error) => console.error('Error:', error));
 ## Precision Handling
 
 ```typescript
-import { toRawAmount, toDisplayAmount } from 'kaleidoswap-sdk';
+import { toRawAmount, toDisplayAmount, createPrecisionHandler } from 'kaleidoswap-sdk';
 
-// Convert display amount to raw (satoshis for BTC)
-const sats = toRawAmount('0.1', 8); // 10000000
+// Simple conversions with known precision
+const sats = toRawAmount(0.1, 8); // 10000000
+const btc = toDisplayAmount(10000000, 8); // 0.1
 
-// Convert raw amount to display
-const btc = toDisplayAmount(10000000n, 8); // '0.10000000'
+// Or use PrecisionHandler with asset data
+const pairs = await client.maker.listPairs();
+const mapper = createAssetPairMapper(pairs);
+const precisionHandler = createPrecisionHandler(mapper.getAllAssets());
+
+// Convert using asset IDs
+const rawAmount = precisionHandler.toRawAmount(100, usdtAssetId);
+const displayAmount = precisionHandler.toDisplayAmount(rawAmount, usdtAssetId);
+
+// Validate order sizes
+const validation = precisionHandler.validateOrderSize(0.001, btcAsset);
+if (!validation.valid) {
+  console.log('Error:', validation.error);
+}
+```
+
+## Asset Pair Mapper
+
+The `AssetPairMapper` helps you work with trading pairs without juggling asset IDs manually:
+
+```typescript
+import { createAssetPairMapper } from 'kaleidoswap-sdk';
+
+// Create mapper from pairs response
+const pairs = await client.maker.listPairs();
+const mapper = createAssetPairMapper(pairs);
+
+// Find assets by ticker
+const btc = mapper.findByTicker('BTC');
+const usdt = mapper.findByTicker('USDT');
+
+// Check if assets can be traded
+if (mapper.canTradeByTicker('BTC', 'USDT')) {
+  console.log('BTC/USDT trading available');
+}
+
+// Get all trading partners for an asset
+const partners = mapper.getTradingPartners(btc.asset_id);
+
+// Find specific trading pair
+const pair = mapper.findPairByTickers('BTC', 'USDT');
+console.log('Available routes:', pair?.routes);
 ```
 
 ## Error Handling
@@ -182,8 +229,11 @@ import type {
   QuoteResponse,
   CreateSwapOrderRequest,
   Layer,
-  QuoteResponse  // WebSocket types
+  KaleidoConfig,
 } from 'kaleidoswap-sdk';
+
+// Utility types
+import type { MappedAsset, ValidationResult, OrderSizeLimits } from 'kaleidoswap-sdk';
 ```
 
 ## Examples

@@ -20,8 +20,8 @@ type ResponseSuccess<T extends keyof operations> = operations[T] extends {
 }
     ? R
     : operations[T] extends { responses: { 201: { content: { 'application/json': infer R } } } }
-      ? R
-      : never;
+    ? R
+    : never;
 
 // Authentication & Wallet
 export type InitWalletRequest = RequestBody<'post_init'>;

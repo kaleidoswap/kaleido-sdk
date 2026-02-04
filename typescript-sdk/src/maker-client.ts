@@ -166,7 +166,7 @@ export class MakerClient {
         const pairsResponse = await this.listPairs();
 
         // Find matching pair (case-insensitive) - try direct match first
-        const pair = pairsResponse.pairs.find(
+        let pair = pairsResponse.pairs.find(
             (p) =>
                 p.base.ticker.toUpperCase() === fromTicker.toUpperCase() &&
                 p.quote.ticker.toUpperCase() === toTicker.toUpperCase(),
