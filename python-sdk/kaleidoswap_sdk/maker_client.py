@@ -1,0 +1,861 @@
+"""
+Maker Client - Market Operations
+
+Type-safe client for Kaleidoswap Market API.
+All methods correspond directly to actual API endpoints.
+
+This is a wrapper around the auto-generated HTTP client that provides
+convenience methods and backward compatibility.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
+
+from .errors import map_http_error, SwapError
+
+# Fallback to old generated types for models that weren't generated
+from .generated.api_types import (
+    SwapRoute,
+    TradableAsset,
+    TradingPair,
+    TradingPairsResponse,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    create_order as create_lsp_order,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    estimate_fees as estimate_lsp_fees,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    get_info as get_lsp_info,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    get_network_info as get_lsp_network_info,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    get_order as get_lsp_order,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    handle_rate_decision as handle_lsp_rate_decision,
+)
+from .generated.maker_client_generated.api.lsps1 import (
+    retry_delivery as retry_lsp_delivery,
+)
+
+# Import API endpoint functions directly from their modules
+from .generated.maker_client_generated.api.market import (
+    discover_routes,
+    get_pair_routes,
+    get_pairs,
+    get_quote,
+    list_assets,
+)
+from .generated.maker_client_generated.api.market.get_quote import (
+    _build_response as _get_quote_build_response,
+)
+from .generated.maker_client_generated.api.swap_orders import (
+    create_swap_order,
+    get_order_history,
+    get_order_stats,
+    get_swap_order_status,
+    handle_swap_order_rate_decision,
+)
+from .generated.maker_client_generated.api.swaps import (
+    confirm_swap,
+    get_swap_status,
+    initiate_swap,
+)
+from .generated.maker_client_generated.api.swaps import (
+    get_node_info as get_swap_node_info,
+)
+from .generated.maker_client_generated.client import Client as GeneratedMakerClient
+from .generated.maker_client_generated.models import (
+    Body as PairRoutesBody,
+    HTTPValidationError,
+    AssetsResponse,
+    ChannelFees,
+    ChannelOrderResponse,
+    ConfirmSwapRequest,
+    ConfirmSwapResponse,
+    CreateOrderRequest,
+    CreateSwapOrderRequest,
+    CreateSwapOrderResponse,
+    GetInfoResponseModel,
+    NetworkInfoResponse,
+    OrderHistoryResponse,
+    OrderStatsResponse,
+    PairQuoteRequest,
+    PairQuoteResponse,
+    RateDecisionRequest,
+    RateDecisionResponse,
+    RetryDeliveryRequest,
+    RetryDeliveryResponse,
+    RoutesRequest,
+    RoutesResponse,
+    SwapNodeInfoResponse,
+    SwapOrder,
+    SwapOrderRateDecisionRequest,
+    SwapOrderRateDecisionResponse,
+    SwapOrderStatusRequest,
+    SwapOrderStatusResponse,
+    SwapRequest,
+    SwapResponse,
+    SwapStatusRequest,
+    SwapStatusResponse,
+)
+from .types import Layer
+from .utils import to_display_amount, to_raw_amount
+
+if TYPE_CHECKING:
+    from .ws_client import QuoteResponse, WSClient
+
+
+def _unwrap_maker_response(response: Any) -> Any:
+    """
+    Return parsed success body or raise a mapped error with server message.
+
+    Raises KaleidoError (ValidationError, APIError, etc.) with the server's
+    message and response_body for debugging when the response is not successful.
+    """
+    # Success: return parsed body
+    if response.parsed is not None and not isinstance(
+        response.parsed, HTTPValidationError
+    ):
+        return response.parsed
+
+    # Error: extract response data and raise mapped exception
+    status_code = int(response.status_code)
+
+    # Extract error data from HTTPValidationError or raw response content
+    if isinstance(response.parsed, HTTPValidationError):
+        error_data = (
+            response.parsed.to_dict() if hasattr(response.parsed, "to_dict") else {}
+        )
+    elif response.content:
+        try:
+            error_data = json.loads(response.content.decode("utf-8"))
+        except Exception:
+            error_data = (
+                response.content.decode("utf-8", errors="replace").strip() or None
+            )
+    else:
+        error_data = None
+
+    reason_phrase = (
+        getattr(response.status_code, "phrase", None) or f"HTTP {status_code}"
+    )
+    raise map_http_error(status_code, reason_phrase, error_data)
+
+
+@dataclass
+class SwapCompletionOptions:
+    """Options for waiting for swap completion."""
+
+    timeout: float = 300.0  # 5 minutes
+    poll_interval: float = 2.0  # 2 seconds
+    on_status_update: Callable[[str], None] | None = None
+
+
+class MakerClient:
+    """
+    Market operations client for Kaleidoswap.
+
+    Provides methods for:
+    - Listing assets and trading pairs
+    - Getting quotes
+    - Creating and managing swap orders
+    - Atomic swaps
+    - LSP (Lightning Service Provider) operations
+    - WebSocket streaming for real-time quotes
+    """
+
+    def __init__(
+        self, base_url: str, api_key: str | None = None, timeout: float = 30.0
+    ) -> None:
+        """
+        Initialize MakerClient.
+
+        Args:
+            base_url: Base URL for the Kaleidoswap API
+            api_key: Optional API key for authentication
+            timeout: Request timeout in seconds
+        """
+        # Create generated client
+        headers = {}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+
+        self._client = GeneratedMakerClient(
+            base_url=base_url,
+            headers=headers,
+            timeout=timeout,
+        )
+        self._ws: WSClient | None = None
+
+    # =========================================================================
+    # WebSocket Support
+    # =========================================================================
+
+    def enable_websocket(self, ws_url: str, user_id: str | None = None) -> WSClient:
+        """
+        Enable WebSocket for real-time updates.
+
+        Args:
+            ws_url: WebSocket server URL (e.g. ws://localhost:8000/ws)
+            user_id: Optional client/user UUID for the path .../ws/<user_id>. If not provided, the client generates one.
+
+        Returns:
+            WSClient instance (use ws.client_id to read the UUID used)
+        """
+        from .ws_client import WSClient
+
+        self._ws = WSClient(url=ws_url, user_id=user_id)
+        return self._ws
+
+    async def stream_quotes(
+        self,
+        from_asset: str,
+        to_asset: str,
+        from_amount: int | None,
+        from_layer: Layer | None,
+        to_layer: Layer | None,
+        on_update: Callable[[QuoteResponse], None],
+    ) -> Callable[[], None]:
+        """
+        Stream real-time quote updates.
+
+        Args:
+            from_asset: Source asset ticker
+            to_asset: Destination asset ticker
+            from_amount: Amount to convert (in smallest units)
+            from_layer: Source layer
+            to_layer: Destination layer
+            on_update: Callback for quote updates
+
+        Returns:
+            Unsubscribe function
+
+        Raises:
+            RuntimeError: If WebSocket not enabled
+        """
+        if not self._ws:
+            raise RuntimeError("WebSocket not enabled. Call enable_websocket() first.")
+
+        if not self._ws.is_connected():
+            await self._ws.connect()
+
+        # Subscribe to quote updates
+        self._ws.on("quote_response", on_update)
+
+        # Send initial quote request
+        self._ws.request_quote(
+            {
+                "from_asset": from_asset,
+                "to_asset": to_asset,
+                "from_amount": from_amount,
+                "to_amount": None,
+                "from_layer": from_layer.value if from_layer else None,
+                "to_layer": to_layer.value if to_layer else None,
+            }
+        )
+
+        # Return unsubscribe function
+        def unsubscribe() -> None:
+            if self._ws:
+                self._ws.off("quote_response", on_update)
+
+        return unsubscribe
+
+    async def get_available_routes(
+        self,
+        from_ticker: str,
+        to_ticker: str,
+    ) -> list[dict[str, str]]:
+        """
+        Get available routes for a trading pair by ticker symbols.
+
+        Args:
+            from_ticker: Source asset ticker (e.g., 'BTC')
+            to_ticker: Destination asset ticker (e.g., 'USDT')
+
+        Returns:
+            List of routes with from_layer and to_layer
+        """
+        pairs_response = await self.list_pairs()
+
+        # Find matching pair (case-insensitive) - try direct match first
+        from_upper = from_ticker.upper()
+        to_upper = to_ticker.upper()
+
+        pair = None
+        for p in pairs_response.pairs:
+            if (
+                p.base.ticker.upper() == from_upper
+                and p.quote.ticker.upper() == to_upper
+            ):
+                pair = p
+                break
+
+        # If not found, try inverse pair
+        if not pair:
+            for p in pairs_response.pairs:
+                if (
+                    p.base.ticker.upper() == to_upper
+                    and p.quote.ticker.upper() == from_upper
+                ):
+                    # Inverse pair found, swap the layers in routes
+                    if p.routes:
+                        return [
+                            {"from_layer": r.to_layer, "to_layer": r.from_layer}
+                            for r in p.routes
+                        ]
+                    return []
+
+        if not pair or not pair.routes:
+            return []
+
+        return [
+            {"from_layer": r.from_layer, "to_layer": r.to_layer} for r in pair.routes
+        ]
+
+    async def stream_quotes_by_ticker(
+        self,
+        from_ticker: str,
+        to_ticker: str,
+        amount: int,
+        on_update: Callable[[QuoteResponse], None],
+        preferred_from_layer: Layer | None = None,
+        preferred_to_layer: Layer | None = None,
+    ) -> Callable[[], None]:
+        """
+        Stream quotes using ticker symbols with automatic route discovery.
+
+        Args:
+            from_ticker: Source asset ticker
+            to_ticker: Destination asset ticker
+            amount: Amount to convert (in smallest units)
+            on_update: Callback for quote updates
+            preferred_from_layer: Optional preferred source layer
+            preferred_to_layer: Optional preferred destination layer
+
+        Returns:
+            Unsubscribe function
+
+        Raises:
+            ValueError: If no routes found for the pair
+        """
+        routes = await self.get_available_routes(from_ticker, to_ticker)
+
+        if not routes:
+            raise ValueError(
+                f"No routes found for {from_ticker}/{to_ticker}. "
+                "Pair may not exist or is not active."
+            )
+
+        # Find preferred route or use first available
+        selected_route = routes[0]
+        if preferred_from_layer and preferred_to_layer:
+            for route in routes:
+                if (
+                    route["from_layer"] == preferred_from_layer.value
+                    and route["to_layer"] == preferred_to_layer.value
+                ):
+                    selected_route = route
+                    break
+
+        # Stream quotes using the selected route
+        return await self.stream_quotes(
+            from_ticker.upper(),
+            to_ticker.upper(),
+            amount,
+            Layer(selected_route["from_layer"]),
+            Layer(selected_route["to_layer"]),
+            on_update,
+        )
+
+    async def stream_quotes_for_all_routes(
+        self,
+        from_ticker: str,
+        to_ticker: str,
+        amount: int,
+        on_update: Callable[[str, QuoteResponse], None],
+    ) -> dict[str, Callable[[], None]]:
+        """
+        Stream quotes for all available routes of a trading pair.
+
+        Args:
+            from_ticker: Source asset ticker
+            to_ticker: Destination asset ticker
+            amount: Amount to convert (in smallest units)
+            on_update: Callback receiving (route_key, quote)
+
+        Returns:
+            Dict mapping route keys to unsubscribe functions
+
+        Raises:
+            ValueError: If no routes found for the pair
+        """
+        routes = await self.get_available_routes(from_ticker, to_ticker)
+
+        if not routes:
+            raise ValueError(
+                f"No routes found for {from_ticker}/{to_ticker}. "
+                "Pair may not exist or is not active."
+            )
+
+        unsubscribers: dict[str, Callable[[], None]] = {}
+
+        # Subscribe to each route
+        for route in routes:
+            route_key = f"{route['from_layer']}->{route['to_layer']}"
+
+            def make_callback(key: str) -> Callable[[QuoteResponse], None]:
+                return lambda quote: on_update(key, quote)
+
+            unsubscribe = await self.stream_quotes(
+                from_ticker.upper(),
+                to_ticker.upper(),
+                amount,
+                Layer(route["from_layer"]),
+                Layer(route["to_layer"]),
+                make_callback(route_key),
+            )
+
+            unsubscribers[route_key] = unsubscribe
+
+        return unsubscribers
+
+    # =========================================================================
+    # Market API - /api/v1/market/*
+    # =========================================================================
+
+    async def list_assets(self) -> AssetsResponse:
+        """List all available assets."""
+        resp = await list_assets.asyncio_detailed(client=self._client)
+        return _unwrap_maker_response(resp)
+
+    async def list_pairs(self) -> TradingPairsResponse:
+        """List all trading pairs."""
+        # Generated get_pairs only parses 422; 200 is returned as None. Parse 200 manually.
+        response = await get_pairs.asyncio_detailed(client=self._client)
+        if response.status_code == 200:
+            data = json.loads(response.content.decode())
+            pairs_list = data.get("pairs") or []
+            normalized_pairs = [self._normalize_pair(p) for p in pairs_list]
+            return TradingPairsResponse(
+                pairs=normalized_pairs,
+                total=data.get("total", len(normalized_pairs)),
+                limit=data.get("limit", len(normalized_pairs)),
+                offset=data.get("offset", 0),
+                timestamp=data.get("timestamp", 0),
+            )
+        _unwrap_maker_response(response)  # raises with server message
+
+    def _normalize_pair(self, raw: dict[str, Any]) -> TradingPair:
+        """Build TradingPair from API shape (may have base/quote or base_ticker/quote_ticker)."""
+        if "base" in raw and "quote" in raw:
+            base_val, quote_val = raw["base"], raw["quote"]
+            if isinstance(base_val, dict) and isinstance(quote_val, dict):
+                return TradingPair.model_validate(raw)
+        base_ticker = raw.get("base_ticker")
+        quote_ticker = raw.get("quote_ticker")
+        if not base_ticker and "base" in raw:
+            b = raw["base"]
+            base_ticker = (
+                b.get("ticker", b.get("ticker_symbol")) if isinstance(b, dict) else None
+            )
+        if not quote_ticker and "quote" in raw:
+            q = raw["quote"]
+            quote_ticker = (
+                q.get("ticker", q.get("ticker_symbol")) if isinstance(q, dict) else None
+            )
+        if not base_ticker or not quote_ticker:
+            pair_ticker = raw.get("pair_ticker") or raw.get("ticker") or ""
+            parts = pair_ticker.replace("-", "/").split("/")
+            base_ticker = base_ticker or (parts[0].strip() if len(parts) > 0 else None)
+            quote_ticker = quote_ticker or (
+                parts[1].strip() if len(parts) > 1 else None
+            )
+        if not base_ticker:
+            base_ticker = raw.get("base_asset_id") or raw.get("base_asset") or "?"
+        if not quote_ticker:
+            quote_ticker = raw.get("quote_asset_id") or raw.get("quote_asset") or "?"
+        if isinstance(base_ticker, dict):
+            base_ticker = base_ticker.get("ticker", "?")
+        if isinstance(quote_ticker, dict):
+            quote_ticker = quote_ticker.get("ticker", "?")
+        base = TradableAsset(ticker=base_ticker, name=base_ticker, precision=8)
+        quote = TradableAsset(ticker=quote_ticker, name=quote_ticker, precision=8)
+        price = raw.get("price")
+        if price is not None and not isinstance(price, str):
+            price = str(price)
+        return TradingPair(
+            id=raw.get("id"),
+            base=base,
+            quote=quote,
+            price=price,
+            routes=None,
+            is_active=raw.get("is_active", True),
+        )
+
+    async def get_quote(self, body: PairQuoteRequest) -> PairQuoteResponse:
+        """
+        Get a quote for a trading pair.
+
+        Args:
+            body: Quote request with from/to asset details (Pydantic or generated attrs type)
+        """
+        # Convert Pydantic to generated attrs if needed (public API exposes Pydantic types)
+        body_for_api = body
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body_for_api = PairQuoteRequest.from_dict(body.model_dump(mode="json"))
+        body_dict = body_for_api.to_dict()
+        # Send from_asset and to_asset as nested objects (server expects dicts, not JSON strings)
+        payload = dict(body_dict)
+        httpx_client = self._client.get_async_httpx_client()
+        resp = await httpx_client.request(
+            method="post",
+            url="/api/v1/market/quote",
+            json=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        result = _get_quote_build_response(client=self._client, response=resp)
+        response = result.parsed
+        if response is None:
+            msg = f"Failed to get quote (HTTP {resp.status_code})"
+            if resp.content:
+                try:
+                    err_body = resp.json()
+                    msg += f": {err_body}"
+                except Exception:
+                    msg += f": {resp.text[:200]!r}"
+            raise SwapError(msg)
+        if isinstance(response, HTTPValidationError):
+            detail = getattr(response, "detail", response)
+            raise SwapError(f"Quote validation failed: {detail}")
+        return response
+
+    async def get_pair_routes(self, body: dict[str, Any]) -> list[SwapRoute]:
+        """
+        Get available routes for a trading pair.
+
+        Args:
+            body: Request with pair_id or ticker information (e.g. {"pair_ticker": "BTC/USDT"})
+        """
+        api_body = PairRoutesBody.from_dict(body)
+        resp = await get_pair_routes.asyncio_detailed(
+            client=self._client, body=api_body
+        )
+        response = _unwrap_maker_response(resp)
+        # Response is list of generated (attrs) SwapRoute; convert to SDK (Pydantic) SwapRoute
+        return (
+            [SwapRoute.model_validate(r.to_dict()) for r in response]
+            if isinstance(response, list)
+            else []
+        )
+
+    async def get_market_routes(self, body: RoutesRequest) -> RoutesResponse:
+        """
+        Discover routes between assets.
+
+        Args:
+            body: Routes discovery request (SDK RoutesRequest or generated attrs type)
+        """
+        if hasattr(body, "model_dump"):
+            body = RoutesRequest.from_dict(body.model_dump(mode="json"))
+        resp = await discover_routes.asyncio_detailed(client=self._client, body=body)
+        return _unwrap_maker_response(resp)
+
+    # =========================================================================
+    # Swap Orders API - /api/v1/swaps/orders/*
+    # =========================================================================
+
+    async def create_swap_order(
+        self, body: CreateSwapOrderRequest
+    ) -> CreateSwapOrderResponse:
+        """
+        Create a new swap order.
+
+        Args:
+            body: Swap order creation request (Pydantic or generated attrs type)
+        """
+        body_for_api = body
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body_for_api = CreateSwapOrderRequest.from_dict(
+                body.model_dump(mode="json")
+            )
+        resp = await create_swap_order.asyncio_detailed(
+            client=self._client, body=body_for_api
+        )
+        return _unwrap_maker_response(resp)
+
+    async def get_swap_order_status(
+        self, body: SwapOrderStatusRequest
+    ) -> SwapOrderStatusResponse:
+        """
+        Get the status of a swap order.
+
+        Args:
+            body: Request with order_id
+        """
+        resp = await get_swap_order_status.asyncio_detailed(
+            client=self._client, body=body
+        )
+        return _unwrap_maker_response(resp)
+
+    async def get_order_history(
+        self,
+        status: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+    ) -> OrderHistoryResponse:
+        """
+        Get order history with optional filtering.
+
+        Args:
+            status: Filter by order status
+            limit: Maximum number of results
+            skip: Number of results to skip
+        """
+        # Note: Generated client uses query parameters (skip, not offset)
+        resp = await get_order_history.asyncio_detailed(
+            client=self._client,
+            status=status,
+            limit=limit or 50,
+            skip=skip or 0,
+        )
+        return _unwrap_maker_response(resp)
+
+    async def get_order_analytics(self) -> OrderStatsResponse:
+        """Get order analytics and statistics."""
+        resp = await get_order_stats.asyncio_detailed(client=self._client)
+        return _unwrap_maker_response(resp)
+
+    async def submit_rate_decision(
+        self, body: SwapOrderRateDecisionRequest
+    ) -> SwapOrderRateDecisionResponse:
+        """
+        Submit a rate decision for a pending order.
+
+        Args:
+            body: Rate decision request
+        """
+        resp = await handle_swap_order_rate_decision.asyncio_detailed(
+            client=self._client, body=body
+        )
+        return _unwrap_maker_response(resp)
+
+    # =========================================================================
+    # Atomic Swaps API - /api/v1/swaps/*
+    # =========================================================================
+
+    async def init_swap(self, body: SwapRequest) -> SwapResponse:
+        """
+        Initialize an atomic swap.
+
+        Args:
+            body: Swap initialization request (Pydantic or generated attrs type)
+        """
+        body_for_api = body
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body_for_api = SwapRequest.from_dict(body.model_dump(mode="json"))
+        resp = await initiate_swap.asyncio_detailed(
+            client=self._client, body=body_for_api
+        )
+        return _unwrap_maker_response(resp)
+
+    async def execute_swap(self, body: ConfirmSwapRequest) -> ConfirmSwapResponse:
+        """
+        Execute/confirm an atomic swap.
+
+        Args:
+            body: Swap execution request (Pydantic or generated attrs type)
+        """
+        body_for_api = body
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body_for_api = ConfirmSwapRequest.from_dict(body.model_dump(mode="json"))
+        resp = await confirm_swap.asyncio_detailed(
+            client=self._client, body=body_for_api
+        )
+        return _unwrap_maker_response(resp)
+
+    async def get_atomic_swap_status(
+        self, body: SwapStatusRequest
+    ) -> SwapStatusResponse:
+        """
+        Get the status of an atomic swap.
+
+        Args:
+            body: Request with payment_hash (Pydantic or generated attrs type)
+        """
+        body_for_api = body
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body_for_api = SwapStatusRequest.from_dict(body.model_dump(mode="json"))
+        resp = await get_swap_status.asyncio_detailed(
+            client=self._client, body=body_for_api
+        )
+        return _unwrap_maker_response(resp)
+
+    async def get_swap_node_info(self) -> SwapNodeInfoResponse:
+        """Get swap node information."""
+        resp = await get_swap_node_info.asyncio_detailed(client=self._client)
+        return _unwrap_maker_response(resp)
+
+    # =========================================================================
+    # LSPS1 API - /api/v1/lsps1/*
+    # =========================================================================
+
+    async def get_lsp_info(self) -> GetInfoResponseModel:
+        """Get LSP information and options."""
+        resp = await get_lsp_info.asyncio_detailed(client=self._client)
+        return _unwrap_maker_response(resp)
+
+    async def get_lsp_network_info(self) -> NetworkInfoResponse:
+        """Get LSP network information."""
+        resp = await get_lsp_network_info.asyncio_detailed(client=self._client)
+        return _unwrap_maker_response(resp)
+
+    async def create_lsp_order(self, body: CreateOrderRequest) -> ChannelOrderResponse:
+        """
+        Create an LSP order for channel opening.
+
+        Args:
+            body: LSP order creation request
+        """
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body = CreateOrderRequest.from_dict(body.model_dump(mode="json"))
+        resp = await create_lsp_order.asyncio_detailed(client=self._client, body=body)
+        return _unwrap_maker_response(resp)
+
+    async def get_lsp_order(self, body: dict[str, str]) -> ChannelOrderResponse:
+        """
+        Get LSP order details.
+
+        Args:
+            body: Request with order_id
+        """
+        resp = await get_lsp_order.asyncio_detailed(client=self._client, body=body)
+        return _unwrap_maker_response(resp)
+
+    async def estimate_lsp_fees(self, body: CreateOrderRequest) -> ChannelFees:
+        """
+        Estimate fees for an LSP order.
+
+        Args:
+            body: LSP order request for fee estimation
+        """
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body = CreateOrderRequest.from_dict(body.model_dump(mode="json"))
+        resp = await estimate_lsp_fees.asyncio_detailed(client=self._client, body=body)
+        return _unwrap_maker_response(resp)
+
+    async def submit_lsp_rate_decision(
+        self, body: RateDecisionRequest
+    ) -> RateDecisionResponse:
+        """
+        Submit rate decision for LSP order.
+
+        Args:
+            body: Rate decision request
+        """
+        resp = await handle_lsp_rate_decision.asyncio_detailed(
+            client=self._client, body=body
+        )
+        return _unwrap_maker_response(resp)
+
+    async def retry_asset_delivery(
+        self, body: RetryDeliveryRequest
+    ) -> RetryDeliveryResponse:
+        """
+        Retry asset delivery for a failed order.
+
+        Args:
+            body: Retry delivery request
+        """
+        resp = await retry_lsp_delivery.asyncio_detailed(client=self._client, body=body)
+        return _unwrap_maker_response(resp)
+
+    # =========================================================================
+    # Convenience Methods
+    # =========================================================================
+
+    async def wait_for_swap_completion(
+        self,
+        order_id: str,
+        options: SwapCompletionOptions | None = None,
+    ) -> SwapOrder:
+        """
+        Wait for a swap order to complete.
+
+        Args:
+            order_id: Order ID to monitor
+            options: Polling options
+
+        Returns:
+            Final swap order
+
+        Raises:
+            SwapError: If timeout exceeded
+        """
+        opts = options or SwapCompletionOptions()
+        start_time = asyncio.get_event_loop().time()
+
+        while asyncio.get_event_loop().time() - start_time < opts.timeout:
+            try:
+                status_response = await self.get_swap_order_status(
+                    SwapOrderStatusRequest(order_id=order_id)
+                )
+                order = status_response.order
+
+                if order and opts.on_status_update:
+                    opts.on_status_update(order.status.value)
+
+                if order and order.status.value in (
+                    "FILLED",
+                    "FAILED",
+                    "EXPIRED",
+                    "CANCELLED",
+                ):
+                    return order
+
+            except Exception:
+                # Log warning but continue polling
+                pass
+
+            await asyncio.sleep(opts.poll_interval)
+
+        raise SwapError(
+            f"Swap completion timeout after {opts.timeout}s for order {order_id}",
+            swap_id=order_id,
+        )
+
+    def to_raw(self, amount: float, precision: int) -> int:
+        """
+        Convert display amount to raw units.
+
+        Args:
+            amount: Display amount
+            precision: Asset precision
+
+        Returns:
+            Raw amount in smallest units
+        """
+        return to_raw_amount(amount, precision)
+
+    def to_display(self, raw_amount: int, precision: int) -> float:
+        """
+        Convert raw units to display amount.
+
+        Args:
+            raw_amount: Amount in smallest units
+            precision: Asset precision
+
+        Returns:
+            Display amount
+        """
+        return to_display_amount(raw_amount, precision)

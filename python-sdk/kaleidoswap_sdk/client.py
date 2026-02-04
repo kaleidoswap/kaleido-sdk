@@ -1,0 +1,235 @@
+"""
+Kaleidoswap SDK Client
+
+Main client class that coordinates Maker and RLN operations.
+"""
+
+from __future__ import annotations
+
+from .errors import NodeNotConfiguredError
+from .http_client import HttpClient
+from .maker_client import MakerClient
+from .rln_client import RlnClient
+from .types import KaleidoConfig
+
+__version__ = "0.4.0"
+__sdk_name__ = "kaleidoswap-sdk"
+
+
+class KaleidoClient:
+    """
+    Kaleidoswap SDK Client.
+
+    Provides a typed interface for interacting with the Kaleidoswap protocol.
+
+    Example:
+        ```python
+        from kaleidoswap_sdk import KaleidoClient
+
+        client = KaleidoClient.create(
+            base_url="https://api.kaleidoswap.com"
+        )
+
+        assets = await client.maker.list_assets()
+        print(assets.assets[0].ticker)  # "BTC"
+        ```
+    """
+
+    def __init__(self, config: KaleidoConfig) -> None:
+        """
+        Initialize KaleidoClient.
+
+        Use `KaleidoClient.create()` factory method instead of direct instantiation.
+
+        Args:
+            config: Client configuration
+        """
+        self._config = config
+        # Initialize clients with base URL and credentials
+        self._maker = MakerClient(
+            base_url=config.base_url,
+            api_key=config.api_key,
+            timeout=config.timeout,
+        )
+        # Note: RlnClient needs similar refactoring
+        self._http = HttpClient(config)  # Temporary, for RlnClient
+        self._rln = RlnClient(self._http)  # TODO: Refactor RlnClient
+
+    @classmethod
+    def create(
+        cls,
+        base_url: str,
+        node_url: str | None = None,
+        api_key: str | None = None,
+        timeout: float = 30.0,
+        max_retries: int = 3,
+        cache_ttl: int = 60,
+    ) -> KaleidoClient:
+        """
+        Create a new KaleidoClient instance.
+
+        Args:
+            base_url: Base URL for the Kaleidoswap API
+            node_url: Optional URL for RGB Lightning Node
+            api_key: Optional API key for authenticated requests
+            timeout: Request timeout in seconds (default: 30)
+            max_retries: Maximum retry attempts (default: 3)
+            cache_ttl: Cache TTL in seconds (default: 60)
+
+        Returns:
+            Initialized client
+
+        Example:
+            ```python
+            # Basic usage
+            client = KaleidoClient.create(
+                base_url="https://api.kaleidoswap.com"
+            )
+
+            # With RGB Node
+            client = KaleidoClient.create(
+                base_url="https://api.kaleidoswap.com",
+                node_url="http://localhost:3000"
+            )
+            ```
+        """
+        config = KaleidoConfig(
+            base_url=base_url,
+            node_url=node_url,
+            api_key=api_key,
+            timeout=timeout,
+            max_retries=max_retries,
+            cache_ttl=cache_ttl,
+        )
+        return cls(config)
+
+    @classmethod
+    def from_config(cls, config: KaleidoConfig) -> KaleidoClient:
+        """
+        Create a new KaleidoClient instance from a config object.
+
+        Args:
+            config: Client configuration
+
+        Returns:
+            Initialized client
+        """
+        return cls(config)
+
+    def has_node(self) -> bool:
+        """
+        Check if RGB Lightning Node is configured.
+
+        Returns:
+            True if node URL is configured
+        """
+        return self._config.node_url is not None
+
+    @property
+    def maker(self) -> MakerClient:
+        """
+        Access Market (Maker) Operations.
+
+        Returns:
+            MakerClient for market operations
+        """
+        return self._maker
+
+    @property
+    def rln(self) -> RlnClient:
+        """
+        Access RGB/Lightning Node Operations.
+
+        Returns:
+            RlnClient for node operations
+
+        Raises:
+            NodeNotConfiguredError: If node URL is not configured
+        """
+        if not self.has_node():
+            raise NodeNotConfiguredError()
+        return self._rln
+
+    async def close(self) -> None:
+        """Close all HTTP connections."""
+        await self._http.close()
+
+    async def __aenter__(self) -> KaleidoClient:
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, *args: object) -> None:
+        """Async context manager exit."""
+        await self.close()
+
+
+# =============================================================================
+# Utility Functions
+# =============================================================================
+
+
+def to_smallest_units(amount: float, precision: int) -> int:
+    """
+    Convert display units to smallest units (e.g., BTC to satoshis).
+
+    Args:
+        amount: Amount in display units
+        precision: Decimal precision (e.g., 8 for BTC)
+
+    Returns:
+        Amount in smallest units as integer
+
+    Example:
+        ```python
+        sats = to_smallest_units(1.5, 8)  # 150000000
+        ```
+    """
+    return round(amount * (10**precision))
+
+
+def to_display_units(amount: int, precision: int) -> float:
+    """
+    Convert smallest units to display units (e.g., satoshis to BTC).
+
+    Args:
+        amount: Amount in smallest units
+        precision: Decimal precision (e.g., 8 for BTC)
+
+    Returns:
+        Amount in display units
+
+    Example:
+        ```python
+        btc = to_display_units(150000000, 8)  # 1.5
+        ```
+    """
+    return amount / (10**precision)
+
+
+def get_version() -> str:
+    """
+    Get SDK version.
+
+    Returns:
+        Version string
+    """
+    return __version__
+
+
+def get_sdk_name() -> str:
+    """
+    Get SDK name.
+
+    Returns:
+        SDK name string
+    """
+    return __sdk_name__
+
+
+__all__ = [
+    "KaleidoClient",
+    "to_smallest_units",
+    "to_display_units",
+    "get_version",
+    "get_sdk_name",
+]

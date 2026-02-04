@@ -1,8 +1,9 @@
-# GitLab CI/CD Pipeline for Kaleidoswap SDK (UniFFI + WASM)
-# This pipeline builds and publishes the Rust-based SDKs with UniFFI bindings
+# GitLab CI/CD Pipeline for Kaleidoswap SDK
 #
-# On tag push:
-#   update-specs → generate-models → build → deploy
+# Pipelines:
+#   - On push/MR: test & lint
+#   - On OpenAPI spec changes: regenerate SDK models
+#   - On tag: update-specs → generate-models → build → deploy
 
 stages:
   - .pre       # update-specs
@@ -14,9 +15,7 @@ stages:
 variables:
   RUST_VERSION: "1.91"
   PYTHON_VERSION: "3.11"
-  NODE_VERSION: "18"
-  # Use Docker image's default Rust installation paths
-  # CARGO_HOME and RUSTUP_HOME should not be overridden
+  NODE_VERSION: "20"
 
 # Default tags for runners
 default:
@@ -40,6 +39,82 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "dev"
     - when: never
+
+# ---------------------------------------------------------------------------
+# SPEC & MODEL GENERATION
+# ---------------------------------------------------------------------------
+
+# Download OpenAPI specs from GitHub (tag pipelines only)
+update-specs:
+  stage: .pre
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl bash python3 py3-yaml
+  script:
+    - echo "📥 Downloading OpenAPI specs from GitHub..."
+    - chmod +x scripts/update-openapi-specs.sh
+    - ./scripts/update-openapi-specs.sh
+  artifacts:
+    paths:
+      - crates/kaleidoswap-core/specs/
+    expire_in: 1 hour
+  rules:
+    - if: $CI_COMMIT_TAG
+
+# Generate SDK models from OpenAPI specs
+generate-sdk-models:
+  stage: generate
+  image: python:${PYTHON_VERSION}
+  needs:
+    - job: update-specs
+      artifacts: true
+      optional: true
+  before_script:
+    - apt-get update && apt-get install -y nodejs npm
+    - npm install -g pnpm openapi-typescript
+    - pip install 'datamodel-code-generator[http]'
+  script:
+    - echo "🔧 Generating SDK models from OpenAPI specs..."
+    # TypeScript SDK
+    - bash scripts/generate_typescript_types.sh
+    # Python SDK
+    - bash scripts/generate_python_sdk_models.sh
+  artifacts:
+    paths:
+      - typescript-sdk/src/generated/
+      - python-sdk/kaleidoswap_sdk/generated/
+    expire_in: 1 week
+  rules:
+    # On tag: always run after update-specs
+    - if: $CI_COMMIT_TAG
+    # On push: run if OpenAPI specs changed
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - crates/kaleidoswap-core/specs/**/*
+        - scripts/generate_*.sh
+
+# Check that generated models are up-to-date (MR only)
+check-generated-models:
+  stage: generate
+  image: python:${PYTHON_VERSION}
+  before_script:
+    - apt-get update && apt-get install -y nodejs npm git
+    - npm install -g pnpm openapi-typescript
+    - pip install 'datamodel-code-generator[http]'
+  script:
+    - echo "🔍 Checking if generated models are up-to-date..."
+    - bash scripts/generate_typescript_types.sh
+    - bash scripts/generate_python_sdk_models.sh
+    - |
+      if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/; then
+        echo "❌ Generated models are out of date!"
+        echo "Run 'make generate-models' locally and commit the changes."
+        git diff --stat
+        exit 1
+      fi
+    - echo "✅ Generated models are up-to-date"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 # ---------------------------------------------------------------------------
 # TEST STAGE
@@ -77,51 +152,26 @@ lint:rust:
     - cargo clippy --all-targets --all-features -- -D warnings
   allow_failure: true
 
-lint:python:
-  stage: test
-  image: python:${PYTHON_VERSION}-slim
-  before_script:
-    - apt-get update && apt-get install -y curl
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🔍 Linting Python code..."
-    - cd bindings/python
-    - uv run ruff check .
-    - uv run black --check .
-  allow_failure: true
-
 format:rust:
   stage: test
   image: rust:${RUST_VERSION}
   script:
-    - echo "✨ Checking formatting..."
+    - echo "✨ Checking Rust formatting..."
     - rustup component add rustfmt
     - cargo fmt --all -- --check
   allow_failure: true
 
-format:python:
-  stage: test
-  image: python:${PYTHON_VERSION}-slim
-  before_script:
-    - apt-get update && apt-get install -y curl
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "✨ Checking Python formatting..."
-    - cd bindings/python
-    - uv run black --check .
-    - uv run isort --check-only .
-  allow_failure: true
-
-
 # ---------------------------------------------------------------------------
-# TypeScript SDK (openapi-fetch based)
+# TypeScript SDK
 # ---------------------------------------------------------------------------
 
 test:typescript-sdk:
   stage: test
   image: node:${NODE_VERSION}
+  needs:
+    - job: generate-sdk-models
+      optional: true
+      artifacts: true
   before_script:
     - npm install -g pnpm
   script:
@@ -146,57 +196,84 @@ lint:typescript-sdk:
     - pnpm run lint
   allow_failure: true
 
-format:typescript-sdk:
+typecheck:typescript-sdk:
   stage: test
   image: node:${NODE_VERSION}
+  needs:
+    - job: generate-sdk-models
+      optional: true
+      artifacts: true
   before_script:
     - npm install -g pnpm
   script:
-    - echo "✨ Checking TypeScript SDK formatting..."
+    - echo "📝 Type checking TypeScript SDK..."
     - cd typescript-sdk
     - pnpm install
-    - pnpm run format:check
+    - pnpm run typecheck
   allow_failure: true
 
 # ---------------------------------------------------------------------------
-# SPEC & MODEL GENERATION (tag pipelines only)
+# Python SDK (Pure Python - kaleidoswap-sdk)
 # ---------------------------------------------------------------------------
 
-# Download OpenAPI specs from GitHub
-update-specs:
-  stage: .pre
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache curl bash python3 py3-yaml
-  script:
-    - echo "📥 Downloading OpenAPI specs from GitHub..."
-    - chmod +x scripts/update-openapi-specs.sh
-    - ./scripts/update-openapi-specs.sh
-  artifacts:
-    paths:
-      - specs/
-    expire_in: 1 hour
-  rules:
-    - if: $CI_COMMIT_TAG
-
-# Generate Rust models from OpenAPI specs
-generate-models:
-  stage: generate
-  image: python:3.11-slim
+test:python-sdk:
+  stage: test
+  image: python:${PYTHON_VERSION}
   needs:
-    - job: update-specs
+    - job: generate-sdk-models
+      optional: true
       artifacts: true
-  before_script:
-    - pip install pyyaml
   script:
-    - echo "🔧 Generating Rust models from OpenAPI specs..."
-    - python scripts/generate_models.py
+    - echo "🧪 Testing Python SDK..."
+    - cd python-sdk
+    - pip install -e ".[dev]"
+    - pytest tests/ -v --junitxml=test-results.xml
   artifacts:
-    paths:
-      - crates/kaleidoswap-core/src/models/
-    expire_in: 1 hour
-  rules:
-    - if: $CI_COMMIT_TAG
+    reports:
+      junit: python-sdk/test-results.xml
+    when: always
+
+lint:python-sdk:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  script:
+    - echo "🔍 Linting Python SDK..."
+    - cd python-sdk
+    - pip install ruff
+    - ruff check kaleidoswap_sdk
+  allow_failure: true
+
+typecheck:python-sdk:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  needs:
+    - job: generate-sdk-models
+      optional: true
+      artifacts: true
+  script:
+    - echo "📝 Type checking Python SDK..."
+    - cd python-sdk
+    - pip install -e ".[dev]"
+    - mypy kaleidoswap_sdk --ignore-missing-imports
+  allow_failure: true
+
+# ---------------------------------------------------------------------------
+# Python Bindings (Rust/Maturin - kaleidoswap)
+# ---------------------------------------------------------------------------
+
+lint:python-bindings:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+  script:
+    - echo "🔍 Linting Python bindings..."
+    - cd bindings/python
+    - uv run ruff check .
+    - uv run black --check .
+  allow_failure: true
 
 # ---------------------------------------------------------------------------
 # BUILD STAGE
@@ -214,16 +291,13 @@ build:core:
       - target/release/libkaleidoswap_core.*
     expire_in: 1 week
 
-build:python:
+build:python-bindings:
   stage: build
   image: rust:${RUST_VERSION}
   <<: *rust_cache
   needs:
     - job: build:core
       optional: true
-    - job: generate-models
-      optional: true
-      artifacts: true
   before_script:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
@@ -236,45 +310,102 @@ build:python:
       - target/wheels/
     expire_in: 1 week
 
+build:python-sdk:
+  stage: build
+  image: python:${PYTHON_VERSION}
+  needs:
+    - job: generate-sdk-models
+      optional: true
+      artifacts: true
+    - job: test:python-sdk
+  script:
+    - echo "🐍 Building Python SDK..."
+    - cd python-sdk
+    - pip install build
+    - python -m build
+  artifacts:
+    paths:
+      - python-sdk/dist/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG
+
+build:typescript-sdk:
+  stage: build
+  image: node:${NODE_VERSION}
+  needs:
+    - job: generate-sdk-models
+      optional: true
+      artifacts: true
+    - job: test:typescript-sdk
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "📦 Building TypeScript SDK..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm run build
+  artifacts:
+    paths:
+      - typescript-sdk/dist/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_TAG
 
 # ---------------------------------------------------------------------------
-# DEPLOY STAGE
+# DEPLOY STAGE (tag pipelines only - manual approval required)
 # ---------------------------------------------------------------------------
 
-deploy:pypi:
+deploy:pypi-bindings:
   stage: deploy
   image: rust:${RUST_VERSION}
   needs:
-    - job: build:python
+    - job: build:python-bindings
       artifacts: true
   before_script:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
   script:
-    - echo "🚀 Publishing to PyPI..."
+    - echo "🚀 Publishing Python bindings to PyPI..."
     - cd bindings/python
-    # --skip-existing allows re-running pipelines without failing if version exists
     - uv tool run maturin publish --username __token__ --password ${PYPI_TOKEN} --skip-existing || uv tool run twine upload --skip-existing target/wheels/*
   rules:
     - if: $CI_COMMIT_TAG
+      when: manual
   environment:
-    name: pypi
+    name: pypi-bindings
     url: https://pypi.org/project/kaleidoswap/
 
-# Deploy TypeScript SDK to npm
+deploy:pypi-sdk:
+  stage: deploy
+  image: python:${PYTHON_VERSION}
+  needs:
+    - job: build:python-sdk
+      artifacts: true
+  script:
+    - echo "🚀 Publishing Python SDK to PyPI..."
+    - pip install twine
+    - twine upload --skip-existing -u __token__ -p ${PYPI_TOKEN} python-sdk/dist/*
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: pypi-sdk
+    url: https://pypi.org/project/kaleidoswap-sdk/
+
 deploy:npm:
   stage: deploy
   image: node:${NODE_VERSION}
   needs:
-    - job: test:typescript-sdk
+    - job: build:typescript-sdk
+      artifacts: true
   before_script:
     - npm install -g pnpm
   script:
     - echo "🚀 Publishing TypeScript SDK to npm..."
     - cd typescript-sdk
     - pnpm install
-    - pnpm run build
-    
+
     # Determine tag based on version pattern
     - |
       VERSION=$(node -p "require('./package.json').version")
@@ -285,12 +416,13 @@ deploy:npm:
         TAG="latest"
       fi
       echo "Publishing with tag: $TAG"
-    
+
     # Publish to npm
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
     - pnpm publish --tag $TAG --access public --no-git-checks
   rules:
     - if: $CI_COMMIT_TAG
+      when: manual
   environment:
     name: npm
     url: https://www.npmjs.com/package/kaleidoswap-sdk
