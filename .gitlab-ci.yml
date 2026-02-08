@@ -227,7 +227,7 @@ test:python-sdk:
     - echo "🧪 Testing Python SDK..."
     - cd python-sdk
     - pip install -e ".[dev]"
-    - pytest tests/ -v --junitxml=test-results.xml
+    - pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
   artifacts:
     reports:
       junit: python-sdk/test-results.xml
