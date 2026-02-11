@@ -1,11 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
 
-from kaleidoswap_sdk.generated.node_types import TakerRequest
-from tests.conftest import client_with_node
-from tests.utils import get_fresh_quote, initiate_swap
-
-from kaleidoswap_sdk.errors import KaleidoError, SwapError
 from kaleidoswap_sdk import (
     ConfirmSwapRequest,
     CreateOrderRequest,
@@ -13,19 +7,16 @@ from kaleidoswap_sdk import (
     KaleidoClient,
     Layer,
     MakerClient,
-    RateDecisionRequest,
     ReceiverAddress,
     ReceiverAddressFormat,
-    RetryDeliveryRequest,
     RoutesRequest,
     SwapCompletionOptions,
     SwapLeg,
-    SwapOrderRateDecisionRequest,
-    SwapOrderStatusRequest,
-    SwapStatusRequest,
     SwapRequest,
-    SwapLegInput,
+    SwapStatusRequest,
 )
+from kaleidoswap_sdk.generated.node_types import TakerRequest
+from tests.utils import get_fresh_quote, initiate_swap
 
 
 class TestMakerClient:
@@ -165,12 +156,12 @@ class TestMakerClientIntegration:
             to_layer=Layer.btc_l1,
         )
         assert quote.rfq_id is not None, "Quote must have RFQ ID"
-        assert (
-            quote.from_asset.amount is not None and quote.from_asset.amount > 0
-        ), "From amount must be set"
-        assert (
-            quote.to_asset.amount is not None and quote.to_asset.amount > 0
-        ), "To amount must be calculated"
+        assert quote.from_asset.amount is not None and quote.from_asset.amount > 0, (
+            "From amount must be set"
+        )
+        assert quote.to_asset.amount is not None and quote.to_asset.amount > 0, (
+            "To amount must be calculated"
+        )
 
         # Step 2: Get receiver address from second node (taker)
         address_response = await second_client_with_node.rln.get_address()
@@ -200,9 +191,9 @@ class TestMakerClientIntegration:
         assert order.status == "PENDING_PAYMENT"
 
     @pytest.mark.integration
+    @pytest.mark.skip(reason="Requires existing swap order in backend")
     async def test_get_swap_order_status(self, client: KaleidoClient) -> None:
         """Test POST /orders/status - Get swap order status."""
-        request = SwapOrderStatusRequest(order_id="test-order-id")
         pass
 
     @pytest.mark.integration
@@ -260,9 +251,7 @@ class TestMakerClientIntegration:
         assert swap_response.swapstring is not None, "Swapstring must be generated"
         assert swap_response.payment_hash is not None, "Payment hash must be generated"
         assert len(swap_response.swapstring) > 100, "Swapstring should have content"
-        assert (
-            len(swap_response.payment_hash) == 64
-        ), "Payment hash should be 64 hex chars"
+        assert len(swap_response.payment_hash) == 64, "Payment hash should be 64 hex chars"
 
     @pytest.mark.integration
     async def test_execute_swap(
@@ -290,9 +279,7 @@ class TestMakerClientIntegration:
         # Step 3: Taker node info and whitelist
         taker_node_info = await second_client_with_node.rln.get_node_info()
         taker_pubkey = taker_node_info.pubkey
-        await second_client_with_node.rln.whitelist_swap(
-            TakerRequest(swapstring=swap.swapstring)
-        )
+        await second_client_with_node.rln.whitelist_swap(TakerRequest(swapstring=swap.swapstring))
 
         # Step 4: Execute the swap
         confirm_request = ConfirmSwapRequest(
@@ -384,9 +371,7 @@ class TestMakerClientIntegration:
         assert hasattr(network_info, "height")
 
     @pytest.mark.integration
-    async def test_create_lsp_order(
-        self, second_client_with_node: KaleidoClient
-    ) -> None:
+    async def test_create_lsp_order(self, second_client_with_node: KaleidoClient) -> None:
         """Test POST /lsps1/create_order - Create LSPS1 channel order.
 
         1. Get LSP info
@@ -406,9 +391,7 @@ class TestMakerClientIntegration:
         client_pubkey = await second_client_with_node.rln.get_taker_pubkey()
         assert client_pubkey is not None, "Client pubkey should not be None"
         address_response = await second_client_with_node.rln.get_address()
-        assert (
-            address_response.address is not None
-        ), "Address response should not be None"
+        assert address_response.address is not None, "Address response should not be None"
 
         # Step 3: Create channel order (inbound = LSP side must be positive)
         client_balance = (min_client_balance + max_client_balance) // 2
@@ -425,9 +408,7 @@ class TestMakerClientIntegration:
             client_pubkey=client_pubkey,
         )
 
-        order_response = await second_client_with_node.maker.create_lsp_order(
-            order_request
-        )
+        order_response = await second_client_with_node.maker.create_lsp_order(order_request)
 
         # Step 4: Verify order creation
         assert order_response is not None, "Order response should not be None"
