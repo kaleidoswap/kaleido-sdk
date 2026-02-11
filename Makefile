@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python-sdk
+.PHONY: help build test clean format lint check generate-models generate-python-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -192,38 +192,53 @@ format-rust:
 	cargo fmt --all
 
 format-python:
-	@echo "✨ Formatting Python code..."
-	cd $(BINDINGS_PYTHON) && \
-		uv run isort . && \
-		uv run black .
+	@echo "✨ Formatting Python SDK code..."
+	cd $(PYTHON_SDK) && \
+		uv sync --frozen --all-extras --dev && \
+		uv run ruff format kaleidoswap_sdk tests
 
 format-typescript:
 	@echo "✨ Formatting TypeScript code..."
 	cd $(BINDINGS_TYPESCRIPT) && pnpm run format
 
-format-python-sdk:
-	@echo "✨ Formatting Python SDK code..."
-	cd $(PYTHON_SDK) && uv run ruff format kaleidoswap_sdk tests
-
-lint: lint-rust lint-python lint-typescript
+lint: lint-rust lint-typescript check-python
 
 lint-rust:
 	@echo "🔍 Linting Rust code..."
 	cargo fmt --all -- --check
 
-lint-python:
-	@echo "🔍 Linting Python code..."
-	cd $(BINDINGS_PYTHON) && \
-		uv run ruff check . && \
-		uv run black --check .
-
 lint-typescript:
 	@echo "🔍 Linting TypeScript code..."
 	cd $(BINDINGS_TYPESCRIPT) && pnpm run lint
 
-lint-python-sdk:
-	@echo "🔍 Linting Python SDK code..."
-	cd $(PYTHON_SDK) && uv run ruff check kaleidoswap_sdk tests && uv run mypy kaleidoswap_sdk
+lint-python:
+	@echo "🛠️ Fixing Python SDK lint issues..."
+	cd $(PYTHON_SDK) && \
+		uv sync --frozen --all-extras --dev && \
+		uv run ruff format kaleidoswap_sdk tests && \
+		uv run ruff check --fix kaleidoswap_sdk tests && \
+		uv run mypy kaleidoswap_sdk --ignore-missing-imports
+
+check-format-python:
+	@echo "🔍 Checking Python SDK formatting..."
+	cd $(PYTHON_SDK) && \
+		uv sync --frozen --all-extras --dev && \
+		uv run ruff format --check kaleidoswap_sdk tests
+
+check-lint-python:
+	@echo "🔍 Checking Python SDK lint..."
+	cd $(PYTHON_SDK) && \
+		uv sync --frozen --all-extras --dev && \
+		uv run ruff check kaleidoswap_sdk tests
+
+typecheck-python:
+	@echo "📝 Type checking Python SDK..."
+	cd $(PYTHON_SDK) && \
+		uv sync --frozen --all-extras --dev && \
+		uv run mypy kaleidoswap_sdk --ignore-missing-imports
+
+check-python: check-format-python check-lint-python typecheck-python
+	@echo "✅ Python SDK format, lint, and type checks passed!"
 
 clippy:
 	@echo "📎 Running clippy..."
@@ -232,10 +247,6 @@ clippy:
 typecheck-typescript:
 	@echo "📝 Type checking TypeScript SDK..."
 	cd $(BINDINGS_TYPESCRIPT) && pnpm run typecheck
-
-typecheck-python-sdk:
-	@echo "📝 Type checking Python SDK..."
-	cd $(PYTHON_SDK) && uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 # ============================================================================
 # Pre-commit targets (run before committing)

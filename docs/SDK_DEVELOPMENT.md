@@ -188,9 +188,13 @@ make generate-python-sdk-models   # Python SDK only
 make test-typescript              # TypeScript SDK
 make test-python-sdk              # Python SDK
 
-# Lint
+# Lint / Format / Type check
 make lint-typescript-sdk          # TypeScript SDK
-make lint-python-sdk              # Python SDK
+make check-format-python          # Python SDK (format check only)
+make check-lint-python            # Python SDK (lint check only)
+make typecheck-python             # Python SDK
+make check-python                 # Python SDK (format + lint + typecheck)
+make lint-python                  # Python SDK (auto-fix format + lint + type hints)
 
 # Format
 make format-typescript            # TypeScript SDK
@@ -198,7 +202,7 @@ make format-python-sdk            # Python SDK
 
 # Full check (before PR)
 make test-typescript lint-typescript-sdk
-make test-python-sdk lint-python-sdk
+make test-python-sdk check-python
 ```
 
 ## CI/CD Pipeline

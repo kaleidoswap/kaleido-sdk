@@ -31,6 +31,12 @@ default:
       - .cargo/registry/
       - .cargo/git/
 
+.python_sdk_uv_setup: &python_sdk_uv_setup
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+
 # Workflow rules: Run on tags and main/dev branches
 workflow:
   rules:
@@ -236,11 +242,11 @@ test:python-sdk:
 lint:python-sdk:
   stage: test
   image: python:${PYTHON_VERSION}
+  <<: *python_sdk_uv_setup
   script:
-    - echo "🔍 Linting Python SDK..."
-    - cd python-sdk
-    - pip install ruff
-    - ruff check kaleidoswap_sdk
+    - echo "🔍 Checking Python SDK lint..."
+    - make check-format-python
+    - make check-lint-python
   allow_failure: true
 
 typecheck:python-sdk:
@@ -250,11 +256,10 @@ typecheck:python-sdk:
     - job: generate-sdk-models
       optional: true
       artifacts: true
+  <<: *python_sdk_uv_setup
   script:
     - echo "📝 Type checking Python SDK..."
-    - cd python-sdk
-    - pip install -e ".[dev]"
-    - mypy kaleidoswap_sdk --ignore-missing-imports
+    - make typecheck-python
   allow_failure: true
 
 # ---------------------------------------------------------------------------
