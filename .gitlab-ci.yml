@@ -116,7 +116,7 @@ check-generated-models:
       if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/; then
         echo "❌ Generated models are out of date!"
         echo "Run 'make generate-models' locally and commit the changes."
-        git diff --stat
+        git diff --stat typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/
         exit 1
       fi
     - echo "✅ Generated models are up-to-date"

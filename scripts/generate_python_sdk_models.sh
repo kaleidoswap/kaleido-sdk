@@ -35,7 +35,8 @@ $CODEGEN_CMD \
     --enum-field-as-literal one \
     --target-python-version 3.10 \
     --use-double-quotes \
-    --collapse-root-models
+    --collapse-root-models \
+    --disable-timestamp
 
 # Generate from rln.yaml (RGB Lightning Node API)
 echo "  → Generating from rln.yaml..."
@@ -53,7 +54,8 @@ $CODEGEN_CMD \
     --enum-field-as-literal one \
     --target-python-version 3.10 \
     --use-double-quotes \
-    --collapse-root-models
+    --collapse-root-models \
+    --disable-timestamp
 
 # Fix naming conflicts: datamodel-code-generator renames types when field names conflict
 # Example: PaymentStatus enum gets renamed to PaymentStatus1 when there's a payment_status field
@@ -97,6 +99,7 @@ for conflict in "${CONFLICTS[@]}"; do
     fix_naming_conflict "$conflict" "$OUTPUT_DIR/api_types.py"
     fix_naming_conflict "$conflict" "$OUTPUT_DIR/node_types.py"
 done
+
 
 # Create __init__.py to re-export types
 cat > "$OUTPUT_DIR/__init__.py" << 'EOF'
