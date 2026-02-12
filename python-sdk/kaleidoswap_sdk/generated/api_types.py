@@ -93,12 +93,8 @@ class CreateOrderRequest(BaseModel):
     client_pubkey: str = Field(..., title="Client Pubkey")
     lsp_balance_sat: int = Field(..., ge=0, title="Lsp Balance Sat")
     client_balance_sat: int = Field(..., ge=0, title="Client Balance Sat")
-    required_channel_confirmations: int = Field(
-        ..., ge=0, title="Required Channel Confirmations"
-    )
-    funding_confirms_within_blocks: int = Field(
-        ..., ge=1, title="Funding Confirms Within Blocks"
-    )
+    required_channel_confirmations: int = Field(..., ge=0, title="Required Channel Confirmations")
+    funding_confirms_within_blocks: int = Field(..., ge=1, title="Funding Confirms Within Blocks")
     channel_expiry_blocks: int = Field(..., ge=1, title="Channel Expiry Blocks")
     token: str | None = Field(None, title="Token")
     refund_onchain_address: str | None = Field(None, title="Refund Onchain Address")
@@ -107,9 +103,7 @@ class CreateOrderRequest(BaseModel):
     lsp_asset_amount: int | None = Field(None, title="Lsp Asset Amount")
     client_asset_amount: int | None = Field(None, title="Client Asset Amount")
     rfq_id: str | None = Field(None, title="Rfq Id")
-    email: str | None = Field(
-        None, description="Optional email for notifications", title="Email"
-    )
+    email: str | None = Field(None, description="Optional email for notifications", title="Email")
 
 
 class Fee(BaseModel):
@@ -182,31 +176,19 @@ class OrderOptions(BaseModel):
     min_onchain_payment_confirmations: int | None = Field(
         None, ge=0, title="Min Onchain Payment Confirmations"
     )
-    supports_zero_channel_reserve: bool = Field(
-        True, title="Supports Zero Channel Reserve"
-    )
+    supports_zero_channel_reserve: bool = Field(True, title="Supports Zero Channel Reserve")
     min_onchain_payment_size_sat: int | None = Field(
         None, ge=0, title="Min Onchain Payment Size Sat"
     )
-    max_channel_expiry_blocks: int = Field(
-        20160, ge=1, title="Max Channel Expiry Blocks"
-    )
-    min_initial_client_balance_sat: int = Field(
-        0, ge=0, title="Min Initial Client Balance Sat"
-    )
+    max_channel_expiry_blocks: int = Field(20160, ge=1, title="Max Channel Expiry Blocks")
+    min_initial_client_balance_sat: int = Field(0, ge=0, title="Min Initial Client Balance Sat")
     max_initial_client_balance_sat: int = Field(
         1000000, ge=0, title="Max Initial Client Balance Sat"
     )
-    min_initial_lsp_balance_sat: int = Field(
-        0, ge=0, title="Min Initial Lsp Balance Sat"
-    )
-    max_initial_lsp_balance_sat: int = Field(
-        16777215, ge=0, title="Max Initial Lsp Balance Sat"
-    )
+    min_initial_lsp_balance_sat: int = Field(0, ge=0, title="Min Initial Lsp Balance Sat")
+    max_initial_lsp_balance_sat: int = Field(16777215, ge=0, title="Max Initial Lsp Balance Sat")
     min_channel_balance_sat: int = Field(50000, ge=0, title="Min Channel Balance Sat")
-    max_channel_balance_sat: int = Field(
-        16777215, ge=0, title="Max Channel Balance Sat"
-    )
+    max_channel_balance_sat: int = Field(16777215, ge=0, title="Max Channel Balance Sat")
 
 
 class OrderState(Enum):
@@ -234,20 +216,14 @@ class PaginationMeta(BaseModel):
     Pagination metadata
     """
 
-    total: int = Field(
-        ..., description="Total number of items matching the filter", title="Total"
-    )
+    total: int = Field(..., description="Total number of items matching the filter", title="Total")
     limit: int = Field(..., description="Number of items per page", title="Limit")
     skip: int = Field(..., description="Number of items skipped", title="Skip")
     current_page: int = Field(
         ..., description="Current page number (1-indexed)", title="Current Page"
     )
-    total_pages: int = Field(
-        ..., description="Total number of pages", title="Total Pages"
-    )
-    has_next: bool = Field(
-        ..., description="Whether there is a next page", title="Has Next"
-    )
+    total_pages: int = Field(..., description="Total number of pages", title="Total Pages")
+    has_next: bool = Field(..., description="Whether there is a next page", title="Has Next")
     has_previous: bool = Field(
         ..., description="Whether there is a previous page", title="Has Previous"
     )
@@ -304,9 +280,7 @@ class ReachabilityCell(BaseModel):
         description="Available layer combinations (e.g., 'RGB_LN->BTC_SPARK')",
         title="Layers",
     )
-    min_hops: int = Field(
-        ..., description="Minimum number of hops required", title="Min Hops"
-    )
+    min_hops: int = Field(..., description="Minimum number of hops required", title="Min Hops")
 
 
 class ReachabilityMatrixResponse(BaseModel):
@@ -314,12 +288,8 @@ class ReachabilityMatrixResponse(BaseModel):
     Full reachability matrix response.
     """
 
-    matrix: list[ReachabilityCell] = Field(
-        ..., description="Reachability cells", title="Matrix"
-    )
-    assets: list[str] = Field(
-        ..., description="All assets in the matrix", title="Assets"
-    )
+    matrix: list[ReachabilityCell] = Field(..., description="Reachability cells", title="Matrix")
+    assets: list[str] = Field(..., description="All assets in the matrix", title="Assets")
     timestamp: int = Field(..., description="Response timestamp", title="Timestamp")
 
 
@@ -350,9 +320,7 @@ class RetryDeliveryRequest(BaseModel):
     Request model for /retry_delivery endpoint to trigger immediate keysend retry
     """
 
-    order_id: str = Field(
-        ..., description="Order ID to retry asset delivery for", title="Order Id"
-    )
+    order_id: str = Field(..., description="Order ID to retry asset delivery for", title="Order Id")
 
 
 class RetryDeliveryStatus(Enum):
@@ -394,20 +362,14 @@ class RoutesRequest(BaseModel):
     Request for route discovery.
     """
 
-    from_asset: str = Field(
-        ..., description="Source asset ticker or ID", title="From Asset"
-    )
-    from_layer: Layer | None = Field(
-        None, description="Filter by source layer (optional)"
-    )
+    from_asset: str = Field(..., description="Source asset ticker or ID", title="From Asset")
+    from_layer: Layer | None = Field(None, description="Filter by source layer (optional)")
     to_asset: str | None = Field(
         None,
         description="Destination asset (if None, returns all reachable assets)",
         title="To Asset",
     )
-    to_layer: Layer | None = Field(
-        None, description="Filter by destination layer (optional)"
-    )
+    to_layer: Layer | None = Field(None, description="Filter by destination layer (optional)")
     max_hops: int = Field(
         2, description="Maximum number of hops (1-5)", ge=1, le=5, title="Max Hops"
     )
@@ -427,9 +389,7 @@ class SwapLeg(BaseModel):
         description="Unique identifier for the asset (e.g., 'BTC', RGB contract ID, etc.)",
         title="Asset Id",
     )
-    name: str = Field(
-        ..., description="Full name of the asset", examples=["Bitcoin"], title="Name"
-    )
+    name: str = Field(..., description="Full name of the asset", examples=["Bitcoin"], title="Name")
     ticker: str = Field(
         ...,
         description="Asset ticker symbol for display (e.g., 'BTC', 'USDT', 'EURX')",
@@ -636,9 +596,7 @@ class Asset(BaseModel):
     - LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK
     """
 
-    ticker: str = Field(
-        ..., description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker"
-    )
+    ticker: str = Field(..., description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker")
     name: str = Field(..., description="Full name", title="Name")
     precision: int = Field(
         ...,
@@ -656,16 +614,12 @@ class Asset(BaseModel):
     issued_supply: int | None = Field(
         None, description="Total issued supply", title="Issued Supply"
     )
-    timestamp: int | None = Field(
-        None, description="Creation timestamp", title="Timestamp"
-    )
+    timestamp: int | None = Field(None, description="Creation timestamp", title="Timestamp")
     endpoints: list[TradingLimits] | None = Field(
         None, description="Layer endpoints with trading limits", title="Endpoints"
     )
     is_active: bool = Field(True, description="Active for trading", title="Is Active")
-    added_at: int | None = Field(
-        None, description="When added to wallet", title="Added At"
-    )
+    added_at: int | None = Field(None, description="When added to wallet", title="Added At")
     supported_layers: list[str] | None = Field(
         None,
         description="Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')",
@@ -701,12 +655,8 @@ class MultiHopRoute(BaseModel):
     Complete route with one or more steps.
     """
 
-    steps: list[RouteStep] = Field(
-        ..., description="Ordered list of route steps", title="Steps"
-    )
-    total_hops: int = Field(
-        ..., description="Number of hops in the route", title="Total Hops"
-    )
+    steps: list[RouteStep] = Field(..., description="Ordered list of route steps", title="Steps")
+    total_hops: int = Field(..., description="Number of hops in the route", title="Total Hops")
 
 
 class OrderHistorySummary(BaseModel):
@@ -716,20 +666,12 @@ class OrderHistorySummary(BaseModel):
 
     id: str = Field(..., description="Order ID", title="Id")
     status: SwapOrderStatus = Field(..., description="Order status")
-    from_asset: str = Field(
-        ..., description="Asset being swapped from", title="From Asset"
-    )
-    from_amount: int = Field(
-        ..., description="Amount of from_asset", title="From Amount"
-    )
+    from_asset: str = Field(..., description="Asset being swapped from", title="From Asset")
+    from_amount: int = Field(..., description="Amount of from_asset", title="From Amount")
     to_asset: str = Field(..., description="Asset being swapped to", title="To Asset")
     to_amount: int = Field(..., description="Amount of to_asset", title="To Amount")
-    created_at: int = Field(
-        ..., description="Order creation timestamp", title="Created At"
-    )
-    filled_at: int | None = Field(
-        None, description="Order completion timestamp", title="Filled At"
-    )
+    created_at: int = Field(..., description="Order creation timestamp", title="Created At")
+    filled_at: int | None = Field(None, description="Order completion timestamp", title="Filled At")
 
 
 class PairQuoteRequest(BaseModel):
@@ -795,9 +737,7 @@ class PaymentOnchain(BaseModel):
     order_total_sat: int = Field(..., title="Order Total Sat")
     address: str = Field(..., title="Address")
     min_fee_for_0conf: int = Field(..., title="Min Fee For 0Conf")
-    min_onchain_payment_confirmations: int = Field(
-        ..., title="Min Onchain Payment Confirmations"
-    )
+    min_onchain_payment_confirmations: int = Field(..., title="Min Onchain Payment Confirmations")
     refund_onchain_address: str | None = Field(None, title="Refund Onchain Address")
     payment_status: str | None = Field(None, title="Payment Status")
     payment_difference: int | None = Field(
@@ -819,9 +759,7 @@ class ReceiverAddress(BaseModel):
     address: str = Field(
         ..., description="The actual address, invoice, or token string", title="Address"
     )
-    format: ReceiverAddressFormat = Field(
-        ..., description="Format of the receiver address"
-    )
+    format: ReceiverAddressFormat = Field(..., description="Format of the receiver address")
 
 
 class RetryDeliveryResponse(BaseModel):
@@ -966,9 +904,7 @@ class TradableAsset(BaseModel):
     - Multi-layer use cases (trading pairs): use endpoints list
     """
 
-    ticker: str = Field(
-        ..., description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker"
-    )
+    ticker: str = Field(..., description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker")
     name: str = Field(..., description="Full name", title="Name")
     precision: int = Field(
         ...,
@@ -986,9 +922,7 @@ class TradableAsset(BaseModel):
     issued_supply: int | None = Field(
         None, description="Total issued supply", title="Issued Supply"
     )
-    timestamp: int | None = Field(
-        None, description="Creation timestamp", title="Timestamp"
-    )
+    timestamp: int | None = Field(None, description="Creation timestamp", title="Timestamp")
     endpoints: list[TradingLimits] | None = Field(
         None, description="Layer endpoints with trading limits", title="Endpoints"
     )
@@ -1011,9 +945,7 @@ class TradingPair(BaseModel):
     id: str | None = Field(None, title="Id")
     base: TradableAsset
     quote: TradableAsset
-    price: str | None = Field(
-        None, pattern="^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$", title="Price"
-    )
+    price: str | None = Field(None, pattern="^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$", title="Price")
     routes: list[SwapRoute] | None = Field(None, title="Routes")
     is_active: bool = Field(True, title="Is Active")
 
@@ -1031,9 +963,7 @@ class TradingPairsResponse(BaseModel):
 
 
 class CreateSwapOrderRequest(BaseModel):
-    rfq_id: str = Field(
-        ..., description="RFQ ID cannot be empty", min_length=1, title="Rfq Id"
-    )
+    rfq_id: str = Field(..., description="RFQ ID cannot be empty", min_length=1, title="Rfq Id")
     from_asset: SwapLeg = Field(
         ...,
         description="Complete input specification: asset, ticker, network, protocol, and amount",
@@ -1060,9 +990,7 @@ class CreateSwapOrderResponse(BaseModel):
 
 
 class OrderHistoryResponse(BaseModel):
-    data: list[OrderHistorySummary] = Field(
-        ..., description="List of orders", title="Data"
-    )
+    data: list[OrderHistorySummary] = Field(..., description="List of orders", title="Data")
     pagination: PaginationMeta
 
 
@@ -1076,12 +1004,8 @@ class ChannelOrderResponse(BaseModel):
     client_pubkey: str = Field(..., title="Client Pubkey")
     lsp_balance_sat: int = Field(..., title="Lsp Balance Sat")
     client_balance_sat: int = Field(..., title="Client Balance Sat")
-    required_channel_confirmations: int = Field(
-        ..., title="Required Channel Confirmations"
-    )
-    funding_confirms_within_blocks: int = Field(
-        ..., title="Funding Confirms Within Blocks"
-    )
+    required_channel_confirmations: int = Field(..., title="Required Channel Confirmations")
+    funding_confirms_within_blocks: int = Field(..., title="Funding Confirms Within Blocks")
     channel_expiry_blocks: int = Field(..., title="Channel Expiry Blocks")
     token: str | None = Field("", title="Token")
     created_at: AwareDatetime | None = Field(None, title="Created At")
@@ -1095,9 +1019,7 @@ class ChannelOrderResponse(BaseModel):
     rfq_id: str | None = Field(None, title="Rfq Id")
     asset_price_sat: int | None = Field(None, title="Asset Price Sat")
     asset_delivery_status: AssetDeliveryStatus | None = None
-    asset_delivery_payment_hash: str | None = Field(
-        None, title="Asset Delivery Payment Hash"
-    )
+    asset_delivery_payment_hash: str | None = Field(None, title="Asset Delivery Payment Hash")
     asset_delivery_completed_at: AwareDatetime | None = Field(
         None, title="Asset Delivery Completed At"
     )

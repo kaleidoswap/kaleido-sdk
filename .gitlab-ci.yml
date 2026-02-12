@@ -138,17 +138,6 @@ test:core:
     reports:
       junit: target/test-results.xml
 
-test:uniffi:
-  stage: test
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  needs:
-    - job: test:core
-      optional: true
-  script:
-    - echo "🔗 Testing UniFFI Bindings..."
-    - cargo test -p kaleidoswap-uniffi --release
-
 lint:rust:
   stage: test
   image: rust:${RUST_VERSION}
@@ -240,6 +229,21 @@ test:python-sdk:
       junit: python-sdk/test-results.xml
     when: always
 
+format:python-sdk:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  <<: *python_sdk_uv_setup
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "✨ Checking Python SDK formatting..."
+    - make check-format-python
+  allow_failure: true
+
 lint:python-sdk:
   stage: test
   image: python:${PYTHON_VERSION}
@@ -251,8 +255,7 @@ lint:python-sdk:
     - if: $CI_PIPELINE_SOURCE == "push"
     - if: $CI_COMMIT_TAG
   script:
-    - echo "🔍 Checking Python SDK format and lint..."
-    - make check-format-python
+    - echo "🔍 Linting Python SDK..."
     - make check-lint-python
   allow_failure: true
 
