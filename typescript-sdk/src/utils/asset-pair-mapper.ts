@@ -27,17 +27,20 @@ export interface MappedAsset {
  * Get primary asset ID from a TradableAsset
  * Prefers RGB, then BTC, then first available
  */
-function getAssetId(
-    ticker: string,
-    protocolIds?: { [key: string]: string },
-): string {
+function getAssetId(ticker: string, protocolIds?: { [key: string]: string }): string {
     if (!protocolIds || Object.keys(protocolIds).length === 0) {
         // For native assets like BTC, use ticker as ID
         return ticker;
     }
 
     // Prefer RGB contract ID, then TAPASS, then BTC, then first available
-    return protocolIds['RGB'] || protocolIds['TAPASS'] || protocolIds['BTC'] || Object.values(protocolIds)[0] || ticker;
+    return (
+        protocolIds['RGB'] ||
+        protocolIds['TAPASS'] ||
+        protocolIds['BTC'] ||
+        Object.values(protocolIds)[0] ||
+        ticker
+    );
 }
 
 /**
@@ -133,10 +136,16 @@ export class AssetPairMapper {
             }
             // Use most restrictive order sizes
             if (assetData.min_order_size > 0) {
-                existing.min_order_size = Math.max(existing.min_order_size, assetData.min_order_size);
+                existing.min_order_size = Math.max(
+                    existing.min_order_size,
+                    assetData.min_order_size,
+                );
             }
             if (assetData.max_order_size < Number.MAX_SAFE_INTEGER) {
-                existing.max_order_size = Math.min(existing.max_order_size, assetData.max_order_size);
+                existing.max_order_size = Math.min(
+                    existing.max_order_size,
+                    assetData.max_order_size,
+                );
             }
         } else {
             // Create new mapped asset
