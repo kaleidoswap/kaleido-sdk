@@ -6,8 +6,8 @@
 #   - On tag: update-specs → generate-models → build → deploy
 
 stages:
-  - .pre       # update-specs
-  - generate   # generate-models
+  - .pre # update-specs
+  - generate # generate-models
   - test
   - build
   - deploy
@@ -214,6 +214,18 @@ typecheck:typescript-sdk:
     - cd typescript-sdk
     - pnpm install
     - pnpm run typecheck
+  allow_failure: true
+
+format:typescript-sdk:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "✨ Checking TypeScript SDK formatting..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm run format:check
   allow_failure: true
 
 # ---------------------------------------------------------------------------
