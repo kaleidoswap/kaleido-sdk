@@ -77,9 +77,13 @@ generate-sdk-models:
       artifacts: true
       optional: true
   before_script:
-    - apt-get update && apt-get install -y nodejs npm
+    - apt-get update && apt-get install -y nodejs npm curl
     - npm install -g pnpm openapi-typescript
     - pip install 'datamodel-code-generator[http]'
+    # Install uv and ruff for formatting generated files
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - cd python-sdk && uv sync --frozen --all-extras --dev && cd ..
   script:
     - echo "🔧 Generating SDK models from OpenAPI specs..."
     # TypeScript SDK
@@ -105,9 +109,13 @@ check-generated-models:
   stage: generate
   image: python:${PYTHON_VERSION}
   before_script:
-    - apt-get update && apt-get install -y nodejs npm git
+    - apt-get update && apt-get install -y nodejs npm git curl
     - npm install -g pnpm openapi-typescript
     - pip install 'datamodel-code-generator[http]'
+    # Install uv and ruff for formatting generated files
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - cd python-sdk && uv sync --frozen --all-extras --dev && cd ..
   script:
     - echo "🔍 Checking if generated models are up-to-date..."
     - bash scripts/generate_typescript_types.sh
