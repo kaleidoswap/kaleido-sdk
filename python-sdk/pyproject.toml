@@ -80,6 +80,7 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# Note: Generated files are formatted with ruff during generation to ensure consistency
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]

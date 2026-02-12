@@ -100,6 +100,20 @@ for conflict in "${CONFLICTS[@]}"; do
     fix_naming_conflict "$conflict" "$OUTPUT_DIR/node_types.py"
 done
 
+# Format generated files with ruff to ensure consistency with project formatting
+# This prevents conflicts between datamodel-code-generator's formatter (black/isort) and ruff
+echo "  → Formatting generated files with ruff..."
+cd "$ROOT_DIR/python-sdk"
+if command -v uv &> /dev/null; then
+    # Use uv to run ruff (respects pyproject.toml config)
+    uv run ruff format kaleidoswap_sdk/generated/ --quiet 2>/dev/null || echo "    ⚠️  Ruff formatting skipped (not critical)"
+elif command -v ruff &> /dev/null; then
+    # Use ruff directly if available
+    ruff format kaleidoswap_sdk/generated/ --quiet 2>/dev/null || echo "    ⚠️  Ruff formatting skipped (not critical)"
+else
+    echo "    ⚠️  Ruff not found, skipping formatting (generated files may have different formatting)"
+fi
+cd "$ROOT_DIR"
 
 # Create __init__.py to re-export types
 cat > "$OUTPUT_DIR/__init__.py" << 'EOF'
