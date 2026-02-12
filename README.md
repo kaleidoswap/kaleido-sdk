@@ -4,13 +4,13 @@ Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidosw
 
 ## 🌐 Unified Architecture
 
-The SDK is built in **Rust** with bindings for multiple languages:
+The SDK provides implementations for multiple languages:
 
 | Language | Status | Package |
 |----------|--------|---------|
 | **Rust** | ✅ Ready | `kaleidoswap-core` |
-| **Python** | ✅ Ready | `kaleidoswap` |
-| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` |
+| **Python** | ✅ Ready | `kaleidoswap-sdk` |
+| **TypeScript** | ✅ Ready | `@kaleidoswap/sdk` |
 | **Swift** | 🚧 Planned | - |
 
 ## ✨ Features
@@ -218,8 +218,8 @@ if (client.node) {
 ### Prerequisites
 
 - Rust 1.75+
-- Python 3.8+ (for Python bindings)
-- Node.js 18+ (for TypeScript bindings)
+- Python 3.8+ (for Python SDK)
+- Node.js 18+ (for TypeScript SDK)
 - Docker (for regenerating models)
 
 ### Building
@@ -230,7 +230,7 @@ make build
 
 # Build individual components
 make build-rust
-make build-python
+make build-python-sdk
 make build-typescript
 ```
 
@@ -242,28 +242,49 @@ make test
 
 # Test specific language
 cargo test                    # Rust
-make test-python              # Python
-make test-typescript          # TypeScript
+make test-python-sdk          # Python SDK
+make test-typescript          # TypeScript SDK
 ```
 
 ### Regenerating Models
 
-Models are auto-generated from OpenAPI specs using Docker.
+Each language SDK has its own script to generate models from OpenAPI specs:
+
+**Python SDK:**
+```bash
+make generate-python-sdk-models
+# Or directly:
+bash scripts/generate_python_sdk_models.sh
+```
+
+**TypeScript SDK:**
+```bash
+make generate-ts-types
+# Or directly:
+bash scripts/generate_typescript_types.sh
+```
+
+**All SDKs:**
+```bash
+make generate-models  # Generates models for all SDKs
+```
 
 **Using Remote Specs (CI/Default):**
 ```bash
-make regenerate
+make regenerate  # Updates specs + generates all models + verifies
 ```
 
 **Using Local Spec (Development):**
-1. Generate `openapi.json` in `kaleidoswap-maker`.
-2. Copy it to `specs/kaleidoswap.json`.
-3. Run:
+1. Ensure OpenAPI specs are in `crates/kaleidoswap-core/specs/`:
+   - `maker.json` - Kaleidoswap Market API
+   - `rln.yaml` - RGB Lightning Node API
+2. Run the generation script for the language you're working on:
 ```bash
-make generate-models
+make generate-python-sdk-models  # Python SDK
+make generate-ts-types           # TypeScript SDK
 ```
 
-See [Architecture](./docs/ARCHITECTURE.md) for details on the code generation workflow.
+See [Architecture](./docs/ARCHITECTURE.md) and [Code Generation](./docs/CODE_GENERATION.md) for details.
 
 ## 📖 API Coverage
 
@@ -278,12 +299,12 @@ See [Architecture](./docs/ARCHITECTURE.md) for details on the code generation wo
 ## 🗺️ Roadmap
 
 - [x] Core Rust library
-- [x] Python bindings
-- [x] TypeScript bindings
+- [x] Python SDK
+- [x] TypeScript SDK
 - [x] Auto-generated models from OpenAPI
 - [x] WebSocket support for real-time updates
-- [ ] Swift bindings for iOS/macOS
-- [ ] Kotlin bindings for Android
+- [ ] Swift SDK for iOS/macOS
+- [ ] Kotlin SDK for Android
 - [ ] CLI tool
 
 See [ROADMAP.md](./ROADMAP.md) for the complete development timeline.

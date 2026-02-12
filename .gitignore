@@ -6,14 +6,14 @@ target/
 # Node.js
 node_modules/
 
-# TypeScript build artifacts
-bindings/typescript/dist/
-bindings/typescript/coverage/
-bindings/typescript/*.js
-bindings/typescript/*.js.map
-bindings/typescript/*.d.ts
-!bindings/typescript/jest.config.js
-!bindings/typescript/.eslintrc.js
+# TypeScript SDK build artifacts
+typescript-sdk/dist/
+typescript-sdk/coverage/
+typescript-sdk/*.js
+typescript-sdk/*.js.map
+typescript-sdk/*.d.ts
+!typescript-sdk/jest.config.js
+!typescript-sdk/.eslintrc.js
 
 # NAPI-RS build artifacts (Node.js native modules)
 *.node
@@ -26,9 +26,6 @@ npm-shrinkwrap.json
 
 # Package.json filtering
 package-lock.json
-!bindings/web/package.json
-!bindings/web/typescript/package.json
-!bindings/python/package.json
 !crates/*/package.json
 
 # Python

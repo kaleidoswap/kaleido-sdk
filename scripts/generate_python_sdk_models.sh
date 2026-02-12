@@ -55,6 +55,49 @@ $CODEGEN_CMD \
     --use-double-quotes \
     --collapse-root-models
 
+# Fix naming conflicts: datamodel-code-generator renames types when field names conflict
+# Example: PaymentStatus enum gets renamed to PaymentStatus1 when there's a payment_status field
+# This is a known issue: https://github.com/koxudaxi/datamodel-code-generator/issues/2091
+# 
+# The fix is deterministic and runs as part of generation, so CI checks will pass.
+# When new conflicts are found, add them to the CONFLICTS array below.
+echo "  → Fixing naming conflicts..."
+
+# Function to fix a specific naming conflict (e.g., PaymentStatus1 → PaymentStatus)
+# This ensures deterministic output for CI checks
+fix_naming_conflict() {
+    local original_name="$1"
+    local conflicted_name="${original_name}1"
+    local file="$2"
+    
+    if grep -q "class ${conflicted_name}(" "$file" 2>/dev/null; then
+        if [[ "$(uname)" == "Darwin" ]]; then
+            # macOS/BSD sed
+            sed -i '' "s/class ${conflicted_name}(/class ${original_name}(/g" "$file"
+            sed -i '' "s/: ${conflicted_name}/: ${original_name}/g" "$file"
+            sed -i '' "s/${conflicted_name} |/${original_name} |/g" "$file"
+            sed -i '' "s/| ${conflicted_name}/| ${original_name}/g" "$file"
+        else
+            # GNU sed (Linux) - used in CI
+            sed -i "s/class ${conflicted_name}(/class ${original_name}(/g" "$file"
+            sed -i "s/: ${conflicted_name}/: ${original_name}/g" "$file"
+            sed -i "s/${conflicted_name} |/${original_name} |/g" "$file"
+            sed -i "s/| ${conflicted_name}/| ${original_name}/g" "$file"
+        fi
+        echo "    ✓ Fixed ${conflicted_name} → ${original_name}"
+    fi
+}
+
+# List of known naming conflicts: (conflicted_name_without_suffix)
+# Add new conflicts here as they are discovered
+CONFLICTS=("PaymentStatus")
+
+# Fix all known conflicts in both generated files
+for conflict in "${CONFLICTS[@]}"; do
+    fix_naming_conflict "$conflict" "$OUTPUT_DIR/api_types.py"
+    fix_naming_conflict "$conflict" "$OUTPUT_DIR/node_types.py"
+done
+
 # Create __init__.py to re-export types
 cat > "$OUTPUT_DIR/__init__.py" << 'EOF'
 """

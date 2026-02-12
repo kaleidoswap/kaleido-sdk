@@ -1,5 +1,5 @@
 #!/bin/bash
-# Synchronize version across all SDK bindings
+# Synchronize version across all SDKs
 # Usage: ./scripts/sync-versions.sh [new_version]
 
 set -e
@@ -24,25 +24,18 @@ if [ -n "$1" ]; then
     sed -i.bak "s/^version = \".*\"/version = \"${NEW_VERSION}\"/" Cargo.toml
     rm Cargo.toml.bak
     
-    # Update Python pyproject.toml
-    if [ -f bindings/python/pyproject.toml ]; then
-        sed -i.bak "s/^version = \".*\"/version = \"${NEW_VERSION}\"/" bindings/python/pyproject.toml
-        rm bindings/python/pyproject.toml.bak
-        echo -e "${GREEN}✓ Updated Python version${NC}"
+    # Update Python SDK pyproject.toml
+    if [ -f python-sdk/pyproject.toml ]; then
+        sed -i.bak "s/^version = \".*\"/version = \"${NEW_VERSION}\"/" python-sdk/pyproject.toml
+        rm python-sdk/pyproject.toml.bak
+        echo -e "${GREEN}✓ Updated Python SDK version${NC}"
     fi
     
-    # Update Node.js package.json
-    if [ -f bindings/typescript/package.json ]; then
-        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${NEW_VERSION}\"/" bindings/typescript/package.json
-        rm bindings/typescript/package.json.bak
-        echo -e "${GREEN}✓ Updated Node.js version${NC}"
-    fi
-    
-    # Update Web package.json
-    if [ -f bindings/typescript/package.json ]; then
-        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${NEW_VERSION}\"/" bindings/typescript/package.json
-        rm bindings/typescript/package.json.bak
-        echo -e "${GREEN}✓ Updated Web version${NC}"
+    # Update TypeScript SDK package.json
+    if [ -f typescript-sdk/package.json ]; then
+        sed -i.bak "s/\"version\": \".*\"/\"version\": \"${NEW_VERSION}\"/" typescript-sdk/package.json
+        rm typescript-sdk/package.json.bak
+        echo -e "${GREEN}✓ Updated TypeScript SDK version${NC}"
     fi
     
     echo -e "${GREEN}✅ All versions updated to ${NEW_VERSION}${NC}"
@@ -50,24 +43,19 @@ if [ -n "$1" ]; then
 else
     # Just display current versions
     echo ""
-    echo "Current versions across bindings:"
+    echo "Current versions across SDKs:"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     echo -e "Workspace:   ${GREEN}${CURRENT_VERSION}${NC}"
     
-    if [ -f bindings/python/pyproject.toml ]; then
-        PY_VERSION=$(grep '^version = ' bindings/python/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
-        echo -e "Python:      ${GREEN}${PY_VERSION}${NC}"
+    if [ -f python-sdk/pyproject.toml ]; then
+        PY_VERSION=$(grep '^version = ' python-sdk/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        echo -e "Python SDK:  ${GREEN}${PY_VERSION}${NC}"
     fi
     
-    if [ -f bindings/typescript/package.json ]; then
-        TS_VERSION=$(grep '"version"' bindings/typescript/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
-        echo -e "Node.js:     ${GREEN}${TS_VERSION}${NC}"
-    fi
-    
-    if [ -f bindings/typescript/package.json ]; then
-        WEB_VERSION=$(grep '"version"' bindings/typescript/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
-        echo -e "Web:         ${GREEN}${WEB_VERSION}${NC}"
+    if [ -f typescript-sdk/package.json ]; then
+        TS_VERSION=$(grep '"version"' typescript-sdk/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+        echo -e "TypeScript SDK: ${GREEN}${TS_VERSION}${NC}"
     fi
     
     echo ""

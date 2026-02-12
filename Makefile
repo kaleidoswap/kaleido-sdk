@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
+.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -9,18 +9,16 @@ help:
 	@echo "Kaleidoswap SDK - Development Makefile"
 	@echo ""
 	@echo "Building:"
-	@echo "  build              - Build all components (Rust + bindings)"
+	@echo "  build              - Build all components (Rust + SDKs)"
 	@echo "  build-rust         - Build Rust core library"
-	@echo "  build-python       - Build Python bindings (uv)"
 	@echo "  build-python-sdk   - Build Python SDK (pure Python)"
-	@echo "  build-typescript   - Build TypeScript bindings"
+	@echo "  build-typescript   - Build TypeScript SDK"
 	@echo ""
 	@echo "Testing:"
 	@echo "  test               - Run all tests"
 	@echo "  test-rust          - Run Rust tests"
-	@echo "  test-python        - Run Python binding tests (uv)"
 	@echo "  test-python-sdk    - Run Python SDK tests"
-	@echo "  test-typescript    - Run TypeScript binding tests"
+	@echo "  test-typescript    - Run TypeScript SDK tests"
 	@echo ""
 	@echo "Examples & Development:"
 	@echo "  run-python-example - Run Python swap example (local env)"
@@ -44,8 +42,7 @@ help:
 	@echo "  pre-commit-python-sdk   - Run all checks for Python SDK"
 	@echo ""
 	@echo "Code Generation:"
-	@echo "  generate-models            - Generate all models (Python + TypeScript)"
-	@echo "  generate-python-models     - Generate Python Pydantic models (bindings)"
+	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
 	@echo "  generate-python-sdk-models - Generate Python SDK Pydantic models"
 	@echo "  generate-python-sdk-client - Generate Python SDK HTTP clients (openapi-python-client)"
 	@echo "  generate-ts-types          - Generate TypeScript types"
@@ -54,35 +51,29 @@ help:
 	@echo "  update-specs               - Download latest OpenAPI specs"
 	@echo ""
 	@echo "Deployment:"
-	@echo "  deploy-python      - Deploy Python bindings to PyPI"
 	@echo "  deploy-python-sdk  - Deploy Python SDK to PyPI"
-	@echo "  deploy-typescript  - Deploy TypeScript package to npm"
+	@echo "  deploy-typescript  - Deploy TypeScript SDK to npm"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  clean              - Clean all build artifacts"
 
 # Directories
-BINDINGS_PYTHON := bindings/python
-BINDINGS_TYPESCRIPT := typescript-sdk
+TYPESCRIPT_SDK := typescript-sdk
 PYTHON_SDK := python-sdk
 
 # ============================================================================
 # Build targets
 # ============================================================================
 
-build: build-rust build-python build-typescript
+build: build-rust build-python-sdk build-typescript
 
 build-rust:
 	@echo "🦀 Building Rust core library..."
-	cargo build --release --workspace --exclude kaleidoswap-python
-
-build-python:
-	@echo "🐍 Building Python bindings..."
-	cd $(BINDINGS_PYTHON) && uv run maturin build --release
+	cargo build --release --workspace
 
 build-typescript:
-	@echo "📦 Building TypeScript bindings..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install && pnpm run build
+	@echo "📦 Building TypeScript SDK..."
+	cd $(TYPESCRIPT_SDK) && pnpm install && pnpm run build
 
 build-python-sdk:
 	@echo "🐍 Building Python SDK..."
@@ -92,22 +83,15 @@ build-python-sdk:
 # Test targets
 # ============================================================================
 
-test: test-rust test-python test-typescript
+test: test-rust test-python-sdk test-typescript
 
 test-rust:
 	@echo "🧪 Running Rust tests..."
 	cargo test --all
 
-test-python:
-	@echo "🧪 Running Python tests..."
-	cd $(BINDINGS_PYTHON) && \
-		uv sync --all-extras --dev && \
-		uv run maturin develop --uv && \
-		uv run pytest tests/ -v
-
 test-typescript:
-	@echo "🧪 Running TypeScript tests..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm test
+	@echo "🧪 Running TypeScript SDK tests..."
+	cd $(TYPESCRIPT_SDK) && pnpm test
 
 test-python-sdk:
 	@echo "🧪 Running Python SDK tests..."
@@ -116,12 +100,6 @@ test-python-sdk:
 # ============================================================================
 # Example & Development targets
 # ============================================================================
-
-run-python-example: dev-python
-	@echo "🐍 Running Python swap example..."
-	@echo "   API URL: $(KALEIDO_API_URL)"
-	@echo "   Node URL: $(KALEIDO_NODE_URL)"
-	@cd $(BINDINGS_PYTHON) && uv run examples/swap_example.py
 
 run-ts-example: dev-typescript
 	@echo "📦 Running TypeScript examples..."
@@ -133,25 +111,24 @@ run-ts-example: dev-typescript
 	@echo "  make run-ts-websocket  - WebSocket streaming"
 	@echo ""
 	@echo "Running hello example by default..."
-	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/01_hello.ts
+	@cd $(TYPESCRIPT_SDK) && pnpm exec tsx examples/01_hello.ts
 
 run-ts-hello: dev-typescript
 	@echo "📦 Running TypeScript hello example..."
-	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/01_hello.ts
+	@cd $(TYPESCRIPT_SDK) && pnpm exec tsx examples/01_hello.ts
 
 run-ts-quote: dev-typescript
 	@echo "📦 Running TypeScript quote example..."
-	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/02_get_quote.ts
+	@cd $(TYPESCRIPT_SDK) && pnpm exec tsx examples/02_get_quote.ts
 
 run-ts-websocket: dev-typescript
 	@echo "📦 Running TypeScript WebSocket example..."
-	@cd $(BINDINGS_TYPESCRIPT) && pnpm exec tsx examples/03_websocket.ts
+	@cd $(TYPESCRIPT_SDK) && pnpm exec tsx examples/03_websocket.ts
 
-dev-setup: dev-python dev-typescript check-services
+dev-setup: dev-typescript check-services
 	@echo "✅ Development environment ready!"
 	@echo ""
 	@echo "Quick commands:"
-	@echo "  make run-python-example  - Run Python example"
 	@echo "  make run-ts-example      - Run TypeScript examples"
 	@echo "  make run-ts-hello        - Run TypeScript hello example"
 	@echo "  make run-ts-quote        - Run TypeScript quote example"
@@ -199,7 +176,7 @@ format-python:
 
 format-typescript:
 	@echo "✨ Formatting TypeScript code..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm run format
+	cd $(TYPESCRIPT_SDK) && pnpm run format
 
 lint: lint-rust lint-typescript check-python
 
@@ -209,7 +186,7 @@ lint-rust:
 
 lint-typescript:
 	@echo "🔍 Linting TypeScript code..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm run lint
+	cd $(TYPESCRIPT_SDK) && pnpm run lint
 
 lint-python:
 	@echo "🛠️ Fixing Python SDK lint issues..."
@@ -246,7 +223,7 @@ clippy:
 
 typecheck-typescript:
 	@echo "📝 Type checking TypeScript SDK..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm run typecheck
+	cd $(TYPESCRIPT_SDK) && pnpm run typecheck
 
 # ============================================================================
 # Pre-commit targets (run before committing)
@@ -259,7 +236,7 @@ pre-commit: pre-commit-typescript pre-commit-python-sdk
 pre-commit-typescript:
 	@echo "🔍 Running TypeScript SDK pre-commit checks..."
 	@echo ""
-	cd $(BINDINGS_TYPESCRIPT) && \
+	cd $(TYPESCRIPT_SDK) && \
 		echo "  → Checking format..." && pnpm run format:check && \
 		echo "  → Linting..." && pnpm run lint && \
 		echo "  → Type checking..." && pnpm run typecheck && \
@@ -283,12 +260,8 @@ pre-commit-python-sdk:
 # Code generation targets
 # ============================================================================
 
-generate-models: generate-python-models generate-python-sdk-models generate-ts-types
-	@echo "✅ All models generated (Python bindings + Python SDK + TypeScript)"
-
-generate-python-models:
-	@echo "🐍 Generating Python Pydantic models from OpenAPI specs (bindings)..."
-	bash scripts/generate_python_models.sh
+generate-models: generate-python-sdk-models generate-ts-types
+	@echo "✅ All models generated (Python SDK + TypeScript)"
 
 generate-python-sdk-models:
 	@echo "🐍 Generating Python SDK Pydantic models from OpenAPI specs..."
@@ -318,13 +291,9 @@ update-specs:
 # Deployment targets
 # ============================================================================
 
-deploy-python:
-	@echo "📤 Deploying Python package to PyPI..."
-	cd $(BINDINGS_PYTHON) && uv run maturin publish
-
 deploy-typescript:
-	@echo "📤 Deploying TypeScript package to npm..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm publish
+	@echo "📤 Deploying TypeScript SDK to npm..."
+	cd $(TYPESCRIPT_SDK) && pnpm publish
 
 deploy-python-sdk:
 	@echo "📤 Deploying Python SDK to PyPI..."
@@ -338,14 +307,11 @@ clean:
 	@echo "🧹 Cleaning build artifacts..."
 	cargo clean
 	rm -rf target/
-	rm -rf $(BINDINGS_PYTHON)/target/
-	rm -rf $(BINDINGS_PYTHON)/*.egg-info/
-	rm -rf $(BINDINGS_PYTHON)/dist/
 	rm -rf $(PYTHON_SDK)/*.egg-info/
 	rm -rf $(PYTHON_SDK)/dist/
 	rm -rf $(PYTHON_SDK)/build/
-	rm -rf $(BINDINGS_TYPESCRIPT)/dist/
-	rm -rf $(BINDINGS_TYPESCRIPT)/node_modules/
+	rm -rf $(TYPESCRIPT_SDK)/dist/
+	rm -rf $(TYPESCRIPT_SDK)/node_modules/
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
@@ -355,15 +321,9 @@ clean:
 # Development helpers
 # ============================================================================
 
-dev-python:
-	@echo "🐍 Installing Python bindings in development mode..."
-	cd $(BINDINGS_PYTHON) && \
-		uv sync --all-extras --dev && \
-		uv run maturin develop --uv
-
 dev-typescript:
 	@echo "📦 Installing TypeScript SDK dependencies..."
-	cd $(BINDINGS_TYPESCRIPT) && pnpm install
+	cd $(TYPESCRIPT_SDK) && pnpm install
 
 dev-python-sdk:
 	@echo "🐍 Installing Python SDK in development mode..."

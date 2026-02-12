@@ -30,7 +30,7 @@ Kaleidoswap SDK provides a unified interface for interacting with the Kaleidoswa
 
 ## Installation
 
-### Python
+### Python SDK
 
 ```bash
 # Install via pip
@@ -38,29 +38,29 @@ pip install kaleidoswap-sdk
 
 # Or install from source
 git clone https://github.com/kaleidoswap/kaleido-sdk.git
-cd kaleido-sdk/python
+cd kaleido-sdk/python-sdk
 pip install -e .
 ```
 
 **Requirements**: Python 3.8+
 
-### TypeScript/JavaScript
+### TypeScript SDK
 
 ```bash
 # Install via npm
-npm install kaleidoswap-sdk
+npm install @kaleidoswap/sdk
 
-# Install via yarn
-yarn add kaleidoswap-sdk
+# Install via pnpm
+pnpm add @kaleidoswap/sdk
 
 # Or install from source
 git clone https://github.com/kaleidoswap/kaleido-sdk.git
-cd kaleido-sdk/typescript
-npm install
-npm run build
+cd kaleido-sdk/typescript-sdk
+pnpm install
+pnpm run build
 ```
 
-**Requirements**: Node.js 16+
+**Requirements**: Node.js 18+
 
 ### Rust
 
@@ -308,8 +308,13 @@ We welcome contributions to the Kaleidoswap SDK! Here's how you can help:
 git clone https://github.com/kaleidoswap/kaleido-sdk.git
 cd kaleido-sdk
 
-# Choose your SDK language
-cd python    # or typescript, rust
+# Each SDK is maintained separately
+cd python-sdk      # Python SDK
+cd typescript-sdk  # TypeScript SDK
+
+# Generate models from OpenAPI specs
+make generate-python-sdk-models  # Python SDK
+make generate-ts-types           # TypeScript SDK
 ```
 
 ### Ways to Contribute
