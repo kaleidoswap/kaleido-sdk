@@ -37,13 +37,14 @@ default:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
 
-# Workflow rules: Run on tags and main/dev branches
+# Workflow rules: Run on tags, merge requests, main/dev, and any branch push
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
     - when: never
 
 # ---------------------------------------------------------------------------
@@ -263,24 +264,6 @@ typecheck:python-sdk:
   allow_failure: true
 
 # ---------------------------------------------------------------------------
-# Python Bindings (Rust/Maturin - kaleidoswap)
-# ---------------------------------------------------------------------------
-
-lint:python-bindings:
-  stage: test
-  image: python:${PYTHON_VERSION}-slim
-  before_script:
-    - apt-get update && apt-get install -y curl
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🔍 Linting Python bindings..."
-    - cd bindings/python
-    - uv run ruff check .
-    - uv run black --check .
-  allow_failure: true
-
-# ---------------------------------------------------------------------------
 # BUILD STAGE
 # ---------------------------------------------------------------------------
 
@@ -294,25 +277,6 @@ build:core:
   artifacts:
     paths:
       - target/release/libkaleidoswap_core.*
-    expire_in: 1 week
-
-build:python-bindings:
-  stage: build
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  needs:
-    - job: build:core
-      optional: true
-  before_script:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🐍 Building Python Bindings (Maturin + UniFFI)..."
-    - cd bindings/python
-    - uv tool run maturin build --release --strip
-  artifacts:
-    paths:
-      - target/wheels/
     expire_in: 1 week
 
 build:python-sdk:
@@ -360,26 +324,6 @@ build:typescript-sdk:
 # ---------------------------------------------------------------------------
 # DEPLOY STAGE (tag pipelines only - manual approval required)
 # ---------------------------------------------------------------------------
-
-deploy:pypi-bindings:
-  stage: deploy
-  image: rust:${RUST_VERSION}
-  needs:
-    - job: build:python-bindings
-      artifacts: true
-  before_script:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🚀 Publishing Python bindings to PyPI..."
-    - cd bindings/python
-    - uv tool run maturin publish --username __token__ --password ${PYPI_TOKEN} --skip-existing || uv tool run twine upload --skip-existing target/wheels/*
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
-  environment:
-    name: pypi-bindings
-    url: https://pypi.org/project/kaleidoswap/
 
 deploy:pypi-sdk:
   stage: deploy
