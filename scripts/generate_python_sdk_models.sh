@@ -100,21 +100,8 @@ for conflict in "${CONFLICTS[@]}"; do
     fix_naming_conflict "$conflict" "$OUTPUT_DIR/node_types.py"
 done
 
-# Format generated files with ruff to match project formatting standards
-# datamodel-code-generator uses black/isort which has different line wrapping rules
-# We format with ruff after generation to ensure consistency with project standards
-echo "  → Formatting generated files with ruff..."
-cd "$ROOT_DIR/python-sdk"
-if command -v uv &> /dev/null; then
-    # Use uv to run ruff (respects pyproject.toml config, but excludes are handled in Makefile)
-    uv run ruff format kaleidoswap_sdk/generated/ --quiet 2>/dev/null || echo "    ⚠️  Ruff formatting skipped (not critical)"
-elif command -v ruff &> /dev/null; then
-    # Use ruff directly if available
-    ruff format kaleidoswap_sdk/generated/ --quiet 2>/dev/null || echo "    ⚠️  Ruff formatting skipped (not critical)"
-else
-    echo "    ⚠️  Ruff not found, skipping formatting (generated files may have different formatting)"
-fi
-cd "$ROOT_DIR"
+# Note: Generated files are excluded from formatting checks (see Makefile and pyproject.toml)
+# They use datamodel-code-generator's built-in formatter (black/isort) for consistency
 
 # Create __init__.py to re-export types
 cat > "$OUTPUT_DIR/__init__.py" << 'EOF'
