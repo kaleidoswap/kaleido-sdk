@@ -7,10 +7,8 @@ import pytest
 from kaleidoswap_sdk import (
     AssetBalanceRequest,
     AssetMetadataRequest,
-    BtcBalanceRequest,
     ChangePasswordRequest,
     CheckIndexerUrlRequest,
-    CheckProxyEndpointRequest,
     ConnectPeerRequest,
     DecodeLNInvoiceRequest,
     DecodeRGBInvoiceRequest,
@@ -22,16 +20,16 @@ from kaleidoswap_sdk import (
     GetSwapRequest,
     InvoiceStatusRequest,
     KaleidoClient,
-    LNInvoiceRequest,
     ListTransactionsRequest,
     ListTransfersRequest,
     ListUnspentsRequest,
+    LNInvoiceRequest,
     NodeNotConfiguredError,
     RefreshRequest,
     RevokeTokenRequest,
+    RgbInvoiceRequest,
     RlnClient,
     SignMessageRequest,
-    RgbInvoiceRequest,
 )
 
 
@@ -72,9 +70,7 @@ class TestRlnClientIntegration:
         assert hasattr(info, "network")
 
     @pytest.mark.integration
-    @pytest.mark.skip(
-        reason="lock_wallet affects subsequent tests (wallet stays locked)"
-    )
+    @pytest.mark.skip(reason="lock_wallet affects subsequent tests (wallet stays locked)")
     async def test_lock_wallet(self, client_with_node: KaleidoClient) -> None:
         """Test locking the wallet (no-op if already locked)."""
         await client_with_node.rln.lock_wallet()
@@ -137,9 +133,7 @@ class TestRlnClientIntegration:
         assert hasattr(resp, "unspents")
 
     @pytest.mark.integration
-    @pytest.mark.skip(
-        reason="Node may return 403 Cannot estimate fees when indexer unavailable"
-    )
+    @pytest.mark.skip(reason="Node may return 403 Cannot estimate fees when indexer unavailable")
     async def test_estimate_fee(self, client_with_node: KaleidoClient) -> None:
         """Test estimating on-chain fee."""
         body = EstimateFeeRequest(blocks=1)
@@ -332,9 +326,7 @@ class TestRlnClientIntegration:
         assert hasattr(resp, "payments")
 
     @pytest.mark.integration
-    @pytest.mark.skip(
-        reason="Requires existing payment hash; node returns 403 when not found"
-    )
+    @pytest.mark.skip(reason="Requires existing payment hash; node returns 403 when not found")
     async def test_get_payment(self, client_with_node: KaleidoClient) -> None:
         """Test getting payment by hash."""
         body = GetPaymentRequest(payment_hash="0" * 64)

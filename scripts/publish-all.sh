@@ -1,5 +1,5 @@
 #!/bin/bash
-# Publish all SDK bindings to their respective registries
+# Publish all SDKs to their respective registries
 # Usage: ./scripts/publish-all.sh [--dry-run]
 
 set -e
@@ -24,49 +24,49 @@ echo -e "${BLUE}📦 Publishing Kaleidoswap SDK v${VERSION}${NC}"
 echo ""
 
 # ============================================================================
-# Python (PyPI)
+# Python SDK (PyPI)
 # ============================================================================
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}🐍 Python bindings → PyPI${NC}"
+echo -e "${YELLOW}🐍 Python SDK → PyPI${NC}"
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-cd bindings/python
+cd python-sdk
 
 if [ "$DRY_RUN" = true ]; then
-    echo "Would build wheel: uv run maturin build --release"
-    echo "Would publish: uv run maturin publish --skip-existing"
+    echo "Would build: uv build"
+    echo "Would publish: uv run twine upload dist/*"
 else
-    echo "Building Python wheel..."
-    uv run maturin build --release
+    echo "Building Python SDK..."
+    uv build
     
     echo "Publishing to PyPI..."
     read -p "Publish to PyPI? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        uv run maturin publish --skip-existing
-        echo -e "${GREEN}✅ Published kaleidoswap v${VERSION} to PyPI${NC}"
+        uv run twine upload dist/*
+        echo -e "${GREEN}✅ Published kaleidoswap-sdk v${VERSION} to PyPI${NC}"
     else
         echo -e "${YELLOW}⏭️  Skipped PyPI publish${NC}"
     fi
 fi
 
-cd ../..
+cd ..
 echo ""
 
 # ============================================================================
-# Node.js (npm)
+# TypeScript SDK (npm)
 # ============================================================================
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}📦 Node.js bindings → npm${NC}"
+echo -e "${YELLOW}📦 TypeScript SDK → npm${NC}"
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-cd bindings/typescript
+cd typescript-sdk
 
 if [ "$DRY_RUN" = true ]; then
     echo "Would build: pnpm run build"
-    echo "Would publish: npm publish --access public"
+    echo "Would publish: pnpm publish"
 else
-    echo "Building Node.js bindings..."
+    echo "Building TypeScript SDK..."
     pnpm install
     pnpm run build
     
@@ -74,47 +74,14 @@ else
     read -p "Publish @kaleidoswap/sdk to npm? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        npm publish --access public
+        pnpm publish
         echo -e "${GREEN}✅ Published @kaleidoswap/sdk v${VERSION} to npm${NC}"
     else
         echo -e "${YELLOW}⏭️  Skipped npm publish${NC}"
     fi
 fi
 
-cd ../..
-echo ""
-
-# ============================================================================
-# WASM (npm)
-# ============================================================================
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}🌐 WASM bindings → npm${NC}"
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-
-cd bindings/typescript
-
-if [ "$DRY_RUN" = true ]; then
-    echo "Would build: npm run build"
-    echo "Would publish: npm publish --access public"
-else
-    echo "Building WASM bindings..."
-    npm run build
-    
-    echo "Publishing to npm..."
-    read -p "Publish @kaleidoswap/sdk to npm? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        # Publish from pkg directory
-        cd pkg
-        npm publish --access public
-        cd ..
-        echo -e "${GREEN}✅ Published @kaleidoswap/sdk v${VERSION} to npm${NC}"
-    else
-        echo -e "${YELLOW}⏭️  Skipped npm publish${NC}"
-    fi
-fi
-
-cd ../..
+cd ..
 echo ""
 
 # ============================================================================
@@ -125,9 +92,8 @@ echo -e "${GREEN}✅ Release process complete!${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo "Published packages:"
-echo "  🐍 Python:     kaleidoswap v${VERSION}"
-echo "  📦 Node.js:    @kaleidoswap/sdk v${VERSION}"
-echo "  🌐 WASM:       @kaleidoswap/sdk v${VERSION}"
+echo "  🐍 Python SDK:     kaleidoswap-sdk v${VERSION}"
+echo "  📦 TypeScript SDK: @kaleidoswap/sdk v${VERSION}"
 echo ""
 echo "Next steps:"
 echo "  1. Create GitHub release: https://github.com/kaleidoswap/kaleido-sdk/releases/new"

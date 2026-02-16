@@ -93,8 +93,8 @@ success "Version synced to ${VERSION}"
 echo ""
 echo "Verifying version updates:"
 grep "^version" Cargo.toml | head -1
-grep "^version" bindings/python/pyproject.toml | head -1
-node -p "require('./bindings/typescript/package.json').version" 2>/dev/null || echo "TypeScript package.json not configured"
+grep "^version" python-sdk/pyproject.toml | head -1 2>/dev/null || echo "Python SDK pyproject.toml not found"
+node -p "require('./typescript-sdk/package.json').version" 2>/dev/null || echo "TypeScript SDK package.json not configured"
 
 # =============================================================================
 # Step 2: Generate Rust Models from OpenAPI
@@ -131,41 +131,36 @@ echo "Built libraries:"
 ls -lh target/release/libkaleidoswap* 2>/dev/null || echo "  (no library files found - may be normal on some platforms)"
 
 # =============================================================================
-# Step 5: Build Python Bindings
+# Step 5: Build Python SDK
 # =============================================================================
-step "Step 5: Building Python Bindings (Maturin + UniFFI)"
+step "Step 5: Building Python SDK"
 
-cd bindings/python
+cd python-sdk
 
-# Clean previous builds
-rm -rf target/wheels/*.whl 2>/dev/null || true
-
-# Build with maturin
-maturin build --release --strip
-
-success "Python wheel built"
-
-# Show the built wheel
-echo ""
-echo "Built Python wheels:"
-ls -lh ../../target/wheels/*.whl 2>/dev/null || ls -lh target/wheels/*.whl 2>/dev/null || echo "  Wheels in target/wheels/"
+# Build with uv
+if command -v uv &> /dev/null; then
+    uv build
+    success "Python SDK built"
+else
+    echo -e "${YELLOW}⚠ uv not found, skipping Python SDK build${NC}"
+fi
 
 cd "$ROOT_DIR"
 
 # =============================================================================
-# Step 6: Build TypeScript Bindings
+# Step 6: Build TypeScript SDK
 # =============================================================================
-step "Step 6: Building TypeScript Bindings"
+step "Step 6: Building TypeScript SDK"
 
-cd bindings/typescript
+cd typescript-sdk
 
 # Install dependencies
-npm install 2>/dev/null || echo -e "${YELLOW}npm install had issues, continuing...${NC}"
+pnpm install 2>/dev/null || echo -e "${YELLOW}pnpm install had issues, continuing...${NC}"
 
 # Build TypeScript
 if [[ -f "package.json" ]] && grep -q '"build"' package.json; then
-    npm run build
-    success "TypeScript bindings built"
+    pnpm run build
+    success "TypeScript SDK built"
 else
     echo -e "${YELLOW}⚠ No TypeScript build script found, skipping build step${NC}"
 fi
@@ -181,13 +176,16 @@ echo "Running Rust tests..."
 cargo test -p kaleidoswap-core --release -- --test-threads=1 2>/dev/null || echo -e "${YELLOW}⚠ Some Rust tests failed or skipped${NC}"
 
 echo ""
-echo "Running Python tests..."
-cd bindings/python
+echo "Running Python SDK tests..."
+cd python-sdk
 if [[ -d "tests" ]]; then
-    pip3 install pytest 2>/dev/null || true
-    python3 -m pytest tests/ -v 2>/dev/null || echo -e "${YELLOW}⚠ Some Python tests failed or skipped${NC}"
+    if command -v uv &> /dev/null; then
+        uv run pytest tests/ -v 2>/dev/null || echo -e "${YELLOW}⚠ Some Python SDK tests failed or skipped${NC}"
+    else
+        echo -e "${YELLOW}⚠ uv not found, skipping Python SDK tests${NC}"
+    fi
 else
-    echo "  No Python tests found"
+    echo "  No Python SDK tests found"
 fi
 cd "$ROOT_DIR"
 
@@ -206,13 +204,13 @@ echo -e "${GREEN}✓ Version: ${VERSION}${NC}"
 echo -e "${GREEN}✓ Duration: ${DURATION}s${NC}"
 echo ""
 echo "Artifacts:"
-echo "  • Python wheel:     target/wheels/"
-echo "  • TypeScript build: bindings/typescript/dist/"
+echo "  • Python SDK:       python-sdk/dist/"
+echo "  • TypeScript SDK:   typescript-sdk/dist/"
 echo "  • Rust library:     target/release/libkaleidoswap_uniffi.*"
 echo ""
 echo "Next steps:"
-echo "  1. To publish Python: cd bindings/python && maturin publish"
-echo "  2. To publish TypeScript: cd bindings/typescript && npm publish"
+echo "  1. To publish Python SDK: cd python-sdk && uv build && uv run twine upload dist/*"
+echo "  2. To publish TypeScript SDK: cd typescript-sdk && pnpm publish"
 echo ""
 echo -e "${YELLOW}Note: Remember to revert version changes if this was just a test:${NC}"
-echo "  git checkout -- Cargo.toml bindings/python/pyproject.toml"
+echo "  git checkout -- Cargo.toml python-sdk/pyproject.toml typescript-sdk/package.json"

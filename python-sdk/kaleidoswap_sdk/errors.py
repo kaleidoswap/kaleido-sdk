@@ -141,9 +141,7 @@ class InsufficientBalanceError(KaleidoError):
         if asset:
             msg = f"Insufficient {asset} balance: need {required_amount}, have {available_amount}"
         else:
-            msg = (
-                f"Insufficient balance: need {required_amount}, have {available_amount}"
-            )
+            msg = f"Insufficient balance: need {required_amount}, have {available_amount}"
         super().__init__(code="INSUFFICIENT_BALANCE", message=msg)
         self.required_amount = required_amount
         self.available_amount = available_amount
@@ -223,6 +221,7 @@ def map_http_error(
     message = _extract_message_from_body(data, status_text)
 
     # Map HTTP status codes to specific error types
+    err: KaleidoError
     if status in (400, 422):
         err = ValidationError(message, status_code=status)
     elif status == 404:
@@ -230,9 +229,7 @@ def map_http_error(
     elif status in (408, 504):
         err = TimeoutError(message)
     elif status == 429:
-        err = RateLimitError(
-            message=message if message != "Rate limit exceeded" else None
-        )
+        err = RateLimitError(message=message if message != "Rate limit exceeded" else None)
     elif status in (500, 502, 503):
         err = APIError(message, status)
     elif 400 <= status < 500:

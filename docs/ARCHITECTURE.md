@@ -4,26 +4,47 @@ This document describes the architecture of the Kaleidoswap SDK, a unified multi
 
 ## Overview
 
-The SDK follows a **Rust-first architecture** with language bindings generated via UniFFI:
+The SDK follows a **multi-language architecture** with standalone SDK implementations. Each language SDK is maintained separately and generates its own models directly from OpenAPI specifications:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Language Bindings                         │
-├───────────────────────┬───────────────────────┬─────────────────┤
-│    Python (PyO3)      │   TypeScript (NAPI)   │     Swift       │
-│   bindings/python     │  bindings/typescript  │   (planned)     │
-└───────────────────────┴───────────────────────┴─────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    UniFFI Binding Layer                         │
-│                  crates/kaleidoswap-uniffi                      │
-│  • FFI interface definition (kaleidoswap.udl)                   │
-│  • Type conversions (JsonValue wrapper)                         │
-│  • Error handling bridge                                        │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
+│                    OpenAPI Specifications                        │
+│              (crates/kaleidoswap-core/specs/)                   │
+│                                                                 │
+│              maker.json              rln.yaml                  │
+└────────────────────┬──────────────────────┬─────────────────────┘
+                     │                      │
+                     ▼                      ▼
+        ┌──────────────────────┐  ┌──────────────────────┐
+        │  Python SDK          │  │  TypeScript SDK      │
+        │  python-sdk/         │  │  typescript-sdk/     │
+        │                      │  │                      │
+        │  Generation Script:  │  │  Generation Script:  │
+        │  generate_python_    │  │  generate_typescript │
+        │  sdk_models.sh       │  │  _types.sh          │
+        │                      │  │                      │
+        │  Output:             │  │  Output:            │
+        │  generated/          │  │  src/generated/      │
+        │  - api_types.py      │  │  - api-types.ts     │
+        │  - node_types.py     │  │  - node-types.ts    │
+        └──────────────────────┘  └──────────────────────┘
+                     │                      │
+                     ▼                      ▼
+        ┌──────────────────────┐  ┌──────────────────────┐
+        │  Standalone Python   │  │  Standalone TS/JS   │
+        │  Implementation      │  │  Implementation     │
+        │  • Pure Python       │  │  • Pure TypeScript  │
+        │  • Pydantic models   │  │  • TypeScript types │
+        │  • Async/await       │  │  • Promise-based    │
+        └──────────────────────┘  └──────────────────────┘
+                     │                      │
+                     ▼                      ▼
+        ┌─────────────────────────────────────────────────────┐
+        │              Core Rust Library                       │
+        │         (crates/kaleidoswap-core/)                  │
+        │  • Shared business logic (optional dependency)      │
+        │  • Can be used independently                        │
+        └─────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Core Rust Library                          │
 │                   crates/kaleidoswap-core                       │
@@ -90,17 +111,14 @@ kaleido-sdk/
 │       │   ├── kaleidoswap.udl  # Interface definition
 │       │   └── lib.rs           # FFI wrapper
 │       └── Cargo.toml
-├── bindings/                  # UniFFI-generated bindings (ACTIVE)
-│   ├── python/                # Python SDK (maturin + PyO3)
-│   │   ├── src/lib.rs
-│   │   ├── pyproject.toml
-│   │   └── tests/
-│   └── typescript/            # TypeScript SDK (NAPI-RS)
-│       ├── src/lib.rs
-│       ├── package.json
-│       └── tests/
-├── python/                    # ⚠️ DEPRECATED - Legacy standalone SDK
-├── typescript/                # ⚠️ DEPRECATED - Legacy standalone SDK
+├── python-sdk/                # Python SDK (pure Python)
+│   ├── kaleidoswap_sdk/
+│   ├── pyproject.toml
+│   └── tests/
+├── typescript-sdk/            # TypeScript SDK (pure TypeScript)
+│   ├── src/
+│   ├── package.json
+│   └── tests/
 ├── specs/                     # OpenAPI specifications
 │   ├── kaleidoswap.json       # Kaleidoswap Maker API
 │   └── rgb-lightning-node.yaml
@@ -111,31 +129,47 @@ kaleido-sdk/
 
 ## Key Components
 
-### 1. Model Generation (Docker-based)
+### 1. Model Generation (Language-Specific)
 
-All models are **auto-generated** from OpenAPI specs using `openapi-generator-cli` via Docker:
+Each language SDK generates its own models directly from OpenAPI specs using language-specific tools:
 
+**Python SDK:**
 ```bash
-# Generate models (requires Docker)
-./scripts/generate-rust-models.sh
+# Generate Python models
+make generate-python-sdk-models
+# Uses: datamodel-code-generator
+# Output: python-sdk/kaleidoswap_sdk/generated/
+```
 
-# Or via Make
+**TypeScript SDK:**
+```bash
+# Generate TypeScript types
+make generate-ts-types
+# Uses: openapi-typescript
+# Output: typescript-sdk/src/generated/
+```
+
+**Rust Core (optional):**
+```bash
+# Generate Rust models (requires Docker)
+make generate-rust-models
+# Uses: openapi-generator-cli via Docker
+# Output: crates/kaleidoswap-core/src/generated/
+```
+
+**All SDKs:**
+```bash
+# Generate models for all languages
 make generate-models
 
 # Full workflow: fetch specs + generate + verify
 make regenerate
 ```
 
-This generates **191 total models**:
-- `generated/kaleidoswap/models/` - 70 models (Layer, Asset, TradingPair, SwapRequest, etc.)
-- `generated/rgb_node/models/` - 121 models (Channel, Peer, Payment, Invoice, etc.)
-
-The `models/mod.rs` re-exports from generated:
-```rust
-// src/models/mod.rs
-pub use crate::generated::kaleidoswap::models::*;
-pub use crate::generated::rgb_node::models as rgb_node;
-```
+Each SDK maintains its own generation script:
+- `scripts/generate_python_sdk_models.sh` - Python SDK models
+- `scripts/generate_typescript_types.sh` - TypeScript SDK types
+- `scripts/generate-rust-models.sh` - Rust core models (optional)
 
 ### 2. Core Client (`client.rs`)
 
@@ -189,35 +223,51 @@ The UniFFI layer exposes the Rust API to other languages:
 └──────────────┴──────────────┴──────────────────┘
 ```
 
-### 5. Language Bindings
+### 5. Language SDKs
 
-#### Python (`bindings/python/`)
+Each SDK is a **standalone implementation** that generates its own models from OpenAPI specs:
 
-Built with maturin and PyO3:
+#### Python SDK (`python-sdk/`)
+
+- **Pure Python** implementation (no Rust dependencies)
+- **Model Generation**: `scripts/generate_python_sdk_models.sh`
+  - Uses `datamodel-code-generator` to generate Pydantic v2 models
+  - Output: `python-sdk/kaleidoswap_sdk/generated/`
+- **Models**: Auto-generated Pydantic models from OpenAPI specs
+- **Dependencies**: Standard Python libraries (httpx, pydantic, etc.)
 
 ```python
-from kaleidoswap import KaleidoClient, KaleidoConfig
+from kaleidoswap_sdk import KaleidoClient
 
-config = KaleidoConfig(base_url="https://api.kaleidoswap.com")
-client = KaleidoClient(config)
+client = KaleidoClient(base_url="https://api.kaleidoswap.com")
 
-assets = client.list_assets()  # Returns JSON string
+assets = await client.list_assets()
 print(f"Found assets: {assets}")
 ```
 
-#### TypeScript (`bindings/typescript/`)
+#### TypeScript SDK (`typescript-sdk/`)
 
-Native Node.js addon:
+- **Pure TypeScript** implementation (no Rust dependencies)
+- **Model Generation**: `scripts/generate_typescript_types.sh`
+  - Uses `openapi-typescript` to generate TypeScript types
+  - Output: `typescript-sdk/src/generated/`
+- **Models**: Auto-generated TypeScript types from OpenAPI specs
+- **Dependencies**: Standard Node.js libraries (axios, etc.)
 
 ```typescript
-import { KaleidoClient, KaleidoConfig } from 'kaleidoswap-sdk';
+import { KaleidoClient } from '@kaleidoswap/sdk';
 
-const config = new KaleidoConfig({ baseUrl: 'https://api.kaleidoswap.com' });
-const client = new KaleidoClient(config);
+const client = new KaleidoClient({ baseUrl: 'https://api.kaleidoswap.com' });
 
-const assets = await client.listAssets();  // Returns JSON string
+const assets = await client.listAssets();
 console.log(`Found assets: ${assets}`);
 ```
+
+#### Rust Core (`crates/kaleidoswap-core/`)
+
+- **Optional** Rust library for shared business logic
+- **Model Generation**: `scripts/generate-rust-models.sh` (requires Docker)
+- Can be used independently or as a dependency
 
 ## Development Workflow
 
@@ -228,9 +278,9 @@ console.log(`Found assets: ${assets}`);
 make build
 
 # Build individual components
-make build-rust      # Core library
-make build-python    # Python bindings
-make build-typescript # TypeScript bindings
+make build-rust         # Core library
+make build-python-sdk   # Python SDK
+make build-typescript   # TypeScript SDK
 ```
 
 ### Testing
@@ -253,10 +303,12 @@ When the API changes:
 make regenerate
 
 # Or step by step:
-make update-specs      # Download latest OpenAPI specs
-make generate-models   # Run Docker-based generator
-cargo check            # Verify compilation
-make build             # Rebuild bindings
+make update-specs              # Download latest OpenAPI specs
+make generate-models           # Generate models for all SDKs
+make generate-python-sdk-models  # Generate Python SDK models only
+make generate-ts-types         # Generate TypeScript SDK types only
+cargo check                    # Verify Rust compilation (if using Rust core)
+make build                     # Rebuild SDKs
 ```
 
 > **Note**: Model generation requires Docker to be installed and running.

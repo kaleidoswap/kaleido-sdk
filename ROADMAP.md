@@ -2,7 +2,7 @@
 
 ## Current Status (v0.4.0)
 
-The Kaleidoswap SDK is built in **Rust** with complete bindings for **Python** and **TypeScript**. The core architecture provides a unified, type-safe interface across all supported languages.
+The Kaleidoswap SDK provides complete SDKs for **Python** and **TypeScript**. The core architecture provides a unified, type-safe interface across all supported languages.
 
 ## Version 0.4 Status
 
@@ -14,15 +14,15 @@ The Kaleidoswap SDK is built in **Rust** with complete bindings for **Python** a
   - Type-safe models from OpenAPI specs
   - WASM support for browser/Node.js
 
-- [x] **Python Bindings** (via PyO3/UniFFI)
+- [x] **Python SDK**
   - Fully typed Pydantic v2 models
   - Organized sub-clients (Market, Orders, Swaps, LSP, Node)
   - Native async/await support
   - Custom exception hierarchy
   - Quote streaming context manager
 
-- [x] **TypeScript Bindings** (via wasm-pack)
-  - WASM-based for browser and Node.js
+- [x] **TypeScript SDK**
+  - Pure TypeScript implementation
   - Separated Maker and RLN (RGB Lightning Node) clients
   - Full TypeScript type definitions
   - Promise-based API
@@ -125,7 +125,7 @@ The Kaleidoswap SDK is built in **Rust** with complete bindings for **Python** a
 ## Development Priorities
 
 1. ✅ Rust core library with comprehensive API coverage
-2. ✅ Python and TypeScript bindings
+2. ✅ Python and TypeScript SDKs
 3. ✅ WebSocket implementation
 4. ✅ Error handling across all languages
 5. ✅ Basic documentation and examples
@@ -143,17 +143,17 @@ The Kaleidoswap SDK is built in **Rust** with complete bindings for **Python** a
 - **WebSocket**: Platform-agnostic implementation (native + WASM)
 - **Build System**: Custom build script for OpenAPI codegen
 
-### Python Bindings (`bindings/python`)
-- **Bridge**: PyO3/UniFFI for native Rust interop
-- **Models**: Pydantic v2 for runtime validation
+### Python SDK (`python-sdk/`)
+- **Implementation**: Pure Python with Pydantic v2 models
+- **Models**: Auto-generated from OpenAPI specs
 - **API**: Organized sub-clients for clarity
-- **Async**: Native Python async/await with tokio runtime
+- **Async**: Native Python async/await
 
-### TypeScript Bindings (`bindings/typescript`)
-- **Platform**: WASM for universal JS runtime support
-- **Build**: wasm-pack for packaging
+### TypeScript SDK (`typescript-sdk/`)
+- **Implementation**: Pure TypeScript
+- **Build**: Standard TypeScript/Node.js build
 - **API**: Separated Maker and RLN clients
-- **Types**: Full TypeScript definitions from Rust
+- **Types**: Full TypeScript definitions from OpenAPI specs
 
 ## Timeline
 
@@ -164,12 +164,12 @@ The Kaleidoswap SDK is built in **Rust** with complete bindings for **Python** a
 
 ### Phase 2 (Completed - v0.3.x)
 - ✅ Rust core library
-- ✅ Python bindings
+- ✅ Python SDK
 - ✅ Error handling
 - ✅ WebSocket support
 
 ### Phase 3 (Current - v0.4.0)
-- ✅ WASM-based TypeScript bindings
+- ✅ TypeScript SDK
 - ✅ Separated Maker/RLN clients
 - ✅ Comprehensive examples
 - 🚧 Testing improvements
@@ -181,7 +181,7 @@ The Kaleidoswap SDK is built in **Rust** with complete bindings for **Python** a
 - Comprehensive test coverage
 
 ### Phase 5 (Future - v0.6.0+)
-- Mobile SDK bindings (Swift/Kotlin)
+- Mobile SDKs (Swift/Kotlin)
 - CLI tool
 - Interactive documentation
 - Community-driven language support

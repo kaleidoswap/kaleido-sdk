@@ -6,8 +6,8 @@
 #   - On tag: update-specs → generate-models → build → deploy
 
 stages:
-  - .pre       # update-specs
-  - generate   # generate-models
+  - .pre # update-specs
+  - generate # generate-models
   - test
   - build
   - deploy
@@ -31,13 +31,20 @@ default:
       - .cargo/registry/
       - .cargo/git/
 
-# Workflow rules: Run on tags and main/dev branches
+.python_sdk_uv_setup: &python_sdk_uv_setup
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+
+# Workflow rules: Run on tags, merge requests, main/dev, and any branch push
 workflow:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
     - when: never
 
 # ---------------------------------------------------------------------------
@@ -70,9 +77,13 @@ generate-sdk-models:
       artifacts: true
       optional: true
   before_script:
-    - apt-get update && apt-get install -y nodejs npm
+    - apt-get update && apt-get install -y nodejs npm curl
     - npm install -g pnpm openapi-typescript
     - pip install 'datamodel-code-generator[http]'
+    # Install uv and ruff for formatting generated files
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - cd python-sdk && uv sync --frozen --all-extras --dev && cd ..
   script:
     - echo "🔧 Generating SDK models from OpenAPI specs..."
     # TypeScript SDK
@@ -98,9 +109,13 @@ check-generated-models:
   stage: generate
   image: python:${PYTHON_VERSION}
   before_script:
-    - apt-get update && apt-get install -y nodejs npm git
+    - apt-get update && apt-get install -y nodejs npm git curl
     - npm install -g pnpm openapi-typescript
     - pip install 'datamodel-code-generator[http]'
+    # Install uv and ruff for formatting generated files
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - cd python-sdk && uv sync --frozen --all-extras --dev && cd ..
   script:
     - echo "🔍 Checking if generated models are up-to-date..."
     - bash scripts/generate_typescript_types.sh
@@ -109,7 +124,7 @@ check-generated-models:
       if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/; then
         echo "❌ Generated models are out of date!"
         echo "Run 'make generate-models' locally and commit the changes."
-        git diff --stat
+        git diff --stat typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/
         exit 1
       fi
     - echo "✅ Generated models are up-to-date"
@@ -130,17 +145,6 @@ test:core:
   artifacts:
     reports:
       junit: target/test-results.xml
-
-test:uniffi:
-  stage: test
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  needs:
-    - job: test:core
-      optional: true
-  script:
-    - echo "🔗 Testing UniFFI Bindings..."
-    - cargo test -p kaleidoswap-uniffi --release
 
 lint:rust:
   stage: test
@@ -212,6 +216,18 @@ typecheck:typescript-sdk:
     - pnpm run typecheck
   allow_failure: true
 
+format:typescript-sdk:
+  stage: test
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm install -g pnpm
+  script:
+    - echo "✨ Checking TypeScript SDK formatting..."
+    - cd typescript-sdk
+    - pnpm install
+    - pnpm run format:check
+  allow_failure: true
+
 # ---------------------------------------------------------------------------
 # Python SDK (Pure Python - kaleidoswap-sdk)
 # ---------------------------------------------------------------------------
@@ -233,46 +249,53 @@ test:python-sdk:
       junit: python-sdk/test-results.xml
     when: always
 
+format:python-sdk:
+  stage: test
+  image: python:${PYTHON_VERSION}
+  <<: *python_sdk_uv_setup
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "✨ Checking Python SDK formatting..."
+    - make check-format-python
+  allow_failure: true
+
 lint:python-sdk:
   stage: test
   image: python:${PYTHON_VERSION}
+  <<: *python_sdk_uv_setup
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG
   script:
     - echo "🔍 Linting Python SDK..."
-    - cd python-sdk
-    - pip install ruff
-    - ruff check kaleidoswap_sdk
+    - make check-lint-python
   allow_failure: true
 
 typecheck:python-sdk:
   stage: test
   image: python:${PYTHON_VERSION}
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG
   needs:
     - job: generate-sdk-models
       optional: true
       artifacts: true
+  <<: *python_sdk_uv_setup
   script:
     - echo "📝 Type checking Python SDK..."
-    - cd python-sdk
-    - pip install -e ".[dev]"
-    - mypy kaleidoswap_sdk --ignore-missing-imports
-  allow_failure: true
-
-# ---------------------------------------------------------------------------
-# Python Bindings (Rust/Maturin - kaleidoswap)
-# ---------------------------------------------------------------------------
-
-lint:python-bindings:
-  stage: test
-  image: python:${PYTHON_VERSION}-slim
-  before_script:
-    - apt-get update && apt-get install -y curl
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🔍 Linting Python bindings..."
-    - cd bindings/python
-    - uv run ruff check .
-    - uv run black --check .
+    - make typecheck-python
   allow_failure: true
 
 # ---------------------------------------------------------------------------
@@ -289,25 +312,6 @@ build:core:
   artifacts:
     paths:
       - target/release/libkaleidoswap_core.*
-    expire_in: 1 week
-
-build:python-bindings:
-  stage: build
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  needs:
-    - job: build:core
-      optional: true
-  before_script:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🐍 Building Python Bindings (Maturin + UniFFI)..."
-    - cd bindings/python
-    - uv tool run maturin build --release --strip
-  artifacts:
-    paths:
-      - target/wheels/
     expire_in: 1 week
 
 build:python-sdk:
@@ -355,26 +359,6 @@ build:typescript-sdk:
 # ---------------------------------------------------------------------------
 # DEPLOY STAGE (tag pipelines only - manual approval required)
 # ---------------------------------------------------------------------------
-
-deploy:pypi-bindings:
-  stage: deploy
-  image: rust:${RUST_VERSION}
-  needs:
-    - job: build:python-bindings
-      artifacts: true
-  before_script:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.local/bin:$PATH"
-  script:
-    - echo "🚀 Publishing Python bindings to PyPI..."
-    - cd bindings/python
-    - uv tool run maturin publish --username __token__ --password ${PYPI_TOKEN} --skip-existing || uv tool run twine upload --skip-existing target/wheels/*
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
-  environment:
-    name: pypi-bindings
-    url: https://pypi.org/project/kaleidoswap/
 
 deploy:pypi-sdk:
   stage: deploy

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
-echo "Running Python Tests..."
-cd bindings/python
-./.venv/bin/pytest tests/test_btc_ln_to_rgb_swap.py || echo "Python tests failed"
-cd ../typescript
-echo "Running TypeScript Tests..."
-npm test tests/swap-btc-ln-to-rgb.test.ts || echo "TypeScript tests failed"
+echo "Running Python SDK Tests..."
+cd python-sdk
+uv run pytest tests/ || echo "Python SDK tests failed"
+cd ../typescript-sdk
+echo "Running TypeScript SDK Tests..."
+pnpm test || echo "TypeScript SDK tests failed"

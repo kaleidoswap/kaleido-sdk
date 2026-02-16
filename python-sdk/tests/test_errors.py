@@ -4,17 +4,16 @@ Error Handling Tests
 Tests error mapping and custom error classes, matching TypeScript SDK coverage.
 """
 
-import pytest
 from kaleidoswap_sdk.errors import (
-    KaleidoError,
     APIError,
-    NetworkError,
-    ValidationError,
-    NotFoundError,
-    TimeoutError,
-    RateLimitError,
     ConfigError,
+    KaleidoError,
+    NetworkError,
+    NotFoundError,
+    RateLimitError,
     SwapError,
+    TimeoutError,
+    ValidationError,
     map_http_error,
 )
 
@@ -165,9 +164,7 @@ class TestHttpErrorMapping:
 
     def test_extract_error_message_from_data(self) -> None:
         """Should extract error message from response data."""
-        error = map_http_error(
-            400, "Bad Request", {"message": "Custom error message"}
-        )
+        error = map_http_error(400, "Bad Request", {"message": "Custom error message"})
         assert str(error) == "Custom error message"
 
     def test_extract_detail_field_from_data(self) -> None:

@@ -283,7 +283,10 @@ describeRln('RLN Client Integration', () => {
     describe('Lightning Operations', () => {
         it('should create lightning invoice without parameters', async () => {
             try {
-                const invoice = await client.rln.createLNInvoice({ amnt_msat: 10000, expiry_sec: 3600 });
+                const invoice = await client.rln.createLNInvoice({
+                    amnt_msat: 10000,
+                    expiry_sec: 3600,
+                });
 
                 expect(invoice).toBeDefined();
                 expect(invoice).toHaveProperty('invoice');
@@ -408,7 +411,9 @@ describeRln('RLN Client Integration', () => {
                 expect((decoded as any).payment_hash).toMatch(/^[0-9a-f]{64}$/i);
                 expect((decoded as any).payment_secret).toMatch(/^[0-9a-f]{64}$/i);
                 expect((decoded as any).payee_pubkey).toMatch(/^[0-9a-f]{66}$/i); // Compressed pubkey
-                expect(['mainnet', 'testnet', 'signet', 'regtest']).toContain((decoded as any).network);
+                expect(['mainnet', 'testnet', 'signet', 'regtest']).toContain(
+                    (decoded as any).network,
+                );
                 expect(typeof (decoded as any).timestamp).toBe('number');
                 expect((decoded as any).timestamp).toBeGreaterThan(0);
             } catch (e: unknown) {
@@ -470,7 +475,9 @@ describeRln('RLN Client Integration', () => {
                     expect((payment as any).created_at).toBeGreaterThan(0);
                     expect((payment as any).updated_at).toBeGreaterThan(0);
                     // created_at should be before or equal to updated_at
-                    expect((payment as any).created_at).toBeLessThanOrEqual((payment as any).updated_at);
+                    expect((payment as any).created_at).toBeLessThanOrEqual(
+                        (payment as any).updated_at,
+                    );
                     expect(typeof (payment as any).inbound).toBe('boolean');
                     expect((payment as any).payee_pubkey).toMatch(/^[0-9a-f]{66}$/i);
                 }
@@ -483,7 +490,8 @@ describeRln('RLN Client Integration', () => {
             try {
                 // Keysend should return payment_preimage, NOT payment_secret
                 const keysendRequest = {
-                    dest_pubkey: '03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d',
+                    dest_pubkey:
+                        '03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d',
                     amt_msat: 1000,
                 };
 
@@ -507,7 +515,8 @@ describeRln('RLN Client Integration', () => {
         it('should send keysend with RGB asset', async () => {
             try {
                 const request = {
-                    dest_pubkey: '03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d',
+                    dest_pubkey:
+                        '03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d',
                     amt_msat: 1000,
                     asset_id: 'rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8',
                     asset_amount: 100,

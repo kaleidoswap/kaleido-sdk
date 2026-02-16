@@ -10,7 +10,6 @@ The Kaleidoswap SDK monorepo contains:
 kaleido-sdk/
 ├── typescript-sdk/          # TypeScript SDK (npm: kaleidoswap-sdk)
 ├── python-sdk/              # Python SDK (PyPI: kaleidoswap-sdk)
-├── bindings/python/         # Python Rust bindings (PyPI: kaleidoswap)
 ├── crates/
 │   └── kaleidoswap-core/
 │       └── specs/           # OpenAPI specifications (source of truth)
@@ -21,25 +20,39 @@ kaleido-sdk/
 
 ## Architecture
 
+Each language SDK is **maintained separately** and generates its own models directly from OpenAPI specifications:
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        OpenAPI Specs                                │
-│                    (crates/kaleidoswap-core/specs/)                 │
+│                    OpenAPI Specifications                           │
+│              (crates/kaleidoswap-core/specs/)                      │
 │                                                                     │
 │                    maker.json         rln.yaml                      │
 └─────────────────────┬─────────────────────┬─────────────────────────┘
                       │                     │
                       ▼                     ▼
         ┌─────────────────────┐   ┌─────────────────────┐
-        │   openapi-typescript │   │ datamodel-codegen   │
-        └──────────┬──────────┘   └──────────┬──────────┘
-                   │                         │
-                   ▼                         ▼
-        ┌─────────────────────┐   ┌─────────────────────┐
         │  TypeScript SDK     │   │    Python SDK       │
+        │                     │   │                     │
+        │  Generation Script: │   │  Generation Script: │
+        │  generate_typescript│   │  generate_python_   │
+        │  _types.sh          │   │  sdk_models.sh      │
+        │                     │   │                     │
+        │  Tool:              │   │  Tool:              │
+        │  openapi-typescript │   │  datamodel-codegen  │
+        │                     │   │                     │
+        │  Output:            │   │  Output:            │
         │  src/generated/     │   │  generated/         │
         │  - api-types.ts     │   │  - api_types.py     │
         │  - node-types.ts    │   │  - node_types.py    │
+        └─────────────────────┘   └─────────────────────┘
+                      │                     │
+                      ▼                     ▼
+        ┌─────────────────────┐   ┌─────────────────────┐
+        │  Standalone TS/JS   │   │  Standalone Python  │
+        │  Implementation     │   │  Implementation     │
+        │  • Pure TypeScript  │   │  • Pure Python      │
+        │  • No bindings      │   │  • No bindings      │
         └─────────────────────┘   └─────────────────────┘
 ```
 
@@ -103,16 +116,27 @@ ruff format kaleidoswap_sdk
 
 ### 3. When OpenAPI Specs Change
 
-When the backend API changes, the OpenAPI specs are updated. You must regenerate the SDK types:
+When the backend API changes, the OpenAPI specs are updated. Each SDK has its own generation script:
 
+**Regenerate all SDKs:**
 ```bash
-# From repository root
 make generate-models
-
-# This runs:
-#   - scripts/generate_typescript_types.sh  → typescript-sdk/src/generated/
-#   - scripts/generate_python_sdk_models.sh → python-sdk/kaleidoswap_sdk/generated/
 ```
+
+**Regenerate specific SDK:**
+```bash
+# TypeScript SDK
+make generate-ts-types
+# Or: bash scripts/generate_typescript_types.sh
+
+# Python SDK
+make generate-python-sdk-models
+# Or: bash scripts/generate_python_sdk_models.sh
+```
+
+**What each script does:**
+- `scripts/generate_typescript_types.sh` → Generates TypeScript types → `typescript-sdk/src/generated/`
+- `scripts/generate_python_sdk_models.sh` → Generates Pydantic models → `python-sdk/kaleidoswap_sdk/generated/`
 
 **Important:** Always commit the generated files after regeneration.
 
@@ -188,9 +212,13 @@ make generate-python-sdk-models   # Python SDK only
 make test-typescript              # TypeScript SDK
 make test-python-sdk              # Python SDK
 
-# Lint
+# Lint / Format / Type check
 make lint-typescript-sdk          # TypeScript SDK
-make lint-python-sdk              # Python SDK
+make check-format-python          # Python SDK (format check only)
+make check-lint-python            # Python SDK (lint check only)
+make typecheck-python             # Python SDK
+make check-python                 # Python SDK (format + lint + typecheck)
+make lint-python                  # Python SDK (auto-fix format + lint + type hints)
 
 # Format
 make format-typescript            # TypeScript SDK
@@ -198,7 +226,7 @@ make format-python-sdk            # Python SDK
 
 # Full check (before PR)
 make test-typescript lint-typescript-sdk
-make test-python-sdk lint-python-sdk
+make test-python-sdk check-python
 ```
 
 ## CI/CD Pipeline

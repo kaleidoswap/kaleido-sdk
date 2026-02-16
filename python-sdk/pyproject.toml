@@ -80,6 +80,10 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# Exclude generated files from formatting (they're auto-generated with datamodel-code-generator)
+exclude = [
+    "kaleidoswap_sdk/generated/",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]

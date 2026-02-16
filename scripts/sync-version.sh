@@ -4,8 +4,8 @@
 #
 # This script updates the version in:
 # - Cargo.toml (workspace)
-# - bindings/python/pyproject.toml
-# - bindings/typescript/package.json
+# - python-sdk/pyproject.toml
+# - typescript-sdk/package.json
 
 set -euo pipefail
 
@@ -29,30 +29,30 @@ if [[ -f "Cargo.toml" ]]; then
     echo "✅ Updated Cargo.toml"
 fi
 
-# Update Python pyproject.toml
-if [[ -f "bindings/python/pyproject.toml" ]]; then
+# Update Python SDK pyproject.toml
+if [[ -f "python-sdk/pyproject.toml" ]]; then
     if [[ "$(uname)" == "Darwin" ]]; then
-        sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" bindings/python/pyproject.toml
+        sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" python-sdk/pyproject.toml
     else
-        sed -i "s/^version = \".*\"/version = \"$VERSION\"/" bindings/python/pyproject.toml
+        sed -i "s/^version = \".*\"/version = \"$VERSION\"/" python-sdk/pyproject.toml
     fi
-    echo "✅ Updated bindings/python/pyproject.toml"
+    echo "✅ Updated python-sdk/pyproject.toml"
 fi
 
-# Update TypeScript package.json
-if [[ -f "bindings/typescript/package.json" ]]; then
+# Update TypeScript SDK package.json
+if [[ -f "typescript-sdk/package.json" ]]; then
     if command -v jq &> /dev/null; then
-        jq --arg v "$VERSION" '.version = $v' bindings/typescript/package.json > tmp.json
-        mv tmp.json bindings/typescript/package.json
+        jq --arg v "$VERSION" '.version = $v' typescript-sdk/package.json > tmp.json
+        mv tmp.json typescript-sdk/package.json
     else
         # Fallback using sed if jq not available
         if [[ "$(uname)" == "Darwin" ]]; then
-            sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" bindings/typescript/package.json
+            sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" typescript-sdk/package.json
         else
-            sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" bindings/typescript/package.json
+            sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" typescript-sdk/package.json
         fi
     fi
-    echo "✅ Updated bindings/typescript/package.json"
+    echo "✅ Updated typescript-sdk/package.json"
 fi
 
 echo ""

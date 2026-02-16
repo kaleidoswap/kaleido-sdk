@@ -16,7 +16,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from .errors import map_http_error, SwapError
+from httpx import Timeout
+
+from .errors import SwapError, map_http_error
 
 # Fallback to old generated types for models that weren't generated
 from .generated.api_types import (
@@ -52,7 +54,6 @@ from .generated.maker_client_generated.api.market import (
     discover_routes,
     get_pair_routes,
     get_pairs,
-    get_quote,
     list_assets,
 )
 from .generated.maker_client_generated.api.market.get_quote import (
@@ -75,8 +76,6 @@ from .generated.maker_client_generated.api.swaps import (
 )
 from .generated.maker_client_generated.client import Client as GeneratedMakerClient
 from .generated.maker_client_generated.models import (
-    Body as PairRoutesBody,
-    HTTPValidationError,
     AssetsResponse,
     ChannelFees,
     ChannelOrderResponse,
@@ -86,6 +85,8 @@ from .generated.maker_client_generated.models import (
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
     GetInfoResponseModel,
+    GetOrderRequest,
+    HTTPValidationError,
     NetworkInfoResponse,
     OrderHistoryResponse,
     OrderStatsResponse,
@@ -101,12 +102,16 @@ from .generated.maker_client_generated.models import (
     SwapOrder,
     SwapOrderRateDecisionRequest,
     SwapOrderRateDecisionResponse,
+    SwapOrderStatus,
     SwapOrderStatusRequest,
     SwapOrderStatusResponse,
     SwapRequest,
     SwapResponse,
     SwapStatusRequest,
     SwapStatusResponse,
+)
+from .generated.maker_client_generated.models import (
+    Body as PairRoutesBody,
 )
 from .types import Layer
 from .utils import to_display_amount, to_raw_amount
@@ -123,32 +128,25 @@ def _unwrap_maker_response(response: Any) -> Any:
     message and response_body for debugging when the response is not successful.
     """
     # Success: return parsed body
-    if response.parsed is not None and not isinstance(
-        response.parsed, HTTPValidationError
-    ):
+    if response.parsed is not None and not isinstance(response.parsed, HTTPValidationError):
         return response.parsed
 
     # Error: extract response data and raise mapped exception
     status_code = int(response.status_code)
 
     # Extract error data from HTTPValidationError or raw response content
+    error_data: dict[str, Any] | str | None
     if isinstance(response.parsed, HTTPValidationError):
-        error_data = (
-            response.parsed.to_dict() if hasattr(response.parsed, "to_dict") else {}
-        )
+        error_data = response.parsed.to_dict() if hasattr(response.parsed, "to_dict") else {}
     elif response.content:
         try:
             error_data = json.loads(response.content.decode("utf-8"))
         except Exception:
-            error_data = (
-                response.content.decode("utf-8", errors="replace").strip() or None
-            )
+            error_data = response.content.decode("utf-8", errors="replace").strip() or None
     else:
         error_data = None
 
-    reason_phrase = (
-        getattr(response.status_code, "phrase", None) or f"HTTP {status_code}"
-    )
+    reason_phrase = getattr(response.status_code, "phrase", None) or f"HTTP {status_code}"
     raise map_http_error(status_code, reason_phrase, error_data)
 
 
@@ -175,7 +173,10 @@ class MakerClient:
     """
 
     def __init__(
-        self, base_url: str, api_key: str | None = None, timeout: float = 30.0
+        self,
+        base_url: str,
+        api_key: str | None = None,
+        timeout: float | Timeout | None = 30.0,
     ) -> None:
         """
         Initialize MakerClient.
@@ -190,10 +191,18 @@ class MakerClient:
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
 
+        timeout_config: Timeout | None
+        if isinstance(timeout, Timeout):
+            timeout_config = timeout
+        elif timeout is None:
+            timeout_config = None
+        else:
+            timeout_config = Timeout(timeout)
+
         self._client = GeneratedMakerClient(
             base_url=base_url,
             headers=headers,
-            timeout=timeout,
+            timeout=timeout_config,
         )
         self._ws: WSClient | None = None
 
@@ -294,34 +303,25 @@ class MakerClient:
 
         pair = None
         for p in pairs_response.pairs:
-            if (
-                p.base.ticker.upper() == from_upper
-                and p.quote.ticker.upper() == to_upper
-            ):
+            if p.base.ticker.upper() == from_upper and p.quote.ticker.upper() == to_upper:
                 pair = p
                 break
 
         # If not found, try inverse pair
         if not pair:
             for p in pairs_response.pairs:
-                if (
-                    p.base.ticker.upper() == to_upper
-                    and p.quote.ticker.upper() == from_upper
-                ):
+                if p.base.ticker.upper() == to_upper and p.quote.ticker.upper() == from_upper:
                     # Inverse pair found, swap the layers in routes
                     if p.routes:
                         return [
-                            {"from_layer": r.to_layer, "to_layer": r.from_layer}
-                            for r in p.routes
+                            {"from_layer": r.to_layer, "to_layer": r.from_layer} for r in p.routes
                         ]
                     return []
 
         if not pair or not pair.routes:
             return []
 
-        return [
-            {"from_layer": r.from_layer, "to_layer": r.to_layer} for r in pair.routes
-        ]
+        return [{"from_layer": r.from_layer, "to_layer": r.to_layer} for r in pair.routes]
 
     async def stream_quotes_by_ticker(
         self,
@@ -455,6 +455,7 @@ class MakerClient:
                 timestamp=data.get("timestamp", 0),
             )
         _unwrap_maker_response(response)  # raises with server message
+        raise AssertionError("Unreachable: _unwrap_maker_response should have raised")
 
     def _normalize_pair(self, raw: dict[str, Any]) -> TradingPair:
         """Build TradingPair from API shape (may have base/quote or base_ticker/quote_ticker)."""
@@ -466,21 +467,15 @@ class MakerClient:
         quote_ticker = raw.get("quote_ticker")
         if not base_ticker and "base" in raw:
             b = raw["base"]
-            base_ticker = (
-                b.get("ticker", b.get("ticker_symbol")) if isinstance(b, dict) else None
-            )
+            base_ticker = b.get("ticker", b.get("ticker_symbol")) if isinstance(b, dict) else None
         if not quote_ticker and "quote" in raw:
             q = raw["quote"]
-            quote_ticker = (
-                q.get("ticker", q.get("ticker_symbol")) if isinstance(q, dict) else None
-            )
+            quote_ticker = q.get("ticker", q.get("ticker_symbol")) if isinstance(q, dict) else None
         if not base_ticker or not quote_ticker:
             pair_ticker = raw.get("pair_ticker") or raw.get("ticker") or ""
             parts = pair_ticker.replace("-", "/").split("/")
             base_ticker = base_ticker or (parts[0].strip() if len(parts) > 0 else None)
-            quote_ticker = quote_ticker or (
-                parts[1].strip() if len(parts) > 1 else None
-            )
+            quote_ticker = quote_ticker or (parts[1].strip() if len(parts) > 1 else None)
         if not base_ticker:
             base_ticker = raw.get("base_asset_id") or raw.get("base_asset") or "?"
         if not quote_ticker:
@@ -548,9 +543,7 @@ class MakerClient:
             body: Request with pair_id or ticker information (e.g. {"pair_ticker": "BTC/USDT"})
         """
         api_body = PairRoutesBody.from_dict(body)
-        resp = await get_pair_routes.asyncio_detailed(
-            client=self._client, body=api_body
-        )
+        resp = await get_pair_routes.asyncio_detailed(client=self._client, body=api_body)
         response = _unwrap_maker_response(resp)
         # Response is list of generated (attrs) SwapRoute; convert to SDK (Pydantic) SwapRoute
         return (
@@ -575,9 +568,7 @@ class MakerClient:
     # Swap Orders API - /api/v1/swaps/orders/*
     # =========================================================================
 
-    async def create_swap_order(
-        self, body: CreateSwapOrderRequest
-    ) -> CreateSwapOrderResponse:
+    async def create_swap_order(self, body: CreateSwapOrderRequest) -> CreateSwapOrderResponse:
         """
         Create a new swap order.
 
@@ -586,31 +577,23 @@ class MakerClient:
         """
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body_for_api = CreateSwapOrderRequest.from_dict(
-                body.model_dump(mode="json")
-            )
-        resp = await create_swap_order.asyncio_detailed(
-            client=self._client, body=body_for_api
-        )
+            body_for_api = CreateSwapOrderRequest.from_dict(body.model_dump(mode="json"))
+        resp = await create_swap_order.asyncio_detailed(client=self._client, body=body_for_api)
         return _unwrap_maker_response(resp)
 
-    async def get_swap_order_status(
-        self, body: SwapOrderStatusRequest
-    ) -> SwapOrderStatusResponse:
+    async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
         """
         Get the status of a swap order.
 
         Args:
             body: Request with order_id
         """
-        resp = await get_swap_order_status.asyncio_detailed(
-            client=self._client, body=body
-        )
+        resp = await get_swap_order_status.asyncio_detailed(client=self._client, body=body)
         return _unwrap_maker_response(resp)
 
     async def get_order_history(
         self,
-        status: str | None = None,
+        status: SwapOrderStatus | str | None = None,
         limit: int | None = None,
         skip: int | None = None,
     ) -> OrderHistoryResponse:
@@ -623,9 +606,20 @@ class MakerClient:
             skip: Number of results to skip
         """
         # Note: Generated client uses query parameters (skip, not offset)
+        status_param: SwapOrderStatus | None
+        if isinstance(status, SwapOrderStatus):
+            status_param = status
+        elif isinstance(status, str):
+            try:
+                status_param = SwapOrderStatus(status)
+            except ValueError as exc:
+                raise ValueError(f"Invalid swap order status: {status}") from exc
+        else:
+            status_param = None
+
         resp = await get_order_history.asyncio_detailed(
             client=self._client,
-            status=status,
+            status=status_param,
             limit=limit or 50,
             skip=skip or 0,
         )
@@ -664,9 +658,7 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = SwapRequest.from_dict(body.model_dump(mode="json"))
-        resp = await initiate_swap.asyncio_detailed(
-            client=self._client, body=body_for_api
-        )
+        resp = await initiate_swap.asyncio_detailed(client=self._client, body=body_for_api)
         return _unwrap_maker_response(resp)
 
     async def execute_swap(self, body: ConfirmSwapRequest) -> ConfirmSwapResponse:
@@ -679,14 +671,10 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = ConfirmSwapRequest.from_dict(body.model_dump(mode="json"))
-        resp = await confirm_swap.asyncio_detailed(
-            client=self._client, body=body_for_api
-        )
+        resp = await confirm_swap.asyncio_detailed(client=self._client, body=body_for_api)
         return _unwrap_maker_response(resp)
 
-    async def get_atomic_swap_status(
-        self, body: SwapStatusRequest
-    ) -> SwapStatusResponse:
+    async def get_atomic_swap_status(self, body: SwapStatusRequest) -> SwapStatusResponse:
         """
         Get the status of an atomic swap.
 
@@ -696,9 +684,7 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = SwapStatusRequest.from_dict(body.model_dump(mode="json"))
-        resp = await get_swap_status.asyncio_detailed(
-            client=self._client, body=body_for_api
-        )
+        resp = await get_swap_status.asyncio_detailed(client=self._client, body=body_for_api)
         return _unwrap_maker_response(resp)
 
     async def get_swap_node_info(self) -> SwapNodeInfoResponse:
@@ -732,14 +718,21 @@ class MakerClient:
         resp = await create_lsp_order.asyncio_detailed(client=self._client, body=body)
         return _unwrap_maker_response(resp)
 
-    async def get_lsp_order(self, body: dict[str, str]) -> ChannelOrderResponse:
+    async def get_lsp_order(self, body: GetOrderRequest | dict[str, str]) -> ChannelOrderResponse:
         """
         Get LSP order details.
 
         Args:
             body: Request with order_id
         """
-        resp = await get_lsp_order.asyncio_detailed(client=self._client, body=body)
+        api_body: GetOrderRequest
+        if isinstance(body, dict):
+            api_body = GetOrderRequest.from_dict(body)
+        elif hasattr(body, "model_dump"):
+            api_body = GetOrderRequest.from_dict(body.model_dump(mode="json"))
+        else:
+            api_body = body
+        resp = await get_lsp_order.asyncio_detailed(client=self._client, body=api_body)
         return _unwrap_maker_response(resp)
 
     async def estimate_lsp_fees(self, body: CreateOrderRequest) -> ChannelFees:
@@ -754,23 +747,17 @@ class MakerClient:
         resp = await estimate_lsp_fees.asyncio_detailed(client=self._client, body=body)
         return _unwrap_maker_response(resp)
 
-    async def submit_lsp_rate_decision(
-        self, body: RateDecisionRequest
-    ) -> RateDecisionResponse:
+    async def submit_lsp_rate_decision(self, body: RateDecisionRequest) -> RateDecisionResponse:
         """
         Submit rate decision for LSP order.
 
         Args:
             body: Rate decision request
         """
-        resp = await handle_lsp_rate_decision.asyncio_detailed(
-            client=self._client, body=body
-        )
+        resp = await handle_lsp_rate_decision.asyncio_detailed(client=self._client, body=body)
         return _unwrap_maker_response(resp)
 
-    async def retry_asset_delivery(
-        self, body: RetryDeliveryRequest
-    ) -> RetryDeliveryResponse:
+    async def retry_asset_delivery(self, body: RetryDeliveryRequest) -> RetryDeliveryResponse:
         """
         Retry asset delivery for a failed order.
 
@@ -812,16 +799,20 @@ class MakerClient:
                 )
                 order = status_response.order
 
-                if order and opts.on_status_update:
-                    opts.on_status_update(order.status.value)
+                if order:
+                    status_obj = getattr(order, "status", None)
+                    if isinstance(status_obj, SwapOrderStatus):
+                        status_value = status_obj.value
+                    elif status_obj is not None:
+                        status_value = str(status_obj)
+                    else:
+                        status_value = None
 
-                if order and order.status.value in (
-                    "FILLED",
-                    "FAILED",
-                    "EXPIRED",
-                    "CANCELLED",
-                ):
-                    return order
+                    if status_value and opts.on_status_update:
+                        opts.on_status_update(status_value)
+
+                    if status_value in {"FILLED", "FAILED", "EXPIRED", "CANCELLED"}:
+                        return order
 
             except Exception:
                 # Log warning but continue polling

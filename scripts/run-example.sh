@@ -55,17 +55,17 @@ check_services() {
 
 run_python() {
     local example_name="$1"
-    local example_file="${ROOT_DIR}/bindings/python/examples/${example_name}_example.py"
+    local example_file="${ROOT_DIR}/python-sdk/examples/${example_name}_example.py"
 
     if [ ! -f "$example_file" ]; then
         echo -e "${RED}❌ Example not found: ${example_file}${NC}"
         exit 1
     fi
 
-    echo -e "${GREEN}🐍 Running Python example: ${example_name}${NC}"
+    echo -e "${GREEN}🐍 Running Python SDK example: ${example_name}${NC}"
     echo ""
 
-    cd "${ROOT_DIR}/bindings/python"
+    cd "${ROOT_DIR}/python-sdk"
     
     # Ensure dependencies are installed
     if ! command -v uv &> /dev/null; then
@@ -78,26 +78,25 @@ run_python() {
 
 run_typescript() {
     local example_name="$1"
-    local example_file="${ROOT_DIR}/bindings/typescript/examples/${example_name}_example.ts"
+    local example_file="${ROOT_DIR}/typescript-sdk/examples/${example_name}_example.ts"
 
     if [ ! -f "$example_file" ]; then
         echo -e "${RED}❌ Example not found: ${example_file}${NC}"
         exit 1
     fi
 
-    echo -e "${GREEN}📦 Running TypeScript example: ${example_name}${NC}"
+    echo -e "${GREEN}📦 Running TypeScript SDK example: ${example_name}${NC}"
     echo ""
 
-    cd "${ROOT_DIR}/bindings/typescript"
+    cd "${ROOT_DIR}/typescript-sdk"
 
     # Ensure Node modules are installed
-    if [ ! -d "node_modules" ] || [ ! -d "pkg-node" ]; then
+    if [ ! -d "node_modules" ]; then
         echo -e "${YELLOW}⚙️  Installing dependencies...${NC}"
         pnpm install
-        pnpm run build:nodejs
     fi
 
-    npx ts-node --esm "examples/${example_name}_example.ts"
+    pnpm exec tsx "examples/${example_name}_example.ts"
 }
 
 # Parse arguments
