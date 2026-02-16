@@ -29,4 +29,19 @@ $OPENAPI_CMD "$SPECS_DIR/rln.yaml" \
     -o "$OUTPUT_DIR/node-types.ts" \
     --export-type
 
-echo "✅ TypeScript types generated successfully"
+# Format the generated files with prettier
+echo "  → Formatting generated files with prettier..."
+cd "$ROOT_DIR/typescript-sdk"
+
+# Check if prettier is available
+if ! command -v prettier &> /dev/null; then
+    echo "⚠️  prettier not found globally. Using npx..."
+    PRETTIER_CMD="npx prettier"
+else
+    PRETTIER_CMD="prettier"
+fi
+
+# Format the generated files
+$PRETTIER_CMD --write "$OUTPUT_DIR/api-types.ts" "$OUTPUT_DIR/node-types.ts"
+
+echo "✅ TypeScript types generated and formatted successfully"
