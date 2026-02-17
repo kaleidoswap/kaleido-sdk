@@ -24,7 +24,6 @@ from .errors import NetworkError, SwapError, TimeoutError, map_http_error
 # Fallback to old generated types for models that weren't generated
 from .generated.api_types import (
     SwapRoute,
-    TradableAsset,
     TradingPair,
     TradingPairsResponse,
 )
@@ -57,8 +56,8 @@ from .generated.maker_client_generated.api.market import (
     get_pairs,
     list_assets,
 )
-from .generated.maker_client_generated.api.market.get_quote import (
-    _build_response as _get_quote_build_response,
+from .generated.maker_client_generated.api.market import (
+    get_quote as get_quote_endpoint,
 )
 from .generated.maker_client_generated.api.swap_orders import (
     create_swap_order,
@@ -119,6 +118,22 @@ from .utils import to_display_amount, to_raw_amount
 
 if TYPE_CHECKING:
     from .ws_client import QuoteResponse, WSClient
+
+
+def _to_attrs(body: Any, attrs_cls: Any) -> Any:
+    """Convert a Pydantic model to the corresponding generated attrs model.
+
+    The generated client expects attrs models (with ``.to_dict()``), but the
+    public SDK API exposes Pydantic models (with ``.model_dump()``).  This
+    helper bridges the two: if *body* is already an attrs instance it is
+    returned unchanged; otherwise the Pydantic dict is fed through
+    ``attrs_cls.from_dict()``.
+    """
+    if hasattr(body, "to_dict"):
+        return body
+    if hasattr(body, "model_dump"):
+        return attrs_cls.from_dict(body.model_dump(mode="json"))
+    return body
 
 
 def _unwrap_maker_response(response: Any) -> Any:
@@ -389,7 +404,8 @@ class MakerClient:
                     # Inverse pair found, swap the layers in routes
                     if p.routes:
                         return [
-                            SwapRoute(from_layer=r.to_layer, to_layer=r.from_layer) for r in p.routes
+                            SwapRoute(from_layer=r.to_layer, to_layer=r.from_layer)
+                            for r in p.routes
                         ]
                     return []
 
@@ -538,46 +554,10 @@ class MakerClient:
         _unwrap_maker_response(response)  # raises with server message
         raise AssertionError("Unreachable: _unwrap_maker_response should have raised")
 
-    def _normalize_pair(self, raw: dict[str, Any]) -> TradingPair:
-        """Build TradingPair from API shape (may have base/quote or base_ticker/quote_ticker)."""
-        if "base" in raw and "quote" in raw:
-            base_val, quote_val = raw["base"], raw["quote"]
-            if isinstance(base_val, dict) and isinstance(quote_val, dict):
-                return TradingPair.model_validate(raw)
-        base_ticker = raw.get("base_ticker")
-        quote_ticker = raw.get("quote_ticker")
-        if not base_ticker and "base" in raw:
-            b = raw["base"]
-            base_ticker = b.get("ticker", b.get("ticker_symbol")) if isinstance(b, dict) else None
-        if not quote_ticker and "quote" in raw:
-            q = raw["quote"]
-            quote_ticker = q.get("ticker", q.get("ticker_symbol")) if isinstance(q, dict) else None
-        if not base_ticker or not quote_ticker:
-            pair_ticker = raw.get("pair_ticker") or raw.get("ticker") or ""
-            parts = pair_ticker.replace("-", "/").split("/")
-            base_ticker = base_ticker or (parts[0].strip() if len(parts) > 0 else None)
-            quote_ticker = quote_ticker or (parts[1].strip() if len(parts) > 1 else None)
-        if not base_ticker:
-            base_ticker = raw.get("base_asset_id") or raw.get("base_asset") or "?"
-        if not quote_ticker:
-            quote_ticker = raw.get("quote_asset_id") or raw.get("quote_asset") or "?"
-        if isinstance(base_ticker, dict):
-            base_ticker = base_ticker.get("ticker", "?")
-        if isinstance(quote_ticker, dict):
-            quote_ticker = quote_ticker.get("ticker", "?")
-        base = TradableAsset(ticker=base_ticker, name=base_ticker, precision=8)
-        quote = TradableAsset(ticker=quote_ticker, name=quote_ticker, precision=8)
-        price = raw.get("price")
-        if price is not None and not isinstance(price, str):
-            price = str(price)
-        return TradingPair(
-            id=raw.get("id"),
-            base=base,
-            quote=quote,
-            price=price,
-            routes=None,
-            is_active=raw.get("is_active", True),
-        )
+    @staticmethod
+    def _normalize_pair(raw: dict[str, Any]) -> TradingPair:
+        """Parse a single pair dict from the API into a TradingPair model."""
+        return TradingPair.model_validate(raw)
 
     async def get_quote(self, body: PairQuoteRequest) -> PairQuoteResponse:
         """
@@ -586,7 +566,7 @@ class MakerClient:
         Use this for one-time quotes. For continuous price updates, use `stream_quotes()`.
 
         Args:
-            body: Quote request with from/to asset details (Pydantic or generated attrs type)
+            body: Quote request with from/to asset details
 
         Returns:
             Quote with pricing, fees, and RFQ ID (valid for a limited time)
@@ -604,36 +584,13 @@ class MakerClient:
             print(f"Price: {quote.price}, RFQ: {quote.rfq_id}")
             ```
         """
-        # Convert Pydantic to generated attrs if needed (public API exposes Pydantic types)
-        body_for_api = body
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body_for_api = PairQuoteRequest.from_dict(body.model_dump(mode="json"))
-        body_dict = body_for_api.to_dict()
-        # Send from_asset and to_asset as nested objects (server expects dicts, not JSON strings)
-        payload = dict(body_dict)
-        httpx_client = self._client.get_async_httpx_client()
-
-        resp = await _safe_api_call(httpx_client.request(
-            method="post",
-            url="/api/v1/market/quote",
-            json=payload,
-            headers={"Content-Type": "application/json"},
-        ))
-        result = _get_quote_build_response(client=self._client, response=resp)
-        response = result.parsed
-        if response is None:
-            msg = f"Failed to get quote (HTTP {resp.status_code})"
-            if resp.content:
-                try:
-                    err_body = resp.json()
-                    msg += f": {err_body}"
-                except Exception:
-                    msg += f": {resp.text[:200]!r}"
-            raise SwapError(msg)
-        if isinstance(response, HTTPValidationError):
-            detail = getattr(response, "detail", response)
-            raise SwapError(f"Quote validation failed: {detail}")
-        return response
+        resp = await _safe_api_call(
+            get_quote_endpoint.asyncio_detailed(
+                client=self._client,
+                body=_to_attrs(body, PairQuoteRequest),
+            )
+        )
+        return _unwrap_maker_response(resp)
 
     async def get_pair_routes(self, pair_ticker: str) -> list[SwapRoute]:
         """
@@ -646,7 +603,9 @@ class MakerClient:
             List of available swap routes for the pair
         """
         api_body = PairRoutesBody.from_dict({"pair_ticker": pair_ticker})
-        resp = await _safe_api_call(get_pair_routes.asyncio_detailed(client=self._client, body=api_body))
+        resp = await _safe_api_call(
+            get_pair_routes.asyncio_detailed(client=self._client, body=api_body)
+        )
         response = _unwrap_maker_response(resp)
         # Response is list of generated (attrs) SwapRoute; convert to SDK (Pydantic) SwapRoute
         return (
@@ -660,11 +619,13 @@ class MakerClient:
         Discover routes between assets.
 
         Args:
-            body: Routes discovery request (SDK RoutesRequest or generated attrs type)
+            body: Routes discovery request
         """
-        if hasattr(body, "model_dump"):
-            body = RoutesRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(discover_routes.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            discover_routes.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, RoutesRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     # =========================================================================
@@ -676,12 +637,13 @@ class MakerClient:
         Create a new swap order.
 
         Args:
-            body: Swap order creation request (Pydantic or generated attrs type)
+            body: Swap order creation request
         """
-        body_for_api = body
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body_for_api = CreateSwapOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(create_swap_order.asyncio_detailed(client=self._client, body=body_for_api))
+        resp = await _safe_api_call(
+            create_swap_order.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, CreateSwapOrderRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
@@ -691,7 +653,11 @@ class MakerClient:
         Args:
             body: Request with order_id
         """
-        resp = await _safe_api_call(get_swap_order_status.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            get_swap_order_status.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, SwapOrderStatusRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def get_order_history(
@@ -720,12 +686,14 @@ class MakerClient:
         else:
             status_param = None
 
-        resp = await _safe_api_call(get_order_history.asyncio_detailed(
-            client=self._client,
-            status=status_param,
-            limit=limit or 50,
-            skip=skip or 0,
-        ))
+        resp = await _safe_api_call(
+            get_order_history.asyncio_detailed(
+                client=self._client,
+                status=status_param,
+                limit=limit or 50,
+                skip=skip or 0,
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def get_order_analytics(self) -> OrderStatsResponse:
@@ -742,9 +710,12 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        resp = await _safe_api_call(handle_swap_order_rate_decision.asyncio_detailed(
-            client=self._client, body=body
-        ))
+        resp = await _safe_api_call(
+            handle_swap_order_rate_decision.asyncio_detailed(
+                client=self._client,
+                body=_to_attrs(body, SwapOrderRateDecisionRequest),
+            )
+        )
         return _unwrap_maker_response(resp)
 
     # =========================================================================
@@ -756,12 +727,11 @@ class MakerClient:
         Initialize an atomic swap.
 
         Args:
-            body: Swap initialization request (Pydantic or generated attrs type)
+            body: Swap initialization request
         """
-        body_for_api = body
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body_for_api = SwapRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(initiate_swap.asyncio_detailed(client=self._client, body=body_for_api))
+        resp = await _safe_api_call(
+            initiate_swap.asyncio_detailed(client=self._client, body=_to_attrs(body, SwapRequest))
+        )
         return _unwrap_maker_response(resp)
 
     async def execute_swap(self, body: ConfirmSwapRequest) -> ConfirmSwapResponse:
@@ -769,12 +739,13 @@ class MakerClient:
         Execute/confirm an atomic swap.
 
         Args:
-            body: Swap execution request (Pydantic or generated attrs type)
+            body: Swap execution request
         """
-        body_for_api = body
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body_for_api = ConfirmSwapRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(confirm_swap.asyncio_detailed(client=self._client, body=body_for_api))
+        resp = await _safe_api_call(
+            confirm_swap.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, ConfirmSwapRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def get_atomic_swap_status(self, body: SwapStatusRequest) -> SwapStatusResponse:
@@ -782,12 +753,13 @@ class MakerClient:
         Get the status of an atomic swap.
 
         Args:
-            body: Request with payment_hash (Pydantic or generated attrs type)
+            body: Request with payment_hash
         """
-        body_for_api = body
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body_for_api = SwapStatusRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(get_swap_status.asyncio_detailed(client=self._client, body=body_for_api))
+        resp = await _safe_api_call(
+            get_swap_status.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, SwapStatusRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def get_swap_node_info(self) -> SwapNodeInfoResponse:
@@ -816,9 +788,11 @@ class MakerClient:
         Args:
             body: LSP order creation request
         """
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body = CreateOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(create_lsp_order.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            create_lsp_order.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, CreateOrderRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def get_lsp_order(self, body: GetOrderRequest) -> ChannelOrderResponse:
@@ -828,9 +802,11 @@ class MakerClient:
         Args:
             body: Request with order_id
         """
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body = GetOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(get_lsp_order.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            get_lsp_order.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, GetOrderRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def estimate_lsp_fees(self, body: CreateOrderRequest) -> ChannelFees:
@@ -840,9 +816,11 @@ class MakerClient:
         Args:
             body: LSP order request for fee estimation
         """
-        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
-            body = CreateOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await _safe_api_call(estimate_lsp_fees.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            estimate_lsp_fees.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, CreateOrderRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def submit_lsp_rate_decision(self, body: RateDecisionRequest) -> RateDecisionResponse:
@@ -852,7 +830,11 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        resp = await _safe_api_call(handle_lsp_rate_decision.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            handle_lsp_rate_decision.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, RateDecisionRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     async def retry_asset_delivery(self, body: RetryDeliveryRequest) -> RetryDeliveryResponse:
@@ -862,7 +844,11 @@ class MakerClient:
         Args:
             body: Retry delivery request
         """
-        resp = await _safe_api_call(retry_lsp_delivery.asyncio_detailed(client=self._client, body=body))
+        resp = await _safe_api_call(
+            retry_lsp_delivery.asyncio_detailed(
+                client=self._client, body=_to_attrs(body, RetryDeliveryRequest)
+            )
+        )
         return _unwrap_maker_response(resp)
 
     # =========================================================================

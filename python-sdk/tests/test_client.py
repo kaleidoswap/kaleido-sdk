@@ -183,9 +183,7 @@ class TestDecodeRgbInvoiceType:
 class TestMakerExecuteType:
     """maker_execute must return MakerExecuteResponse, not EmptyResponse."""
 
-    async def test_returns_maker_execute_response(
-        self, client_with_node: KaleidoClient
-    ) -> None:
+    async def test_returns_maker_execute_response(self, client_with_node: KaleidoClient) -> None:
         rln = client_with_node.rln
         fake = {"payment_hash": "ab" * 32, "payment_preimage": "cd" * 32}
         with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
@@ -248,7 +246,6 @@ class TestConnectionErrorHandling:
 
     async def test_connection_error_wrapped(self) -> None:
         """httpx.ConnectError should be wrapped in NetworkError."""
-        import httpx
 
         client = KaleidoClient.create(base_url="http://invalid.nonexistent.domain")
         with pytest.raises(NetworkError) as exc_info:

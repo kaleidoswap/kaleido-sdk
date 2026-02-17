@@ -39,25 +39,7 @@ class HttpClient:
             config: SDK configuration with URLs and auth settings
         """
         self._config = config
-        self._maker_client: httpx.AsyncClient | None = None
         self._node_client: httpx.AsyncClient | None = None
-
-    async def _get_maker_client(self) -> httpx.AsyncClient:
-        """Get or create the Maker API client."""
-        if self._maker_client is None or self._maker_client.is_closed:
-            headers: dict[str, str] = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-            if self._config.api_key:
-                headers["Authorization"] = f"Bearer {self._config.api_key}"
-
-            self._maker_client = httpx.AsyncClient(
-                base_url=self._config.base_url,
-                headers=headers,
-                timeout=httpx.Timeout(self._config.timeout),
-            )
-        return self._maker_client
 
     async def _get_node_client(self) -> httpx.AsyncClient:
         """Get or create the Node API client."""
@@ -177,54 +159,6 @@ class HttpClient:
         raise NetworkError("Request failed after retries")
 
     # =========================================================================
-    # Maker API Methods
-    # =========================================================================
-
-    async def maker_get(
-        self,
-        path: str,
-        params: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """
-        Make GET request to Maker API.
-
-        Args:
-            path: API endpoint path
-            params: Query parameters
-
-        Returns:
-            Response data
-        """
-        client = await self._get_maker_client()
-        return await self._request_with_retry(client, "GET", path, params=params)
-
-    async def maker_post(
-        self,
-        path: str,
-        data: dict[str, Any] | BaseModel | None = None,
-        params: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """
-        Make POST request to Maker API.
-
-        Args:
-            path: API endpoint path
-            data: Request body (dict or Pydantic model)
-            params: Query parameters
-
-        Returns:
-            Response data
-        """
-        client = await self._get_maker_client()
-        json_data = None
-        if data is not None:
-            if isinstance(data, BaseModel):
-                json_data = data.model_dump(mode="json", exclude_none=True)
-            else:
-                json_data = data
-        return await self._request_with_retry(client, "POST", path, json=json_data, params=params)
-
-    # =========================================================================
     # Node API Methods
     # =========================================================================
 
@@ -277,10 +211,7 @@ class HttpClient:
     # =========================================================================
 
     async def close(self) -> None:
-        """Close all HTTP clients."""
-        if self._maker_client is not None:
-            await self._maker_client.aclose()
-            self._maker_client = None
+        """Close the HTTP client."""
         if self._node_client is not None:
             await self._node_client.aclose()
             self._node_client = None

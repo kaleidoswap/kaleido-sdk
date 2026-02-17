@@ -10,9 +10,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import NetworkInfoResponse from generated types
-from .generated.node_types import DecodeRGBInvoiceResponse, MakerExecuteResponse
+from .generated.node_types import DecodeRGBInvoiceResponse, MakerExecuteResponse, TakerRequest
 from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
-from .generated.node_types import TakerRequest
 from .types import (
     AddressResponse,
     AssetBalanceRequest,
@@ -220,29 +219,29 @@ class RlnClient:
         return SendBtcResponse.model_validate(data)
 
     async def list_transactions(
-        self, request: ListTransactionsRequest | None = None
+        self, body: ListTransactionsRequest | None = None
     ) -> ListTransactionsResponse:
         """
         List on-chain transactions.
 
         Args:
-            request: Optional request with skip_sync flag
+            body: Optional request with skip_sync flag
         """
-        body = request or ListTransactionsRequest(skip_sync=False)
-        data = await self._http.node_post("/listtransactions", body)
+        data = await self._http.node_post(
+            "/listtransactions", body or ListTransactionsRequest(skip_sync=False)
+        )
         return ListTransactionsResponse.model_validate(data)
 
-    async def list_unspents(
-        self, request: ListUnspentsRequest | None = None
-    ) -> ListUnspentsResponse:
+    async def list_unspents(self, body: ListUnspentsRequest | None = None) -> ListUnspentsResponse:
         """
         List unspent outputs.
 
         Args:
-            request: Optional request with skip_sync flag
+            body: Optional request with skip_sync flag
         """
-        body = request or ListUnspentsRequest(skip_sync=False)
-        data = await self._http.node_post("/listunspents", body)
+        data = await self._http.node_post(
+            "/listunspents", body or ListUnspentsRequest(skip_sync=False)
+        )
         return ListUnspentsResponse.model_validate(data)
 
     async def create_utxos(self, body: CreateUtxosRequest) -> None:
