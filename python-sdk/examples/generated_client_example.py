@@ -19,7 +19,7 @@ async def example_list_assets():
     print("📋 Listing all assets...")
     
     # Create client
-    client = Client(base_url="https://testnet.kaleidoswap.com")
+    client = Client(base_url="http://localhost:8000")
     
     # Make request using the generated function
     response = await list_assets.asyncio(client=client)
@@ -38,7 +38,7 @@ async def example_get_quote():
     """Get a swap quote."""
     print("\n💱 Getting swap quote...")
     
-    client = Client(base_url="https://testnet.kaleidoswap.com")
+    client = Client(base_url="http://localhost:8000")
     
     # Create request with Pydantic model
     request = PairQuoteRequest(
@@ -61,22 +61,12 @@ async def example_get_quote():
         print("❌ No quote available")
 
 
-async def example_with_context_manager():
-    """Using async context manager."""
-    print("\n🔄 Using context manager...")
-    
-    async with Client(base_url="https://testnet.kaleidoswap.com") as client:
-        response = await list_assets.asyncio(client=client)
-        if response:
-            print(f"✅ Got {len(response.assets)} assets with automatic cleanup")
-
-
 async def example_error_handling():
     """Demonstrate error handling."""
     print("\n⚠️  Error handling example...")
     
     client = Client(
-        base_url="https://testnet.kaleidoswap.com",
+        base_url="http://localhost:8000",
         raise_on_unexpected_status=True  # Raise on errors
     )
     
@@ -103,7 +93,6 @@ async def main():
     try:
         await example_list_assets()
         # await example_get_quote()  # Uncomment if API is available
-        await example_with_context_manager()
         await example_error_handling()
         
     except Exception as e:

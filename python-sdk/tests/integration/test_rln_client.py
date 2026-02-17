@@ -7,9 +7,11 @@ import pytest
 from kaleidoswap_sdk import (
     AssetBalanceRequest,
     AssetMetadataRequest,
+    AssetSchema,
     ChangePasswordRequest,
     CheckIndexerUrlRequest,
     ConnectPeerRequest,
+    CreateUtxosRequest,
     DecodeLNInvoiceRequest,
     DecodeRGBInvoiceRequest,
     DisconnectPeerRequest,
@@ -31,6 +33,7 @@ from kaleidoswap_sdk import (
     RlnClient,
     SignMessageRequest,
 )
+from kaleidoswap_sdk.generated.node_types import DecodeRGBInvoiceResponse
 
 
 class TestRlnClient:
@@ -153,6 +156,21 @@ class TestRlnClientIntegration:
         assert hasattr(resp, "nia") or hasattr(resp, "cfa") or hasattr(resp, "uda")
 
     @pytest.mark.integration
+    async def test_list_assets_with_filter(self, client_with_node: KaleidoClient) -> None:
+        """Test listing assets with enum filter (regression: enum serialization)."""
+        resp = await client_with_node.rln.list_assets(
+            filter_asset_schemas=[AssetSchema.nia]
+        )
+        assert resp is not None
+        assert hasattr(resp, "nia")
+
+    @pytest.mark.integration
+    async def test_create_utxos(self, client_with_node: KaleidoClient) -> None:
+        """Test creating UTXOs with fee_rate (regression: fee_rate int cast)."""
+        body = CreateUtxosRequest(up_to=True, num=5, fee_rate=1.5, skip_sync=True)
+        await client_with_node.rln.create_utxos(body)
+
+    @pytest.mark.integration
     async def test_get_asset_balance(self, client_with_node: KaleidoClient) -> None:
         """Test getting asset balance (requires valid asset_id)."""
         # First we need to extract an asset_id from the list of assets
@@ -249,8 +267,7 @@ class TestRlnClientIntegration:
     async def test_connect_peer(self, client_with_node: KaleidoClient) -> None:
         """Test connect peer endpoint (requires valid peer_pubkey_and_addr)."""
         body = ConnectPeerRequest(peer_pubkey_and_addr="")
-        resp = await client_with_node.rln.connect_peer(body)
-        assert resp is not None
+        await client_with_node.rln.connect_peer(body)
 
     @pytest.mark.integration
     @pytest.mark.skip(reason="No peer pubkey to disconnect from")
@@ -295,14 +312,17 @@ class TestRlnClientIntegration:
     async def test_decode_rgb_invoice(
         self, client_with_node: KaleidoClient, second_client_with_node: KaleidoClient
     ) -> None:
-        """Test decoding RGB invoice (requires valid invoice string)."""
-        body = RgbInvoiceRequest(min_confirmations=1, witness=False)
-        resp = await second_client_with_node.rln.create_rgb_invoice(body)
-        assert resp is not None
-        assert hasattr(resp, "invoice")
-        body = DecodeRGBInvoiceRequest(invoice=resp.invoice)
-        resp = await client_with_node.rln.decode_rgb_invoice(body)
-        assert resp is not None
+        """Test decoding RGB invoice returns DecodeRGBInvoiceResponse."""
+        create_body = RgbInvoiceRequest(min_confirmations=1, witness=False)
+        create_resp = await second_client_with_node.rln.create_rgb_invoice(create_body)
+        assert create_resp is not None
+        assert hasattr(create_resp, "invoice")
+        decode_body = DecodeRGBInvoiceRequest(invoice=create_resp.invoice)
+        decoded = await client_with_node.rln.decode_rgb_invoice(decode_body)
+        assert decoded is not None
+        assert isinstance(decoded, DecodeRGBInvoiceResponse)
+        assert hasattr(decoded, "recipient_id")
+        assert hasattr(decoded, "recipient_type")
 
     @pytest.mark.integration
     async def test_get_invoice_status(self, client_with_node: KaleidoClient) -> None:

@@ -96,7 +96,7 @@ class TestMakerClientIntegration:
     async def test_get_pair_routes(self, client: KaleidoClient) -> None:
         """Test POST /market/pairs/routes - Get available swap routes for a pair."""
         # Test with pair_ticker
-        routes = await client.maker.get_pair_routes({"pair_ticker": "BTC/USDT"})
+        routes = await client.maker.get_pair_routes("BTC/USDT")
         assert routes is not None
         assert isinstance(routes, list)
 

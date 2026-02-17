@@ -3,99 +3,78 @@
 Example 03: WebSocket Streaming
 
 Example showing how to stream real-time quotes via WebSocket.
+The SDK automatically requests quotes at a configurable interval.
 """
 
 import asyncio
-from kaleidoswap_sdk import (
-    KaleidoClient,
-    Layer,
-    to_display_units,
-)
+
+from kaleidoswap_sdk import KaleidoClient, Layer
 
 
 async def main() -> None:
     """Main entry point."""
-    # Create client
-    client = KaleidoClient.create(
-        base_url="https://api.kaleidoswap.com"
-    )
+    client = KaleidoClient.create(base_url="http://localhost:8000")
 
-    async with client:
-        # Enable WebSocket
-        ws_url = "wss://api.kaleidoswap.com/ws"
-        ws = client.maker.enable_websocket(ws_url)
+    # Enable WebSocket
+    ws = client.maker.enable_websocket("wss://api.staging.kaleidoswap.com/api/v1/market/ws")
 
-        # Track quotes received
-        quotes_received = 0
-        max_quotes = 5
+    quotes_received = 0
+    max_quotes = 5
 
-        def on_quote(quote: dict) -> None:
-            """Handle incoming quote."""
-            nonlocal quotes_received
-            quotes_received += 1
+    def on_quote(quote: dict) -> None:
+        nonlocal quotes_received
+        quotes_received += 1
 
-            print(f"\nQuote #{quotes_received}:")
-            print(f"  From: {quote.get('from_amount')} {quote.get('from_asset')}")
-            print(f"  To: {quote.get('to_amount')} {quote.get('to_asset')}")
-            print(f"  Price: {quote.get('price')}")
-            print(f"  RFQ ID: {quote.get('rfq_id')}")
+        from_asset = quote.get("from_asset", {})
+        to_asset = quote.get("to_asset", {})
 
-        def on_connected() -> None:
-            """Handle connection established."""
-            print("Connected to WebSocket!")
+        print(f"\nQuote #{quotes_received}:")
+        print(f"  From: {from_asset.get('amount')} {from_asset.get('ticker')} ({from_asset.get('layer')})")
+        print(f"  To: {to_asset.get('amount')} {to_asset.get('ticker')} ({to_asset.get('layer')})")
+        print(f"  Price: {quote.get('price')}")
+        print(f"  RFQ ID: {quote.get('rfq_id')}")
 
-        def on_disconnected() -> None:
-            """Handle disconnection."""
-            print("Disconnected from WebSocket")
+    ws.on("connected", lambda: print("Connected to WebSocket!"))
+    ws.on("disconnected", lambda: print("Disconnected from WebSocket"))
+    ws.on("error", lambda e: print(f"WebSocket error: {e}"))
 
-        def on_error(error: Exception) -> None:
-            """Handle errors."""
-            print(f"WebSocket error: {error}")
+    try:
+        print("Finding available routes...")
+        routes = await client.maker.get_available_routes("BTC", "USDT")
 
-        # Set up event handlers
-        ws.on("connected", on_connected)
-        ws.on("disconnected", on_disconnected)
-        ws.on("error", on_error)
+        if not routes:
+            print("No routes found for BTC/USDT")
+            return
 
-        try:
-            # Get available routes first
-            print("Finding available routes...")
-            routes = await client.maker.get_available_routes("BTC", "USDT")
+        print(f"Found {len(routes)} routes:")
+        for route in routes:
+            print(f"  - {route['from_layer']} -> {route['to_layer']}")
 
-            if not routes:
-                print("No routes found for BTC/USDT")
-                return
+        print(f"\nStreaming quotes for BTC/USDT (automatically requests every 2 seconds)...")
 
-            print(f"Found {len(routes)} routes:")
-            for route in routes:
-                print(f"  - {route['from_layer']} -> {route['to_layer']}")
+        # Start streaming - quotes are automatically requested every 2 seconds
+        stop = await client.maker.stream_quotes(
+            from_asset="BTC",
+            to_asset="USDT",
+            from_amount=100000,
+            from_layer=Layer(routes[0]["from_layer"]),
+            to_layer=Layer(routes[0]["to_layer"]),
+            on_update=on_quote,
+            poll_interval=2.0,  # Request new quotes every 2 seconds
+        )
 
-            # Stream quotes using the first route
-            print(f"\nStreaming quotes for BTC/USDT...")
-            print(f"(Will receive {max_quotes} quotes then stop)")
+        # Wait for quotes to arrive via callback
+        while quotes_received < max_quotes:
+            await asyncio.sleep(0.5)
 
-            unsubscribe = await client.maker.stream_quotes(
-                from_asset="BTC",
-                to_asset="USDT",
-                from_amount=100000,  # 0.001 BTC in satoshis
-                from_layer=Layer(routes[0]["from_layer"]),
-                to_layer=Layer(routes[0]["to_layer"]),
-                on_update=on_quote,
-            )
+        # Stop streaming and disconnect
+        stop()
+        ws.disconnect()
+        print(f"\nReceived {quotes_received} quotes. Done!")
 
-            # Wait for quotes
-            while quotes_received < max_quotes:
-                await asyncio.sleep(1)
-
-            # Cleanup
-            unsubscribe()
-            ws.disconnect()
-
-            print(f"\nReceived {quotes_received} quotes. Done!")
-
-        except Exception as e:
-            print(f"\nError: {e}")
-            print("(WebSocket streaming requires a working WebSocket endpoint)")
+    except Exception as e:
+        print(f"\nError: {e}")
+        print("(WebSocket streaming requires a working WebSocket endpoint)")
 
 
 if __name__ == "__main__":

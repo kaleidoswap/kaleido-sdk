@@ -219,7 +219,7 @@ class HttpClient:
         json_data = None
         if data is not None:
             if isinstance(data, BaseModel):
-                json_data = data.model_dump(exclude_none=True)
+                json_data = data.model_dump(mode="json", exclude_none=True)
             else:
                 json_data = data
         return await self._request_with_retry(client, "POST", path, json=json_data, params=params)
@@ -267,7 +267,7 @@ class HttpClient:
         json_data = None
         if data is not None:
             if isinstance(data, BaseModel):
-                json_data = data.model_dump(exclude_none=True)
+                json_data = data.model_dump(mode="json", exclude_none=True)
             else:
                 json_data = data
         return await self._request_with_retry(client, "POST", path, json=json_data, params=params)

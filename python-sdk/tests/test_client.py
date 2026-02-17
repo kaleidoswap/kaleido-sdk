@@ -2,16 +2,28 @@
 Tests for KaleidoClient.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 
 from kaleidoswap_sdk import (
+    CreateUtxosRequest,
+    DecodeRGBInvoiceRequest,
     KaleidoClient,
     KaleidoConfig,
+    MakerExecuteRequest,
+    NetworkError,
     NodeNotConfiguredError,
     get_sdk_name,
     get_version,
     to_display_units,
     to_smallest_units,
+)
+from kaleidoswap_sdk.generated.node_types import (
+    AssetSchema,
+    DecodeRGBInvoiceResponse,
+    ListAssetsRequest,
+    MakerExecuteResponse,
 )
 
 
@@ -102,3 +114,154 @@ class TestUtilityFunctions:
         """Test get_sdk_name returns expected name."""
         name = get_sdk_name()
         assert name == "kaleidoswap-sdk"
+
+
+# =============================================================================
+# Bug-fix regression tests
+# =============================================================================
+
+
+class TestCreateUtxosFeeRate:
+    """create_utxos must send fee_rate as int (node expects u64)."""
+
+    async def test_fee_rate_sent_as_int(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            await rln.create_utxos(CreateUtxosRequest(up_to=True, num=5, fee_rate=1.5))
+
+            sent = mock.call_args[0][1]
+            assert isinstance(sent, dict)
+            assert isinstance(sent["fee_rate"], int)
+            assert sent["fee_rate"] == 1
+
+    async def test_fee_rate_none_omitted(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            await rln.create_utxos(CreateUtxosRequest(up_to=True, num=5))
+
+            sent = mock.call_args[0][1]
+            assert "fee_rate" not in sent
+
+    async def test_fee_rate_whole_number(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            await rln.create_utxos(CreateUtxosRequest(fee_rate=4.0))
+
+            sent = mock.call_args[0][1]
+            assert sent["fee_rate"] == 4
+            assert isinstance(sent["fee_rate"], int)
+
+
+class TestDecodeRgbInvoiceType:
+    """decode_rgb_invoice must return DecodeRGBInvoiceResponse."""
+
+    async def test_returns_correct_type(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        fake = {
+            "recipient_id": "utxob:abc",
+            "recipient_type": "Witness",
+            "asset_id": "rgb:2dk...",
+            "network": "Regtest",
+            "expiration_timestamp": 1700000000,
+            "transport_endpoints": ["rpc://proxy.example.com/json-rpc"],
+        }
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = fake
+            result = await rln.decode_rgb_invoice(DecodeRGBInvoiceRequest(invoice="rgb:..."))
+
+        assert isinstance(result, DecodeRGBInvoiceResponse)
+        assert result.recipient_id == "utxob:abc"
+        assert result.transport_endpoints == ["rpc://proxy.example.com/json-rpc"]
+
+    def test_decode_response_has_no_invoice_field(self) -> None:
+        assert "invoice" not in DecodeRGBInvoiceResponse.model_fields
+
+
+class TestMakerExecuteType:
+    """maker_execute must return MakerExecuteResponse, not EmptyResponse."""
+
+    async def test_returns_maker_execute_response(
+        self, client_with_node: KaleidoClient
+    ) -> None:
+        rln = client_with_node.rln
+        fake = {"payment_hash": "ab" * 32, "payment_preimage": "cd" * 32}
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = fake
+            result = await rln.maker_execute(
+                MakerExecuteRequest(swapstring="s", payment_secret="p", taker_pubkey="t")
+            )
+
+        assert isinstance(result, MakerExecuteResponse)
+        assert result.payment_hash == "ab" * 32
+        assert result.payment_preimage == "cd" * 32
+
+    async def test_empty_dict_still_parses(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            result = await rln.maker_execute(
+                MakerExecuteRequest(swapstring="s", payment_secret="p", taker_pubkey="t")
+            )
+
+        assert isinstance(result, MakerExecuteResponse)
+        assert result.payment_hash is None
+
+    def test_type_exported_from_package(self) -> None:
+        from kaleidoswap_sdk import MakerExecuteResponse as Exported
+
+        assert Exported is MakerExecuteResponse
+
+
+class TestListAssetsEnumSerialization:
+    """filter_asset_schemas enums must serialize to string values."""
+
+    def test_json_mode_serializes_enums(self) -> None:
+        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia, AssetSchema.uda])
+        dumped = req.model_dump(mode="json", exclude_none=True)
+        for v in dumped["filter_asset_schemas"]:
+            assert isinstance(v, str), f"Expected str, got {type(v)}"
+
+    def test_python_mode_keeps_enum_objects(self) -> None:
+        """Confirm mode='python' (old default) keeps Enum objects -- the original bug."""
+        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia])
+        dumped = req.model_dump(exclude_none=True)
+        assert isinstance(dumped["filter_asset_schemas"][0], AssetSchema)
+
+    async def test_node_post_serializes_enums(self, client_with_node: KaleidoClient) -> None:
+        """HttpClient.node_post must produce JSON-safe dicts for enum fields."""
+        http = client_with_node.rln._http
+        body = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia])
+
+        with patch.object(http, "_request_with_retry", new_callable=AsyncMock) as mock:
+            mock.return_value = {"nia": [], "uda": [], "cfa": []}
+            await http.node_post("/listassets", body)
+
+            json_payload = mock.call_args[1]["json"]
+            assert json_payload["filter_asset_schemas"] == ["Nia"]
+
+
+class TestConnectionErrorHandling:
+    """Connection errors should be wrapped in NetworkError with clear messages."""
+
+    async def test_connection_error_wrapped(self) -> None:
+        """httpx.ConnectError should be wrapped in NetworkError."""
+        import httpx
+
+        client = KaleidoClient.create(base_url="http://invalid.nonexistent.domain")
+        with pytest.raises(NetworkError) as exc_info:
+            await client.maker.list_assets()
+
+        assert "Failed to connect" in str(exc_info.value)
+        assert exc_info.value.code == "NETWORK_ERROR"
+
+    async def test_dns_error_user_friendly(self) -> None:
+        """DNS resolution failure should give user-friendly error."""
+        client = KaleidoClient.create(base_url="http://does-not-exist.local")
+        with pytest.raises(NetworkError) as exc_info:
+            await client.maker.list_assets()
+
+        error_msg = str(exc_info.value)
+        assert "Failed to connect" in error_msg or "Network error" in error_msg

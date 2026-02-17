@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import NetworkInfoResponse from generated types
+from .generated.node_types import DecodeRGBInvoiceResponse, MakerExecuteResponse
 from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
 from .generated.node_types import TakerRequest
 from .types import (
@@ -32,7 +33,6 @@ from .types import (
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
     DisconnectPeerRequest,
-    EmptyResponse,
     EstimateFeeRequest,
     EstimateFeeResponse,
     FailTransfersRequest,
@@ -252,7 +252,12 @@ class RlnClient:
         Args:
             body: UTXO creation request
         """
-        await self._http.node_post("/createutxos", body)
+        # Node expects fee_rate as u64; Pydantic model uses float for
+        # compatibility, so we manually cast to int before serialization.
+        json_data = body.model_dump(mode="json", exclude_none=True)
+        if "fee_rate" in json_data and json_data["fee_rate"] is not None:
+            json_data["fee_rate"] = int(json_data["fee_rate"])
+        await self._http.node_post("/createutxos", json_data)
 
     async def estimate_fee(self, body: EstimateFeeRequest) -> EstimateFeeResponse:
         """
@@ -368,7 +373,7 @@ class RlnClient:
         Args:
             body: Optional refresh request
         """
-        await self._http.node_post("/refreshtransfers", body or {})
+        await self._http.node_post("/refreshtransfers", body or RefreshRequest())
 
     async def sync_rgb_wallet(self) -> None:
         """Sync the RGB wallet with the blockchain."""
@@ -431,15 +436,14 @@ class RlnClient:
         data = await self._http.node_get("/listpeers")
         return ListPeersResponse.model_validate(data)
 
-    async def connect_peer(self, body: ConnectPeerRequest) -> EmptyResponse:
+    async def connect_peer(self, body: ConnectPeerRequest) -> None:
         """
         Connect to a Lightning peer.
 
         Args:
             body: Request with peer_pubkey_and_addr
         """
-        data = await self._http.node_post("/connectpeer", body)
-        return EmptyResponse.model_validate(data)
+        await self._http.node_post("/connectpeer", body)
 
     async def disconnect_peer(self, body: DisconnectPeerRequest) -> None:
         """
@@ -488,15 +492,19 @@ class RlnClient:
         data = await self._http.node_post("/decodelninvoice", body)
         return DecodeLNInvoiceResponse.model_validate(data)
 
-    async def decode_rgb_invoice(self, body: DecodeRGBInvoiceRequest) -> RgbInvoiceResponse:
+    async def decode_rgb_invoice(self, body: DecodeRGBInvoiceRequest) -> DecodeRGBInvoiceResponse:
         """
         Decode an RGB invoice.
 
         Args:
             body: Request with invoice string
+
+        Returns:
+            Decoded invoice details including recipient_type, asset info, and
+            transport endpoints.
         """
         data = await self._http.node_post("/decodergbinvoice", body)
-        return RgbInvoiceResponse.model_validate(data)
+        return DecodeRGBInvoiceResponse.model_validate(data)
 
     async def get_invoice_status(self, body: InvoiceStatusRequest) -> InvoiceStatusResponse:
         """
@@ -573,15 +581,18 @@ class RlnClient:
         data = await self._http.node_post("/makerinit", body)
         return MakerInitResponse.model_validate(data)
 
-    async def maker_execute(self, body: MakerExecuteRequest) -> EmptyResponse:
+    async def maker_execute(self, body: MakerExecuteRequest) -> MakerExecuteResponse:
         """
         Execute a maker swap.
 
         Args:
             body: Maker swap execution request
+
+        Returns:
+            Execution result with payment_hash and payment_preimage.
         """
         data = await self._http.node_post("/makerexecute", body)
-        return EmptyResponse.model_validate(data)
+        return MakerExecuteResponse.model_validate(data)
 
     async def list_swaps(self) -> ListSwapsResponse:
         """List all swaps (maker and taker)."""

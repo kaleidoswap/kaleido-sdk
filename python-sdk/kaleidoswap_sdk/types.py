@@ -103,6 +103,7 @@ from .generated.node_types import (
     DecodeLNInvoiceRequest,
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
     DisconnectPeerRequest,
     EmptyResponse,
     EstimateFeeRequest,
@@ -147,6 +148,7 @@ from .generated.node_types import (
     LNInvoiceRequest,
     LNInvoiceResponse,
     MakerExecuteRequest,
+    MakerExecuteResponse,
     MakerInitRequest,
     MakerInitResponse,
     NodeInfoResponse,
@@ -365,6 +367,7 @@ __all__ = [
     "DecodeLNInvoiceRequest",
     "DecodeLNInvoiceResponse",
     "DecodeRGBInvoiceRequest",
+    "DecodeRGBInvoiceResponse",
     "InvoiceStatusRequest",
     "InvoiceStatusResponse",
     # Node Types - Payments
@@ -384,6 +387,7 @@ __all__ = [
     "MakerInitRequest",
     "MakerInitResponse",
     "MakerExecuteRequest",
+    "MakerExecuteResponse",
     # Node Types - Other
     "NodeInfoResponse",
     "NodeNetworkInfoResponse",

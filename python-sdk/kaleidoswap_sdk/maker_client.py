@@ -16,9 +16,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+import httpx
 from httpx import Timeout
 
-from .errors import SwapError, map_http_error
+from .errors import NetworkError, SwapError, TimeoutError, map_http_error
 
 # Fallback to old generated types for models that weren't generated
 from .generated.api_types import (
@@ -150,6 +151,33 @@ def _unwrap_maker_response(response: Any) -> Any:
     raise map_http_error(status_code, reason_phrase, error_data)
 
 
+async def _safe_api_call(coro: Any) -> Any:
+    """
+    Wrap API calls to catch httpx exceptions and convert to SDK exceptions.
+
+    Args:
+        coro: Coroutine from generated API client
+
+    Returns:
+        Response from the API call
+
+    Raises:
+        NetworkError: On connection/DNS errors
+        TimeoutError: On request timeout
+        KaleidoError: Other mapped errors
+    """
+    try:
+        return await coro
+    except httpx.ConnectError as e:
+        # DNS resolution, connection refused, etc.
+        raise NetworkError(f"Failed to connect to API: {e}") from e
+    except httpx.TimeoutException as e:
+        raise TimeoutError(f"Request timed out: {e}") from e
+    except httpx.RequestError as e:
+        # Other request errors (network issues, etc.)
+        raise NetworkError(f"Network error: {e}") from e
+
+
 @dataclass
 class SwapCompletionOptions:
     """Options for waiting for swap completion."""
@@ -234,9 +262,16 @@ class MakerClient:
         from_layer: Layer | None,
         to_layer: Layer | None,
         on_update: Callable[[QuoteResponse], None],
+        poll_interval: float = 2.0,
     ) -> Callable[[], None]:
         """
-        Stream real-time quote updates.
+        Stream continuous quote updates via WebSocket (with automatic polling).
+
+        Use this for monitoring price changes over time. For a single one-time quote,
+        use `get_quote()` instead (simpler HTTP request, no WebSocket needed).
+
+        The server sends one quote per request, so this function automatically
+        requests new quotes at the specified interval to provide continuous updates.
 
         Args:
             from_asset: Source asset ticker
@@ -245,12 +280,31 @@ class MakerClient:
             from_layer: Source layer
             to_layer: Destination layer
             on_update: Callback for quote updates
+            poll_interval: Seconds between quote requests (default: 2.0)
 
         Returns:
-            Unsubscribe function
+            Stop function (stops polling and unsubscribes from updates)
 
         Raises:
             RuntimeError: If WebSocket not enabled
+
+        Example:
+            ```python
+            def on_quote(quote):
+                print(f"New price: {quote['price']}")
+
+            stop = await client.maker.stream_quotes(
+                from_asset="bitcoin", to_asset="rgb20:tether",
+                from_amount=100000, from_layer=Layer.BTC_LN, to_layer=Layer.RGB_LN,
+                on_update=on_quote, poll_interval=2.0,
+            )
+
+            # Quotes arrive every 2 seconds via callback
+            await asyncio.sleep(30)
+
+            # Stop streaming
+            stop()
+            ```
         """
         if not self._ws:
             raise RuntimeError("WebSocket not enabled. Call enable_websocket() first.")
@@ -261,30 +315,51 @@ class MakerClient:
         # Subscribe to quote updates
         self._ws.on("quote_response", on_update)
 
-        # Send initial quote request
-        self._ws.request_quote(
-            {
-                "from_asset": from_asset,
-                "to_asset": to_asset,
-                "from_amount": from_amount,
-                "to_amount": None,
-                "from_layer": from_layer.value if from_layer else None,
-                "to_layer": to_layer.value if to_layer else None,
-            }
-        )
+        # Quote request parameters
+        quote_params = {
+            "from_asset": from_asset,
+            "to_asset": to_asset,
+            "from_amount": from_amount,
+            "to_amount": None,
+            "from_layer": from_layer.value if from_layer else None,
+            "to_layer": to_layer.value if to_layer else None,
+        }
 
-        # Return unsubscribe function
-        def unsubscribe() -> None:
+        # Send initial quote request
+        self._ws.request_quote(quote_params)
+
+        # Background task for periodic quote requests
+        polling_task: asyncio.Task[None] | None = None
+        should_stop = False
+
+        async def _poll_quotes() -> None:
+            """Periodically request new quotes."""
+            nonlocal should_stop
+            while not should_stop:
+                await asyncio.sleep(poll_interval)
+                if not should_stop and self._ws and self._ws.is_connected():
+                    self._ws.request_quote(quote_params)
+
+        # Start polling in background
+        polling_task = asyncio.create_task(_poll_quotes())
+
+        # Return stop function
+        def stop() -> None:
+            """Stop polling and unsubscribe from quote updates."""
+            nonlocal should_stop, polling_task
+            should_stop = True
+            if polling_task and not polling_task.done():
+                polling_task.cancel()
             if self._ws:
                 self._ws.off("quote_response", on_update)
 
-        return unsubscribe
+        return stop
 
     async def get_available_routes(
         self,
         from_ticker: str,
         to_ticker: str,
-    ) -> list[dict[str, str]]:
+    ) -> list[SwapRoute]:
         """
         Get available routes for a trading pair by ticker symbols.
 
@@ -293,7 +368,7 @@ class MakerClient:
             to_ticker: Destination asset ticker (e.g., 'USDT')
 
         Returns:
-            List of routes with from_layer and to_layer
+            List of SwapRoute models with from_layer and to_layer
         """
         pairs_response = await self.list_pairs()
 
@@ -314,14 +389,14 @@ class MakerClient:
                     # Inverse pair found, swap the layers in routes
                     if p.routes:
                         return [
-                            {"from_layer": r.to_layer, "to_layer": r.from_layer} for r in p.routes
+                            SwapRoute(from_layer=r.to_layer, to_layer=r.from_layer) for r in p.routes
                         ]
                     return []
 
         if not pair or not pair.routes:
             return []
 
-        return [{"from_layer": r.from_layer, "to_layer": r.to_layer} for r in pair.routes]
+        return list(pair.routes)
 
     async def stream_quotes_by_ticker(
         self,
@@ -331,6 +406,7 @@ class MakerClient:
         on_update: Callable[[QuoteResponse], None],
         preferred_from_layer: Layer | None = None,
         preferred_to_layer: Layer | None = None,
+        poll_interval: float = 2.0,
     ) -> Callable[[], None]:
         """
         Stream quotes using ticker symbols with automatic route discovery.
@@ -342,9 +418,10 @@ class MakerClient:
             on_update: Callback for quote updates
             preferred_from_layer: Optional preferred source layer
             preferred_to_layer: Optional preferred destination layer
+            poll_interval: Seconds between quote requests (default: 2.0)
 
         Returns:
-            Unsubscribe function
+            Stop function
 
         Raises:
             ValueError: If no routes found for the pair
@@ -362,8 +439,8 @@ class MakerClient:
         if preferred_from_layer and preferred_to_layer:
             for route in routes:
                 if (
-                    route["from_layer"] == preferred_from_layer.value
-                    and route["to_layer"] == preferred_to_layer.value
+                    route.from_layer == preferred_from_layer.value
+                    and route.to_layer == preferred_to_layer.value
                 ):
                     selected_route = route
                     break
@@ -373,9 +450,10 @@ class MakerClient:
             from_ticker.upper(),
             to_ticker.upper(),
             amount,
-            Layer(selected_route["from_layer"]),
-            Layer(selected_route["to_layer"]),
+            Layer(selected_route.from_layer),
+            Layer(selected_route.to_layer),
             on_update,
+            poll_interval=poll_interval,
         )
 
     async def stream_quotes_for_all_routes(
@@ -384,6 +462,7 @@ class MakerClient:
         to_ticker: str,
         amount: int,
         on_update: Callable[[str, QuoteResponse], None],
+        poll_interval: float = 2.0,
     ) -> dict[str, Callable[[], None]]:
         """
         Stream quotes for all available routes of a trading pair.
@@ -393,9 +472,10 @@ class MakerClient:
             to_ticker: Destination asset ticker
             amount: Amount to convert (in smallest units)
             on_update: Callback receiving (route_key, quote)
+            poll_interval: Seconds between quote requests (default: 2.0)
 
         Returns:
-            Dict mapping route keys to unsubscribe functions
+            Dict mapping route keys to stop functions
 
         Raises:
             ValueError: If no routes found for the pair
@@ -408,27 +488,28 @@ class MakerClient:
                 "Pair may not exist or is not active."
             )
 
-        unsubscribers: dict[str, Callable[[], None]] = {}
+        stoppers: dict[str, Callable[[], None]] = {}
 
         # Subscribe to each route
         for route in routes:
-            route_key = f"{route['from_layer']}->{route['to_layer']}"
+            route_key = f"{route.from_layer}->{route.to_layer}"
 
             def make_callback(key: str) -> Callable[[QuoteResponse], None]:
                 return lambda quote: on_update(key, quote)
 
-            unsubscribe = await self.stream_quotes(
+            stop = await self.stream_quotes(
                 from_ticker.upper(),
                 to_ticker.upper(),
                 amount,
-                Layer(route["from_layer"]),
-                Layer(route["to_layer"]),
+                Layer(route.from_layer),
+                Layer(route.to_layer),
                 make_callback(route_key),
+                poll_interval=poll_interval,
             )
 
-            unsubscribers[route_key] = unsubscribe
+            stoppers[route_key] = stop
 
-        return unsubscribers
+        return stoppers
 
     # =========================================================================
     # Market API - /api/v1/market/*
@@ -436,13 +517,13 @@ class MakerClient:
 
     async def list_assets(self) -> AssetsResponse:
         """List all available assets."""
-        resp = await list_assets.asyncio_detailed(client=self._client)
+        resp = await _safe_api_call(list_assets.asyncio_detailed(client=self._client))
         return _unwrap_maker_response(resp)
 
     async def list_pairs(self) -> TradingPairsResponse:
         """List all trading pairs."""
         # Generated get_pairs only parses 422; 200 is returned as None. Parse 200 manually.
-        response = await get_pairs.asyncio_detailed(client=self._client)
+        response = await _safe_api_call(get_pairs.asyncio_detailed(client=self._client))
         if response.status_code == 200:
             data = json.loads(response.content.decode())
             pairs_list = data.get("pairs") or []
@@ -500,10 +581,28 @@ class MakerClient:
 
     async def get_quote(self, body: PairQuoteRequest) -> PairQuoteResponse:
         """
-        Get a quote for a trading pair.
+        Get a single quote for a trading pair (HTTP request).
+
+        Use this for one-time quotes. For continuous price updates, use `stream_quotes()`.
 
         Args:
             body: Quote request with from/to asset details (Pydantic or generated attrs type)
+
+        Returns:
+            Quote with pricing, fees, and RFQ ID (valid for a limited time)
+
+        Raises:
+            NetworkError: On connection errors
+            SwapError: On quote validation or server errors
+
+        Example:
+            ```python
+            quote = await client.maker.get_quote(PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=100000),
+                to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN),
+            ))
+            print(f"Price: {quote.price}, RFQ: {quote.rfq_id}")
+            ```
         """
         # Convert Pydantic to generated attrs if needed (public API exposes Pydantic types)
         body_for_api = body
@@ -513,12 +612,13 @@ class MakerClient:
         # Send from_asset and to_asset as nested objects (server expects dicts, not JSON strings)
         payload = dict(body_dict)
         httpx_client = self._client.get_async_httpx_client()
-        resp = await httpx_client.request(
+
+        resp = await _safe_api_call(httpx_client.request(
             method="post",
             url="/api/v1/market/quote",
             json=payload,
             headers={"Content-Type": "application/json"},
-        )
+        ))
         result = _get_quote_build_response(client=self._client, response=resp)
         response = result.parsed
         if response is None:
@@ -535,15 +635,18 @@ class MakerClient:
             raise SwapError(f"Quote validation failed: {detail}")
         return response
 
-    async def get_pair_routes(self, body: dict[str, Any]) -> list[SwapRoute]:
+    async def get_pair_routes(self, pair_ticker: str) -> list[SwapRoute]:
         """
         Get available routes for a trading pair.
 
         Args:
-            body: Request with pair_id or ticker information (e.g. {"pair_ticker": "BTC/USDT"})
+            pair_ticker: Pair ticker string (e.g. "BTC/USDT")
+
+        Returns:
+            List of available swap routes for the pair
         """
-        api_body = PairRoutesBody.from_dict(body)
-        resp = await get_pair_routes.asyncio_detailed(client=self._client, body=api_body)
+        api_body = PairRoutesBody.from_dict({"pair_ticker": pair_ticker})
+        resp = await _safe_api_call(get_pair_routes.asyncio_detailed(client=self._client, body=api_body))
         response = _unwrap_maker_response(resp)
         # Response is list of generated (attrs) SwapRoute; convert to SDK (Pydantic) SwapRoute
         return (
@@ -561,7 +664,7 @@ class MakerClient:
         """
         if hasattr(body, "model_dump"):
             body = RoutesRequest.from_dict(body.model_dump(mode="json"))
-        resp = await discover_routes.asyncio_detailed(client=self._client, body=body)
+        resp = await _safe_api_call(discover_routes.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
     # =========================================================================
@@ -578,7 +681,7 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = CreateSwapOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await create_swap_order.asyncio_detailed(client=self._client, body=body_for_api)
+        resp = await _safe_api_call(create_swap_order.asyncio_detailed(client=self._client, body=body_for_api))
         return _unwrap_maker_response(resp)
 
     async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
@@ -588,7 +691,7 @@ class MakerClient:
         Args:
             body: Request with order_id
         """
-        resp = await get_swap_order_status.asyncio_detailed(client=self._client, body=body)
+        resp = await _safe_api_call(get_swap_order_status.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
     async def get_order_history(
@@ -617,17 +720,17 @@ class MakerClient:
         else:
             status_param = None
 
-        resp = await get_order_history.asyncio_detailed(
+        resp = await _safe_api_call(get_order_history.asyncio_detailed(
             client=self._client,
             status=status_param,
             limit=limit or 50,
             skip=skip or 0,
-        )
+        ))
         return _unwrap_maker_response(resp)
 
     async def get_order_analytics(self) -> OrderStatsResponse:
         """Get order analytics and statistics."""
-        resp = await get_order_stats.asyncio_detailed(client=self._client)
+        resp = await _safe_api_call(get_order_stats.asyncio_detailed(client=self._client))
         return _unwrap_maker_response(resp)
 
     async def submit_rate_decision(
@@ -639,9 +742,9 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        resp = await handle_swap_order_rate_decision.asyncio_detailed(
+        resp = await _safe_api_call(handle_swap_order_rate_decision.asyncio_detailed(
             client=self._client, body=body
-        )
+        ))
         return _unwrap_maker_response(resp)
 
     # =========================================================================
@@ -658,7 +761,7 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = SwapRequest.from_dict(body.model_dump(mode="json"))
-        resp = await initiate_swap.asyncio_detailed(client=self._client, body=body_for_api)
+        resp = await _safe_api_call(initiate_swap.asyncio_detailed(client=self._client, body=body_for_api))
         return _unwrap_maker_response(resp)
 
     async def execute_swap(self, body: ConfirmSwapRequest) -> ConfirmSwapResponse:
@@ -671,7 +774,7 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = ConfirmSwapRequest.from_dict(body.model_dump(mode="json"))
-        resp = await confirm_swap.asyncio_detailed(client=self._client, body=body_for_api)
+        resp = await _safe_api_call(confirm_swap.asyncio_detailed(client=self._client, body=body_for_api))
         return _unwrap_maker_response(resp)
 
     async def get_atomic_swap_status(self, body: SwapStatusRequest) -> SwapStatusResponse:
@@ -684,12 +787,12 @@ class MakerClient:
         body_for_api = body
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body_for_api = SwapStatusRequest.from_dict(body.model_dump(mode="json"))
-        resp = await get_swap_status.asyncio_detailed(client=self._client, body=body_for_api)
+        resp = await _safe_api_call(get_swap_status.asyncio_detailed(client=self._client, body=body_for_api))
         return _unwrap_maker_response(resp)
 
     async def get_swap_node_info(self) -> SwapNodeInfoResponse:
         """Get swap node information."""
-        resp = await get_swap_node_info.asyncio_detailed(client=self._client)
+        resp = await _safe_api_call(get_swap_node_info.asyncio_detailed(client=self._client))
         return _unwrap_maker_response(resp)
 
     # =========================================================================
@@ -698,12 +801,12 @@ class MakerClient:
 
     async def get_lsp_info(self) -> GetInfoResponseModel:
         """Get LSP information and options."""
-        resp = await get_lsp_info.asyncio_detailed(client=self._client)
+        resp = await _safe_api_call(get_lsp_info.asyncio_detailed(client=self._client))
         return _unwrap_maker_response(resp)
 
     async def get_lsp_network_info(self) -> NetworkInfoResponse:
         """Get LSP network information."""
-        resp = await get_lsp_network_info.asyncio_detailed(client=self._client)
+        resp = await _safe_api_call(get_lsp_network_info.asyncio_detailed(client=self._client))
         return _unwrap_maker_response(resp)
 
     async def create_lsp_order(self, body: CreateOrderRequest) -> ChannelOrderResponse:
@@ -715,24 +818,19 @@ class MakerClient:
         """
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body = CreateOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await create_lsp_order.asyncio_detailed(client=self._client, body=body)
+        resp = await _safe_api_call(create_lsp_order.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
-    async def get_lsp_order(self, body: GetOrderRequest | dict[str, str]) -> ChannelOrderResponse:
+    async def get_lsp_order(self, body: GetOrderRequest) -> ChannelOrderResponse:
         """
         Get LSP order details.
 
         Args:
             body: Request with order_id
         """
-        api_body: GetOrderRequest
-        if isinstance(body, dict):
-            api_body = GetOrderRequest.from_dict(body)
-        elif hasattr(body, "model_dump"):
-            api_body = GetOrderRequest.from_dict(body.model_dump(mode="json"))
-        else:
-            api_body = body
-        resp = await get_lsp_order.asyncio_detailed(client=self._client, body=api_body)
+        if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
+            body = GetOrderRequest.from_dict(body.model_dump(mode="json"))
+        resp = await _safe_api_call(get_lsp_order.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
     async def estimate_lsp_fees(self, body: CreateOrderRequest) -> ChannelFees:
@@ -744,7 +842,7 @@ class MakerClient:
         """
         if not hasattr(body, "to_dict") and hasattr(body, "model_dump"):
             body = CreateOrderRequest.from_dict(body.model_dump(mode="json"))
-        resp = await estimate_lsp_fees.asyncio_detailed(client=self._client, body=body)
+        resp = await _safe_api_call(estimate_lsp_fees.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
     async def submit_lsp_rate_decision(self, body: RateDecisionRequest) -> RateDecisionResponse:
@@ -754,7 +852,7 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        resp = await handle_lsp_rate_decision.asyncio_detailed(client=self._client, body=body)
+        resp = await _safe_api_call(handle_lsp_rate_decision.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
     async def retry_asset_delivery(self, body: RetryDeliveryRequest) -> RetryDeliveryResponse:
@@ -764,7 +862,7 @@ class MakerClient:
         Args:
             body: Retry delivery request
         """
-        resp = await retry_lsp_delivery.asyncio_detailed(client=self._client, body=body)
+        resp = await _safe_api_call(retry_lsp_delivery.asyncio_detailed(client=self._client, body=body))
         return _unwrap_maker_response(resp)
 
     # =========================================================================
