@@ -81,13 +81,13 @@ from .types import (
     RevokeTokenRequest,
     RgbInvoiceRequest,
     RgbInvoiceResponse,
-    SendAssetRequest,
-    SendAssetResponse,
     SendBtcRequest,
     SendBtcResponse,
     SendOnionMessageRequest,
     SendPaymentRequest,
     SendPaymentResponse,
+    SendRgbRequest,
+    SendRgbResponse,
     SignMessageRequest,
     SignMessageResponse,
     UnlockRequest,
@@ -345,15 +345,18 @@ class RlnClient:
         data = await self._http.node_post("/issueassetuda", body)
         return IssueAssetUDAResponse.model_validate(data)
 
-    async def send_asset(self, body: SendAssetRequest) -> SendAssetResponse:
+    async def send_rgb(self, body: SendRgbRequest) -> SendRgbResponse:
         """
         Send RGB assets on-chain.
 
+        Supports batch transfers to multiple recipients and/or multiple
+        assets in a single transaction via the recipient_map field.
+
         Args:
-            body: Send request with asset details
+            body: Send request with recipient_map and transfer options
         """
-        data = await self._http.node_post("/sendasset", body)
-        return SendAssetResponse.model_validate(data)
+        data = await self._http.node_post("/sendrgb", body)
+        return SendRgbResponse.model_validate(data)
 
     async def list_transfers(self, body: ListTransfersRequest) -> ListTransfersResponse:
         """
