@@ -429,10 +429,6 @@ class RgbInvoiceResponse(BaseModel):
     batch_transfer_idx: int | None = None
 
 
-class SendAssetResponse(BaseModel):
-    txid: str | None = None
-
-
 class SendBtcRequest(BaseModel):
     amount: int | None = None
     address: str | None = None
@@ -458,6 +454,10 @@ class SendPaymentResponse(BaseModel):
     payment_hash: str | None = None
     payment_secret: str | None = None
     status: HTLCStatus | None = None
+
+
+class SendRgbResponse(BaseModel):
+    txid: str | None = None
 
 
 class SignMessageRequest(BaseModel):
@@ -547,6 +547,18 @@ class WitnessData(BaseModel):
     blinding: float | None = None
 
 
+class AssetCFA(BaseModel):
+    asset_id: str | None = None
+    name: str | None = None
+    details: str | None = None
+    precision: int | None = None
+    issued_supply: int | None = None
+    timestamp: int | None = None
+    added_at: int | None = None
+    balance: AssetBalanceResponse | None = None
+    media: Media | None = None
+
+
 class AssetMetadataResponse(BaseModel):
     asset_schema: AssetSchema | None = None
     initial_supply: int | None = None
@@ -558,18 +570,6 @@ class AssetMetadataResponse(BaseModel):
     ticker: str | None = None
     details: str | None = None
     token: Token | None = None
-
-
-class AssetCFA(BaseModel):
-    asset_id: str | None = None
-    name: str | None = None
-    details: str | None = None
-    precision: int | None = None
-    issued_supply: int | None = None
-    timestamp: int | None = None
-    added_at: int | None = None
-    balance: AssetBalanceResponse | None = None
-    media: Media | None = None
 
 
 class AssetNIA(BaseModel):
@@ -674,6 +674,20 @@ class ListPeersResponse(BaseModel):
     peers: list[Peer] | None = None
 
 
+class Recipient(BaseModel):
+    recipient_id: str | None = None
+    witness_data: WitnessData | None = None
+    assignment: (
+        AssignmentFungible
+        | AssignmentNonFungible
+        | AssignmentInflationRight
+        | AssignmentReplaceRight
+        | AssignmentAny
+        | None
+    ) = Field(None, discriminator="type")
+    transport_endpoints: list[str] | None = None
+
+
 class RgbInvoiceRequest(BaseModel):
     min_confirmations: int | None = None
     asset_id: str | None = None
@@ -689,15 +703,11 @@ class RgbInvoiceRequest(BaseModel):
     witness: bool | None = None
 
 
-class SendAssetRequest(BaseModel):
-    asset_id: str | None = None
-    assignment: AssignmentFungible | None = None
-    recipient_id: str | None = None
-    witness_data: WitnessData | None = None
+class SendRgbRequest(BaseModel):
     donation: bool | None = None
     fee_rate: float | None = None
     min_confirmations: int | None = None
-    transport_endpoints: list[str] | None = None
+    recipient_map: dict[str, list[Recipient]] | None = None
     skip_sync: bool | None = None
 
 

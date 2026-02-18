@@ -902,7 +902,7 @@ class SwapOrder(BaseModel):
     created_at: int | None = Field(
         None,
         description="Creation timestamp (seconds since epoch)",
-        examples=[1766591667],
+        examples=[1770736947],
         title="Created At",
     )
     expires_at: int | None = Field(

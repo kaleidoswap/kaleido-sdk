@@ -5,9 +5,9 @@
     "description": "API for managing swaps and channels",
     "version": "0.1.0",
     "x-build-info": {
-      "version": "v0.4.0",
-      "commit": "02195d7a558a2b87f539f483a7b34ae4754d69a5",
-      "buildDate": "2026-02-10T15:22:28.397751+00:00"
+      "version": "v0.4.0-rc2",
+      "commit": "e50a14698b03d2bb9bf8d72111f846140cc3e159",
+      "buildDate": "2025-12-24T15:54:27.903740+00:00"
     },
     "license": {
       "name": "MIT",
@@ -3024,7 +3024,7 @@
             "title": "Created At",
             "description": "Creation timestamp (seconds since epoch)",
             "examples": [
-              1770736947
+              1766591667
             ]
           },
           "expires_at": {

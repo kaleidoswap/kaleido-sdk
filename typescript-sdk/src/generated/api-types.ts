@@ -1673,7 +1673,7 @@ export type components = {
             /**
              * Created At
              * @description Creation timestamp (seconds since epoch)
-             * @example 1766591667
+             * @example 1770736947
              */
             created_at?: number;
             /**

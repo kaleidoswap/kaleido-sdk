@@ -850,6 +850,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/RgbInvoiceResponse'
       operationId: post_rgbinvoice
+  /sendasset:
+    post:
+      tags:
+      - RGB
+      summary: Send assets
+      description: Send RGB assets on-chain
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAssetRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendAssetResponse'
+      operationId: post_sendasset
   /sendbtc:
     post:
       tags:
@@ -907,26 +926,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/SendPaymentResponse'
       operationId: post_sendpayment
-  /sendrgb:
-    post:
-      tags:
-      - RGB
-      summary: Send RGB assets
-      description: Send RGB assets on-chain, supporting batch transfers to multiple
-        recipients and/or multiple assets in a single transaction
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SendRgbRequest'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SendRgbResponse'
-      operationId: post_sendrgb
   /shutdown:
     post:
       tags:
@@ -941,6 +940,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/EmptyResponse'
       operationId: post_shutdown
+  /sync:
+    post:
+      tags:
+      - RGB
+      summary: Sync the RGB wallet
+      description: Sync the RGB wallet
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+      operationId: post_sync
   /signmessage:
     post:
       tags:
@@ -960,20 +973,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/SignMessageResponse'
       operationId: post_signmessage
-  /sync:
-    post:
-      tags:
-      - RGB
-      summary: Sync the RGB wallet
-      description: Sync the RGB wallet
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptyResponse'
-      operationId: post_sync
   /taker:
     post:
       tags:
@@ -1037,27 +1036,6 @@ components:
           type: integer
         offchain_inbound:
           type: integer
-    AssetCFA:
-      type: object
-      properties:
-        asset_id:
-          type: string
-        name:
-          type: string
-        details:
-          type: string
-        precision:
-          type: integer
-        issued_supply:
-          type: integer
-        timestamp:
-          type: integer
-        added_at:
-          type: integer
-        balance:
-          $ref: '#/components/schemas/AssetBalanceResponse'
-        media:
-          $ref: '#/components/schemas/Media'
     AssetMetadataRequest:
       type: object
       properties:
@@ -1086,6 +1064,27 @@ components:
           type: string
         token:
           $ref: '#/components/schemas/Token'
+    AssetCFA:
+      type: object
+      properties:
+        asset_id:
+          type: string
+        name:
+          type: string
+        details:
+          type: string
+        precision:
+          type: integer
+        issued_supply:
+          type: integer
+        timestamp:
+          type: integer
+        added_at:
+          type: integer
+        balance:
+          $ref: '#/components/schemas/AssetBalanceResponse'
+        media:
+          $ref: '#/components/schemas/Media'
     AssetNIA:
       type: object
       properties:
@@ -1855,19 +1854,6 @@ components:
           type: array
           items:
             type: integer
-    Recipient:
-      type: object
-      properties:
-        recipient_id:
-          type: string
-        witness_data:
-          $ref: '#/components/schemas/WitnessData'
-        assignment:
-          $ref: '#/components/schemas/Assignment'
-        transport_endpoints:
-          type: array
-          items:
-            type: string
     RecipientType:
       type: string
       enum:
@@ -1923,6 +1909,34 @@ components:
           type: integer
         batch_transfer_idx:
           type: integer
+    SendAssetRequest:
+      type: object
+      properties:
+        asset_id:
+          type: string
+        assignment:
+          $ref: '#/components/schemas/AssignmentFungible'
+        recipient_id:
+          type: string
+        witness_data:
+          $ref: '#/components/schemas/WitnessData'
+        donation:
+          type: boolean
+        fee_rate:
+          type: number
+        min_confirmations:
+          type: integer
+        transport_endpoints:
+          type: array
+          items:
+            type: string
+        skip_sync:
+          type: boolean
+    SendAssetResponse:
+      type: object
+      properties:
+        txid:
+          type: string
     SendBtcRequest:
       type: object
       properties:
@@ -1964,28 +1978,6 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/HTLCStatus'
-    SendRgbRequest:
-      type: object
-      properties:
-        donation:
-          type: boolean
-        fee_rate:
-          type: number
-        min_confirmations:
-          type: integer
-        recipient_map:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/Recipient'
-        skip_sync:
-          type: boolean
-    SendRgbResponse:
-      type: object
-      properties:
-        txid:
-          type: string
     SignMessageRequest:
       type: object
       properties:

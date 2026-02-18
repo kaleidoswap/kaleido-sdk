@@ -904,26 +904,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/sendasset': {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Send assets
-         * @description Send RGB assets on-chain
-         */
-        post: operations['post_sendasset'];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     '/sendbtc': {
         parameters: {
             query?: never;
@@ -984,6 +964,26 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/sendrgb': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send RGB assets
+         * @description Send RGB assets on-chain, supporting batch transfers to multiple recipients and/or multiple assets in a single transaction
+         */
+        post: operations['post_sendrgb'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/shutdown': {
         parameters: {
             query?: never;
@@ -1004,26 +1004,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/sync': {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Sync the RGB wallet
-         * @description Sync the RGB wallet
-         */
-        post: operations['post_sync'];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     '/signmessage': {
         parameters: {
             query?: never;
@@ -1038,6 +1018,26 @@ export type paths = {
          * @description Sign the provided message
          */
         post: operations['post_signmessage'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/sync': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync the RGB wallet
+         * @description Sync the RGB wallet
+         */
+        post: operations['post_sync'];
         delete?: never;
         options?: never;
         head?: never;
@@ -1101,6 +1101,17 @@ export type components = {
             offchain_outbound?: number;
             offchain_inbound?: number;
         };
+        AssetCFA: {
+            asset_id?: string;
+            name?: string;
+            details?: string;
+            precision?: number;
+            issued_supply?: number;
+            timestamp?: number;
+            added_at?: number;
+            balance?: components['schemas']['AssetBalanceResponse'];
+            media?: components['schemas']['Media'];
+        };
         AssetMetadataRequest: {
             asset_id?: string;
         };
@@ -1115,17 +1126,6 @@ export type components = {
             ticker?: string;
             details?: string;
             token?: components['schemas']['Token'];
-        };
-        AssetCFA: {
-            asset_id?: string;
-            name?: string;
-            details?: string;
-            precision?: number;
-            issued_supply?: number;
-            timestamp?: number;
-            added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            media?: components['schemas']['Media'];
         };
         AssetNIA: {
             asset_id?: string;
@@ -1533,6 +1533,12 @@ export type components = {
             utxo?: string;
             proof?: number[];
         };
+        Recipient: {
+            recipient_id?: string;
+            witness_data?: components['schemas']['WitnessData'];
+            assignment?: components['schemas']['Assignment'];
+            transport_endpoints?: string[];
+        };
         /** @enum {string} */
         RecipientType: 'Blind' | 'Witness';
         RefreshRequest: {
@@ -1563,20 +1569,6 @@ export type components = {
             expiration_timestamp?: number;
             batch_transfer_idx?: number;
         };
-        SendAssetRequest: {
-            asset_id?: string;
-            assignment?: components['schemas']['AssignmentFungible'];
-            recipient_id?: string;
-            witness_data?: components['schemas']['WitnessData'];
-            donation?: boolean;
-            fee_rate?: number;
-            min_confirmations?: number;
-            transport_endpoints?: string[];
-            skip_sync?: boolean;
-        };
-        SendAssetResponse: {
-            txid?: string;
-        };
         SendBtcRequest: {
             amount?: number;
             address?: string;
@@ -1598,6 +1590,18 @@ export type components = {
             payment_hash?: string;
             payment_secret?: string;
             status?: components['schemas']['HTLCStatus'];
+        };
+        SendRgbRequest: {
+            donation?: boolean;
+            fee_rate?: number;
+            min_confirmations?: number;
+            recipient_map?: {
+                [key: string]: components['schemas']['Recipient'][];
+            };
+            skip_sync?: boolean;
+        };
+        SendRgbResponse: {
+            txid?: string;
         };
         SignMessageRequest: {
             message?: string;
@@ -2763,30 +2767,6 @@ export interface operations {
             };
         };
     };
-    post_sendasset: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                'application/json': components['schemas']['SendAssetRequest'];
-            };
-        };
-        responses: {
-            /** @description Successful operation */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': components['schemas']['SendAssetResponse'];
-                };
-            };
-        };
-    };
     post_sendbtc: {
         parameters: {
             query?: never;
@@ -2859,14 +2839,18 @@ export interface operations {
             };
         };
     };
-    post_shutdown: {
+    post_sendrgb: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                'application/json': components['schemas']['SendRgbRequest'];
+            };
+        };
         responses: {
             /** @description Successful operation */
             200: {
@@ -2874,12 +2858,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['EmptyResponse'];
+                    'application/json': components['schemas']['SendRgbResponse'];
                 };
             };
         };
     };
-    post_sync: {
+    post_shutdown: {
         parameters: {
             query?: never;
             header?: never;
@@ -2919,6 +2903,26 @@ export interface operations {
                 };
                 content: {
                     'application/json': components['schemas']['SignMessageResponse'];
+                };
+            };
+        };
+    };
+    post_sync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['EmptyResponse'];
                 };
             };
         };
