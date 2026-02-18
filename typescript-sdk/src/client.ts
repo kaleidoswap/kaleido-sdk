@@ -75,6 +75,13 @@ export class KaleidoClient {
     get rln(): RlnClient {
         return this._rln;
     }
+
+    /**
+     * Close client resources and active connections
+     */
+    async close(): Promise<void> {
+        await this._rln.close();
+    }
 }
 
 // ============================================================================

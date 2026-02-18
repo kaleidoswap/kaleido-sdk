@@ -228,8 +228,8 @@ export type ListTransfersResponse = nodeComponents['schemas']['ListTransfersResp
 export type RefreshRequest = nodeComponents['schemas']['RefreshRequest'];
 
 // Send Operations
-export type SendAssetRequest = nodeComponents['schemas']['SendAssetRequest'];
-export type SendAssetResponse = nodeComponents['schemas']['SendAssetResponse'];
+export type SendRgbRequest = nodeComponents['schemas']['SendRgbRequest'];
+export type SendRgbResponse = nodeComponents['schemas']['SendRgbResponse'];
 export type SendBtcRequest = nodeComponents['schemas']['SendBtcRequest'];
 export type SendBtcResponse = nodeComponents['schemas']['SendBtcResponse'];
 

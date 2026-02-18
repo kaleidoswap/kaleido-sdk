@@ -37,8 +37,8 @@ import type {
     IssueAssetCFAResponse,
     IssueAssetUDARequest,
     IssueAssetUDAResponse,
-    SendAssetRequest,
-    SendAssetResponse,
+    SendRgbRequest,
+    SendRgbResponse,
     ListTransfersRequest,
     ListTransfersResponse,
     RefreshTransfersRequest,
@@ -263,8 +263,8 @@ export class RlnClient {
         return data!;
     }
 
-    async sendAsset(body: SendAssetRequest): Promise<SendAssetResponse> {
-        const { data, error } = await this.http.node.POST('/sendasset', { body });
+    async sendRgb(body: SendRgbRequest): Promise<SendRgbResponse> {
+        const { data, error } = await this.http.node.POST('/sendrgb', { body });
         checkError({ error });
         return data!;
     }
@@ -404,10 +404,14 @@ export class RlnClient {
         return data!.pubkey!;
     }
 
-    async whitelistTrade(body: WhitelistTradeRequest | string): Promise<void> {
+    async whitelistSwap(body: WhitelistTradeRequest | string): Promise<void> {
         const requestBody = typeof body === 'string' ? { swapstring: body } : body;
         const { error } = await this.http.node.POST('/taker', { body: requestBody });
         checkError({ error });
+    }
+
+    async close(): Promise<void> {
+        await this.shutdown();
     }
 
     async makerInit(body: MakerInitRequest): Promise<MakerInitResponse> {
