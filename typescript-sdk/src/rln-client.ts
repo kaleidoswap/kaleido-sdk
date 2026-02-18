@@ -280,6 +280,11 @@ export class RlnClient {
         checkError({ error });
     }
 
+    async syncRgbWallet(): Promise<void> {
+        const { error } = await this.http.node.POST('/sync');
+        checkError({ error });
+    }
+
     async failTransfers(body: FailTransfersRequest): Promise<void> {
         const { error } = await this.http.node.POST('/failtransfers', { body });
         checkError({ error });

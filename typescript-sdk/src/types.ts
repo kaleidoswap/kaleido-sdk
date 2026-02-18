@@ -251,3 +251,5 @@ export type SignMessageResponse = nodeComponents['schemas']['SignMessageResponse
 // Misc types
 export type Assignment = nodeComponents['schemas']['Assignment'];
 export type AssignmentFungible = nodeComponents['schemas']['AssignmentFungible'];
+export type Recipient = nodeComponents['schemas']['Recipient'];
+export type RecipientType = nodeComponents['schemas']['RecipientType'];

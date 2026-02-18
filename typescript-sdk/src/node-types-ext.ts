@@ -143,3 +143,5 @@ export type Channel = components['schemas']['Channel'];
 export type NodeAsset = components['schemas']['AssetNIA'];
 // Alias for backward compatibility (NiaAsset is more common in desktop-app)
 export type NiaAsset = NodeAsset;
+export type Recipient = components['schemas']['Recipient'];
+export type RecipientType = components['schemas']['RecipientType'];
