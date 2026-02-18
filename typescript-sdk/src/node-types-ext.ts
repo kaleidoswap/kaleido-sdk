@@ -47,8 +47,8 @@ export type AssetBalanceResponse = ResponseSuccess<'post_assetbalance'>;
 export type BtcBalanceResponse = ResponseSuccess<'post_btcbalance'>;
 export type AssetMetadataRequest = RequestBody<'post_assetmetadata'>;
 export type AssetMetadataResponse = ResponseSuccess<'post_assetmetadata'>;
-export type SendAssetRequest = RequestBody<'post_sendasset'>;
-export type SendAssetResponse = ResponseSuccess<'post_sendasset'>;
+export type SendRgbRequest = RequestBody<'post_sendrgb'>;
+export type SendRgbResponse = ResponseSuccess<'post_sendrgb'>;
 export type SendBtcRequest = RequestBody<'post_sendbtc'>;
 export type SendBtcResponse = ResponseSuccess<'post_sendbtc'>;
 export type CreateUtxosRequest = RequestBody<'post_createutxos'>;
@@ -143,3 +143,5 @@ export type Channel = components['schemas']['Channel'];
 export type NodeAsset = components['schemas']['AssetNIA'];
 // Alias for backward compatibility (NiaAsset is more common in desktop-app)
 export type NiaAsset = NodeAsset;
+export type Recipient = components['schemas']['Recipient'];
+export type RecipientType = components['schemas']['RecipientType'];

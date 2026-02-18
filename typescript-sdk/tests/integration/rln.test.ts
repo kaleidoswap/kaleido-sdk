@@ -252,6 +252,45 @@ describeRln('RLN Client Integration', () => {
                 expect(e).toBeDefined();
             }
         }, 30000);
+
+        it('should sync RGB wallet', async () => {
+            try {
+                await client.rln.syncRgbWallet();
+                expect(true).toBe(true);
+            } catch (e: unknown) {
+                console.warn('Skipping syncRgbWallet test - node unavailable:', e);
+            }
+        }, 30000);
+
+        it('should attempt sendRgb with recipient map', async () => {
+            try {
+                const { nia, cfa, uda } = await client.rln.listAssets();
+                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+
+                if (assets.length === 0) {
+                    console.warn('No RGB assets available to test sendRgb');
+                    return;
+                }
+
+                const assetId = assets[0].asset_id;
+                const invoice = await client.rln.createRgbInvoice({ asset_id: assetId });
+
+                if (!invoice?.recipient_id) {
+                    console.warn('No recipient_id returned from createRgbInvoice');
+                    return;
+                }
+
+                const response = await client.rln.sendRgb({
+                    recipient_map: {
+                        [assetId]: [{ recipient_id: invoice.recipient_id }],
+                    },
+                });
+
+                expect(response).toBeDefined();
+            } catch (e: unknown) {
+                console.warn('Skipping sendRgb test - requires RGB setup:', e);
+            }
+        }, 60000);
     });
 
     describe('Address Management', () => {
@@ -592,7 +631,8 @@ describeRln('RLN Client Integration', () => {
         it('should create RGB invoice', async () => {
             try {
                 // Get available assets first
-                const assets = await client.rln.listNodeAssets();
+                const { nia, cfa, uda } = await client.rln.listAssets();
+                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to create invoice');
@@ -622,7 +662,8 @@ describeRln('RLN Client Integration', () => {
 
         it('should create RGB invoice with witness', async () => {
             try {
-                const assets = await client.rln.listNodeAssets();
+                const { nia, cfa, uda } = await client.rln.listAssets();
+                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to create witness invoice');
@@ -647,7 +688,8 @@ describeRln('RLN Client Integration', () => {
 
         it('should decode RGB invoice', async () => {
             try {
-                const assets = await client.rln.listNodeAssets();
+                const { nia, cfa, uda } = await client.rln.listAssets();
+                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to create invoice for decoding');
@@ -659,7 +701,7 @@ describeRln('RLN Client Integration', () => {
                     asset_id: assetId,
                 });
 
-                const decoded = await client.rln.decodeRgbInvoice(created.invoice);
+                const decoded = await client.rln.decodeRgbInvoice({ invoice: created.invoice });
 
                 expect(decoded).toBeDefined();
                 expect(decoded).toHaveProperty('asset_id');
@@ -672,7 +714,7 @@ describeRln('RLN Client Integration', () => {
 
         it('should fail to decode invalid RGB invoice', async () => {
             try {
-                await client.rln.decodeRgbInvoice('invalid_rgb_invoice');
+                await client.rln.decodeRgbInvoice({ invoice: 'invalid_rgb_invoice' });
                 throw new Error('Should have thrown');
             } catch (e: unknown) {
                 if ((e as Error).message === 'Should have thrown') throw e;
@@ -754,21 +796,21 @@ describeRln('RLN Client Integration', () => {
     });
 
     describe('Trade Operations', () => {
-        it('should whitelist trade', async () => {
+        it('should whitelist swap', async () => {
             try {
                 const swapstring = 'test_swap_string'; // Would need real swap string
-                await client.rln.whitelistTrade(swapstring);
+                await client.rln.whitelistSwap(swapstring);
 
                 // Should not throw
                 expect(true).toBe(true);
             } catch (e: unknown) {
-                console.warn('Skipping whitelistTrade test - requires valid swap:', e);
+                console.warn('Skipping whitelistSwap test - requires valid swap:', e);
             }
         }, 30000);
 
         it('should fail to whitelist invalid swap string', async () => {
             try {
-                await client.rln.whitelistTrade('');
+                await client.rln.whitelistSwap('');
                 throw new Error('Should have thrown');
             } catch (e: unknown) {
                 if ((e as Error).message === 'Should have thrown') throw e;

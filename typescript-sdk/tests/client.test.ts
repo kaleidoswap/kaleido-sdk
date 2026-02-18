@@ -1,9 +1,3 @@
-/**
- * Kaleidoswap SDK Unit Tests
- *
- * Uses Vitest for testing the unified HTTP-based TypeScript SDK.
- */
-
 // import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 // import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
 // import { AddressInfo } from 'net';
@@ -23,16 +17,6 @@ import {
     SwapError,
     mapHttpError,
 } from '../src/errors.js';
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-// ============================================================================
-// Mock Data
-// ============================================================================
-
-// Mock data removed as it was unused
 
 // ============================================================================
 // Error Classes Tests
