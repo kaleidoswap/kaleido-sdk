@@ -22,8 +22,8 @@ from kaleidoswap_sdk import (
 from kaleidoswap_sdk.generated.node_types import (
     AssetSchema,
     DecodeRGBInvoiceResponse,
-    ListAssetsRequest,
     EmptyResponse,
+    ListAssetsRequest,
 )
 
 
