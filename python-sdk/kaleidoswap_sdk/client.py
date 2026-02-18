@@ -12,7 +12,7 @@ from .maker_client import MakerClient
 from .rln_client import RlnClient
 from .types import KaleidoConfig
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __sdk_name__ = "kaleidoswap-sdk"
 
 

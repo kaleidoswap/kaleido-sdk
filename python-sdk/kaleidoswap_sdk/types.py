@@ -148,7 +148,6 @@ from .generated.node_types import (
     LNInvoiceRequest,
     LNInvoiceResponse,
     MakerExecuteRequest,
-    MakerExecuteResponse,
     MakerInitRequest,
     MakerInitResponse,
     NodeInfoResponse,
@@ -389,7 +388,6 @@ __all__ = [
     "MakerInitRequest",
     "MakerInitResponse",
     "MakerExecuteRequest",
-    "MakerExecuteResponse",
     # Node Types - Other
     "NodeInfoResponse",
     "NodeNetworkInfoResponse",

@@ -307,11 +307,6 @@ class MakerExecuteRequest(BaseModel):
     taker_pubkey: str | None = None
 
 
-class MakerExecuteResponse(BaseModel):
-    payment_hash: str | None = None
-    payment_preimage: str | None = None
-
-
 class MakerInitRequest(BaseModel):
     qty_from: int | None = None
     qty_to: int | None = None

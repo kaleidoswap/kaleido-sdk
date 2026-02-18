@@ -23,7 +23,7 @@ from kaleidoswap_sdk.generated.node_types import (
     AssetSchema,
     DecodeRGBInvoiceResponse,
     ListAssetsRequest,
-    MakerExecuteResponse,
+    EmptyResponse,
 )
 
 
@@ -181,36 +181,23 @@ class TestDecodeRgbInvoiceType:
 
 
 class TestMakerExecuteType:
-    """maker_execute must return MakerExecuteResponse, not EmptyResponse."""
+    """maker_execute must return EmptyResponse."""
 
-    async def test_returns_maker_execute_response(self, client_with_node: KaleidoClient) -> None:
+    async def test_returns_empty_response(self, client_with_node: KaleidoClient) -> None:
         rln = client_with_node.rln
-        fake = {"payment_hash": "ab" * 32, "payment_preimage": "cd" * 32}
+        fake = {}
         with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
             mock.return_value = fake
             result = await rln.maker_execute(
                 MakerExecuteRequest(swapstring="s", payment_secret="p", taker_pubkey="t")
             )
 
-        assert isinstance(result, MakerExecuteResponse)
-        assert result.payment_hash == "ab" * 32
-        assert result.payment_preimage == "cd" * 32
-
-    async def test_empty_dict_still_parses(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = {}
-            result = await rln.maker_execute(
-                MakerExecuteRequest(swapstring="s", payment_secret="p", taker_pubkey="t")
-            )
-
-        assert isinstance(result, MakerExecuteResponse)
-        assert result.payment_hash is None
+        assert isinstance(result, EmptyResponse)
 
     def test_type_exported_from_package(self) -> None:
-        from kaleidoswap_sdk import MakerExecuteResponse as Exported
+        from kaleidoswap_sdk import EmptyResponse as Exported
 
-        assert Exported is MakerExecuteResponse
+        assert Exported is EmptyResponse
 
 
 class TestListAssetsEnumSerialization:

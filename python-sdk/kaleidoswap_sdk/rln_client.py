@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import NetworkInfoResponse from generated types
-from .generated.node_types import DecodeRGBInvoiceResponse, MakerExecuteResponse, TakerRequest
+from .generated.node_types import DecodeRGBInvoiceResponse, TakerRequest
 from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
 from .types import (
     AddressResponse,
@@ -32,6 +32,7 @@ from .types import (
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
     DisconnectPeerRequest,
+    EmptyResponse,
     EstimateFeeRequest,
     EstimateFeeResponse,
     FailTransfersRequest,
@@ -583,18 +584,15 @@ class RlnClient:
         data = await self._http.node_post("/makerinit", body)
         return MakerInitResponse.model_validate(data)
 
-    async def maker_execute(self, body: MakerExecuteRequest) -> MakerExecuteResponse:
+    async def maker_execute(self, body: MakerExecuteRequest) -> EmptyResponse:
         """
-        Execute a maker swap.
+        Execute a swap on the maker side.
 
         Args:
-            body: Maker swap execution request
-
-        Returns:
-            Execution result with payment_hash and payment_preimage.
+            body: Maker execute request
         """
         data = await self._http.node_post("/makerexecute", body)
-        return MakerExecuteResponse.model_validate(data)
+        return EmptyResponse.model_validate(data)
 
     async def list_swaps(self) -> ListSwapsResponse:
         """List all swaps (maker and taker)."""

@@ -87,7 +87,7 @@ address = await client.rln.get_address()
 
 # RGB asset operations
 assets = await client.rln.list_assets()
-await client.rln.send_asset(SendAssetRequest(...))
+await client.rln.send_rgb(SendRgbRequest(...))
 
 # Lightning channels
 channels = await client.rln.list_channels()

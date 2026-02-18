@@ -144,7 +144,6 @@ from .types import (
     LNInvoiceRequest,
     LNInvoiceResponse,
     MakerExecuteRequest,
-    MakerExecuteResponse,
     MakerInitRequest,
     MakerInitResponse,
     MultiHopRoute,
@@ -251,7 +250,7 @@ from .ws_client import (
     QuoteResponse as WSQuoteResponse,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __all__ = [
     # Main client
     "KaleidoClient",
@@ -465,7 +464,6 @@ __all__ = [
     "MakerInitRequest",
     "MakerInitResponse",
     "MakerExecuteRequest",
-    "MakerExecuteResponse",
     # Node Types - Other
     "NodeInfoResponse",
     "NodeNetworkInfoResponse",
