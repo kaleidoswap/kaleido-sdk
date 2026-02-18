@@ -52,17 +52,25 @@ class Fee(TypedDict):
     final_fee: int
 
 
+class SwapLegData(TypedDict):
+    """Swap leg data in quote response."""
+
+    asset_id: str
+    name: str
+    ticker: str
+    layer: str
+    amount: int
+    precision: int
+
+
 class QuoteResponse(TypedDict):
-    """Quote response data."""
+    """Quote response data with full SwapLeg objects."""
 
     action: str
-    from_asset: str
-    to_asset: str
-    from_amount: int
-    to_amount: int
+    from_asset: SwapLegData
+    to_asset: SwapLegData
     price: int
     rfq_id: str
-    price_precision: int
     timestamp: int
     expires_at: int
     fee: Fee

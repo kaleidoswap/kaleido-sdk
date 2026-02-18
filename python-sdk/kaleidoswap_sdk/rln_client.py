@@ -10,8 +10,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import NetworkInfoResponse from generated types
+from .generated.node_types import DecodeRGBInvoiceResponse, TakerRequest
 from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
-from .generated.node_types import TakerRequest
 from .types import (
     AddressResponse,
     AssetBalanceRequest,
@@ -82,13 +82,13 @@ from .types import (
     RevokeTokenRequest,
     RgbInvoiceRequest,
     RgbInvoiceResponse,
-    SendAssetRequest,
-    SendAssetResponse,
     SendBtcRequest,
     SendBtcResponse,
     SendOnionMessageRequest,
     SendPaymentRequest,
     SendPaymentResponse,
+    SendRgbRequest,
+    SendRgbResponse,
     SignMessageRequest,
     SignMessageResponse,
     UnlockRequest,
@@ -220,29 +220,29 @@ class RlnClient:
         return SendBtcResponse.model_validate(data)
 
     async def list_transactions(
-        self, request: ListTransactionsRequest | None = None
+        self, body: ListTransactionsRequest | None = None
     ) -> ListTransactionsResponse:
         """
         List on-chain transactions.
 
         Args:
-            request: Optional request with skip_sync flag
+            body: Optional request with skip_sync flag
         """
-        body = request or ListTransactionsRequest(skip_sync=False)
-        data = await self._http.node_post("/listtransactions", body)
+        data = await self._http.node_post(
+            "/listtransactions", body or ListTransactionsRequest(skip_sync=False)
+        )
         return ListTransactionsResponse.model_validate(data)
 
-    async def list_unspents(
-        self, request: ListUnspentsRequest | None = None
-    ) -> ListUnspentsResponse:
+    async def list_unspents(self, body: ListUnspentsRequest | None = None) -> ListUnspentsResponse:
         """
         List unspent outputs.
 
         Args:
-            request: Optional request with skip_sync flag
+            body: Optional request with skip_sync flag
         """
-        body = request or ListUnspentsRequest(skip_sync=False)
-        data = await self._http.node_post("/listunspents", body)
+        data = await self._http.node_post(
+            "/listunspents", body or ListUnspentsRequest(skip_sync=False)
+        )
         return ListUnspentsResponse.model_validate(data)
 
     async def create_utxos(self, body: CreateUtxosRequest) -> None:
@@ -252,7 +252,12 @@ class RlnClient:
         Args:
             body: UTXO creation request
         """
-        await self._http.node_post("/createutxos", body)
+        # Node expects fee_rate as u64; Pydantic model uses float for
+        # compatibility, so we manually cast to int before serialization.
+        json_data = body.model_dump(mode="json", exclude_none=True)
+        if "fee_rate" in json_data and json_data["fee_rate"] is not None:
+            json_data["fee_rate"] = int(json_data["fee_rate"])
+        await self._http.node_post("/createutxos", json_data)
 
     async def estimate_fee(self, body: EstimateFeeRequest) -> EstimateFeeResponse:
         """
@@ -341,15 +346,18 @@ class RlnClient:
         data = await self._http.node_post("/issueassetuda", body)
         return IssueAssetUDAResponse.model_validate(data)
 
-    async def send_asset(self, body: SendAssetRequest) -> SendAssetResponse:
+    async def send_rgb(self, body: SendRgbRequest) -> SendRgbResponse:
         """
         Send RGB assets on-chain.
 
+        Supports batch transfers to multiple recipients and/or multiple
+        assets in a single transaction via the recipient_map field.
+
         Args:
-            body: Send request with asset details
+            body: Send request with recipient_map and transfer options
         """
-        data = await self._http.node_post("/sendasset", body)
-        return SendAssetResponse.model_validate(data)
+        data = await self._http.node_post("/sendrgb", body)
+        return SendRgbResponse.model_validate(data)
 
     async def list_transfers(self, body: ListTransfersRequest) -> ListTransfersResponse:
         """
@@ -368,7 +376,7 @@ class RlnClient:
         Args:
             body: Optional refresh request
         """
-        await self._http.node_post("/refreshtransfers", body or {})
+        await self._http.node_post("/refreshtransfers", body or RefreshRequest())
 
     async def sync_rgb_wallet(self) -> None:
         """Sync the RGB wallet with the blockchain."""
@@ -431,15 +439,14 @@ class RlnClient:
         data = await self._http.node_get("/listpeers")
         return ListPeersResponse.model_validate(data)
 
-    async def connect_peer(self, body: ConnectPeerRequest) -> EmptyResponse:
+    async def connect_peer(self, body: ConnectPeerRequest) -> None:
         """
         Connect to a Lightning peer.
 
         Args:
             body: Request with peer_pubkey_and_addr
         """
-        data = await self._http.node_post("/connectpeer", body)
-        return EmptyResponse.model_validate(data)
+        await self._http.node_post("/connectpeer", body)
 
     async def disconnect_peer(self, body: DisconnectPeerRequest) -> None:
         """
@@ -488,15 +495,19 @@ class RlnClient:
         data = await self._http.node_post("/decodelninvoice", body)
         return DecodeLNInvoiceResponse.model_validate(data)
 
-    async def decode_rgb_invoice(self, body: DecodeRGBInvoiceRequest) -> RgbInvoiceResponse:
+    async def decode_rgb_invoice(self, body: DecodeRGBInvoiceRequest) -> DecodeRGBInvoiceResponse:
         """
         Decode an RGB invoice.
 
         Args:
             body: Request with invoice string
+
+        Returns:
+            Decoded invoice details including recipient_type, asset info, and
+            transport endpoints.
         """
         data = await self._http.node_post("/decodergbinvoice", body)
-        return RgbInvoiceResponse.model_validate(data)
+        return DecodeRGBInvoiceResponse.model_validate(data)
 
     async def get_invoice_status(self, body: InvoiceStatusRequest) -> InvoiceStatusResponse:
         """
@@ -575,10 +586,10 @@ class RlnClient:
 
     async def maker_execute(self, body: MakerExecuteRequest) -> EmptyResponse:
         """
-        Execute a maker swap.
+        Execute a swap on the maker side.
 
         Args:
-            body: Maker swap execution request
+            body: Maker execute request
         """
         data = await self._http.node_post("/makerexecute", body)
         return EmptyResponse.model_validate(data)

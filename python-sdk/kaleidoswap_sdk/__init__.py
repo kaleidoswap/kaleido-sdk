@@ -88,6 +88,7 @@ from .types import (
     DecodeLNInvoiceRequest,
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
     DisconnectPeerRequest,
     EmptyResponse,
     EstimateFeeRequest,
@@ -176,6 +177,7 @@ from .types import (
     ReachabilityMatrixResponse,
     ReceiverAddress,
     ReceiverAddressFormat,
+    Recipient,
     RefreshRequest,
     RestoreRequest,
     RetryDeliveryRequest,
@@ -187,13 +189,13 @@ from .types import (
     RoutesRequest,
     RoutesResponse,
     RouteStep,
-    SendAssetRequest,
-    SendAssetResponse,
     SendBtcRequest,
     SendBtcResponse,
     SendOnionMessageRequest,
     SendPaymentRequest,
     SendPaymentResponse,
+    SendRgbRequest,
+    SendRgbResponse,
     SignMessageRequest,
     SignMessageResponse,
     Swap,
@@ -248,7 +250,7 @@ from .ws_client import (
     QuoteResponse as WSQuoteResponse,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __all__ = [
     # Main client
     "KaleidoClient",
@@ -412,8 +414,9 @@ __all__ = [
     "IssueAssetUDAResponse",
     "ListAssetsRequest",
     "ListAssetsResponse",
-    "SendAssetRequest",
-    "SendAssetResponse",
+    "Recipient",
+    "SendRgbRequest",
+    "SendRgbResponse",
     "ListTransfersRequest",
     "ListTransfersResponse",
     "Transfer",
@@ -441,6 +444,7 @@ __all__ = [
     "DecodeLNInvoiceRequest",
     "DecodeLNInvoiceResponse",
     "DecodeRGBInvoiceRequest",
+    "DecodeRGBInvoiceResponse",
     "InvoiceStatusRequest",
     "InvoiceStatusResponse",
     # Node Types - Payments

@@ -6,7 +6,8 @@ Basic example showing how to create a client and list assets.
 """
 
 import asyncio
-from kaleidoswap_sdk import KaleidoClient, get_version, get_sdk_name
+
+from kaleidoswap_sdk import KaleidoClient, get_sdk_name, get_version
 
 
 async def main() -> None:
@@ -16,33 +17,29 @@ async def main() -> None:
     print("-" * 40)
 
     # Create client
-    client = KaleidoClient.create(
-        base_url="https://api.kaleidoswap.com"
-    )
+    client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
 
-    # Use async context manager for proper cleanup
-    async with client:
-        # List available assets
-        print("\nFetching assets...")
-        assets_response = await client.maker.list_assets()
+    # List available assets
+    print("\nFetching assets...")
+    assets_response = await client.maker.list_assets()
 
-        print(f"\nFound {assets_response.total} assets:")
-        for asset in assets_response.assets[:5]:  # Show first 5
-            print(f"  - {asset.ticker}: {asset.name} (precision: {asset.precision})")
+    print(f"\nFound {assets_response.total} assets:")
+    for asset in assets_response.assets[:5]:
+        print(f"  - {asset.ticker}: {asset.name} (precision: {asset.precision})")
 
-        if assets_response.total > 5:
-            print(f"  ... and {assets_response.total - 5} more")
+    if assets_response.total > 5:
+        print(f"  ... and {assets_response.total - 5} more")
 
-        # List trading pairs
-        print("\nFetching trading pairs...")
-        pairs_response = await client.maker.list_pairs()
+    # List trading pairs
+    print("\nFetching trading pairs...")
+    pairs_response = await client.maker.list_pairs()
 
-        print(f"\nFound {pairs_response.total} pairs:")
-        for pair in pairs_response.pairs[:5]:  # Show first 5
-            print(f"  - {pair.base.ticker}/{pair.quote.ticker}")
+    print(f"\nFound {pairs_response.total} pairs:")
+    for pair in pairs_response.pairs[:5]:
+        print(f"  - {pair.base.ticker}/{pair.quote.ticker}")
 
-        if pairs_response.total > 5:
-            print(f"  ... and {pairs_response.total - 5} more")
+    if pairs_response.total > 5:
+        print(f"  ... and {pairs_response.total - 5} more")
 
 
 if __name__ == "__main__":
