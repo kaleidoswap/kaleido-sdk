@@ -37,23 +37,20 @@ fn main() {
 
         // Patch the spec to fix integer overflow issues
         if let Some(components) = &mut spec.components {
-            if let Some(schema) = components.schemas.get_mut("NodeInfoResponse") {
-                if let openapiv3::ReferenceOr::Item(openapiv3::Schema {
-                    schema_kind: openapiv3::SchemaKind::Type(openapiv3::Type::Object(obj)),
-                    ..
-                }) = schema
+            if let Some(openapiv3::ReferenceOr::Item(openapiv3::Schema {
+                schema_kind: openapiv3::SchemaKind::Type(openapiv3::Type::Object(obj)),
+                ..
+            })) = components.schemas.get_mut("NodeInfoResponse")
+            {
+                if let Some(openapiv3::ReferenceOr::Item(s)) =
+                    obj.properties.get_mut("channel_asset_max_amount")
                 {
-                    if let Some(prop) = obj.properties.get_mut("channel_asset_max_amount") {
-                        // Handle ReferenceOr::Item manually since as_mut() isn't available
-                        if let openapiv3::ReferenceOr::Item(s) = prop {
-                            if let openapiv3::SchemaKind::Type(openapiv3::Type::Integer(int_type)) =
-                                &mut s.schema_kind
-                            {
-                                int_type.format = openapiv3::VariantOrUnknownOrEmpty::Unknown(
-                                    "uint64".to_string(),
-                                );
-                            }
-                        }
+                    if let openapiv3::SchemaKind::Type(openapiv3::Type::Integer(int_type)) =
+                        &mut s.schema_kind
+                    {
+                        int_type.format = openapiv3::VariantOrUnknownOrEmpty::Unknown(
+                            "uint64".to_string(),
+                        );
                     }
                 }
             }
