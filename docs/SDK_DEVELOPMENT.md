@@ -174,6 +174,75 @@ async def new_method(self, body: NewMethodRequest) -> NewMethodResponse:
     return NewMethodResponse.model_validate(data)
 ```
 
+## Feature Parity: TypeScript ↔ Python
+
+Both SDKs expose identical functionality through a mirrored module structure. When adding or changing a feature, both must be updated together.
+
+### Module Mapping
+
+| TypeScript (`typescript-sdk/src/`) | Python (`python-sdk/kaleidoswap_sdk/`) | Responsibility |
+|------------------------------------|----------------------------------------|----------------|
+| `client.ts` | `client.py` | `KaleidoClient` — top-level entry point |
+| `maker-client.ts` | `maker_client.py` | Market API methods (quotes, swaps, orders) |
+| `rln-client.ts` | `rln_client.py` | Node API methods (channels, assets, payments) |
+| `http-client.ts` | `http_client.py` | HTTP transport wrapper |
+| `ws-client.ts` | `ws_client.py` | WebSocket streaming |
+| `ws-types.ts` | *(inline in ws_client.py)* | WebSocket message types |
+| `types.ts` | `types.py` | SDK-level types and re-exports |
+| `errors.ts` | `errors.py` | Error class hierarchy |
+| `utils/precision.ts` | `utils/precision.py` | Asset precision helpers |
+| `utils/asset-pair-mapper.ts` | `utils/` | Asset pair utilities |
+| `generated/api-types.ts` | `generated/api_types.py` | Auto-generated — Maker API models |
+| `generated/node-types.ts` | `generated/node_types.py` | Auto-generated — Node API models |
+
+### Workflow for Adding a New Feature
+
+1. **Update the OpenAPI spec** if it's API-driven, then regenerate:
+   ```bash
+   make generate-models
+   ```
+
+2. **Implement in TypeScript** (`maker-client.ts` or `rln-client.ts`):
+   ```typescript
+   async newMethod(body: NewMethodRequest): Promise<NewMethodResponse> {
+     const { data } = await this.http.maker.POST("/api/v1/endpoint", { body });
+     return data;
+   }
+   ```
+
+3. **Mirror in Python** (`maker_client.py` or `rln_client.py`):
+   ```python
+   async def new_method(self, body: NewMethodRequest) -> NewMethodResponse:
+       data = await self._http.maker_post("/api/v1/endpoint", body)
+       return NewMethodResponse.model_validate(data)
+   ```
+   - TS uses `openapi-fetch` (sync-style promises); Python uses `httpx` with `async`/`await`.
+   - TS uses camelCase; Python uses snake_case — the pattern is otherwise identical.
+
+4. **Export the new type/method** from `index.ts` (TS) and `__init__.py` (Python).
+
+5. **Add tests in both** (`typescript-sdk/tests/`, `python-sdk/tests/`).
+
+6. **Run pre-commit checks:**
+   ```bash
+   make pre-commit
+   ```
+
+### Known Issue: Python Model Naming Conflicts
+
+`datamodel-code-generator` can rename types by appending `1` when a field name conflicts with the type name (e.g. `PaymentStatus` → `PaymentStatus1`). This is a known upstream bug.
+
+The generation script (`scripts/generate_python_sdk_models.sh`) has a `CONFLICTS` array that automatically fixes these renames to keep CI stable. When you encounter a new conflict, add it:
+
+```bash
+# In scripts/generate_python_sdk_models.sh
+CONFLICTS=("PaymentStatus" "YourNewConflict")
+```
+
+Then re-run `make generate-python-sdk-models` and commit the fixed output.
+
+---
+
 ## Quality Checks
 
 ### Pre-commit Checklist
@@ -280,14 +349,14 @@ The pipeline will **fail** if:
 git checkout dev
 git pull origin dev
 
-# Update versions
-# TypeScript: typescript-sdk/package.json
-# Python: python-sdk/pyproject.toml
+# Bump all versions in one command (Cargo.toml, pyproject.toml, package.json)
+bash scripts/sync-versions.sh X.Y.Z
 
-# Update changelogs (if applicable)
+# Check current versions across all SDKs
+bash scripts/sync-versions.sh   # no argument → display only
 
-# Commit version bump
-git add .
+# Update CHANGELOG.md, then commit
+git add Cargo.toml python-sdk/pyproject.toml typescript-sdk/package.json CHANGELOG.md
 git commit -m "chore: bump version to X.Y.Z"
 git push origin dev
 ```
