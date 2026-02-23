@@ -6,18 +6,19 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from kaleidoswap_sdk.generated.base import BaseNodeModel
+from pydantic import Field
 
 
-class AddressResponse(BaseModel):
+class AddressResponse(BaseNodeModel):
     address: str | None = None
 
 
-class AssetBalanceRequest(BaseModel):
+class AssetBalanceRequest(BaseNodeModel):
     asset_id: str | None = None
 
 
-class AssetBalanceResponse(BaseModel):
+class AssetBalanceResponse(BaseNodeModel):
     settled: int | None = None
     future: int | None = None
     spendable: int | None = None
@@ -25,7 +26,7 @@ class AssetBalanceResponse(BaseModel):
     offchain_inbound: int | None = None
 
 
-class AssetMetadataRequest(BaseModel):
+class AssetMetadataRequest(BaseNodeModel):
     asset_id: str | None = None
 
 
@@ -35,29 +36,29 @@ class AssetSchema(Enum):
     cfa = "Cfa"
 
 
-class AssignmentAny(BaseModel):
+class AssignmentAny(BaseNodeModel):
     type: Literal["Any"]
 
 
-class AssignmentFungible(BaseModel):
+class AssignmentFungible(BaseNodeModel):
     type: Literal["Fungible"]
     value: int
 
 
-class AssignmentInflationRight(BaseModel):
+class AssignmentInflationRight(BaseNodeModel):
     type: Literal["InflationRight"]
     value: int
 
 
-class AssignmentNonFungible(BaseModel):
+class AssignmentNonFungible(BaseNodeModel):
     type: Literal["NonFungible"]
 
 
-class AssignmentReplaceRight(BaseModel):
+class AssignmentReplaceRight(BaseNodeModel):
     type: Literal["ReplaceRight"]
 
 
-class BackupRequest(BaseModel):
+class BackupRequest(BaseNodeModel):
     backup_path: str | None = None
     password: str | None = None
 
@@ -70,27 +71,27 @@ class BitcoinNetwork(Enum):
     regtest = "Regtest"
 
 
-class BlockTime(BaseModel):
+class BlockTime(BaseNodeModel):
     height: int | None = None
     timestamp: int | None = None
 
 
-class BtcBalance(BaseModel):
+class BtcBalance(BaseNodeModel):
     settled: int | None = None
     future: int | None = None
     spendable: int | None = None
 
 
-class BtcBalanceRequest(BaseModel):
+class BtcBalanceRequest(BaseNodeModel):
     skip_sync: bool | None = None
 
 
-class BtcBalanceResponse(BaseModel):
+class BtcBalanceResponse(BaseNodeModel):
     vanilla: BtcBalance | None = None
     colored: BtcBalance | None = None
 
 
-class ChangePasswordRequest(BaseModel):
+class ChangePasswordRequest(BaseNodeModel):
     old_password: str | None = None
     new_password: str | None = None
 
@@ -101,25 +102,25 @@ class ChannelStatus(Enum):
     closing = "Closing"
 
 
-class CheckIndexerUrlRequest(BaseModel):
+class CheckIndexerUrlRequest(BaseNodeModel):
     indexer_url: str | None = None
 
 
-class CheckProxyEndpointRequest(BaseModel):
+class CheckProxyEndpointRequest(BaseNodeModel):
     proxy_url: str | None = None
 
 
-class CloseChannelRequest(BaseModel):
+class CloseChannelRequest(BaseNodeModel):
     channel_id: str | None = None
     peer_pubkey: str | None = None
     force: bool | None = None
 
 
-class ConnectPeerRequest(BaseModel):
+class ConnectPeerRequest(BaseNodeModel):
     peer_pubkey_and_addr: str | None = None
 
 
-class CreateUtxosRequest(BaseModel):
+class CreateUtxosRequest(BaseNodeModel):
     up_to: bool | None = None
     num: int | None = None
     size: int | None = None
@@ -127,11 +128,11 @@ class CreateUtxosRequest(BaseModel):
     skip_sync: bool | None = None
 
 
-class DecodeLNInvoiceRequest(BaseModel):
+class DecodeLNInvoiceRequest(BaseNodeModel):
     invoice: str | None = None
 
 
-class DecodeLNInvoiceResponse(BaseModel):
+class DecodeLNInvoiceResponse(BaseNodeModel):
     amt_msat: int | None = None
     expiry_sec: int | None = None
     timestamp: int | None = None
@@ -143,62 +144,62 @@ class DecodeLNInvoiceResponse(BaseModel):
     network: BitcoinNetwork | None = None
 
 
-class DecodeRGBInvoiceRequest(BaseModel):
+class DecodeRGBInvoiceRequest(BaseNodeModel):
     invoice: str | None = None
 
 
-class DisconnectPeerRequest(BaseModel):
+class DisconnectPeerRequest(BaseNodeModel):
     peer_pubkey: str | None = None
 
 
-class EmbeddedMedia(BaseModel):
+class EmbeddedMedia(BaseNodeModel):
     mime: str | None = None
     data: list[int] | None = None
 
 
-class EmptyResponse(BaseModel):
+class EmptyResponse(BaseNodeModel):
     pass
 
 
-class EstimateFeeRequest(BaseModel):
+class EstimateFeeRequest(BaseNodeModel):
     blocks: int | None = None
 
 
-class EstimateFeeResponse(BaseModel):
+class EstimateFeeResponse(BaseNodeModel):
     fee_rate: float | None = None
 
 
-class FailTransfersRequest(BaseModel):
+class FailTransfersRequest(BaseNodeModel):
     batch_transfer_idx: int | None = None
     no_asset_only: bool | None = None
     skip_sync: bool | None = None
 
 
-class FailTransfersResponse(BaseModel):
+class FailTransfersResponse(BaseNodeModel):
     transfers_changed: bool | None = None
 
 
-class GetAssetMediaRequest(BaseModel):
+class GetAssetMediaRequest(BaseNodeModel):
     digest: str | None = None
 
 
-class GetAssetMediaResponse(BaseModel):
+class GetAssetMediaResponse(BaseNodeModel):
     bytes_hex: str | None = None
 
 
-class GetChannelIdRequest(BaseModel):
+class GetChannelIdRequest(BaseNodeModel):
     temporary_channel_id: str | None = None
 
 
-class GetChannelIdResponse(BaseModel):
+class GetChannelIdResponse(BaseNodeModel):
     channel_id: str | None = None
 
 
-class GetPaymentRequest(BaseModel):
+class GetPaymentRequest(BaseNodeModel):
     payment_hash: str | None = None
 
 
-class GetSwapRequest(BaseModel):
+class GetSwapRequest(BaseNodeModel):
     payment_hash: str | None = None
     taker: bool | None = None
 
@@ -214,11 +215,11 @@ class IndexerProtocol(Enum):
     esplora = "Esplora"
 
 
-class InitRequest(BaseModel):
+class InitRequest(BaseNodeModel):
     password: str | None = None
 
 
-class InitResponse(BaseModel):
+class InitResponse(BaseNodeModel):
     mnemonic: str | None = None
 
 
@@ -229,15 +230,15 @@ class InvoiceStatus(Enum):
     expired = "Expired"
 
 
-class InvoiceStatusRequest(BaseModel):
+class InvoiceStatusRequest(BaseNodeModel):
     invoice: str | None = None
 
 
-class InvoiceStatusResponse(BaseModel):
+class InvoiceStatusResponse(BaseNodeModel):
     status: InvoiceStatus | None = None
 
 
-class IssueAssetCFARequest(BaseModel):
+class IssueAssetCFARequest(BaseNodeModel):
     amounts: list[int] | None = None
     name: str | None = None
     details: str | None = None
@@ -245,14 +246,14 @@ class IssueAssetCFARequest(BaseModel):
     file_digest: str | None = None
 
 
-class IssueAssetNIARequest(BaseModel):
+class IssueAssetNIARequest(BaseNodeModel):
     amounts: list[int] | None = None
     ticker: str | None = None
     name: str | None = None
     precision: int | None = None
 
 
-class IssueAssetUDARequest(BaseModel):
+class IssueAssetUDARequest(BaseNodeModel):
     ticker: str | None = None
     name: str | None = None
     details: str | None = None
@@ -261,53 +262,53 @@ class IssueAssetUDARequest(BaseModel):
     attachments_file_digests: list[str] | None = None
 
 
-class KeysendRequest(BaseModel):
+class KeysendRequest(BaseNodeModel):
     dest_pubkey: str | None = None
     amt_msat: int | None = None
     asset_id: str | None = None
     asset_amount: int | None = None
 
 
-class KeysendResponse(BaseModel):
+class KeysendResponse(BaseNodeModel):
     payment_hash: str | None = None
     payment_preimage: str | None = None
     status: HTLCStatus | None = None
 
 
-class ListAssetsRequest(BaseModel):
+class ListAssetsRequest(BaseNodeModel):
     filter_asset_schemas: list[AssetSchema] | None = None
 
 
-class ListTransactionsRequest(BaseModel):
+class ListTransactionsRequest(BaseNodeModel):
     skip_sync: bool | None = None
 
 
-class ListTransfersRequest(BaseModel):
+class ListTransfersRequest(BaseNodeModel):
     asset_id: str | None = None
 
 
-class ListUnspentsRequest(BaseModel):
+class ListUnspentsRequest(BaseNodeModel):
     skip_sync: bool | None = None
 
 
-class LNInvoiceRequest(BaseModel):
+class LNInvoiceRequest(BaseNodeModel):
     amt_msat: int | None = None
     expiry_sec: int | None = None
     asset_id: str | None = None
     asset_amount: int | None = None
 
 
-class LNInvoiceResponse(BaseModel):
+class LNInvoiceResponse(BaseNodeModel):
     invoice: str | None = None
 
 
-class MakerExecuteRequest(BaseModel):
+class MakerExecuteRequest(BaseNodeModel):
     swapstring: str | None = None
     payment_secret: str | None = None
     taker_pubkey: str | None = None
 
 
-class MakerInitRequest(BaseModel):
+class MakerInitRequest(BaseNodeModel):
     qty_from: int | None = None
     qty_to: int | None = None
     from_asset: str | None = None
@@ -315,23 +316,23 @@ class MakerInitRequest(BaseModel):
     timeout_sec: int | None = None
 
 
-class MakerInitResponse(BaseModel):
+class MakerInitResponse(BaseNodeModel):
     payment_hash: str | None = None
     payment_secret: str | None = None
     swapstring: str | None = None
 
 
-class Media(BaseModel):
+class Media(BaseNodeModel):
     file_path: str | None = None
     mime: str | None = None
 
 
-class NetworkInfoResponse(BaseModel):
+class NetworkInfoResponse(BaseNodeModel):
     network: BitcoinNetwork | None = None
     height: int | None = None
 
 
-class NodeInfoResponse(BaseModel):
+class NodeInfoResponse(BaseNodeModel):
     pubkey: str | None = None
     num_channels: int | None = None
     num_usable_channels: int | None = None
@@ -352,7 +353,7 @@ class NodeInfoResponse(BaseModel):
     network_channels: int | None = None
 
 
-class OpenChannelRequest(BaseModel):
+class OpenChannelRequest(BaseNodeModel):
     peer_pubkey_and_opt_addr: str | None = None
     capacity_sat: int | None = None
     push_msat: int | None = None
@@ -365,11 +366,11 @@ class OpenChannelRequest(BaseModel):
     temporary_channel_id: str | None = None
 
 
-class OpenChannelResponse(BaseModel):
+class OpenChannelResponse(BaseNodeModel):
     temporary_channel_id: str | None = None
 
 
-class Payment(BaseModel):
+class Payment(BaseNodeModel):
     amt_msat: int | None = None
     asset_amount: int | None = None
     asset_id: str | None = None
@@ -381,19 +382,19 @@ class Payment(BaseModel):
     payee_pubkey: str | None = None
 
 
-class Peer(BaseModel):
+class Peer(BaseNodeModel):
     pubkey: str | None = None
 
 
-class PostAssetMediaRequest(BaseModel):
+class PostAssetMediaRequest(BaseNodeModel):
     file: bytes | None = None
 
 
-class PostAssetMediaResponse(BaseModel):
+class PostAssetMediaResponse(BaseNodeModel):
     digest: str | None = None
 
 
-class ProofOfReserves(BaseModel):
+class ProofOfReserves(BaseNodeModel):
     utxo: str | None = None
     proof: list[int] | None = None
 
@@ -403,68 +404,68 @@ class RecipientType(Enum):
     witness = "Witness"
 
 
-class RefreshRequest(BaseModel):
+class RefreshRequest(BaseNodeModel):
     skip_sync: bool | None = None
 
 
-class RestoreRequest(BaseModel):
+class RestoreRequest(BaseNodeModel):
     backup_path: str | None = None
     password: str | None = None
 
 
-class RevokeTokenRequest(BaseModel):
+class RevokeTokenRequest(BaseNodeModel):
     token: str | None = None
 
 
-class RgbAllocation(BaseModel):
+class RgbAllocation(BaseNodeModel):
     asset_id: str | None = None
     assignment: AssignmentFungible | None = None
     settled: bool | None = None
 
 
-class RgbInvoiceResponse(BaseModel):
+class RgbInvoiceResponse(BaseNodeModel):
     recipient_id: str | None = None
     invoice: str | None = None
     expiration_timestamp: int | None = None
     batch_transfer_idx: int | None = None
 
 
-class SendBtcRequest(BaseModel):
+class SendBtcRequest(BaseNodeModel):
     amount: int | None = None
     address: str | None = None
     fee_rate: float | None = None
     skip_sync: bool | None = None
 
 
-class SendBtcResponse(BaseModel):
+class SendBtcResponse(BaseNodeModel):
     txid: str | None = None
 
 
-class SendOnionMessageRequest(BaseModel):
+class SendOnionMessageRequest(BaseNodeModel):
     node_ids: list[str] | None = None
     tlv_type: int | None = None
     data: str | None = None
 
 
-class SendPaymentRequest(BaseModel):
+class SendPaymentRequest(BaseNodeModel):
     invoice: str | None = None
 
 
-class SendPaymentResponse(BaseModel):
+class SendPaymentResponse(BaseNodeModel):
     payment_hash: str | None = None
     payment_secret: str | None = None
     status: HTLCStatus | None = None
 
 
-class SendRgbResponse(BaseModel):
+class SendRgbResponse(BaseNodeModel):
     txid: str | None = None
 
 
-class SignMessageRequest(BaseModel):
+class SignMessageRequest(BaseNodeModel):
     message: str | None = None
 
 
-class SignMessageResponse(BaseModel):
+class SignMessageResponse(BaseNodeModel):
     signed_message: str | None = None
 
 
@@ -476,11 +477,11 @@ class SwapStatus(Enum):
     failed = "Failed"
 
 
-class TakerRequest(BaseModel):
+class TakerRequest(BaseNodeModel):
     swapstring: str | None = None
 
 
-class Token(BaseModel):
+class Token(BaseNodeModel):
     index: int | None = None
     ticker: str | None = None
     name: str | None = None
@@ -491,7 +492,7 @@ class Token(BaseModel):
     reserves: ProofOfReserves | None = None
 
 
-class TokenLight(BaseModel):
+class TokenLight(BaseNodeModel):
     index: int | None = None
     ticker: str | None = None
     name: str | None = None
@@ -524,7 +525,7 @@ class TransferStatus(Enum):
     failed = "Failed"
 
 
-class UnlockRequest(BaseModel):
+class UnlockRequest(BaseNodeModel):
     password: str | None = None
     bitcoind_rpc_username: str | None = None
     bitcoind_rpc_password: str | None = None
@@ -536,18 +537,18 @@ class UnlockRequest(BaseModel):
     announce_alias: str | None = None
 
 
-class Utxo(BaseModel):
+class Utxo(BaseNodeModel):
     outpoint: str | None = None
     btc_amount: int | None = None
     colorable: bool | None = None
 
 
-class WitnessData(BaseModel):
+class WitnessData(BaseNodeModel):
     amount_sat: float | None = None
     blinding: float | None = None
 
 
-class AssetCFA(BaseModel):
+class AssetCFA(BaseNodeModel):
     asset_id: str | None = None
     name: str | None = None
     details: str | None = None
@@ -559,7 +560,7 @@ class AssetCFA(BaseModel):
     media: Media | None = None
 
 
-class AssetMetadataResponse(BaseModel):
+class AssetMetadataResponse(BaseNodeModel):
     asset_schema: AssetSchema | None = None
     initial_supply: int | None = None
     max_supply: int | None = None
@@ -572,7 +573,7 @@ class AssetMetadataResponse(BaseModel):
     token: Token | None = None
 
 
-class AssetNIA(BaseModel):
+class AssetNIA(BaseNodeModel):
     asset_id: str | None = None
     ticker: str | None = None
     name: str | None = None
@@ -585,7 +586,7 @@ class AssetNIA(BaseModel):
     media: Media | None = None
 
 
-class AssetUDA(BaseModel):
+class AssetUDA(BaseNodeModel):
     asset_id: str | None = None
     ticker: str | None = None
     name: str | None = None
@@ -597,7 +598,7 @@ class AssetUDA(BaseModel):
     token: TokenLight | None = None
 
 
-class Channel(BaseModel):
+class Channel(BaseNodeModel):
     channel_id: str | None = None
     funding_txid: str | None = None
     peer_pubkey: str | None = None
@@ -618,11 +619,11 @@ class Channel(BaseModel):
     asset_remote_amount: int | None = None
 
 
-class CheckIndexerUrlResponse(BaseModel):
+class CheckIndexerUrlResponse(BaseNodeModel):
     indexer_protocol: IndexerProtocol | None = None
 
 
-class DecodeRGBInvoiceResponse(BaseModel):
+class DecodeRGBInvoiceResponse(BaseNodeModel):
     recipient_id: str | None = None
     recipient_type: RecipientType | None = None
     asset_schema: AssetSchema | None = None
@@ -640,41 +641,41 @@ class DecodeRGBInvoiceResponse(BaseModel):
     transport_endpoints: list[str] | None = None
 
 
-class GetPaymentResponse(BaseModel):
+class GetPaymentResponse(BaseNodeModel):
     payment: Payment | None = None
 
 
-class IssueAssetCFAResponse(BaseModel):
+class IssueAssetCFAResponse(BaseNodeModel):
     asset: AssetCFA | None = None
 
 
-class IssueAssetNIAResponse(BaseModel):
+class IssueAssetNIAResponse(BaseNodeModel):
     asset: AssetNIA | None = None
 
 
-class IssueAssetUDAResponse(BaseModel):
+class IssueAssetUDAResponse(BaseNodeModel):
     asset: AssetUDA | None = None
 
 
-class ListAssetsResponse(BaseModel):
+class ListAssetsResponse(BaseNodeModel):
     nia: list[AssetNIA] | None = None
     uda: list[AssetUDA] | None = None
     cfa: list[AssetCFA] | None = None
 
 
-class ListChannelsResponse(BaseModel):
+class ListChannelsResponse(BaseNodeModel):
     channels: list[Channel] | None = None
 
 
-class ListPaymentsResponse(BaseModel):
+class ListPaymentsResponse(BaseNodeModel):
     payments: list[Payment] | None = None
 
 
-class ListPeersResponse(BaseModel):
+class ListPeersResponse(BaseNodeModel):
     peers: list[Peer] | None = None
 
 
-class Recipient(BaseModel):
+class Recipient(BaseNodeModel):
     recipient_id: str | None = None
     witness_data: WitnessData | None = None
     assignment: (
@@ -688,7 +689,7 @@ class Recipient(BaseModel):
     transport_endpoints: list[str] | None = None
 
 
-class RgbInvoiceRequest(BaseModel):
+class RgbInvoiceRequest(BaseNodeModel):
     min_confirmations: int | None = None
     asset_id: str | None = None
     assignment: (
@@ -703,7 +704,7 @@ class RgbInvoiceRequest(BaseModel):
     witness: bool | None = None
 
 
-class SendRgbRequest(BaseModel):
+class SendRgbRequest(BaseNodeModel):
     donation: bool | None = None
     fee_rate: float | None = None
     min_confirmations: int | None = None
@@ -711,7 +712,7 @@ class SendRgbRequest(BaseModel):
     skip_sync: bool | None = None
 
 
-class Swap(BaseModel):
+class Swap(BaseNodeModel):
     qty_from: int | None = None
     qty_to: int | None = None
     from_asset: str | None = None
@@ -724,7 +725,7 @@ class Swap(BaseModel):
     completed_at: int | None = None
 
 
-class Transaction(BaseModel):
+class Transaction(BaseNodeModel):
     transaction_type: TransactionType | None = None
     txid: str | None = None
     received: int | None = None
@@ -733,35 +734,35 @@ class Transaction(BaseModel):
     confirmation_time: BlockTime | None = None
 
 
-class TransferTransportEndpoint(BaseModel):
+class TransferTransportEndpoint(BaseNodeModel):
     endpoint: str | None = None
     transport_type: Literal["JsonRpc"] | None = None
     used: bool | None = None
 
 
-class Unspent(BaseModel):
+class Unspent(BaseNodeModel):
     utxo: Utxo | None = None
     rgb_allocations: list[RgbAllocation] | None = None
 
 
-class GetSwapResponse(BaseModel):
+class GetSwapResponse(BaseNodeModel):
     swap: Swap | None = None
 
 
-class ListSwapsResponse(BaseModel):
+class ListSwapsResponse(BaseNodeModel):
     maker: list[Swap] | None = None
     taker: list[Swap] | None = None
 
 
-class ListTransactionsResponse(BaseModel):
+class ListTransactionsResponse(BaseNodeModel):
     transactions: list[Transaction] | None = None
 
 
-class ListUnspentsResponse(BaseModel):
+class ListUnspentsResponse(BaseNodeModel):
     unspents: list[Unspent] | None = None
 
 
-class Transfer(BaseModel):
+class Transfer(BaseNodeModel):
     idx: int | None = None
     created_at: int | None = None
     updated_at: int | None = None
@@ -777,5 +778,5 @@ class Transfer(BaseModel):
     transport_endpoints: list[TransferTransportEndpoint] | None = None
 
 
-class ListTransfersResponse(BaseModel):
+class ListTransfersResponse(BaseNodeModel):
     transfers: list[Transfer] | None = None

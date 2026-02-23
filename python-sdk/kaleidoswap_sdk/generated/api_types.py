@@ -5,7 +5,8 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field
+from kaleidoswap_sdk.generated.base import BaseNodeModel
+from pydantic import AwareDatetime, ConfigDict, EmailStr, Field
 
 
 class AssetDeliveryStatus(Enum):
@@ -21,7 +22,7 @@ class AssetDeliveryStatus(Enum):
     rate_changed = "RATE_CHANGED"
 
 
-class AssetsOptions(BaseModel):
+class AssetsOptions(BaseNodeModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -47,7 +48,7 @@ class BitcoinNetwork(Enum):
     regtest = "Regtest"
 
 
-class ChannelDetails(BaseModel):
+class ChannelDetails(BaseNodeModel):
     channel_id: str | None = Field(None, title="Channel Id")
     temporary_channel_id: str | None = Field(None, title="Temporary Channel Id")
     funded_at: AwareDatetime | None = Field(None, title="Funded At")
@@ -55,7 +56,7 @@ class ChannelDetails(BaseModel):
     expires_at: AwareDatetime | None = Field(None, title="Expires At")
 
 
-class ChannelFees(BaseModel):
+class ChannelFees(BaseNodeModel):
     setup_fee: int = Field(..., title="Setup Fee")
     capacity_fee: int = Field(..., title="Capacity Fee")
     duration_fee: int = Field(..., title="Duration Fee")
@@ -64,7 +65,7 @@ class ChannelFees(BaseModel):
     discount_code: str | None = Field(None, title="Discount Code")
 
 
-class ConfirmSwapRequest(BaseModel):
+class ConfirmSwapRequest(BaseNodeModel):
     swapstring: str = Field(
         ...,
         examples=[
@@ -84,12 +85,12 @@ class ConfirmSwapRequest(BaseModel):
     )
 
 
-class ConfirmSwapResponse(BaseModel):
+class ConfirmSwapResponse(BaseNodeModel):
     status: int = Field(..., examples=[200], title="Status")
     message: str = Field(..., examples=["Swap executed successfully."], title="Message")
 
 
-class CreateOrderRequest(BaseModel):
+class CreateOrderRequest(BaseNodeModel):
     client_pubkey: str = Field(..., title="Client Pubkey")
     lsp_balance_sat: int = Field(..., ge=0, title="Lsp Balance Sat")
     client_balance_sat: int = Field(..., ge=0, title="Client Balance Sat")
@@ -112,7 +113,7 @@ class CreateOrderRequest(BaseModel):
     )
 
 
-class Fee(BaseModel):
+class Fee(BaseNodeModel):
     base_fee: int = Field(..., examples=[1000000], title="Base Fee")
     variable_fee: int = Field(..., examples=[1000000], title="Variable Fee")
     fee_rate: float = Field(..., examples=[0.0001], title="Fee Rate")
@@ -125,7 +126,7 @@ class Fee(BaseModel):
     fee_asset_precision: int = Field(..., examples=[6], title="Fee Asset Precision")
 
 
-class GetOrderRequest(BaseModel):
+class GetOrderRequest(BaseNodeModel):
     order_id: str = Field(..., title="Order Id")
 
 
@@ -154,7 +155,7 @@ class Layer(Enum):
     spark_spark = "SPARK_SPARK"
 
 
-class Media(BaseModel):
+class Media(BaseNodeModel):
     file_path: str = Field(..., examples=["/path/to/media"], title="File Path")
     digest: str = Field(
         ...,
@@ -164,12 +165,12 @@ class Media(BaseModel):
     mime: str = Field(..., examples=["text/plain"], title="Mime")
 
 
-class NetworkInfoResponse(BaseModel):
+class NetworkInfoResponse(BaseNodeModel):
     network: BitcoinNetwork
     height: int = Field(..., examples=[805434], title="Height")
 
 
-class OrderOptions(BaseModel):
+class OrderOptions(BaseNodeModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -217,7 +218,7 @@ class OrderState(Enum):
     pending_rate_decision = "PENDING_RATE_DECISION"
 
 
-class OrderStatsResponse(BaseModel):
+class OrderStatsResponse(BaseNodeModel):
     status_counts: dict[str, int] = Field(
         ..., description="Count of orders by status", title="Status Counts"
     )
@@ -229,7 +230,7 @@ class OrderStatsResponse(BaseModel):
     )
 
 
-class PaginationMeta(BaseModel):
+class PaginationMeta(BaseNodeModel):
     """
     Pagination metadata
     """
@@ -272,7 +273,7 @@ class PaymentStatus(Enum):
     overpaid = "OVERPAID"
 
 
-class RateDecisionRequest(BaseModel):
+class RateDecisionRequest(BaseNodeModel):
     """
     Request for user to accept new rate or request refund
     """
@@ -281,7 +282,7 @@ class RateDecisionRequest(BaseModel):
     accept_new_rate: bool = Field(..., title="Accept New Rate")
 
 
-class RateDecisionResponse(BaseModel):
+class RateDecisionResponse(BaseNodeModel):
     """
     Response after user makes rate decision
     """
@@ -292,7 +293,7 @@ class RateDecisionResponse(BaseModel):
     refund_txid: str | None = Field(None, title="Refund Txid")
 
 
-class ReachabilityCell(BaseModel):
+class ReachabilityCell(BaseNodeModel):
     """
     Single cell in reachability matrix.
     """
@@ -309,7 +310,7 @@ class ReachabilityCell(BaseModel):
     )
 
 
-class ReachabilityMatrixResponse(BaseModel):
+class ReachabilityMatrixResponse(BaseNodeModel):
     """
     Full reachability matrix response.
     """
@@ -345,7 +346,7 @@ class ReceiverAddressFormat(Enum):
     cashu_token = "CASHU_TOKEN"
 
 
-class RetryDeliveryRequest(BaseModel):
+class RetryDeliveryRequest(BaseNodeModel):
     """
     Request model for /retry_delivery endpoint to trigger immediate keysend retry
     """
@@ -366,7 +367,7 @@ class RetryDeliveryStatus(Enum):
     error = "error"
 
 
-class RouteStep(BaseModel):
+class RouteStep(BaseNodeModel):
     """
     Single step in a route (one swap within a trading pair).
     """
@@ -389,7 +390,7 @@ class RouteStep(BaseModel):
     )
 
 
-class RoutesRequest(BaseModel):
+class RoutesRequest(BaseNodeModel):
     """
     Request for route discovery.
     """
@@ -413,7 +414,7 @@ class RoutesRequest(BaseModel):
     )
 
 
-class SwapLeg(BaseModel):
+class SwapLeg(BaseNodeModel):
     """
     Swap Leg: Complete asset specification for one side of a swap.
 
@@ -454,7 +455,7 @@ class SwapLeg(BaseModel):
     )
 
 
-class SwapLegInput(BaseModel):
+class SwapLegInput(BaseNodeModel):
     """
     Lightweight input model for specifying one leg of a swap request.
 
@@ -481,7 +482,7 @@ class SwapLegInput(BaseModel):
     )
 
 
-class SwapNodeInfoResponse(BaseModel):
+class SwapNodeInfoResponse(BaseNodeModel):
     pubkey: str | None = Field(
         ...,
         examples=["034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"],
@@ -491,7 +492,7 @@ class SwapNodeInfoResponse(BaseModel):
     block_height: int | None = Field(..., examples=[805434], title="Block Height")
 
 
-class SwapOrderRateDecisionRequest(BaseModel):
+class SwapOrderRateDecisionRequest(BaseNodeModel):
     """
     Request for user to accept new rate or request refund for a swap order
     """
@@ -504,7 +505,7 @@ class SwapOrderRateDecisionRequest(BaseModel):
     )
 
 
-class SwapOrderRateDecisionResponse(BaseModel):
+class SwapOrderRateDecisionResponse(BaseNodeModel):
     """
     Response after user makes rate decision for a swap order
     """
@@ -531,11 +532,11 @@ class SwapOrderStatus(Enum):
     pending_rate_decision = "PENDING_RATE_DECISION"
 
 
-class SwapOrderStatusRequest(BaseModel):
+class SwapOrderStatusRequest(BaseNodeModel):
     order_id: str = Field(..., title="Order Id")
 
 
-class SwapRequest(BaseModel):
+class SwapRequest(BaseNodeModel):
     rfq_id: str = Field(..., examples=["1234567890"], title="Rfq Id")
     from_asset: str = Field(..., examples=["BTC"], title="From Asset")
     from_amount: int = Field(..., examples=[1000000], title="From Amount")
@@ -547,7 +548,7 @@ class SwapRequest(BaseModel):
     to_amount: int = Field(..., examples=[1000000], title="To Amount")
 
 
-class SwapResponse(BaseModel):
+class SwapResponse(BaseNodeModel):
     swapstring: str = Field(
         ...,
         examples=[
@@ -562,7 +563,7 @@ class SwapResponse(BaseModel):
     )
 
 
-class SwapRoute(BaseModel):
+class SwapRoute(BaseNodeModel):
     """
     Pre-computed valid swap route between two layers.
 
@@ -582,7 +583,7 @@ class SwapStatus(Enum):
     failed = "Failed"
 
 
-class SwapStatusRequest(BaseModel):
+class SwapStatusRequest(BaseNodeModel):
     payment_hash: str = Field(
         ...,
         examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
@@ -590,7 +591,7 @@ class SwapStatusRequest(BaseModel):
     )
 
 
-class TradingLimits(BaseModel):
+class TradingLimits(BaseNodeModel):
     """
     Trading limits for a layer.
 
@@ -613,13 +614,13 @@ class TradingLimits(BaseModel):
     )
 
 
-class ValidationError(BaseModel):
+class ValidationError(BaseNodeModel):
     loc: list[str | int] = Field(..., title="Location")
     msg: str = Field(..., title="Message")
     type: str = Field(..., title="Error Type")
 
 
-class Asset(BaseModel):
+class Asset(BaseNodeModel):
     """
     Extended asset definition for the trading system.
 
@@ -673,7 +674,7 @@ class Asset(BaseModel):
     )
 
 
-class AssetsResponse(BaseModel):
+class AssetsResponse(BaseNodeModel):
     """
     Response model for asset listing endpoints with pagination support.
     """
@@ -686,17 +687,17 @@ class AssetsResponse(BaseModel):
     timestamp: int | None = Field(None, title="Timestamp")
 
 
-class GetInfoResponseModel(BaseModel):
+class GetInfoResponseModel(BaseNodeModel):
     lsp_connection_url: str = Field(..., title="Lsp Connection Url")
     options: OrderOptions
     assets: list[AssetsOptions] = Field(..., title="Assets")
 
 
-class HTTPValidationError(BaseModel):
+class HTTPValidationError(BaseNodeModel):
     detail: list[ValidationError] | None = Field(None, title="Detail")
 
 
-class MultiHopRoute(BaseModel):
+class MultiHopRoute(BaseNodeModel):
     """
     Complete route with one or more steps.
     """
@@ -709,7 +710,7 @@ class MultiHopRoute(BaseModel):
     )
 
 
-class OrderHistorySummary(BaseModel):
+class OrderHistorySummary(BaseNodeModel):
     """
     Simplified order information for history listing
     """
@@ -732,7 +733,7 @@ class OrderHistorySummary(BaseModel):
     )
 
 
-class PairQuoteRequest(BaseModel):
+class PairQuoteRequest(BaseNodeModel):
     """
     Request for a quote on a trading pair using SwapLegInput.
     """
@@ -745,7 +746,7 @@ class PairQuoteRequest(BaseModel):
     )
 
 
-class PairQuoteResponse(BaseModel):
+class PairQuoteResponse(BaseNodeModel):
     """
     Response containing a quote for a trading pair.
 
@@ -780,7 +781,7 @@ class PairQuoteResponse(BaseModel):
     )
 
 
-class PaymentBolt11(BaseModel):
+class PaymentBolt11(BaseNodeModel):
     state: PaymentState
     expires_at: AwareDatetime = Field(..., title="Expires At")
     fee_total_sat: int = Field(..., title="Fee Total Sat")
@@ -788,7 +789,7 @@ class PaymentBolt11(BaseModel):
     invoice: str = Field(..., title="Invoice")
 
 
-class PaymentOnchain(BaseModel):
+class PaymentOnchain(BaseNodeModel):
     state: PaymentState
     expires_at: AwareDatetime = Field(..., title="Expires At")
     fee_total_sat: int = Field(..., title="Fee Total Sat")
@@ -808,7 +809,7 @@ class PaymentOnchain(BaseModel):
     last_payment_check: int | None = Field(None, title="Last Payment Check")
 
 
-class ReceiverAddress(BaseModel):
+class ReceiverAddress(BaseNodeModel):
     """
     Receiver address or invoice with its format.
 
@@ -824,7 +825,7 @@ class ReceiverAddress(BaseModel):
     )
 
 
-class RetryDeliveryResponse(BaseModel):
+class RetryDeliveryResponse(BaseNodeModel):
     """
     Response model for /retry_delivery endpoint
     """
@@ -835,7 +836,7 @@ class RetryDeliveryResponse(BaseModel):
     )
 
 
-class RoutesResponse(BaseModel):
+class RoutesResponse(BaseNodeModel):
     """
     Response with discovered routes.
     """
@@ -846,7 +847,7 @@ class RoutesResponse(BaseModel):
     timestamp: int = Field(..., description="Response timestamp", title="Timestamp")
 
 
-class Swap(BaseModel):
+class Swap(BaseNodeModel):
     qty_from: int = Field(..., examples=[30], title="Qty From")
     qty_to: int = Field(..., examples=[10], title="Qty To")
     from_asset: str | None = Field(
@@ -871,7 +872,7 @@ class Swap(BaseModel):
     completed_at: int | None = Field(None, examples=[1691171075], title="Completed At")
 
 
-class SwapOrder(BaseModel):
+class SwapOrder(BaseNodeModel):
     id: str = Field(..., description="Order identifier", title="Id")
     rfq_id: str = Field(
         ..., description="Quote identifier used to create the order", title="Rfq Id"
@@ -947,17 +948,17 @@ class SwapOrder(BaseModel):
     fee: Fee = Field(..., description="Fee information from the quote")
 
 
-class SwapOrderStatusResponse(BaseModel):
+class SwapOrderStatusResponse(BaseNodeModel):
     order_id: str = Field(..., title="Order Id")
     status: SwapOrderStatus
     order: SwapOrder
 
 
-class SwapStatusResponse(BaseModel):
+class SwapStatusResponse(BaseNodeModel):
     swap: Swap | None = None
 
 
-class TradableAsset(BaseModel):
+class TradableAsset(BaseNodeModel):
     """
     Asset with layer context(s) for trading operations.
 
@@ -994,7 +995,7 @@ class TradableAsset(BaseModel):
     )
 
 
-class TradingPair(BaseModel):
+class TradingPair(BaseNodeModel):
     """
     Complete trading pair with full asset details, routes, and price.
 
@@ -1018,7 +1019,7 @@ class TradingPair(BaseModel):
     is_active: bool = Field(True, title="Is Active")
 
 
-class TradingPairsResponse(BaseModel):
+class TradingPairsResponse(BaseNodeModel):
     """
     Response containing list of trading pairs with pagination support.
     """
@@ -1030,7 +1031,7 @@ class TradingPairsResponse(BaseModel):
     timestamp: int = Field(..., title="Timestamp")
 
 
-class CreateSwapOrderRequest(BaseModel):
+class CreateSwapOrderRequest(BaseNodeModel):
     rfq_id: str = Field(
         ..., description="RFQ ID cannot be empty", min_length=1, title="Rfq Id"
     )
@@ -1052,26 +1053,26 @@ class CreateSwapOrderRequest(BaseModel):
     )
 
 
-class CreateSwapOrderResponse(BaseModel):
+class CreateSwapOrderResponse(BaseNodeModel):
     id: str = Field(..., title="Id")
     rfq_id: str = Field(..., title="Rfq Id")
     deposit_address: ReceiverAddress | None = None
     status: SwapOrderStatus
 
 
-class OrderHistoryResponse(BaseModel):
+class OrderHistoryResponse(BaseNodeModel):
     data: list[OrderHistorySummary] = Field(
         ..., description="List of orders", title="Data"
     )
     pagination: PaginationMeta
 
 
-class PaymentDetails(BaseModel):
+class PaymentDetails(BaseNodeModel):
     bolt11: PaymentBolt11
     onchain: PaymentOnchain
 
 
-class ChannelOrderResponse(BaseModel):
+class ChannelOrderResponse(BaseNodeModel):
     order_id: str = Field(..., title="Order Id")
     client_pubkey: str = Field(..., title="Client Pubkey")
     lsp_balance_sat: int = Field(..., title="Lsp Balance Sat")

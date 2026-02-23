@@ -36,7 +36,8 @@ $CODEGEN_CMD \
     --target-python-version 3.10 \
     --use-double-quotes \
     --collapse-root-models \
-    --disable-timestamp
+    --disable-timestamp \
+    --base-class kaleidoswap_sdk.generated.base.BaseNodeModel
 
 # Generate from rln.yaml (RGB Lightning Node API)
 echo "  → Generating from rln.yaml..."
@@ -55,7 +56,8 @@ $CODEGEN_CMD \
     --target-python-version 3.10 \
     --use-double-quotes \
     --collapse-root-models \
-    --disable-timestamp
+    --disable-timestamp \
+    --base-class kaleidoswap_sdk.generated.base.BaseNodeModel
 
 # Fix naming conflicts: datamodel-code-generator renames types when field names conflict
 # Example: PaymentStatus enum gets renamed to PaymentStatus1 when there's a payment_status field
