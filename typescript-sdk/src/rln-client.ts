@@ -9,6 +9,7 @@ import { HttpClient } from './http-client.js';
 import { mapHttpError } from './errors.js';
 import type {
     InitWalletRequest,
+    InitResponse,
     UnlockWalletRequest,
     ChangePasswordRequest,
     BackupRequest,
@@ -128,9 +129,10 @@ export class RlnClient {
         return data!;
     }
 
-    async initWallet(body: InitWalletRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/init', { body });
+    async initWallet(body: InitWalletRequest): Promise<InitResponse> {
+        const { data, error } = await this.http.node.POST('/init', { body });
         checkError({ error });
+        return data!;
     }
 
     async unlockWallet(body: UnlockWalletRequest): Promise<void> {
