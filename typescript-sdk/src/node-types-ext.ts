@@ -25,6 +25,7 @@ type ResponseSuccess<T extends keyof operations> = operations[T] extends {
 
 // Authentication & Wallet
 export type InitWalletRequest = RequestBody<'post_init'>;
+export type InitResponse = ResponseSuccess<'post_init'>;
 export type UnlockRequest = RequestBody<'post_unlock'>;
 export type UnlockResponse = ResponseSuccess<'post_unlock'>;
 export type ChangePasswordRequest = RequestBody<'post_changepassword'>;

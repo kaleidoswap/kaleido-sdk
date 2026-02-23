@@ -1,6 +1,6 @@
 {
     "name": "kaleidoswap-sdk",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Kaleidoswap SDK for TypeScript and JavaScript - trade RGB assets on Lightning Network",
     "keywords": [
         "bitcoin",
@@ -49,22 +49,28 @@
         "prepublishOnly": "npm run build"
     },
     "devDependencies": {
-        "@types/node": "^20.0.0",
-        "@typescript-eslint/eslint-plugin": "^7.0.0",
-        "@typescript-eslint/parser": "^7.0.0",
-        "eslint": "^8.57.0",
-        "openapi-typescript": "^7.10.1",
-        "prettier": "^3.2.0",
+        "@types/node": "^20.19.33",
+        "@typescript-eslint/eslint-plugin": "^7.18.0",
+        "@typescript-eslint/parser": "^7.18.0",
+        "eslint": "^8.57.1",
+        "openapi-typescript": "^7.13.0",
+        "prettier": "^3.8.1",
         "tsx": "^4.21.0",
-        "typescript": "^5.0.0",
-        "vitest": "^1.0.0"
+        "typescript": "^5.9.3",
+        "vitest": "^1.6.1"
     },
     "engines": {
         "node": ">=18.0.0"
     },
     "dependencies": {
         "@types/ws": "^8.18.1",
-        "openapi-fetch": "^0.15.0",
+        "openapi-fetch": "^0.15.2",
         "ws": "^8.19.0"
+    },
+    "pnpm": {
+        "overrides": {
+            "minimatch": ">=10.2.1",
+            "esbuild": ">=0.25.0"
+        }
     }
 }
