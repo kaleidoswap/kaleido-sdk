@@ -66,7 +66,7 @@ warn_unused_ignores = true
 disallow_untyped_defs = false
 plugins = ["pydantic.mypy"]
 exclude = [
-    "kaleidoswap_sdk/generated/",
+    "kaleidoswap_sdk/_generated/",
 ]
 
 [[tool.mypy.overrides]]
@@ -82,7 +82,7 @@ line-length = 100
 target-version = "py310"
 # Exclude generated files from formatting (they're auto-generated with datamodel-code-generator)
 exclude = [
-    "kaleidoswap_sdk/generated/",
+    "kaleidoswap_sdk/_generated/",
 ]
 
 [tool.ruff.lint]
@@ -91,7 +91,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore certain rules in auto-generated code
-"kaleidoswap_sdk/generated/**/*.py" = [
+"kaleidoswap_sdk/_generated/**/*.py" = [
     "F403",  # Star imports
     "F405",  # Undefined names from star imports
     "N818",  # Exception naming conventions

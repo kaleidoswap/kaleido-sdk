@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 # Re-export all generated API types (from maker.json OpenAPI spec)
-from .generated.api_types import (
+from ._generated.api_types import (
     Asset,
     AssetDeliveryStatus,
     AssetsResponse,

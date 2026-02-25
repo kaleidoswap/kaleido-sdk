@@ -22,60 +22,60 @@ from httpx import Timeout
 from .errors import NetworkError, SwapError, TimeoutError, map_http_error
 
 # Fallback to old generated types for models that weren't generated
-from .generated.api_types import (
+from ._generated.api_types import (
     SwapRoute,
     TradingPair,
     TradingPairsResponse,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     create_order as create_lsp_order,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     estimate_fees as estimate_lsp_fees,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     get_info as get_lsp_info,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     get_network_info as get_lsp_network_info,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     get_order as get_lsp_order,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     handle_rate_decision as handle_lsp_rate_decision,
 )
-from .generated.maker_client_generated.api.lsps1 import (
+from ._generated.maker_client_generated.api.lsps1 import (
     retry_delivery as retry_lsp_delivery,
 )
 
 # Import API endpoint functions directly from their modules
-from .generated.maker_client_generated.api.market import (
+from ._generated.maker_client_generated.api.market import (
     discover_routes,
     get_pair_routes,
     get_pairs,
     list_assets,
 )
-from .generated.maker_client_generated.api.market import (
+from ._generated.maker_client_generated.api.market import (
     get_quote as get_quote_endpoint,
 )
-from .generated.maker_client_generated.api.swap_orders import (
+from ._generated.maker_client_generated.api.swap_orders import (
     create_swap_order,
     get_order_history,
     get_order_stats,
     get_swap_order_status,
     handle_swap_order_rate_decision,
 )
-from .generated.maker_client_generated.api.swaps import (
+from ._generated.maker_client_generated.api.swaps import (
     confirm_swap,
     get_swap_status,
     initiate_swap,
 )
-from .generated.maker_client_generated.api.swaps import (
+from ._generated.maker_client_generated.api.swaps import (
     get_node_info as get_swap_node_info,
 )
-from .generated.maker_client_generated.client import Client as GeneratedMakerClient
-from .generated.maker_client_generated.models import (
+from ._generated.maker_client_generated.client import Client as GeneratedMakerClient
+from ._generated.maker_client_generated.models import (
     AssetsResponse,
     ChannelFees,
     ChannelOrderResponse,
@@ -110,14 +110,14 @@ from .generated.maker_client_generated.models import (
     SwapStatusRequest,
     SwapStatusResponse,
 )
-from .generated.maker_client_generated.models import (
+from ._generated.maker_client_generated.models import (
     Body as PairRoutesBody,
 )
 from .types import Layer
-from .utils import to_display_amount, to_raw_amount
+from ._utils import to_display_amount, to_raw_amount
 
 if TYPE_CHECKING:
-    from .ws_client import QuoteResponse, WSClient
+    from ._ws_client import QuoteResponse, WSClient
 
 
 def _to_attrs(body: Any, attrs_cls: Any) -> Any:
@@ -264,7 +264,7 @@ class MakerClient:
         Returns:
             WSClient instance (use ws.client_id to read the UUID used)
         """
-        from .ws_client import WSClient
+        from ._ws_client import WSClient
 
         self._ws = WSClient(url=ws_url, user_id=user_id)
         return self._ws

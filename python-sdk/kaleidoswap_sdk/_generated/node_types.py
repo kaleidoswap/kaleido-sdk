@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
-from kaleidoswap_sdk.generated.base import BaseNodeModel
+from kaleidoswap_sdk._generated.base import BaseNodeModel
 from pydantic import Field
 
 

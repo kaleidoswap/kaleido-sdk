@@ -41,9 +41,9 @@ from .errors import (
     WebSocketError,
     map_http_error,
 )
-from .http_client import HttpClient
-from .maker_client import MakerClient, SwapCompletionOptions
-from .rln_client import RlnClient
+from ._http_client import HttpClient
+from ._maker_client import MakerClient, SwapCompletionOptions
+from ._rln_client import RlnClient
 from .types import (
     # API Types - Assets & Pairs
     Asset,
@@ -116,7 +116,7 @@ from .types import (
     TradingPair,
     TradingPairsResponse,
 )
-from .utils import (
+from ._utils import (
     MappedAsset,
     OrderSizeLimits,
     PrecisionHandler,
@@ -125,7 +125,7 @@ from .utils import (
     to_display_amount,
     to_raw_amount,
 )
-from .ws_client import (
+from ._ws_client import (
     ConnectionEstablishedData,
     WebSocketMessage,
     WebSocketResponse,
@@ -133,10 +133,10 @@ from .ws_client import (
     WSClient,
     WSClientConfig,
 )
-from .ws_client import (
+from ._ws_client import (
     QuoteRequest as WSQuoteRequest,
 )
-from .ws_client import (
+from ._ws_client import (
     QuoteResponse as WSQuoteResponse,
 )
 
@@ -144,9 +144,6 @@ __version__ = "0.5.0"
 __all__ = [
     # Main client
     "KaleidoClient",
-    "MakerClient",
-    "RlnClient",
-    "HttpClient",
     # Utility functions
     "to_smallest_units",
     "to_display_units",
@@ -154,22 +151,8 @@ __all__ = [
     "to_display_amount",
     "get_version",
     "get_sdk_name",
-    # Precision utilities
-    "PrecisionHandler",
-    "create_precision_handler",
-    "MappedAsset",
-    "ValidationResult",
-    "OrderSizeLimits",
-    "SwapCompletionOptions",
     # WebSocket
-    "WSClient",
-    "WSClientConfig",
-    "WSAction",
-    "WSQuoteResponse",
-    "WSQuoteRequest",
     "WebSocketMessage",
-    "WebSocketResponse",
-    "ConnectionEstablishedData",
     # Config
     "KaleidoConfig",
     # Errors
@@ -186,7 +169,6 @@ __all__ = [
     "QuoteExpiredError",
     "InsufficientBalanceError",
     "RateLimitError",
-    "map_http_error",
     # Enums (API)
     "Layer",
     "ReceiverAddressFormat",

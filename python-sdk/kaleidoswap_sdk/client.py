@@ -7,9 +7,9 @@ Main client class that coordinates Maker and RLN operations.
 from __future__ import annotations
 
 from .errors import NodeNotConfiguredError
-from .http_client import HttpClient
-from .maker_client import MakerClient
-from .rln_client import RlnClient
+from ._http_client import HttpClient
+from ._maker_client import MakerClient
+from ._rln_client import RlnClient
 from .types import KaleidoConfig
 
 __version__ = "0.5.0"

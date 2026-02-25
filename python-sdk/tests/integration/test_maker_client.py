@@ -15,7 +15,7 @@ from kaleidoswap_sdk import (
     SwapRequest,
     SwapStatusRequest,
 )
-from kaleidoswap_sdk.generated.node_types import TakerRequest
+from kaleidoswap_sdk.rln import TakerRequest
 from tests.utils import get_fresh_quote, initiate_swap
 
 

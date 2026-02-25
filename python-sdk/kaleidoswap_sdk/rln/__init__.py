@@ -4,7 +4,7 @@ Kaleidoswap SDK RLN Node Types
 This module exports all types from the RLN Node API.
 """
 
-from ..generated.node_types import (
+from .._generated.node_types import (
     AddressResponse,
     AssetBalanceRequest,
     AssetBalanceResponse,
