@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 # Import NetworkInfoResponse from generated types
 from .generated.node_types import DecodeRGBInvoiceResponse, TakerRequest
 from .generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
-from .types import (
+from .generated.node_types import (
     AddressResponse,
     AssetBalanceRequest,
     AssetBalanceResponse,

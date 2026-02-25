@@ -7,11 +7,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from kaleidoswap_sdk import (
-    CreateUtxosRequest,
-    DecodeRGBInvoiceRequest,
     KaleidoClient,
     KaleidoConfig,
-    MakerExecuteRequest,
     NetworkError,
     NodeNotConfiguredError,
     get_sdk_name,
@@ -19,11 +16,14 @@ from kaleidoswap_sdk import (
     to_display_units,
     to_smallest_units,
 )
-from kaleidoswap_sdk.generated.node_types import (
+from kaleidoswap_sdk.rln import (
     AssetSchema,
+    CreateUtxosRequest,
+    DecodeRGBInvoiceRequest,
     DecodeRGBInvoiceResponse,
     EmptyResponse,
     ListAssetsRequest,
+    MakerExecuteRequest,
 )
 
 
@@ -195,7 +195,7 @@ class TestMakerExecuteType:
         assert isinstance(result, EmptyResponse)
 
     def test_type_exported_from_package(self) -> None:
-        from kaleidoswap_sdk import EmptyResponse as Exported
+        from kaleidoswap_sdk.rln import EmptyResponse as Exported
 
         assert Exported is EmptyResponse
 

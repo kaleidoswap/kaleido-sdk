@@ -5,6 +5,11 @@ Tests for RlnClient.
 import pytest
 
 from kaleidoswap_sdk import (
+    KaleidoClient,
+    NodeNotConfiguredError,
+    RlnClient,
+)
+from kaleidoswap_sdk.rln import (
     AssetBalanceRequest,
     AssetMetadataRequest,
     AssetSchema,
@@ -14,6 +19,7 @@ from kaleidoswap_sdk import (
     CreateUtxosRequest,
     DecodeLNInvoiceRequest,
     DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
     DisconnectPeerRequest,
     EstimateFeeRequest,
     FailTransfersRequest,
@@ -21,19 +27,15 @@ from kaleidoswap_sdk import (
     GetPaymentRequest,
     GetSwapRequest,
     InvoiceStatusRequest,
-    KaleidoClient,
     ListTransactionsRequest,
     ListTransfersRequest,
     ListUnspentsRequest,
     LNInvoiceRequest,
-    NodeNotConfiguredError,
     RefreshRequest,
     RevokeTokenRequest,
     RgbInvoiceRequest,
-    RlnClient,
     SignMessageRequest,
 )
-from kaleidoswap_sdk.generated.node_types import DecodeRGBInvoiceResponse
 
 
 class TestRlnClient:
