@@ -10,8 +10,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 # Import NetworkInfoResponse from generated types
-from ._generated.node_types import DecodeRGBInvoiceResponse, TakerRequest
-from ._generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
 from ._generated.node_types import (
     AddressResponse,
     AssetBalanceRequest,
@@ -31,6 +29,7 @@ from ._generated.node_types import (
     DecodeLNInvoiceRequest,
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
     DisconnectPeerRequest,
     EmptyResponse,
     EstimateFeeRequest,
@@ -91,8 +90,10 @@ from ._generated.node_types import (
     SendRgbResponse,
     SignMessageRequest,
     SignMessageResponse,
+    TakerRequest,
     UnlockRequest,
 )
+from ._generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
 
 if TYPE_CHECKING:
     from ._http_client import HttpClient

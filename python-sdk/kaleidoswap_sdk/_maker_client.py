@@ -19,8 +19,6 @@ from typing import TYPE_CHECKING, Any
 import httpx
 from httpx import Timeout
 
-from .errors import NetworkError, SwapError, TimeoutError, map_http_error
-
 # Fallback to old generated types for models that weren't generated
 from ._generated.api_types import (
     SwapRoute,
@@ -113,8 +111,9 @@ from ._generated.maker_client_generated.models import (
 from ._generated.maker_client_generated.models import (
     Body as PairRoutesBody,
 )
-from .types import Layer
 from ._utils import to_display_amount, to_raw_amount
+from .errors import NetworkError, SwapError, TimeoutError, map_http_error
+from .types import Layer
 
 if TYPE_CHECKING:
     from ._ws_client import QuoteResponse, WSClient

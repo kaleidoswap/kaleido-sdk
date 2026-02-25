@@ -251,5 +251,5 @@ __all__ = [
     "ListTransactionsResponse",
     "ListUnspentsResponse",
     "Transfer",
-    "ListTransfersResponse"
+    "ListTransfersResponse",
 ]

@@ -18,6 +18,13 @@ Example:
     ```
 """
 
+from ._utils import (
+    to_display_amount,
+    to_raw_amount,
+)
+from ._ws_client import (
+    WebSocketMessage,
+)
 from .client import (
     KaleidoClient,
     get_sdk_name,
@@ -39,11 +46,7 @@ from .errors import (
     TimeoutError,
     ValidationError,
     WebSocketError,
-    map_http_error,
 )
-from ._http_client import HttpClient
-from ._maker_client import MakerClient, SwapCompletionOptions
-from ._rln_client import RlnClient
 from .types import (
     # API Types - Assets & Pairs
     Asset,
@@ -115,29 +118,6 @@ from .types import (
     TradingLimits,
     TradingPair,
     TradingPairsResponse,
-)
-from ._utils import (
-    MappedAsset,
-    OrderSizeLimits,
-    PrecisionHandler,
-    ValidationResult,
-    create_precision_handler,
-    to_display_amount,
-    to_raw_amount,
-)
-from ._ws_client import (
-    ConnectionEstablishedData,
-    WebSocketMessage,
-    WebSocketResponse,
-    WSAction,
-    WSClient,
-    WSClientConfig,
-)
-from ._ws_client import (
-    QuoteRequest as WSQuoteRequest,
-)
-from ._ws_client import (
-    QuoteResponse as WSQuoteResponse,
 )
 
 __version__ = "0.5.0"
