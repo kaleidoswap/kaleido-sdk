@@ -171,7 +171,7 @@ format-python:
 	@echo "✨ Formatting Python SDK code..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/
+		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/
 
 format-typescript:
 	@echo "✨ Formatting TypeScript code..."
@@ -191,15 +191,15 @@ lint-python:
 	@echo "🛠️ Fixing Python SDK lint issues..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
-		uv run ruff check --fix kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
+		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
+		uv run ruff check --fix kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
 		uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/
+		uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
@@ -248,8 +248,8 @@ pre-commit-python-sdk:
 	@echo ""
 	cd $(PYTHON_SDK) && \
 		uv sync --all-extras --dev && \
-		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
-		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
+		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
+		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
 		echo "  → Type checking (warnings only)..." && (uv run mypy kaleidoswap_sdk --ignore-missing-imports || echo "    ⚠️  Type check warnings (non-blocking)") && \
 		echo "  → Running tests (excluding integration)..." && uv run pytest tests/ -v -m "not integration"
 	@echo ""
