@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
+.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -44,7 +44,6 @@ help:
 	@echo "Code Generation:"
 	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
 	@echo "  generate-python-sdk-models - Generate Python SDK Pydantic models"
-	@echo "  generate-python-sdk-client - Generate Python SDK HTTP clients (openapi-python-client)"
 	@echo "  generate-ts-types          - Generate TypeScript types"
 	@echo "  generate-rust-models       - Generate Rust models (Progenitor via build.rs)"
 	@echo "  regenerate                 - Full regen: update-specs + generate-models + check"
@@ -266,10 +265,6 @@ generate-models: generate-python-sdk-models generate-ts-types
 generate-python-sdk-models:
 	@echo "🐍 Generating Python SDK Pydantic models from OpenAPI specs..."
 	bash scripts/generate_python_sdk_models.sh
-
-generate-python-sdk-client:
-	@echo "🐍 Generating Python SDK HTTP clients from OpenAPI specs..."
-	bash scripts/generate_python_sdk_client.sh
 
 generate-ts-types:
 	@echo "📦 Generating TypeScript types from OpenAPI specs..."

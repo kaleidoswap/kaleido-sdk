@@ -18,12 +18,19 @@ Example:
     ```
 """
 
+from ._maker_client import MakerClient, SwapCompletionOptions
+from ._rln_client import RlnClient
 from ._utils import (
+    MappedAsset,
+    PrecisionHandler,
+    create_precision_handler,
     to_display_amount,
     to_raw_amount,
 )
 from ._ws_client import (
     WebSocketMessage,
+    WSAction,
+    WSClient,
 )
 from .client import (
     KaleidoClient,
@@ -124,6 +131,9 @@ __version__ = "0.5.0"
 __all__ = [
     # Main client
     "KaleidoClient",
+    "MakerClient",
+    "RlnClient",
+    "SwapCompletionOptions",
     # Utility functions
     "to_smallest_units",
     "to_display_units",
@@ -131,7 +141,12 @@ __all__ = [
     "to_display_amount",
     "get_version",
     "get_sdk_name",
+    "PrecisionHandler",
+    "MappedAsset",
+    "create_precision_handler",
     # WebSocket
+    "WSAction",
+    "WSClient",
     "WebSocketMessage",
     # Config
     "KaleidoConfig",

@@ -3,77 +3,17 @@ Maker Client - Market Operations
 
 Type-safe client for Kaleidoswap Market API.
 All methods correspond directly to actual API endpoints.
-
-This is a wrapper around the auto-generated HTTP client that provides
-convenience methods and backward compatibility.
+Uses HttpClient + Pydantic models directly (no generated attrs client).
 """
 
 from __future__ import annotations
 
 import asyncio
-import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-import httpx
-from httpx import Timeout
-
-# Fallback to old generated types for models that weren't generated
 from ._generated.api_types import (
-    SwapRoute,
-    TradingPair,
-    TradingPairsResponse,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    create_order as create_lsp_order,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    estimate_fees as estimate_lsp_fees,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    get_info as get_lsp_info,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    get_network_info as get_lsp_network_info,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    get_order as get_lsp_order,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    handle_rate_decision as handle_lsp_rate_decision,
-)
-from ._generated.maker_client_generated.api.lsps1 import (
-    retry_delivery as retry_lsp_delivery,
-)
-
-# Import API endpoint functions directly from their modules
-from ._generated.maker_client_generated.api.market import (
-    discover_routes,
-    get_pair_routes,
-    get_pairs,
-    list_assets,
-)
-from ._generated.maker_client_generated.api.market import (
-    get_quote as get_quote_endpoint,
-)
-from ._generated.maker_client_generated.api.swap_orders import (
-    create_swap_order,
-    get_order_history,
-    get_order_stats,
-    get_swap_order_status,
-    handle_swap_order_rate_decision,
-)
-from ._generated.maker_client_generated.api.swaps import (
-    confirm_swap,
-    get_swap_status,
-    initiate_swap,
-)
-from ._generated.maker_client_generated.api.swaps import (
-    get_node_info as get_swap_node_info,
-)
-from ._generated.maker_client_generated.client import Client as GeneratedMakerClient
-from ._generated.maker_client_generated.models import (
     AssetsResponse,
     ChannelFees,
     ChannelOrderResponse,
@@ -84,7 +24,6 @@ from ._generated.maker_client_generated.models import (
     CreateSwapOrderResponse,
     GetInfoResponseModel,
     GetOrderRequest,
-    HTTPValidationError,
     NetworkInfoResponse,
     OrderHistoryResponse,
     OrderStatsResponse,
@@ -105,91 +44,19 @@ from ._generated.maker_client_generated.models import (
     SwapOrderStatusResponse,
     SwapRequest,
     SwapResponse,
+    SwapRoute,
     SwapStatusRequest,
     SwapStatusResponse,
+    TradingPair,
+    TradingPairsResponse,
 )
-from ._generated.maker_client_generated.models import (
-    Body as PairRoutesBody,
-)
+from ._http_client import HttpClient
 from ._utils import to_display_amount, to_raw_amount
-from .errors import NetworkError, SwapError, TimeoutError, map_http_error
+from .errors import SwapError
 from .types import Layer
 
 if TYPE_CHECKING:
     from ._ws_client import QuoteResponse, WSClient
-
-
-def _to_attrs(body: Any, attrs_cls: Any) -> Any:
-    """Convert a Pydantic model to the corresponding generated attrs model.
-
-    The generated client expects attrs models (with ``.to_dict()``), but the
-    public SDK API exposes Pydantic models (with ``.model_dump()``).  This
-    helper bridges the two: if *body* is already an attrs instance it is
-    returned unchanged; otherwise the Pydantic dict is fed through
-    ``attrs_cls.from_dict()``.
-    """
-    if hasattr(body, "to_dict"):
-        return body
-    if hasattr(body, "model_dump"):
-        return attrs_cls.from_dict(body.model_dump(mode="json"))
-    return body
-
-
-def _unwrap_maker_response(response: Any) -> Any:
-    """
-    Return parsed success body or raise a mapped error with server message.
-
-    Raises KaleidoError (ValidationError, APIError, etc.) with the server's
-    message and response_body for debugging when the response is not successful.
-    """
-    # Success: return parsed body
-    if response.parsed is not None and not isinstance(response.parsed, HTTPValidationError):
-        return response.parsed
-
-    # Error: extract response data and raise mapped exception
-    status_code = int(response.status_code)
-
-    # Extract error data from HTTPValidationError or raw response content
-    error_data: dict[str, Any] | str | None
-    if isinstance(response.parsed, HTTPValidationError):
-        error_data = response.parsed.to_dict() if hasattr(response.parsed, "to_dict") else {}
-    elif response.content:
-        try:
-            error_data = json.loads(response.content.decode("utf-8"))
-        except Exception:
-            error_data = response.content.decode("utf-8", errors="replace").strip() or None
-    else:
-        error_data = None
-
-    reason_phrase = getattr(response.status_code, "phrase", None) or f"HTTP {status_code}"
-    raise map_http_error(status_code, reason_phrase, error_data)
-
-
-async def _safe_api_call(coro: Any) -> Any:
-    """
-    Wrap API calls to catch httpx exceptions and convert to SDK exceptions.
-
-    Args:
-        coro: Coroutine from generated API client
-
-    Returns:
-        Response from the API call
-
-    Raises:
-        NetworkError: On connection/DNS errors
-        TimeoutError: On request timeout
-        KaleidoError: Other mapped errors
-    """
-    try:
-        return await coro
-    except httpx.ConnectError as e:
-        # DNS resolution, connection refused, etc.
-        raise NetworkError(f"Failed to connect to API: {e}") from e
-    except httpx.TimeoutException as e:
-        raise TimeoutError(f"Request timed out: {e}") from e
-    except httpx.RequestError as e:
-        # Other request errors (network issues, etc.)
-        raise NetworkError(f"Network error: {e}") from e
 
 
 @dataclass
@@ -214,38 +81,14 @@ class MakerClient:
     - WebSocket streaming for real-time quotes
     """
 
-    def __init__(
-        self,
-        base_url: str,
-        api_key: str | None = None,
-        timeout: float | Timeout | None = 30.0,
-    ) -> None:
+    def __init__(self, http: HttpClient) -> None:
         """
         Initialize MakerClient.
 
         Args:
-            base_url: Base URL for the Kaleidoswap API
-            api_key: Optional API key for authentication
-            timeout: Request timeout in seconds
+            http: Shared HttpClient instance
         """
-        # Create generated client
-        headers = {}
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
-
-        timeout_config: Timeout | None
-        if isinstance(timeout, Timeout):
-            timeout_config = timeout
-        elif timeout is None:
-            timeout_config = None
-        else:
-            timeout_config = Timeout(timeout)
-
-        self._client = GeneratedMakerClient(
-            base_url=base_url,
-            headers=headers,
-            timeout=timeout_config,
-        )
+        self._http = http
         self._ws: WSClient | None = None
 
     # =========================================================================
@@ -326,10 +169,8 @@ class MakerClient:
         if not self._ws.is_connected():
             await self._ws.connect()
 
-        # Subscribe to quote updates
         self._ws.on("quote_response", on_update)
 
-        # Quote request parameters
         quote_params = {
             "from_asset": from_asset,
             "to_asset": to_asset,
@@ -339,27 +180,21 @@ class MakerClient:
             "to_layer": to_layer.value if to_layer else None,
         }
 
-        # Send initial quote request
         self._ws.request_quote(quote_params)
 
-        # Background task for periodic quote requests
         polling_task: asyncio.Task[None] | None = None
         should_stop = False
 
         async def _poll_quotes() -> None:
-            """Periodically request new quotes."""
             nonlocal should_stop
             while not should_stop:
                 await asyncio.sleep(poll_interval)
                 if not should_stop and self._ws and self._ws.is_connected():
                     self._ws.request_quote(quote_params)
 
-        # Start polling in background
         polling_task = asyncio.create_task(_poll_quotes())
 
-        # Return stop function
         def stop() -> None:
-            """Stop polling and unsubscribe from quote updates."""
             nonlocal should_stop, polling_task
             should_stop = True
             if polling_task and not polling_task.done():
@@ -386,7 +221,6 @@ class MakerClient:
         """
         pairs_response = await self.list_pairs()
 
-        # Find matching pair (case-insensitive) - try direct match first
         from_upper = from_ticker.upper()
         to_upper = to_ticker.upper()
 
@@ -396,11 +230,9 @@ class MakerClient:
                 pair = p
                 break
 
-        # If not found, try inverse pair
         if not pair:
             for p in pairs_response.pairs:
                 if p.base.ticker.upper() == to_upper and p.quote.ticker.upper() == from_upper:
-                    # Inverse pair found, swap the layers in routes
                     if p.routes:
                         return [
                             SwapRoute(from_layer=r.to_layer, to_layer=r.from_layer)
@@ -449,7 +281,6 @@ class MakerClient:
                 "Pair may not exist or is not active."
             )
 
-        # Find preferred route or use first available
         selected_route = routes[0]
         if preferred_from_layer and preferred_to_layer:
             for route in routes:
@@ -460,7 +291,6 @@ class MakerClient:
                     selected_route = route
                     break
 
-        # Stream quotes using the selected route
         return await self.stream_quotes(
             from_ticker.upper(),
             to_ticker.upper(),
@@ -505,7 +335,6 @@ class MakerClient:
 
         stoppers: dict[str, Callable[[], None]] = {}
 
-        # Subscribe to each route
         for route in routes:
             route_key = f"{route.from_layer}->{route.to_layer}"
 
@@ -532,31 +361,21 @@ class MakerClient:
 
     async def list_assets(self) -> AssetsResponse:
         """List all available assets."""
-        resp = await _safe_api_call(list_assets.asyncio_detailed(client=self._client))
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_get("/api/v1/market/assets")
+        return AssetsResponse.model_validate(data)
 
     async def list_pairs(self) -> TradingPairsResponse:
         """List all trading pairs."""
-        # Generated get_pairs only parses 422; 200 is returned as None. Parse 200 manually.
-        response = await _safe_api_call(get_pairs.asyncio_detailed(client=self._client))
-        if response.status_code == 200:
-            data = json.loads(response.content.decode())
-            pairs_list = data.get("pairs") or []
-            normalized_pairs = [self._normalize_pair(p) for p in pairs_list]
-            return TradingPairsResponse(
-                pairs=normalized_pairs,
-                total=data.get("total", len(normalized_pairs)),
-                limit=data.get("limit", len(normalized_pairs)),
-                offset=data.get("offset", 0),
-                timestamp=data.get("timestamp", 0),
-            )
-        _unwrap_maker_response(response)  # raises with server message
-        raise AssertionError("Unreachable: _unwrap_maker_response should have raised")
-
-    @staticmethod
-    def _normalize_pair(raw: dict[str, Any]) -> TradingPair:
-        """Parse a single pair dict from the API into a TradingPair model."""
-        return TradingPair.model_validate(raw)
+        data = await self._http.maker_get("/api/v1/market/pairs")
+        pairs_list = data.get("pairs") or []
+        normalized_pairs = [TradingPair.model_validate(p) for p in pairs_list]
+        return TradingPairsResponse(
+            pairs=normalized_pairs,
+            total=data.get("total", len(normalized_pairs)),
+            limit=data.get("limit", len(normalized_pairs)),
+            offset=data.get("offset", 0),
+            timestamp=data.get("timestamp", 0),
+        )
 
     async def get_quote(self, body: PairQuoteRequest) -> PairQuoteResponse:
         """
@@ -583,13 +402,8 @@ class MakerClient:
             print(f"Price: {quote.price}, RFQ: {quote.rfq_id}")
             ```
         """
-        resp = await _safe_api_call(
-            get_quote_endpoint.asyncio_detailed(
-                client=self._client,
-                body=_to_attrs(body, PairQuoteRequest),
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/market/quote", data=body)
+        return PairQuoteResponse.model_validate(data)
 
     async def get_pair_routes(self, pair_ticker: str) -> list[SwapRoute]:
         """
@@ -601,17 +415,13 @@ class MakerClient:
         Returns:
             List of available swap routes for the pair
         """
-        api_body = PairRoutesBody.from_dict({"pair_ticker": pair_ticker})
-        resp = await _safe_api_call(
-            get_pair_routes.asyncio_detailed(client=self._client, body=api_body)
+        data = await self._http.maker_post(
+            "/api/v1/market/pairs/routes",
+            data={"pair_ticker": pair_ticker},
         )
-        response = _unwrap_maker_response(resp)
-        # Response is list of generated (attrs) SwapRoute; convert to SDK (Pydantic) SwapRoute
-        return (
-            [SwapRoute.model_validate(r.to_dict()) for r in response]
-            if isinstance(response, list)
-            else []
-        )
+        if isinstance(data, list):
+            return [SwapRoute.model_validate(r) for r in data]
+        return []
 
     async def get_market_routes(self, body: RoutesRequest) -> RoutesResponse:
         """
@@ -620,12 +430,8 @@ class MakerClient:
         Args:
             body: Routes discovery request
         """
-        resp = await _safe_api_call(
-            discover_routes.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, RoutesRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/market/routes", data=body)
+        return RoutesResponse.model_validate(data)
 
     # =========================================================================
     # Swap Orders API - /api/v1/swaps/orders/*
@@ -638,12 +444,8 @@ class MakerClient:
         Args:
             body: Swap order creation request
         """
-        resp = await _safe_api_call(
-            create_swap_order.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, CreateSwapOrderRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/swaps/orders", data=body)
+        return CreateSwapOrderResponse.model_validate(data)
 
     async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
         """
@@ -652,12 +454,8 @@ class MakerClient:
         Args:
             body: Request with order_id
         """
-        resp = await _safe_api_call(
-            get_swap_order_status.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, SwapOrderStatusRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/swaps/orders/status", data=body)
+        return SwapOrderStatusResponse.model_validate(data)
 
     async def get_order_history(
         self,
@@ -673,32 +471,20 @@ class MakerClient:
             limit: Maximum number of results
             skip: Number of results to skip
         """
-        # Note: Generated client uses query parameters (skip, not offset)
-        status_param: SwapOrderStatus | None
-        if isinstance(status, SwapOrderStatus):
-            status_param = status
-        elif isinstance(status, str):
-            try:
-                status_param = SwapOrderStatus(status)
-            except ValueError as exc:
-                raise ValueError(f"Invalid swap order status: {status}") from exc
-        else:
-            status_param = None
-
-        resp = await _safe_api_call(
-            get_order_history.asyncio_detailed(
-                client=self._client,
-                status=status_param,
-                limit=limit or 50,
-                skip=skip or 0,
-            )
-        )
-        return _unwrap_maker_response(resp)
+        params: dict[str, Any] = {}
+        if status is not None:
+            params["status"] = status.value if isinstance(status, SwapOrderStatus) else status
+        if limit is not None:
+            params["limit"] = limit
+        if skip is not None:
+            params["skip"] = skip
+        data = await self._http.maker_get("/api/v1/swaps/orders/history", params=params or None)
+        return OrderHistoryResponse.model_validate(data)
 
     async def get_order_analytics(self) -> OrderStatsResponse:
         """Get order analytics and statistics."""
-        resp = await _safe_api_call(get_order_stats.asyncio_detailed(client=self._client))
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_get("/api/v1/swaps/orders/analytics")
+        return OrderStatsResponse.model_validate(data)
 
     async def submit_rate_decision(
         self, body: SwapOrderRateDecisionRequest
@@ -709,13 +495,8 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        resp = await _safe_api_call(
-            handle_swap_order_rate_decision.asyncio_detailed(
-                client=self._client,
-                body=_to_attrs(body, SwapOrderRateDecisionRequest),
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/swaps/orders/rate_decision", data=body)
+        return SwapOrderRateDecisionResponse.model_validate(data)
 
     # =========================================================================
     # Atomic Swaps API - /api/v1/swaps/*
@@ -728,10 +509,8 @@ class MakerClient:
         Args:
             body: Swap initialization request
         """
-        resp = await _safe_api_call(
-            initiate_swap.asyncio_detailed(client=self._client, body=_to_attrs(body, SwapRequest))
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/swaps/init", data=body)
+        return SwapResponse.model_validate(data)
 
     async def execute_swap(self, body: ConfirmSwapRequest) -> ConfirmSwapResponse:
         """
@@ -740,12 +519,8 @@ class MakerClient:
         Args:
             body: Swap execution request
         """
-        resp = await _safe_api_call(
-            confirm_swap.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, ConfirmSwapRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/swaps/execute", data=body)
+        return ConfirmSwapResponse.model_validate(data)
 
     async def get_atomic_swap_status(self, body: SwapStatusRequest) -> SwapStatusResponse:
         """
@@ -754,17 +529,13 @@ class MakerClient:
         Args:
             body: Request with payment_hash
         """
-        resp = await _safe_api_call(
-            get_swap_status.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, SwapStatusRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/swaps/atomic/status", data=body)
+        return SwapStatusResponse.model_validate(data)
 
     async def get_swap_node_info(self) -> SwapNodeInfoResponse:
         """Get swap node information."""
-        resp = await _safe_api_call(get_swap_node_info.asyncio_detailed(client=self._client))
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_get("/api/v1/swaps/nodeinfo")
+        return SwapNodeInfoResponse.model_validate(data)
 
     # =========================================================================
     # LSPS1 API - /api/v1/lsps1/*
@@ -772,13 +543,13 @@ class MakerClient:
 
     async def get_lsp_info(self) -> GetInfoResponseModel:
         """Get LSP information and options."""
-        resp = await _safe_api_call(get_lsp_info.asyncio_detailed(client=self._client))
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_get("/api/v1/lsps1/get_info")
+        return GetInfoResponseModel.model_validate(data)
 
     async def get_lsp_network_info(self) -> NetworkInfoResponse:
         """Get LSP network information."""
-        resp = await _safe_api_call(get_lsp_network_info.asyncio_detailed(client=self._client))
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_get("/api/v1/lsps1/network_info")
+        return NetworkInfoResponse.model_validate(data)
 
     async def create_lsp_order(self, body: CreateOrderRequest) -> ChannelOrderResponse:
         """
@@ -787,12 +558,8 @@ class MakerClient:
         Args:
             body: LSP order creation request
         """
-        resp = await _safe_api_call(
-            create_lsp_order.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, CreateOrderRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/lsps1/create_order", data=body)
+        return ChannelOrderResponse.model_validate(data)
 
     async def get_lsp_order(self, body: GetOrderRequest) -> ChannelOrderResponse:
         """
@@ -801,12 +568,8 @@ class MakerClient:
         Args:
             body: Request with order_id
         """
-        resp = await _safe_api_call(
-            get_lsp_order.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, GetOrderRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/lsps1/get_order", data=body)
+        return ChannelOrderResponse.model_validate(data)
 
     async def estimate_lsp_fees(self, body: CreateOrderRequest) -> ChannelFees:
         """
@@ -815,12 +578,8 @@ class MakerClient:
         Args:
             body: LSP order request for fee estimation
         """
-        resp = await _safe_api_call(
-            estimate_lsp_fees.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, CreateOrderRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/lsps1/estimate_fees", data=body)
+        return ChannelFees.model_validate(data)
 
     async def submit_lsp_rate_decision(self, body: RateDecisionRequest) -> RateDecisionResponse:
         """
@@ -829,12 +588,8 @@ class MakerClient:
         Args:
             body: Rate decision request
         """
-        resp = await _safe_api_call(
-            handle_lsp_rate_decision.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, RateDecisionRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/lsps1/rate_decision", data=body)
+        return RateDecisionResponse.model_validate(data)
 
     async def retry_asset_delivery(self, body: RetryDeliveryRequest) -> RetryDeliveryResponse:
         """
@@ -843,12 +598,8 @@ class MakerClient:
         Args:
             body: Retry delivery request
         """
-        resp = await _safe_api_call(
-            retry_lsp_delivery.asyncio_detailed(
-                client=self._client, body=_to_attrs(body, RetryDeliveryRequest)
-            )
-        )
-        return _unwrap_maker_response(resp)
+        data = await self._http.maker_post("/api/v1/lsps1/retry_delivery", data=body)
+        return RetryDeliveryResponse.model_validate(data)
 
     # =========================================================================
     # Convenience Methods
@@ -898,7 +649,6 @@ class MakerClient:
                         return order
 
             except Exception:
-                # Log warning but continue polling
                 pass
 
             await asyncio.sleep(opts.poll_interval)

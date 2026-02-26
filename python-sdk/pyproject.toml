@@ -40,7 +40,6 @@ dev = [
     "mypy>=1.0",
     "ruff>=0.1.0",
     "datamodel-code-generator>=0.25",
-    "openapi-python-client>=0.21.0",
 ]
 
 [project.urls]

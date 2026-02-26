@@ -45,15 +45,9 @@ class KaleidoClient:
             config: Client configuration
         """
         self._config = config
-        # Initialize clients with base URL and credentials
-        self._maker = MakerClient(
-            base_url=config.base_url,
-            api_key=config.api_key,
-            timeout=config.timeout,
-        )
-        # Note: RlnClient needs similar refactoring
-        self._http = HttpClient(config)  # Temporary, for RlnClient
-        self._rln = RlnClient(self._http)  # TODO: Refactor RlnClient
+        self._http = HttpClient(config)
+        self._maker = MakerClient(self._http)
+        self._rln = RlnClient(self._http)
 
     @classmethod
     def create(
