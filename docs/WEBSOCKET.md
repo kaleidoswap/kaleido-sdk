@@ -31,17 +31,18 @@ The Kaleidoswap SDK provides WebSocket support for:
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 async def basic_websocket():
-    client = KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
     )
     
     try:
         # Connect to WebSocket
-        await client.connect()
+        ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+        await ws.connect()
         print("WebSocket connected successfully!")
         
         # Your WebSocket operations here
@@ -49,7 +50,8 @@ async def basic_websocket():
         
     finally:
         # Always disconnect when done
-        await client.disconnect()
+        await ws.disconnect()
+        await client.close()
         print("WebSocket disconnected")
 
 if __name__ == "__main__":
@@ -89,18 +91,20 @@ basicWebSocket();
 
 ```python
 async def websocket_with_context():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        # WebSocket connection is managed automatically
-        await client.connect()
+    )
+    
+    try:
+        ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+        await ws.connect()
         
         # Your operations here
         print("Connected and ready for WebSocket operations")
-        
-        # Automatic disconnect when exiting context
+    finally:
+        await ws.disconnect()
+        await client.close()
 ```
 
 ### Advanced Connection Configuration
@@ -108,9 +112,13 @@ async def websocket_with_context():
 #### Python
 
 ```python
-client = KaleidoClient(
-    api_url="https://api.kaleidoswap.com",
-    node_url="https://node.kaleidoswap.com",
+client = KaleidoClient.create(
+    base_url="https://api.kaleidoswap.com",
+    node_url="https://node.kaleidoswap.com"
+)
+
+ws = client.maker.enable_websocket(
+    "ws://localhost:8000/ws",
     ping_interval=30,        # Ping every 30 seconds
     ping_timeout=10,         # 10 second ping timeout
     close_timeout=10,        # 10 second close timeout
@@ -128,7 +136,7 @@ client = KaleidoClient(
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 class WebSocketHandler:
     def __init__(self):
@@ -169,18 +177,20 @@ class WebSocketHandler:
 async def event_handling_example():
     handler = WebSocketHandler()
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        await client.connect()
+    )
+    
+    try:
+        ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+        await ws.connect()
         
         # Register event handlers
-        client.on("price_update", handler.handle_price_update)
-        client.on("quote_response", handler.handle_quote_response)
-        client.on("swap_update", handler.handle_swap_update)
-        client.on("error", handler.handle_error)
+        ws.on("price_update", handler.handle_price_update)
+        ws.on("quote_response", handler.handle_quote_response)
+        ws.on("swap_update", handler.handle_swap_update)
+        ws.on("error", handler.handle_error)
         
         print("Event handlers registered. Waiting for events...")
         
@@ -190,6 +200,9 @@ async def event_handling_example():
                 await asyncio.sleep(1)
         except KeyboardInterrupt:
             print("Shutting down...")
+    finally:
+        await ws.disconnect()
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(event_handling_example())
@@ -291,17 +304,19 @@ class StatefulEventHandler:
 async def stateful_handler_example():
     handler = StatefulEventHandler()
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        await client.connect()
+    )
+    
+    try:
+        ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+        await ws.connect()
         
         # Register handlers
-        client.on("price_update", handler.handle_price_update)
-        client.on("quote_response", handler.handle_quote_response)
-        client.on("swap_update", handler.handle_swap_update)
+        ws.on("price_update", handler.handle_price_update)
+        ws.on("quote_response", handler.handle_quote_response)
+        ws.on("swap_update", handler.handle_swap_update)
         
         print("Collecting data... Press Ctrl+C to show stats and exit")
         
@@ -312,6 +327,9 @@ async def stateful_handler_example():
         except KeyboardInterrupt:
             handler.print_stats()
             print("Final statistics printed.")
+    finally:
+        await ws.disconnect()
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(stateful_handler_example())
@@ -325,18 +343,17 @@ if __name__ == "__main__":
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import QuoteRequest
+from kaleidoswap_sdk import KaleidoClient
+from kaleidoswap_sdk import PairQuoteRequest, SwapLegInput, Layer
 
 async def realtime_quotes():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        await client.connect()
-        
-        # Request quotes via WebSocket
+    )
+    
+    try:
+        # Request quotes via HTTP
         pairs = [
             ('BTC', 'USDT', 100000000),  # 1 BTC
             ('ETH', 'USDT', 1000000000), # 10 ETH (example)
@@ -346,11 +363,10 @@ async def realtime_quotes():
             try:
                 print(f"Requesting quote: {from_asset} -> {to_asset}")
                 
-                quote = await client.get_quote_websocket(
-                    QuoteRequest(
-                        from_asset=from_asset,
-                        to_asset=to_asset,
-                        from_amount=amount
+                quote = await client.maker.get_quote(
+                    PairQuoteRequest(
+                        from_asset=SwapLegInput(asset_id=from_asset, layer=Layer.BTC_LN, amount=amount),
+                        to_asset=SwapLegInput(asset_id=to_asset, layer=Layer.RGB_LN)
                     )
                 )
                 
@@ -361,6 +377,8 @@ async def realtime_quotes():
                 
             except Exception as e:
                 print(f"Error getting quote: {e}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(realtime_quotes())
@@ -372,37 +390,41 @@ if __name__ == "__main__":
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import QuoteRequest
+from kaleidoswap_sdk import KaleidoClient
+from kaleidoswap_sdk import PairQuoteRequest, SwapLegInput, Layer
 
 async def batch_quote_requests():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        await client.connect()
-        
+    )
+    
+    try:
         # Define multiple quote requests
+        amounts = [50000000, 100000000, 200000000]
         requests = [
-            QuoteRequest(from_asset="BTC", to_asset="USDT", from_amount=50000000),
-            QuoteRequest(from_asset="BTC", to_asset="USDT", from_amount=100000000),
-            QuoteRequest(from_asset="BTC", to_asset="USDT", from_amount=200000000),
+            PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=amt),
+                to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN)
+            )
+            for amt in amounts
         ]
         
-        # Execute all requests concurrently
+        # Execute all requests concurrently via HTTP
         quotes = await asyncio.gather(*[
-            client.get_quote_websocket(req) for req in requests
+            client.maker.get_quote(req) for req in requests
         ])
         
         # Display results
         for i, quote in enumerate(quotes):
-            amount_btc = requests[i].from_amount / 100000000
+            amount_btc = amounts[i] / 100000000
             print(f"Quote for {amount_btc} BTC:")
             print(f"  Price: ${quote.price:.2f}")
             print(f"  Total: {quote.to_amount} USDT")
-            print(f"  Rate: {quote.to_amount / requests[i].from_amount * 100000000:.2f} USDT/BTC")
+            print(f"  Rate: {quote.to_amount / amounts[i] * 100000000:.2f} USDT/BTC")
             print()
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(batch_quote_requests())
@@ -417,11 +439,13 @@ if __name__ == "__main__":
 ```python
 import asyncio
 from typing import Dict, Optional
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 class PriceStreamer:
-    def __init__(self, client: KaleidoClient):
+    def __init__(self, client: KaleidoClient, ws_url: str):
         self.client = client
+        self.ws_url = ws_url
+        self.ws = None
         self.subscriptions: Dict[str, bool] = {}
         self.latest_prices: Dict[str, float] = {}
         self.price_callbacks: Dict[str, list] = {}
@@ -467,13 +491,15 @@ class PriceStreamer:
     
     async def start_streaming(self):
         """Start the price streaming service."""
-        await self.client.connect()
-        self.client.on("price_update", self.handle_price_update)
+        self.ws = self.client.maker.enable_websocket(self.ws_url)
+        await self.ws.connect()
+        self.ws.on("price_update", self.handle_price_update)
         print("Price streaming started")
     
     async def stop_streaming(self):
         """Stop the price streaming service."""
-        await self.client.disconnect()
+        if self.ws:
+            await self.ws.disconnect()
         print("Price streaming stopped")
     
     def get_latest_price(self, pair: str) -> Optional[float]:
@@ -498,30 +524,31 @@ async def price_log_callback(pair: str, price: float, old_price: Optional[float]
     print(f"[{timestamp:.3f}] {pair}: ${price:.2f}")
 
 async def price_streaming_example():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
+    )
+    
+    streamer = PriceStreamer(client, "ws://localhost:8000/ws")
+    
+    try:
+        await streamer.start_streaming()
         
-        streamer = PriceStreamer(client)
+        # Subscribe to pairs with callbacks
+        await streamer.subscribe_to_pair("BTC/USDT", price_alert_callback)
+        await streamer.subscribe_to_pair("ETH/USDT", price_log_callback)
+        await streamer.subscribe_to_pair("LTC/BTC")  # No callback
         
-        try:
-            await streamer.start_streaming()
-            
-            # Subscribe to pairs with callbacks
-            await streamer.subscribe_to_pair("BTC/USDT", price_alert_callback)
-            await streamer.subscribe_to_pair("ETH/USDT", price_log_callback)
-            await streamer.subscribe_to_pair("LTC/BTC")  # No callback
-            
-            print("Streaming prices... Press Ctrl+C to stop")
-            
-            # Stream for a while
-            await asyncio.sleep(60)
-            
-        except KeyboardInterrupt:
-            print("Stopping price streaming...")
-        finally:
-            await streamer.stop_streaming()
+        print("Streaming prices... Press Ctrl+C to stop")
+        
+        # Stream for a while
+        await asyncio.sleep(60)
+        
+    except KeyboardInterrupt:
+        print("Stopping price streaming...")
+    finally:
+        await streamer.stop_streaming()
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(price_streaming_example())
@@ -536,11 +563,13 @@ if __name__ == "__main__":
 ```python
 import asyncio
 import logging
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 class ReconnectingWebSocketManager:
-    def __init__(self, client: KaleidoClient):
+    def __init__(self, client: KaleidoClient, ws_url: str):
         self.client = client
+        self.ws_url = ws_url
+        self.ws = None
         self.connected = False
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 10
@@ -554,13 +583,14 @@ class ReconnectingWebSocketManager:
         """Connect with automatic retry logic."""
         while self.reconnect_attempts < self.max_reconnect_attempts:
             try:
-                await self.client.connect()
+                self.ws = self.client.maker.enable_websocket(self.ws_url)
+                await self.ws.connect()
                 self.connected = True
                 self.reconnect_attempts = 0
                 
                 # Re-register event handlers
                 for event, handler in self.event_handlers.items():
-                    self.client.on(event, handler)
+                    self.ws.on(event, handler)
                 
                 self.logger.info("WebSocket connected successfully")
                 return True
@@ -593,8 +623,8 @@ class ReconnectingWebSocketManager:
     def register_handler(self, event: str, handler):
         """Register an event handler that persists across reconnections."""
         self.event_handlers[event] = handler
-        if self.connected:
-            self.client.on(event, handler)
+        if self.connected and self.ws:
+            self.ws.on(event, handler)
     
     async def start(self):
         """Start the WebSocket manager."""
@@ -603,17 +633,19 @@ class ReconnectingWebSocketManager:
     async def stop(self):
         """Stop the WebSocket manager."""
         self.connected = False
-        await self.client.disconnect()
+        if self.ws:
+            await self.ws.disconnect()
         self.logger.info("WebSocket manager stopped")
 
 async def reconnecting_websocket_example():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        manager = ReconnectingWebSocketManager(client)
-        
+    )
+    
+    manager = ReconnectingWebSocketManager(client, "ws://localhost:8000/ws")
+    
+    try:
         # Register persistent event handlers
         async def handle_price(data):
             print(f"Price: {data}")
@@ -637,6 +669,8 @@ async def reconnecting_websocket_example():
             print("Failed to start WebSocket manager")
         
         await manager.stop()
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(reconnecting_websocket_example())
@@ -649,90 +683,50 @@ if __name__ == "__main__":
 ```python
 import asyncio
 from typing import Dict, List
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import QuoteRequest
+from kaleidoswap_sdk import KaleidoClient
+from kaleidoswap_sdk import PairQuoteRequest, SwapLegInput, Layer
 
 class MultiPairQuoteStreamer:
     def __init__(self, client: KaleidoClient):
         self.client = client
-        self.quote_configs: Dict[str, Dict] = {}
+        self.stop_handles: Dict[str, callable] = {}
         self.latest_quotes: Dict[str, Dict] = {}
         self.streaming = False
     
-    def add_pair(self, pair: str, amount: int, interval: int = 10):
+    async def add_pair(self, pair: str, amount: int):
         """Add a pair to stream quotes for."""
         from_asset, to_asset = pair.split('/')
         
-        self.quote_configs[pair] = {
-            'from_asset': from_asset,
-            'to_asset': to_asset,
-            'amount': amount,
-            'interval': interval,
-            'last_request': 0
-        }
+        async def on_update(data):
+            self.latest_quotes[pair] = data
+            price = data.get('price', 0)
+            to_amount = data.get('to_amount', 0)
+            print(f"📊 {pair}: ${price:.2f} -> {to_amount}")
         
-        print(f"Added {pair} to quote stream (amount: {amount}, interval: {interval}s)")
+        stop = await self.client.maker.stream_quotes(
+            from_asset=from_asset, to_asset=to_asset,
+            from_amount=amount,
+            from_layer=Layer.BTC_LN, to_layer=Layer.RGB_LN,
+            on_update=on_update,
+        )
+        self.stop_handles[pair] = stop
+        
+        print(f"Added {pair} to quote stream (amount: {amount})")
     
     def remove_pair(self, pair: str):
         """Remove a pair from quote streaming."""
-        if pair in self.quote_configs:
-            del self.quote_configs[pair]
+        if pair in self.stop_handles:
+            self.stop_handles[pair]()
+            del self.stop_handles[pair]
             if pair in self.latest_quotes:
                 del self.latest_quotes[pair]
             print(f"Removed {pair} from quote stream")
     
-    async def handle_quote_response(self, data):
-        """Handle quote responses."""
-        rfq_id = data.get('rfq_id')
-        from_asset = data.get('from_asset')
-        to_asset = data.get('to_asset')
-        
-        if from_asset and to_asset:
-            pair = f"{from_asset}/{to_asset}"
-            self.latest_quotes[pair] = data
-            
-            price = data.get('price', 0)
-            amount = data.get('to_amount', 0)
-            
-            print(f"📊 {pair}: ${price:.2f} -> {amount}")
-    
-    async def stream_quotes(self):
-        """Main quote streaming loop."""
-        await self.client.connect()
-        self.client.on("quote_response", self.handle_quote_response)
-        
-        self.streaming = True
-        
-        try:
-            while self.streaming:
-                current_time = asyncio.get_event_loop().time()
-                
-                # Check each pair for quote requests
-                for pair, config in self.quote_configs.items():
-                    if current_time - config['last_request'] >= config['interval']:
-                        try:
-                            # Request quote via WebSocket
-                            await self.client.get_quote_websocket(
-                                QuoteRequest(
-                                    from_asset=config['from_asset'],
-                                    to_asset=config['to_asset'],
-                                    from_amount=config['amount']
-                                )
-                            )
-                            
-                            config['last_request'] = current_time
-                            
-                        except Exception as e:
-                            print(f"Error requesting quote for {pair}: {e}")
-                
-                await asyncio.sleep(1)  # Check every second
-                
-        finally:
-            await self.client.disconnect()
-    
-    def stop_streaming(self):
-        """Stop quote streaming."""
-        self.streaming = False
+    def stop_all(self):
+        """Stop all quote streams."""
+        for pair, stop in self.stop_handles.items():
+            stop()
+        self.stop_handles.clear()
     
     def get_latest_quote(self, pair: str) -> Dict:
         """Get latest quote for a pair."""
@@ -743,24 +737,29 @@ class MultiPairQuoteStreamer:
         return self.latest_quotes.copy()
 
 async def multi_pair_streaming_example():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        streamer = MultiPairQuoteStreamer(client)
+    )
+    
+    streamer = MultiPairQuoteStreamer(client)
+    
+    try:
+        print("Starting multi-pair quote streaming...")
         
         # Add pairs to stream
-        streamer.add_pair("BTC/USDT", 100000000, 15)  # 1 BTC every 15s
-        streamer.add_pair("ETH/USDT", 1000000000, 20)  # 10 ETH every 20s
-        streamer.add_pair("LTC/BTC", 100000000, 30)   # 1 LTC every 30s
+        await streamer.add_pair("BTC/USDT", 100000000)   # 1 BTC
+        await streamer.add_pair("ETH/USDT", 1000000000)  # 10 ETH
+        await streamer.add_pair("LTC/BTC", 100000000)    # 1 LTC
         
-        try:
-            print("Starting multi-pair quote streaming...")
-            await streamer.stream_quotes()
-        except KeyboardInterrupt:
-            print("Stopping quote streaming...")
-            streamer.stop_streaming()
+        # Keep running until interrupted
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        print("Stopping quote streaming...")
+        streamer.stop_all()
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(multi_pair_streaming_example())
@@ -775,13 +774,15 @@ if __name__ == "__main__":
 ```python
 import asyncio
 import logging
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 class RobustWebSocketClient:
-    def __init__(self, api_url: str, node_url: str):
-        self.api_url = api_url
+    def __init__(self, base_url: str, node_url: str, ws_url: str):
+        self.base_url = base_url
         self.node_url = node_url
+        self.ws_url = ws_url
         self.client = None
+        self.ws = None
         self.connected = False
         self.error_count = 0
         self.max_errors = 5
@@ -790,15 +791,11 @@ class RobustWebSocketClient:
         self.logger = logging.getLogger(__name__)
     
     async def initialize(self):
-        """Initialize the WebSocket client."""
-        self.client = KaleidoClient(
-            api_url=self.api_url,
+        """Initialize the client."""
+        self.client = KaleidoClient.create(
+            base_url=self.base_url,
             node_url=self.node_url
         )
-        
-        # Register error handler
-        self.client.on("error", self.handle_error)
-        self.client.on("connection_lost", self.handle_connection_lost)
     
     async def connect(self):
         """Connect with error handling."""
@@ -806,9 +803,15 @@ class RobustWebSocketClient:
             await self.initialize()
         
         try:
-            await self.client.connect()
+            self.ws = self.client.maker.enable_websocket(self.ws_url)
+            await self.ws.connect()
             self.connected = True
             self.error_count = 0
+            
+            # Register error handler
+            self.ws.on("error", self.handle_error)
+            self.ws.on("connection_lost", self.handle_connection_lost)
+            
             self.logger.info("WebSocket connected")
             return True
             
@@ -864,25 +867,32 @@ class RobustWebSocketClient:
     
     async def disconnect(self):
         """Disconnect WebSocket."""
-        if self.client and self.connected:
-            await self.client.disconnect()
+        if self.ws and self.connected:
+            await self.ws.disconnect()
             self.connected = False
             self.logger.info("WebSocket disconnected")
+    
+    async def close(self):
+        """Close both WebSocket and HTTP client."""
+        await self.disconnect()
+        if self.client:
+            await self.client.close()
 
 async def robust_websocket_example():
-    client = RobustWebSocketClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
+    robust_client = RobustWebSocketClient(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+        ws_url="ws://localhost:8000/ws"
     )
     
     try:
-        if await client.connect():
+        if await robust_client.connect():
             print("Connected successfully, running for 60 seconds...")
             await asyncio.sleep(60)
         else:
             print("Failed to connect")
     finally:
-        await client.disconnect()
+        await robust_client.close()
 
 if __name__ == "__main__":
     asyncio.run(robust_websocket_example())
@@ -930,9 +940,13 @@ if __name__ == "__main__":
 #### Python
 
 ```python
-production_client = KaleidoClient(
-    api_url="wss://api.kaleidoswap.com",
-    node_url="https://node.kaleidoswap.com",
+production_client = KaleidoClient.create(
+    base_url="https://api.kaleidoswap.com",
+    node_url="https://node.kaleidoswap.com"
+)
+
+ws = production_client.maker.enable_websocket(
+    "wss://api.kaleidoswap.com/ws",
     ping_interval=30,        # Conservative ping interval
     ping_timeout=10,         # Reasonable timeout
     close_timeout=5,         # Quick close

@@ -24,7 +24,7 @@ The SDK follows a **multi-language architecture** with standalone SDK implementa
         │  sdk_models.sh       │  │  _types.sh          │
         │                      │  │                      │
         │  Output:             │  │  Output:            │
-        │  generated/          │  │  src/generated/      │
+        │  _generated/         │  │  src/generated/      │
         │  - api_types.py      │  │  - api-types.ts     │
         │  - node_types.py     │  │  - node-types.ts    │
         └──────────────────────┘  └──────────────────────┘
@@ -35,7 +35,8 @@ The SDK follows a **multi-language architecture** with standalone SDK implementa
         │  Implementation      │  │  Implementation     │
         │  • Pure Python       │  │  • Pure TypeScript  │
         │  • Pydantic models   │  │  • TypeScript types │
-        │  • Async/await       │  │  • Promise-based    │
+        │  • Single HttpClient │  │  • Promise-based    │
+        │  • Async/await       │  │                     │
         └──────────────────────┘  └──────────────────────┘
                      │                      │
                      ▼                      ▼
@@ -113,6 +114,12 @@ kaleido-sdk/
 │       └── Cargo.toml
 ├── python-sdk/                # Python SDK (pure Python)
 │   ├── kaleidoswap_sdk/
+│   │   ├── _generated/        # Auto-generated Pydantic models
+│   │   │   ├── api_types.py   # Maker API models
+│   │   │   └── node_types.py  # RGB Node API models
+│   │   ├── _http_client.py    # HttpClient (maker_*, node_*)
+│   │   ├── _maker_client.py   # MakerClient
+│   │   └── _rln_client.py     # RlnClient
 │   ├── pyproject.toml
 │   └── tests/
 ├── typescript-sdk/            # TypeScript SDK (pure TypeScript)
@@ -138,7 +145,7 @@ Each language SDK generates its own models directly from OpenAPI specs using lan
 # Generate Python models
 make generate-python-sdk-models
 # Uses: datamodel-code-generator
-# Output: python-sdk/kaleidoswap_sdk/generated/
+# Output: python-sdk/kaleidoswap_sdk/_generated/
 ```
 
 **TypeScript SDK:**
@@ -231,17 +238,17 @@ Each SDK is a **standalone implementation** that generates its own models from O
 
 - **Pure Python** implementation (no Rust dependencies)
 - **Model Generation**: `scripts/generate_python_sdk_models.sh`
-  - Uses `datamodel-code-generator` to generate Pydantic v2 models
-  - Output: `python-sdk/kaleidoswap_sdk/generated/`
+  - Uses `datamodel-code-generator` to generate Pydantic v2 models into `_generated/api_types.py` and `_generated/node_types.py`
+  - Output: `python-sdk/kaleidoswap_sdk/_generated/`
+- **Architecture**: Single `HttpClient` (in `_http_client.py`) wraps `httpx.AsyncClient`; provides `maker_get()`, `maker_post()`, `node_get()`, `node_post()`. `MakerClient` (in `_maker_client.py`) and `RlnClient` (in `_rln_client.py`) use `HttpClient` + Pydantic models directly. No generated HTTP client, no attrs models.
 - **Models**: Auto-generated Pydantic models from OpenAPI specs
 - **Dependencies**: Standard Python libraries (httpx, pydantic, etc.)
 
 ```python
 from kaleidoswap_sdk import KaleidoClient
 
-client = KaleidoClient(base_url="https://api.kaleidoswap.com")
-
-assets = await client.list_assets()
+client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
+assets = await client.maker.list_assets()
 print(f"Found assets: {assets}")
 ```
 

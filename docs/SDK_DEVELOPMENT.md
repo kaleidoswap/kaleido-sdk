@@ -42,7 +42,7 @@ Each language SDK is **maintained separately** and generates its own models dire
         │  openapi-typescript │   │  datamodel-codegen  │
         │                     │   │                     │
         │  Output:            │   │  Output:            │
-        │  src/generated/     │   │  generated/         │
+        │  src/generated/     │   │  _generated/        │
         │  - api-types.ts     │   │  - api_types.py     │
         │  - node-types.ts    │   │  - node_types.py    │
         └─────────────────────┘   └─────────────────────┘
@@ -99,19 +99,19 @@ pnpm run format
 cd python-sdk
 
 # Install in dev mode
-pip install -e ".[dev]"
+uv sync --all-extras --dev
 
 # Run tests
-pytest tests/ -v
+uv run pytest tests/ -v
 
 # Type check
-mypy kaleidoswap_sdk
+uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 # Lint
-ruff check kaleidoswap_sdk
+uv run ruff check kaleidoswap_sdk
 
 # Format
-ruff format kaleidoswap_sdk
+uv run ruff format kaleidoswap_sdk
 ```
 
 ### 3. When OpenAPI Specs Change
@@ -136,12 +136,12 @@ make generate-python-sdk-models
 
 **What each script does:**
 - `scripts/generate_typescript_types.sh` → Generates TypeScript types → `typescript-sdk/src/generated/`
-- `scripts/generate_python_sdk_models.sh` → Generates Pydantic models → `python-sdk/kaleidoswap_sdk/generated/`
+- `scripts/generate_python_sdk_models.sh` → Generates Pydantic models → `python-sdk/kaleidoswap_sdk/_generated/`
 
 **Important:** Always commit the generated files after regeneration.
 
 ```bash
-git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/
+git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/
 git commit -m "chore: regenerate SDK models from OpenAPI specs"
 ```
 
@@ -427,7 +427,7 @@ Pre-release versions are published with the `beta` tag on npm.
 ```bash
 # Error: "Generated models are out of date"
 make generate-models
-git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/
+git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/
 git commit -m "chore: regenerate SDK models"
 ```
 
@@ -495,14 +495,14 @@ python-sdk/
 ├── kaleidoswap_sdk/
 │   ├── __init__.py           # Public exports
 │   ├── client.py             # KaleidoClient
-│   ├── maker_client.py       # MakerClient
-│   ├── rln_client.py         # RlnClient
-│   ├── http_client.py        # HTTP wrapper
-│   ├── ws_client.py          # WebSocket
+│   ├── _maker_client.py      # MakerClient
+│   ├── _rln_client.py        # RlnClient
+│   ├── _http_client.py       # HTTP wrapper
+│   ├── _ws_client.py        # WebSocket
 │   ├── errors.py             # Error classes
 │   ├── types.py              # Re-exports generated types
-│   ├── utils/                # Utilities
-│   └── generated/            # Auto-generated (DO NOT EDIT)
+│   ├── _utils/               # Utilities
+│   └── _generated/           # Auto-generated (DO NOT EDIT)
 │       ├── api_types.py
 │       └── node_types.py
 ├── tests/
@@ -519,12 +519,12 @@ python-sdk/
 | Pre-commit Python | `make pre-commit-python-sdk` |
 | Regenerate all models | `make generate-models` |
 | Test TypeScript | `cd typescript-sdk && pnpm test` |
-| Test Python | `cd python-sdk && pytest` |
+| Test Python | `cd python-sdk && uv run pytest` |
 | Lint TypeScript | `cd typescript-sdk && pnpm run lint` |
-| Lint Python | `cd python-sdk && ruff check kaleidoswap_sdk` |
+| Lint Python | `cd python-sdk && uv run ruff check kaleidoswap_sdk` |
 | Format TypeScript | `cd typescript-sdk && pnpm run format` |
-| Format Python | `cd python-sdk && ruff format kaleidoswap_sdk` |
+| Format Python | `cd python-sdk && uv run ruff format kaleidoswap_sdk` |
 | Type check TypeScript | `cd typescript-sdk && pnpm run typecheck` |
-| Type check Python | `cd python-sdk && mypy kaleidoswap_sdk` |
+| Type check Python | `cd python-sdk && uv run mypy kaleidoswap_sdk --ignore-missing-imports` |
 | Build TypeScript | `cd typescript-sdk && pnpm run build` |
-| Build Python | `cd python-sdk && python -m build` |
+| Build Python | `cd python-sdk && uv build` |

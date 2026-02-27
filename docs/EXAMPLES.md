@@ -20,36 +20,39 @@ This document provides practical examples and usage patterns for the Kaleidoswap
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 async def explore_market():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
         # Get all available assets
-        assets_response = await client.list_assets()
+        assets_response = await client.maker.list_assets()
         print(f"Network: {assets_response.network}")
         print(f"Available assets: {len(assets_response.assets)}")
-        
+
         for asset in assets_response.assets:
             print(f"  {asset.ticker} ({asset.name})")
             print(f"    ID: {asset.asset_id}")
             print(f"    Precision: {asset.precision}")
             print(f"    Supply: {asset.issued_supply}")
             print(f"    Active: {asset.is_active}")
-        
+
         # Get all trading pairs
-        pairs_response = await client.list_pairs()
+        pairs_response = await client.maker.list_pairs()
         print(f"\nAvailable pairs: {len(pairs_response.pairs)}")
-        
+
         for pair in pairs_response.pairs:
             print(f"  {pair.base_asset}/{pair.quote_asset}")
             print(f"    Pair ID: {pair.id}")
             print(f"    Active: {pair.is_active}")
             print(f"    Min order: {pair.min_base_order_size}")
             print(f"    Max order: {pair.max_base_order_size}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(explore_market())
@@ -105,36 +108,40 @@ exploreMarket();
 #### Python
 
 ```python
+from kaleidoswap_sdk import KaleidoClient, PairQuoteRequest, SwapLegInput, Layer
+
 async def compare_quotes():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
         # Define trade amounts
         amounts = [10000000, 50000000, 100000000]  # 0.1, 0.5, 1.0 BTC
-        
+
         for amount in amounts:
             try:
-                quote = await client.get_quote(
-                    from_asset="BTC",
-                    to_asset="USDT",
-                    from_amount=amount
-                )
-                
+                quote = await client.maker.get_quote(PairQuoteRequest(
+                    from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=amount),
+                    to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN),
+                ))
+
                 btc_amount = amount / 100000000  # Convert to BTC
                 usdt_amount = quote.to_amount
                 price = quote.price
-                
+
                 print(f"Quote for {btc_amount} BTC:")
                 print(f"  Receives: {usdt_amount} USDT")
                 print(f"  Price: ${price:.2f}")
                 print(f"  RFQ ID: {quote.rfq_id}")
                 print(f"  Expires: {quote.expires_at}")
                 print()
-                
+
             except Exception as e:
                 print(f"Error getting quote for {amount}: {e}")
+    finally:
+        await client.close()
 ```
 
 ## Simple Swap Operations
@@ -145,63 +152,66 @@ async def compare_quotes():
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import InitMakerSwapRequest
+from kaleidoswap_sdk import (
+    KaleidoClient, PairQuoteRequest, SwapLegInput, Layer,
+    CreateSwapOrderRequest, SwapRequest, SwapCompletionOptions,
+)
 
 async def simple_maker_swap():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        try:
-            # Step 1: Get a quote
-            print("Getting quote...")
-            quote = await client.get_quote(
-                from_asset="BTC",
-                to_asset="USDT",
-                from_amount=50000000  # 0.5 BTC
-            )
-            
-            print(f"Quote: {quote.from_amount} BTC -> {quote.to_amount} USDT")
-            print(f"Price: ${quote.price:.2f}")
-            print(f"RFQ ID: {quote.rfq_id}")
-            
-            # Step 2: Initialize maker swap
-            print("\nInitializing maker swap...")
-            swap_init = await client.init_maker_swap(
-                InitMakerSwapRequest(
-                    rfq_id=quote.rfq_id,
-                    from_asset=quote.from_asset,
-                    to_asset=quote.to_asset,
-                    from_amount=quote.from_amount,
-                    to_amount=quote.to_amount
-                )
-            )
-            
-            print(f"Payment hash: {swap_init.payment_hash}")
-            print(f"Swap string: {swap_init.swapstring}")
-            
-            # Step 3: Share swap string with taker
-            print(f"\nShare this swap string with the taker:")
-            print(f"'{swap_init.swapstring}'")
-            
-            # Step 4: Wait for completion (in real app, taker would execute)
-            print("\nWaiting for swap completion...")
-            from kaleidoswap_sdk.models import GetSwapStatusRequest
-            
-            final_status = await client.wait_for_swap_completion(
-                GetSwapStatusRequest(payment_hash=swap_init.payment_hash),
-                timeout=1800,  # 30 minutes
-                poll_interval=10  # Check every 10 seconds
-            )
-            
-            print(f"Final status: {final_status.status}")
-            if final_status.completed_at:
-                print(f"Completed at: {final_status.completed_at}")
-            
-        except Exception as e:
-            print(f"Error in maker swap: {e}")
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
+        # Step 1: Get a quote
+        print("Getting quote...")
+        quote = await client.maker.get_quote(PairQuoteRequest(
+            from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=50000000),
+            to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN),
+        ))
+
+        print(f"Quote received, RFQ ID: {quote.rfq_id}")
+        print(f"Price: ${quote.price:.2f}")
+
+        # Step 2: Create swap order from quote
+        print("\nCreating swap order...")
+        order = await client.maker.create_swap_order(CreateSwapOrderRequest(
+            rfq_id=quote.rfq_id,
+            from_asset=quote.from_asset,
+            to_asset=quote.to_asset,
+        ))
+
+        print(f"Order ID: {order.order_id}")
+
+        # Step 3: Initialize the swap
+        print("\nInitializing swap...")
+        swap_init = await client.maker.init_swap(SwapRequest(
+            order_id=order.order_id,
+        ))
+
+        print(f"Payment hash: {swap_init.payment_hash}")
+        print(f"Swap string: {swap_init.swapstring}")
+
+        # Step 4: Share swap string with taker
+        print(f"\nShare this swap string with the taker:")
+        print(f"'{swap_init.swapstring}'")
+
+        # Step 5: Wait for completion (in real app, taker would execute)
+        print("\nWaiting for swap completion...")
+        final_status = await client.maker.wait_for_swap_completion(
+            order.order_id,
+            SwapCompletionOptions(timeout=1800, poll_interval=10),
+        )
+
+        print(f"Final status: {final_status.status}")
+        if final_status.completed_at:
+            print(f"Completed at: {final_status.completed_at}")
+
+    except Exception as e:
+        print(f"Error in maker swap: {e}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(simple_maker_swap())
@@ -274,8 +284,10 @@ simpleMakerSwap();
 ```python
 import asyncio
 from typing import Dict, List
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import InitMakerSwapRequest
+from kaleidoswap_sdk import (
+    KaleidoClient, PairQuoteRequest, SwapLegInput, Layer,
+    CreateSwapOrderRequest, SwapRequest,
+)
 
 class PortfolioRebalancer:
     def __init__(self, client: KaleidoClient):
@@ -291,11 +303,10 @@ class PortfolioRebalancer:
             else:
                 # Get quote to USDT
                 try:
-                    quote = await self.client.get_quote(
-                        from_asset=asset,
-                        to_asset="USDT",
-                        from_amount=amount
-                    )
+                    quote = await self.client.maker.get_quote(PairQuoteRequest(
+                        from_asset=SwapLegInput(asset_id=asset, layer=Layer.BTC_LN, amount=amount),
+                        to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN),
+                    ))
                     values[asset] = quote.to_amount
                 except Exception as e:
                     print(f"Error getting value for {asset}: {e}")
@@ -374,26 +385,30 @@ class PortfolioRebalancer:
                 # Get quote
                 if trade['type'] == 'buy':
                     # Convert USD amount to USDT amount for quote
-                    quote = await self.client.get_quote(
-                        from_asset=trade['from_asset'],
-                        to_asset=trade['to_asset'],
-                        from_amount=int(trade['usd_amount'])
-                    )
+                    quote = await self.client.maker.get_quote(PairQuoteRequest(
+                        from_asset=SwapLegInput(
+                            asset_id=trade['from_asset'], layer=Layer.RGB_LN,
+                            amount=int(trade['usd_amount']),
+                        ),
+                        to_asset=SwapLegInput(
+                            asset_id=trade['to_asset'], layer=Layer.BTC_LN,
+                        ),
+                    ))
                 else:
                     # Need to calculate how much of the asset to sell
                     # This is simplified - in practice you'd need to calculate exact amounts
                     continue
                 
-                # Initialize swap
-                swap_init = await self.client.init_maker_swap(
-                    InitMakerSwapRequest(
-                        rfq_id=quote.rfq_id,
-                        from_asset=quote.from_asset,
-                        to_asset=quote.to_asset,
-                        from_amount=quote.from_amount,
-                        to_amount=quote.to_amount
-                    )
-                )
+                # Create swap order and initialize swap
+                order = await self.client.maker.create_swap_order(CreateSwapOrderRequest(
+                    rfq_id=quote.rfq_id,
+                    from_asset=quote.from_asset,
+                    to_asset=quote.to_asset,
+                ))
+
+                swap_init = await self.client.maker.init_swap(SwapRequest(
+                    order_id=order.order_id,
+                ))
                 
                 print(f"Swap initialized: {swap_init.payment_hash}")
                 print(f"Swap string: {swap_init.swapstring}")
@@ -402,26 +417,29 @@ class PortfolioRebalancer:
                 print(f"Error executing trade: {e}")
 
 async def portfolio_rebalancing_example():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
         rebalancer = PortfolioRebalancer(client)
-        
+
         # Current holdings
         current_holdings = {
             'BTC': 150000000,    # 1.5 BTC
             'USDT': 10000,       # $10,000 USDT
         }
-        
+
         # Target allocation (percentages)
         target_allocation = {
             'BTC': 0.6,   # 60% BTC
             'USDT': 0.4,  # 40% USDT
         }
-        
+
         await rebalancer.execute_rebalancing(current_holdings, target_allocation)
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(portfolio_rebalancing_example())
@@ -434,7 +452,7 @@ if __name__ == "__main__":
 ```python
 import asyncio
 from typing import List, Dict, Optional
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient, PairQuoteRequest, SwapLegInput, Layer
 
 class ArbitrageDetector:
     def __init__(self, clients: Dict[str, KaleidoClient]):
@@ -452,11 +470,10 @@ class ArbitrageDetector:
         
         for exchange_name, client in self.clients.items():
             try:
-                quote = await client.get_quote(
-                    from_asset=from_asset,
-                    to_asset=to_asset,
-                    from_amount=amount
-                )
+                quote = await client.maker.get_quote(PairQuoteRequest(
+                    from_asset=SwapLegInput(asset_id=from_asset, layer=Layer.BTC_LN, amount=amount),
+                    to_asset=SwapLegInput(asset_id=to_asset, layer=Layer.RGB_LN),
+                ))
                 quotes[exchange_name] = {
                     'quote': quote,
                     'price': quote.price,
@@ -525,19 +542,20 @@ class ArbitrageDetector:
         try:
             # Execute buy order
             buy_client = self.clients[buy_exchange]
-            buy_quote = await buy_client.get_quote(
-                from_asset=opportunity['pair'].split('/')[1],  # Quote asset
-                to_asset=opportunity['pair'].split('/')[0],    # Base asset
-                from_amount=opportunity['amount']
-            )
+            quote_asset = opportunity['pair'].split('/')[1]
+            base_asset = opportunity['pair'].split('/')[0]
+
+            buy_quote = await buy_client.maker.get_quote(PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id=quote_asset, layer=Layer.RGB_LN, amount=opportunity['amount']),
+                to_asset=SwapLegInput(asset_id=base_asset, layer=Layer.BTC_LN),
+            ))
             
             # Execute sell order  
             sell_client = self.clients[sell_exchange]
-            sell_quote = await sell_client.get_quote(
-                from_asset=opportunity['pair'].split('/')[0],  # Base asset
-                to_asset=opportunity['pair'].split('/')[1],    # Quote asset
-                from_amount=buy_quote.to_amount  # Amount received from buy
-            )
+            sell_quote = await sell_client.maker.get_quote(PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id=base_asset, layer=Layer.BTC_LN, amount=buy_quote.to_amount),
+                to_asset=SwapLegInput(asset_id=quote_asset, layer=Layer.RGB_LN),
+            ))
             
             print(f"Buy quote: {buy_quote.rfq_id}")
             print(f"Sell quote: {sell_quote.rfq_id}")
@@ -551,9 +569,9 @@ class ArbitrageDetector:
 async def arbitrage_monitoring():
     # Initialize multiple exchange clients
     clients = {
-        'kaleidoswap': KaleidoClient(
-            api_url="https://api.kaleidoswap.com",
-            node_url="https://node.kaleidoswap.com"
+        'kaleidoswap': KaleidoClient.create(
+            base_url="https://api.kaleidoswap.com",
+            node_url="https://node.kaleidoswap.com",
         ),
         # Add other exchange clients here
     }
@@ -600,68 +618,69 @@ if __name__ == "__main__":
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import CreateOrderRequest, GetOrderRequest
+from kaleidoswap_sdk import KaleidoClient, CreateOrderRequest, GetOrderRequest
 
 async def create_and_monitor_channel():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        try:
-            # Get node info
-            node_info = await client.get_node_info()
-            print(f"Node pubkey: {node_info.pubkey}")
-            
-            # Get onchain address for refunds
-            address_response = await client.get_onchain_address()
-            refund_address = address_response.address
-            print(f"Refund address: {refund_address}")
-            
-            # Create channel order
-            print("\nCreating channel order...")
-            order = await client.create_order(
-                CreateOrderRequest(
-                    client_pubkey=node_info.pubkey,
-                    lsp_balance_sat=2000000,     # 0.02 BTC LSP balance
-                    client_balance_sat=1000000,  # 0.01 BTC client balance
-                    required_channel_confirmations=3,
-                    funding_confirms_within_blocks=144,
-                    channel_expiry_blocks=2016,  # ~2 weeks
-                    refund_onchain_address=refund_address,
-                    announce_channel=True
-                )
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
+        # Get node info
+        node_info = await client.rln.get_node_info()
+        print(f"Node pubkey: {node_info.pubkey}")
+
+        # Get onchain address for refunds
+        address_response = await client.rln.get_address()
+        refund_address = address_response.address
+        print(f"Refund address: {refund_address}")
+
+        # Create channel order
+        print("\nCreating channel order...")
+        order = await client.maker.create_lsp_order(
+            CreateOrderRequest(
+                client_pubkey=node_info.pubkey,
+                lsp_balance_sat=2000000,     # 0.02 BTC LSP balance
+                client_balance_sat=1000000,  # 0.01 BTC client balance
+                required_channel_confirmations=3,
+                funding_confirms_within_blocks=144,
+                channel_expiry_blocks=2016,  # ~2 weeks
+                refund_onchain_address=refund_address,
+                announce_channel=True
             )
-            
-            print(f"Order created: {order.order_id}")
-            print(f"Order state: {order.order_state}")
-            print(f"Payment required: {order.payment.bolt11.order_total_sat} sats")
-            print(f"Invoice: {order.payment.bolt11.invoice}")
-            
-            # Monitor order status
-            print("\nMonitoring order status...")
-            while True:
-                current_order = await client.get_order(
-                    GetOrderRequest(order_id=order.order_id)
-                )
-                
-                print(f"Order state: {current_order.order_state}")
-                print(f"Payment state: {current_order.payment.bolt11.state}")
-                
-                if current_order.channel and current_order.channel.channel_id:
-                    print(f"Channel ID: {current_order.channel.channel_id}")
-                    print(f"Funding outpoint: {current_order.channel.funding_outpoint}")
-                    break
-                
-                if current_order.order_state == "FAILED":
-                    print("Order failed!")
-                    break
-                
-                await asyncio.sleep(10)  # Check every 10 seconds
-            
-        except Exception as e:
-            print(f"Error: {e}")
+        )
+
+        print(f"Order created: {order.order_id}")
+        print(f"Order state: {order.order_state}")
+        print(f"Payment required: {order.payment.bolt11.order_total_sat} sats")
+        print(f"Invoice: {order.payment.bolt11.invoice}")
+
+        # Monitor order status
+        print("\nMonitoring order status...")
+        while True:
+            current_order = await client.maker.get_lsp_order(
+                GetOrderRequest(order_id=order.order_id)
+            )
+
+            print(f"Order state: {current_order.order_state}")
+            print(f"Payment state: {current_order.payment.bolt11.state}")
+
+            if current_order.channel and current_order.channel.channel_id:
+                print(f"Channel ID: {current_order.channel.channel_id}")
+                print(f"Funding outpoint: {current_order.channel.funding_outpoint}")
+                break
+
+            if current_order.order_state == "FAILED":
+                print("Order failed!")
+                break
+
+            await asyncio.sleep(10)  # Check every 10 seconds
+
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(create_and_monitor_channel())
@@ -675,11 +694,11 @@ if __name__ == "__main__":
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 class PriceMonitor:
-    def __init__(self, client: KaleidoClient):
-        self.client = client
+    def __init__(self, ws):
+        self.ws = ws
         self.prices = {}
     
     async def handle_price_update(self, data):
@@ -708,19 +727,17 @@ class PriceMonitor:
         """Start monitoring specified pairs."""
         try:
             # Connect to WebSocket
-            await self.client.connect()
+            await self.ws.connect()
             print("WebSocket connected!")
             
             # Register event handlers
-            self.client.on("price_update", self.handle_price_update)
-            self.client.on("quote_response", self.handle_quote_response)
+            self.ws.on("price_update", self.handle_price_update)
+            self.ws.on("quote_response", self.handle_quote_response)
             
             print(f"Monitoring {len(pairs)} pairs...")
             
             # Subscribe to price updates for each pair
             for pair in pairs:
-                # In practice, you would send subscription messages
-                # This is a simplified example
                 print(f"Subscribed to {pair}")
             
             # Keep monitoring until interrupted
@@ -730,20 +747,24 @@ class PriceMonitor:
         except KeyboardInterrupt:
             print("\nStopping price monitoring...")
         finally:
-            await self.client.disconnect()
+            await self.ws.disconnect()
 
 async def live_price_monitoring():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        monitor = PriceMonitor(client)
-        
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
+        ws = client.maker.enable_websocket("wss://api.kaleidoswap.com/ws")
+        monitor = PriceMonitor(ws)
+
         # Define pairs to monitor
         pairs = ['BTC/USDT', 'ETH/USDT', 'LTC/BTC']
-        
+
         await monitor.start_monitoring(pairs)
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(live_price_monitoring())
@@ -755,8 +776,7 @@ if __name__ == "__main__":
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import QuoteRequest
+from kaleidoswap_sdk import KaleidoClient, PairQuoteRequest, SwapLegInput, Layer
 
 class QuoteStreamer:
     def __init__(self, client: KaleidoClient):
@@ -764,9 +784,7 @@ class QuoteStreamer:
         self.active_quotes = {}
     
     async def stream_quotes(self, pairs: list, amounts: dict):
-        """Stream live quotes for specified pairs and amounts."""
-        
-        await self.client.connect()
+        """Poll live quotes for specified pairs and amounts via HTTP."""
         
         try:
             while True:
@@ -775,14 +793,10 @@ class QuoteStreamer:
                     amount = amounts.get(pair, 100000000)  # Default 1 BTC
                     
                     try:
-                        # Get quote via WebSocket
-                        quote = await self.client.get_quote_websocket(
-                            QuoteRequest(
-                                from_asset=from_asset,
-                                to_asset=to_asset,
-                                from_amount=amount
-                            )
-                        )
+                        quote = await self.client.maker.get_quote(PairQuoteRequest(
+                            from_asset=SwapLegInput(asset_id=from_asset, layer=Layer.BTC_LN, amount=amount),
+                            to_asset=SwapLegInput(asset_id=to_asset, layer=Layer.RGB_LN),
+                        ))
                         
                         # Store and display quote
                         old_quote = self.active_quotes.get(pair)
@@ -810,25 +824,28 @@ class QuoteStreamer:
                 
                 await asyncio.sleep(5)  # Update every 5 seconds
                 
-        finally:
-            await self.client.disconnect()
+        except KeyboardInterrupt:
+            print("Stopping quote streaming...")
 
 async def quote_streaming_example():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
         streamer = QuoteStreamer(client)
-        
+
         # Define pairs and amounts to monitor
         pairs = ['BTC/USDT', 'ETH/USDT']
         amounts = {
             'BTC/USDT': 100000000,  # 1 BTC
             'ETH/USDT': 1000000000, # 10 ETH (example amount)
         }
-        
+
         await streamer.stream_quotes(pairs, amounts)
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(quote_streaming_example())
@@ -843,9 +860,10 @@ if __name__ == "__main__":
 ```python
 import asyncio
 import time
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.models import InitMakerSwapRequest, GetSwapStatusRequest
-from kaleidoswap_sdk.exceptions import KaleidoSDKError
+from kaleidoswap_sdk import (
+    KaleidoClient, KaleidoError, PairQuoteRequest, SwapLegInput, Layer,
+    CreateSwapOrderRequest, SwapRequest, SwapStatusRequest,
+)
 
 class RobustSwapExecutor:
     def __init__(self, client: KaleidoClient):
@@ -895,11 +913,10 @@ class RobustSwapExecutor:
         """Get quote with retries for temporary failures."""
         for i in range(3):
             try:
-                return await self.client.get_quote(
-                    from_asset=from_asset,
-                    to_asset=to_asset,
-                    from_amount=amount
-                )
+                return await self.client.maker.get_quote(PairQuoteRequest(
+                    from_asset=SwapLegInput(asset_id=from_asset, layer=Layer.BTC_LN, amount=amount),
+                    to_asset=SwapLegInput(asset_id=to_asset, layer=Layer.RGB_LN),
+                ))
             except Exception as e:
                 if "rate limit" in str(e).lower() and i < 2:
                     await asyncio.sleep(2 ** i)  # 1s, 2s delays
@@ -913,15 +930,15 @@ class RobustSwapExecutor:
         if current_time >= quote.expires_at:
             raise ValueError("Quote has expired")
         
-        return await self.client.init_maker_swap(
-            InitMakerSwapRequest(
-                rfq_id=quote.rfq_id,
-                from_asset=quote.from_asset,
-                to_asset=quote.to_asset,
-                from_amount=quote.from_amount,
-                to_amount=quote.to_amount
-            )
-        )
+        order = await self.client.maker.create_swap_order(CreateSwapOrderRequest(
+            rfq_id=quote.rfq_id,
+            from_asset=quote.from_asset,
+            to_asset=quote.to_asset,
+        ))
+
+        return await self.client.maker.init_swap(SwapRequest(
+            order_id=order.order_id,
+        ))
     
     async def _monitor_swap_completion(self, payment_hash: str):
         """Monitor swap with timeout and error handling."""
@@ -931,8 +948,8 @@ class RobustSwapExecutor:
         
         while time.time() - start_time < timeout:
             try:
-                status_response = await self.client.get_swap_status(
-                    GetSwapStatusRequest(payment_hash=payment_hash)
+                status_response = await self.client.maker.get_atomic_swap_status(
+                    SwapStatusRequest(payment_hash=payment_hash)
                 )
                 
                 status = status_response.swap.status
@@ -957,26 +974,28 @@ class RobustSwapExecutor:
         raise TimeoutError("Swap monitoring timed out")
 
 async def robust_swap_example():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    try:
         executor = RobustSwapExecutor(client)
-        
-        try:
-            final_status = await executor.execute_swap_with_retries(
-                from_asset="BTC",
-                to_asset="USDT",
-                amount=50000000  # 0.5 BTC
-            )
-            
-            print(f"Swap completed successfully!")
-            print(f"Final status: {final_status.status}")
-            print(f"Completed at: {final_status.completed_at}")
-            
-        except Exception as e:
-            print(f"Swap execution failed: {e}")
+
+        final_status = await executor.execute_swap_with_retries(
+            from_asset="BTC",
+            to_asset="USDT",
+            amount=50000000  # 0.5 BTC
+        )
+
+        print(f"Swap completed successfully!")
+        print(f"Final status: {final_status.status}")
+        print(f"Completed at: {final_status.completed_at}")
+
+    except Exception as e:
+        print(f"Swap execution failed: {e}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(robust_swap_example())
@@ -992,11 +1011,12 @@ if __name__ == "__main__":
 import asyncio
 import json
 from typing import Dict, List
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient, PairQuoteRequest, SwapLegInput, Layer
 
 class TradingBot:
     def __init__(self, client: KaleidoClient, config: Dict):
         self.client = client
+        self.ws = None
         self.config = config
         self.portfolio = {}
         self.running = False
@@ -1005,15 +1025,16 @@ class TradingBot:
         """Initialize bot with current portfolio state."""
         try:
             # Get node info
-            node_info = await self.client.get_node_info()
+            node_info = await self.client.rln.get_node_info()
             print(f"Connected to node: {node_info.pubkey}")
             
             # Load portfolio from config or fetch current balances
             await self._load_portfolio()
             
             # Connect WebSocket for real-time updates
-            await self.client.connect()
-            self.client.on("price_update", self._handle_price_update)
+            self.ws = self.client.maker.enable_websocket("wss://api.kaleidoswap.com/ws")
+            await self.ws.connect()
+            self.ws.on("price_update", self._handle_price_update)
             
             print("Trading bot initialized successfully!")
             
@@ -1072,11 +1093,10 @@ class TradingBot:
             print(f"Executing trade: {action}")
             
             # Get quote
-            quote = await self.client.get_quote(
-                from_asset=action["from_asset"],
-                to_asset=action["to_asset"],
-                from_amount=action["amount"]
-            )
+            quote = await self.client.maker.get_quote(PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id=action["from_asset"], layer=Layer.BTC_LN, amount=action["amount"]),
+                to_asset=SwapLegInput(asset_id=action["to_asset"], layer=Layer.RGB_LN),
+            ))
             
             # Execute swap (simplified)
             print(f"Quote received: {quote.rfq_id}")
@@ -1149,7 +1169,9 @@ class TradingBot:
     async def stop(self):
         """Stop the trading bot."""
         self.running = False
-        await self.client.disconnect()
+        if self.ws:
+            await self.ws.disconnect()
+        await self.client.close()
         print("Trading bot stopped.")
 
 async def trading_bot_example():
@@ -1191,13 +1213,13 @@ async def trading_bot_example():
         "stop_loss_threshold": 0.05,   # 5% stop loss
     }
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        bot = TradingBot(client, config)
-        await bot.run()
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    bot = TradingBot(client, config)
+    await bot.run()
 
 if __name__ == "__main__":
     asyncio.run(trading_bot_example())

@@ -33,16 +33,11 @@ Kaleidoswap SDK provides a unified interface for interacting with the Kaleidoswa
 ### Python SDK
 
 ```bash
-# Install via pip
 pip install kaleidoswap-sdk
-
-# Or install from source
-git clone https://github.com/kaleidoswap/kaleido-sdk.git
-cd kaleido-sdk/python-sdk
-pip install -e .
+# Or with uv: uv add kaleidoswap-sdk
 ```
 
-**Requirements**: Python 3.8+
+**Requirements**: Python 3.11+
 
 ### TypeScript SDK
 
@@ -83,26 +78,24 @@ cargo build
 
 ```python
 import asyncio
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient, PairQuoteRequest, SwapLegInput, Layer
 
 async def main():
-    # Initialize client
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
-        # Get available assets
-        assets = await client.list_assets()
-        print(f"Available assets: {len(assets.assets)}")
-        
-        # Get a quote
-        quote = await client.get_quote(
-            from_asset="BTC",
-            to_asset="USDT", 
-            from_amount=100000000  # 1 BTC in satoshis
-        )
-        print(f"Quote: {quote.to_amount} USDT for 1 BTC")
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com",
+    )
+
+    assets = await client.maker.list_assets()
+    print(f"Available assets: {len(assets.assets)}")
+
+    quote = await client.maker.get_quote(PairQuoteRequest(
+        from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=100000),
+        to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN),
+    ))
+    print(f"Quote: {quote.price}")
+
+    await client.close()
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -216,17 +209,14 @@ KALEIDOSWAP_RETRY_DELAY=1
 #### Python
 
 ```python
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
-client = KaleidoClient(
-    api_url="https://api.kaleidoswap.com",
+client = KaleidoClient.create(
+    base_url="https://api.kaleidoswap.com",
     node_url="https://node.kaleidoswap.com",
-    api_key="your-api-key",  # Optional
-    ping_interval=30,        # WebSocket ping interval
-    ping_timeout=10,         # WebSocket ping timeout
-    close_timeout=10,        # WebSocket close timeout
-    max_size=2**20,         # Max message size
-    max_queue=32,           # Max message queue size
+    api_key="your-api-key",
+    timeout=30.0,
+    max_retries=3,
 )
 ```
 
