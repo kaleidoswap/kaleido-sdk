@@ -6,9 +6,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Literal
 
-from pydantic import Field
-
 from kaleidoswap_sdk._generated.base import BaseNodeModel
+from pydantic import Field
 
 
 class AddressResponse(BaseNodeModel):
