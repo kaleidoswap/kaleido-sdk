@@ -62,7 +62,7 @@ pnpm run build
 ```toml
 # Add to Cargo.toml
 [dependencies]
-kaleidoswap-sdk = "0.1.0"
+kaleidoswap-sdk = "0.5.3"
 
 # Or install from source
 git clone https://github.com/kaleidoswap/kaleido-sdk.git
@@ -169,6 +169,7 @@ This SDK comes with comprehensive documentation covering all aspects of usage:
 - **[Examples](EXAMPLES.md)** - Practical examples and usage patterns for real-world scenarios
 - **[WebSocket Guide](WEBSOCKET.md)** - Detailed guide for real-time data streaming and WebSocket usage
 - **[Error Handling](ERROR_HANDLING.md)** - Comprehensive error handling, troubleshooting, and debugging guide
+- **[SDK Development](SDK_DEVELOPMENT.md)** - Development workflow, release process, and [how to bump the SDK version](SDK_DEVELOPMENT.md#how-to-bump-the-sdk-version)
 
 ### Quick Links
 

@@ -12,7 +12,7 @@ from ._rln_client import RlnClient
 from .errors import NodeNotConfiguredError
 from .types import KaleidoConfig
 
-__version__ = "0.5.0"
+__version__ = "0.5.3"
 __sdk_name__ = "kaleidoswap-sdk"
 
 

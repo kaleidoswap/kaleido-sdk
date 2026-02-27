@@ -412,6 +412,33 @@ Follow [Semantic Versioning](https://semver.org/):
 - **MINOR** (0.X.0): New features, backward compatible
 - **PATCH** (0.0.X): Bug fixes, backward compatible
 
+### How to bump the SDK version
+
+When releasing a new version (e.g. `0.5.4`), update the version string in **every** place below so `get_version()` and package manifests stay in sync.
+
+| Location | What to change |
+|----------|----------------|
+| **Python SDK** | |
+| `python-sdk/pyproject.toml` | `version = "X.Y.Z"` |
+| `python-sdk/kaleidoswap_sdk/client.py` | `__version__ = "X.Y.Z"` |
+| `python-sdk/kaleidoswap_sdk/__init__.py` | `__version__ = "X.Y.Z"` |
+| **TypeScript SDK** | |
+| `typescript-sdk/package.json` | `"version": "X.Y.Z"` |
+| `typescript-sdk/src/client.ts` | In `getVersion()`, `return 'X.Y.Z';` |
+| **Rust (workspace)** | |
+| `Cargo.toml` (workspace root) | `[workspace.package]` → `version = "X.Y.Z"` |
+| **Docs** | |
+| `docs/README.md` | Rust install example: `kaleidoswap-sdk = "X.Y.Z"` |
+
+**Checklist:**
+
+1. Set the new version (e.g. `0.5.4`) in all 7 places above.
+2. Run tests: `make test` or per-SDK test commands.
+3. Commit: `git commit -am "chore: bump version to X.Y.Z"`.
+4. Tag and release following the [Release Process](#release-process) above.
+
+Optional: update `CHANGELOG.md` and any docs that mention the current version (e.g. ROADMAP.md).
+
 ### Pre-release Versions
 
 - `X.Y.Z-alpha.N` - Alpha releases
