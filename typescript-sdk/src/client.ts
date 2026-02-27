@@ -114,7 +114,7 @@ export function toDisplayUnits(amount: number, precision: number): number {
  * Get SDK version
  */
 export function getVersion(): string {
-    return '0.4.0';
+    return '0.5.3';
 }
 
 /**

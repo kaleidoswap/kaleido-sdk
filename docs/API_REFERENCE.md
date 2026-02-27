@@ -20,17 +20,15 @@ Get all available assets for trading.
 #### Python
 
 ```python
-async def list_assets() -> ListAssetsResponse
+await client.maker.list_assets() -> AssetsResponse
 ```
 
-**Returns**: `ListAssetsResponse` containing:
+**Returns**: `AssetsResponse` containing:
 - `assets`: List of `Asset` objects
-- `network`: Network identifier
-- `response_timestamp`: Response generation timestamp
 
 **Example**:
 ```python
-assets = await client.list_assets()
+assets = await client.maker.list_assets()
 for asset in assets.assets:
     print(f"{asset.ticker}: {asset.name}")
 ```
@@ -74,15 +72,15 @@ Get all available trading pairs.
 #### Python
 
 ```python
-async def list_pairs() -> ListPairsResponse
+await client.maker.list_pairs() -> TradingPairsResponse
 ```
 
-**Returns**: `ListPairsResponse` containing:
+**Returns**: `TradingPairsResponse` containing:
 - `pairs`: List of `TradingPair` objects
 
 **Example**:
 ```python
-pairs = await client.list_pairs()
+pairs = await client.maker.list_pairs()
 for pair in pairs.pairs:
     print(f"{pair.base_asset}/{pair.quote_asset}")
 ```
@@ -103,33 +101,26 @@ pairs.pairs.forEach(pair => {
 });
 ```
 
-### Get Trading Pair by Assets
+### Get Pair Routes
 
-Find a specific trading pair by asset IDs.
+Get available swap routes for a trading pair.
 
 #### Python
 
 ```python
-async def get_pair_by_assets(base_asset: str, quote_asset: str) -> Optional[TradingPair]
+await client.maker.get_pair_routes(pair_ticker: str) -> list[SwapRoute]
 ```
 
 **Parameters**:
-- `base_asset`: Base asset ID
-- `quote_asset`: Quote asset ID
+- `pair_ticker`: Trading pair ticker (e.g. `"BTC/USDT"`)
 
-**Returns**: `TradingPair` object or `None`
+**Returns**: `list[SwapRoute]` — available routes for the pair
 
 **Example**:
 ```python
-pair = await client.get_pair_by_assets("BTC", "USDT")
-if pair:
-    print(f"Found pair: {pair.id}")
-```
-
-#### TypeScript
-
-```typescript
-async getPairByAssets(baseAsset: string, quoteAsset: string): Promise<TradingPair | null>
+routes = await client.maker.get_pair_routes("BTC/USDT")
+for route in routes:
+    print(f"Route: {route}")
 ```
 
 ### Get Quote
@@ -139,35 +130,24 @@ Get a price quote for a trade.
 #### Python
 
 ```python
-async def get_quote(request: QuoteRequest) -> QuoteResponse
-# Or convenience method:
-async def get_quote(from_asset: str, to_asset: str, from_amount: int) -> QuoteResponse
+await client.maker.get_quote(body: PairQuoteRequest) -> PairQuoteResponse
 ```
 
-**Parameters**:
-- `from_asset`: Source asset ID
-- `to_asset`: Destination asset ID  
-- `from_amount`: Amount in atomic units
+**Parameters**: `PairQuoteRequest` containing:
+- `from_asset`: `SwapLegInput` — source asset details (asset_id, layer, amount)
+- `to_asset`: `SwapLegInput` — destination asset details (asset_id, layer)
 
-**Returns**: `QuoteResponse` containing:
-- `rfq_id`: Request for Quote ID
-- `from_asset`: Source asset ID
-- `to_asset`: Destination asset ID
-- `from_amount`: Source amount
-- `to_amount`: Destination amount
-- `price`: Human-readable price
-- `fee`: Fee information
-- `timestamp`: Quote generation timestamp
-- `expires_at`: Quote expiration timestamp
+**Returns**: `PairQuoteResponse` with quote details
 
 **Example**:
 ```python
-quote = await client.get_quote(
-    from_asset="BTC",
-    to_asset="USDT",
-    from_amount=100000000  # 1 BTC in satoshis
-)
-print(f"1 BTC = {quote.to_amount} USDT")
+from kaleidoswap_sdk import PairQuoteRequest, SwapLegInput, Layer
+
+quote = await client.maker.get_quote(PairQuoteRequest(
+    from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=100000),
+    to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN),
+))
+print(f"Quote received: {quote}")
 ```
 
 #### TypeScript
@@ -182,255 +162,219 @@ const quote = await client.getQuote('BTC', 'USDT', 100000000);
 console.log(`1 BTC = ${quote.to_amount} USDT`);
 ```
 
-### Get Quote via WebSocket
+### Stream Quotes via WebSocket
 
-Get a quote using WebSocket for real-time pricing.
+Stream real-time quotes using WebSocket. See [WebSocket Operations](#websocket-operations) for setup.
 
 #### Python
 
 ```python
-async def get_quote_websocket(request: QuoteRequest) -> QuoteResponse
+ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+await ws.connect()
+ws.on("quote_response", handle_quote)
+await ws.disconnect()
 ```
 
 **Example**:
 ```python
-# Connect WebSocket first
-await client.connect()
+async def handle_quote(data):
+    print(f"Quote update: {data}")
 
-quote = await client.get_quote_websocket(
-    QuoteRequest(
-        from_asset="BTC",
-        to_asset="USDT", 
-        from_amount=100000000
-    )
-)
-
-await client.disconnect()
-```
-
-#### TypeScript
-
-```typescript
-async getQuoteWS(fromAsset: string, toAsset: string, fromAmount: number): Promise<PairQuoteResponse>
+ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+await ws.connect()
+ws.on("quote_response", handle_quote)
 ```
 
 ## Swap Operations
 
-### Initialize Maker Swap
+### Swap Orders
 
-Initialize a swap as the maker (liquidity provider).
+#### Create Swap Order
 
-#### Python
+Create a new swap order.
+
+##### Python
 
 ```python
-async def init_maker_swap(request: InitMakerSwapRequest) -> InitMakerSwapResponse
+await client.maker.create_swap_order(body: CreateSwapOrderRequest) -> CreateSwapOrderResponse
 ```
 
-**Parameters**: `InitMakerSwapRequest` containing:
-- `rfq_id`: Request for Quote ID
-- `from_asset`: Source asset ID
-- `to_asset`: Destination asset ID
-- `from_amount`: Source amount in atomic units
-- `to_amount`: Destination amount in atomic units
+**Parameters**: `CreateSwapOrderRequest` with swap order details.
 
-**Returns**: `InitMakerSwapResponse` containing:
-- `payment_hash`: Payment hash
-- `payment_secret`: Payment secret (optional)
-- `swapstring`: Swap string for the taker
+**Returns**: `CreateSwapOrderResponse`
 
 **Example**:
 ```python
-from kaleidoswap_sdk.models import InitMakerSwapRequest
+from kaleidoswap_sdk import CreateSwapOrderRequest
 
-# First get a quote
-quote = await client.get_quote(
-    from_asset="BTC",
-    to_asset="USDT",
-    from_amount=100000000
-)
-
-# Initialize maker swap
-swap_init = await client.init_maker_swap(
-    InitMakerSwapRequest(
-        rfq_id=quote.rfq_id,
-        from_asset=quote.from_asset,
-        to_asset=quote.to_asset,
-        from_amount=quote.from_amount,
-        to_amount=quote.to_amount
-    )
-)
-
-print(f"Swap string: {swap_init.swapstring}")
+order = await client.maker.create_swap_order(CreateSwapOrderRequest(
+    # ... order parameters
+))
+print(f"Order created: {order}")
 ```
 
-#### TypeScript
+#### Get Swap Order Status
 
-```typescript
-async initMakerSwap(
-    rfqId: string,
-    fromAsset: string, 
-    toAsset: string,
-    fromAmount: number,
-    toAmount: number
-): Promise<SwapRequest>
-```
+Check the status of a swap order.
 
-### Execute Maker Swap
-
-Complete a maker swap after initialization.
-
-#### Python
+##### Python
 
 ```python
-async def execute_maker_swap(request: ExecuteMakerSwapRequest) -> ExecuteMakerSwapResponse
+await client.maker.get_swap_order_status(body: SwapOrderStatusRequest) -> SwapOrderStatusResponse
 ```
 
-**Parameters**: `ExecuteMakerSwapRequest` containing:
-- `swapstring`: Swap string from initialization
-- `payment_hash`: Payment hash from initialization
-- `taker_pubkey`: Taker's public key
+**Parameters**: `SwapOrderStatusRequest` with order identification.
+
+**Returns**: `SwapOrderStatusResponse`
 
 **Example**:
 ```python
-from kaleidoswap_sdk.models import ExecuteMakerSwapRequest
+from kaleidoswap_sdk import SwapOrderStatusRequest
 
-# After taker provides their pubkey
-execute_result = await client.execute_maker_swap(
-    ExecuteMakerSwapRequest(
-        swapstring=swap_init.swapstring,
-        payment_hash=swap_init.payment_hash,
-        taker_pubkey="taker_pubkey_here"
-    )
-)
+status = await client.maker.get_swap_order_status(SwapOrderStatusRequest(
+    # ... order identification
+))
+print(f"Order status: {status}")
 ```
 
-### Get Swap Status
+#### Get Order History
 
-Check the status of a swap by payment hash.
+Retrieve historical swap orders with filtering.
 
-#### Python
+##### Python
 
 ```python
-async def get_swap_status(request: GetSwapStatusRequest) -> GetSwapStatusResponse
-```
-
-**Parameters**: `GetSwapStatusRequest` containing:
-- `payment_hash`: Payment hash from swap initialization
-
-**Returns**: `GetSwapStatusResponse` containing:
-- `swap`: `SwapStatus` object with detailed status information
-
-**Example**:
-```python
-from kaleidoswap_sdk.models import GetSwapStatusRequest
-
-status = await client.get_swap_status(
-    GetSwapStatusRequest(payment_hash=swap_init.payment_hash)
-)
-
-print(f"Swap status: {status.swap.status}")
-```
-
-#### TypeScript
-
-```typescript
-async getSwapStatus(paymentHash: string): Promise<Swap>
-```
-
-### Wait for Swap Completion
-
-Poll for swap completion with timeout.
-
-#### Python
-
-```python
-async def wait_for_swap_completion(
-    request: GetSwapStatusRequest, 
-    timeout: int = 3600, 
-    poll_interval: int = 5
-) -> SwapStatus
+await client.maker.get_order_history(status=..., limit=..., skip=...) -> OrderHistoryResponse
 ```
 
 **Parameters**:
-- `request`: `GetSwapStatusRequest` with payment hash
-- `timeout`: Maximum wait time in seconds (default: 3600)
-- `poll_interval`: Polling interval in seconds (default: 5)
+- `status`: Filter by order status (optional)
+- `limit`: Maximum number of results (optional)
+- `skip`: Number of results to skip (optional)
 
-**Returns**: Final `SwapStatus`
+**Returns**: `OrderHistoryResponse`
 
 **Example**:
 ```python
-final_status = await client.wait_for_swap_completion(
-    GetSwapStatusRequest(payment_hash=payment_hash),
-    timeout=1800,  # 30 minutes
-    poll_interval=10  # Check every 10 seconds
-)
-
-if final_status.status == "completed":
-    print("Swap completed successfully!")
+history = await client.maker.get_order_history(status="completed", limit=10, skip=0)
+print(f"Orders: {history}")
 ```
 
-#### TypeScript
+#### Wait for Swap Completion
 
-```typescript
-async waitForSwapCompletion(
-    paymentHash: string,
-    timeoutSeconds: number = 300,
-    pollIntervalSeconds: number = 5
-): Promise<Swap>
-```
+Poll for swap completion with configurable options.
 
-### Complete Maker Swap (End-to-End)
-
-High-level method that handles the complete maker swap flow.
-
-#### Python
+##### Python
 
 ```python
-async def complete_maker_swap(
-    request: InitMakerSwapRequest,
-    timeout: int = 3600
-) -> SwapStatus
+await client.maker.wait_for_swap_completion(order_id, options) -> SwapOrder
 ```
 
 **Parameters**:
-- `request`: `InitMakerSwapRequest` with swap details
-- `timeout`: Maximum wait time for completion
+- `order_id`: The swap order ID to monitor
+- `options`: Polling options (timeout, interval, etc.)
 
-**Returns**: Final `SwapStatus`
+**Returns**: `SwapOrder` — the final completed swap order
 
 **Example**:
 ```python
-# Complete end-to-end maker swap
-final_status = await client.complete_maker_swap(
-    InitMakerSwapRequest(
-        rfq_id=quote.rfq_id,
-        from_asset="BTC",
-        to_asset="USDT", 
-        from_amount=100000000,
-        to_amount=quote.to_amount
-    ),
-    timeout=1800
+final_order = await client.maker.wait_for_swap_completion(
+    order_id="order_123",
+    options={"timeout": 1800, "poll_interval": 10}
 )
+print(f"Swap completed: {final_order}")
 ```
 
-### Whitelist Trade
+### Atomic Swaps
 
-Whitelist a trade for processing.
+#### Initialize Swap
 
-#### Python
+Initialize an atomic swap.
+
+##### Python
 
 ```python
-async def whitelist_trade(request: WhitelistTradeRequest) -> Dict[str, Any]
+await client.maker.init_swap(body: SwapRequest) -> SwapResponse
 ```
 
-**Parameters**: `WhitelistTradeRequest` containing:
-- `swapstring`: Swap string from maker
+**Parameters**: `SwapRequest` with swap details.
 
-#### TypeScript
+**Returns**: `SwapResponse`
 
-```typescript
-async whitelistTrade(swapstring: string): Promise<Record<string, never>>
+**Example**:
+```python
+from kaleidoswap_sdk import SwapRequest
+
+swap = await client.maker.init_swap(SwapRequest(
+    # ... swap parameters
+))
+print(f"Swap initialized: {swap}")
+```
+
+#### Execute Swap
+
+Execute (confirm) an atomic swap.
+
+##### Python
+
+```python
+await client.maker.execute_swap(body: ConfirmSwapRequest) -> ConfirmSwapResponse
+```
+
+**Parameters**: `ConfirmSwapRequest` with confirmation details.
+
+**Returns**: `ConfirmSwapResponse`
+
+**Example**:
+```python
+from kaleidoswap_sdk import ConfirmSwapRequest
+
+result = await client.maker.execute_swap(ConfirmSwapRequest(
+    # ... confirmation parameters
+))
+print(f"Swap executed: {result}")
+```
+
+#### Get Atomic Swap Status
+
+Check the status of an atomic swap.
+
+##### Python
+
+```python
+await client.maker.get_atomic_swap_status(body: SwapStatusRequest) -> SwapStatusResponse
+```
+
+**Parameters**: `SwapStatusRequest` with swap identification.
+
+**Returns**: `SwapStatusResponse`
+
+**Example**:
+```python
+from kaleidoswap_sdk import SwapStatusRequest
+
+status = await client.maker.get_atomic_swap_status(SwapStatusRequest(
+    # ... swap identification
+))
+print(f"Atomic swap status: {status}")
+```
+
+#### Get Swap Node Info
+
+Get information about the swap node.
+
+##### Python
+
+```python
+await client.maker.get_swap_node_info() -> SwapNodeInfoResponse
+```
+
+**Returns**: `SwapNodeInfoResponse`
+
+**Example**:
+```python
+info = await client.maker.get_swap_node_info()
+print(f"Swap node info: {info}")
 ```
 
 ## LSP Operations
@@ -442,41 +386,21 @@ Get Lightning Service Provider information.
 #### Python
 
 ```python
-async def get_lsp_info() -> GetLspInfoResponse
+await client.maker.get_lsp_info() -> GetInfoResponseModel
 ```
 
-**Returns**: `GetLspInfoResponse` containing:
-- `lsp_connection_url`: LSP connection URL
-- `options`: `OrderOptions` with LSP configuration
-- `assets`: List of supported assets
+**Returns**: `GetInfoResponseModel` with LSP configuration and supported assets.
 
 **Example**:
 ```python
-lsp_info = await client.get_lsp_info()
-print(f"LSP URL: {lsp_info.lsp_connection_url}")
-print(f"Supported assets: {len(lsp_info.assets)}")
+lsp_info = await client.maker.get_lsp_info()
+print(f"LSP info: {lsp_info}")
 ```
 
 #### TypeScript
 
 ```typescript
 async getLspInfo(): Promise<any>
-```
-
-### Get LSP Connection URL
-
-Get the LSP connection URL directly.
-
-#### Python
-
-```python
-async def get_lsp_connection_url() -> str
-```
-
-#### TypeScript
-
-```typescript
-async getLspConnectionUrl(): Promise<any>
 ```
 
 ### Get LSP Network Information
@@ -486,7 +410,7 @@ Get network information from the LSP.
 #### Python
 
 ```python
-async def get_lsp_network_info() -> NetworkInfoResponse
+await client.maker.get_lsp_network_info() -> NetworkInfoResponse
 ```
 
 **Returns**: `NetworkInfoResponse` containing:
@@ -499,14 +423,14 @@ async def get_lsp_network_info() -> NetworkInfoResponse
 async getLspNetworkInfo(): Promise<any>
 ```
 
-### Create Order
+### Create LSP Order
 
-Create a new order with the LSP.
+Create a new channel order with the LSP.
 
 #### Python
 
 ```python
-async def create_order(request: CreateOrderRequest) -> OrderResponse
+await client.maker.create_lsp_order(body: CreateOrderRequest) -> ChannelOrderResponse
 ```
 
 **Parameters**: `CreateOrderRequest` containing:
@@ -522,51 +446,50 @@ async def create_order(request: CreateOrderRequest) -> OrderResponse
 - `lsp_asset_amount`: LSP asset amount (optional)
 - `client_asset_amount`: Client asset amount (optional)
 
-**Returns**: `OrderResponse` with complete order details
+**Returns**: `ChannelOrderResponse` with complete order details
 
 **Example**:
 ```python
-from kaleidoswap_sdk.models import CreateOrderRequest
+from kaleidoswap_sdk import CreateOrderRequest
 
-order = await client.create_order(
-    CreateOrderRequest(
-        client_pubkey="your_pubkey",
-        lsp_balance_sat=1000000,
-        client_balance_sat=500000,
-        required_channel_confirmations=3,
-        funding_confirms_within_blocks=144,
-        channel_expiry_blocks=2016,
-        refund_onchain_address="your_address",
-        announce_channel=True
-    )
-)
+order = await client.maker.create_lsp_order(CreateOrderRequest(
+    client_pubkey="your_pubkey",
+    lsp_balance_sat=1000000,
+    client_balance_sat=500000,
+    required_channel_confirmations=3,
+    funding_confirms_within_blocks=144,
+    channel_expiry_blocks=2016,
+    refund_onchain_address="your_address",
+    announce_channel=True,
+))
 
-print(f"Order ID: {order.order_id}")
+print(f"Order: {order}")
 ```
 
 #### TypeScript
 
 ```typescript
-async createOrder(order: any): Promise<any>
+async createLspOrder(order: any): Promise<any>
 ```
 
-### Get Order
+### Get LSP Order
 
-Retrieve an existing order by ID.
+Retrieve an existing LSP order.
 
 #### Python
 
 ```python
-async def get_order(request: GetOrderRequest) -> OrderResponse
+await client.maker.get_lsp_order(body: GetOrderRequest) -> ChannelOrderResponse
 ```
 
-**Parameters**: `GetOrderRequest` containing:
-- `order_id`: Order ID
+**Parameters**: `GetOrderRequest` with order identification.
+
+**Returns**: `ChannelOrderResponse`
 
 #### TypeScript
 
 ```typescript
-async getOrder(orderId: string): Promise<any>
+async getLspOrder(orderId: string): Promise<any>
 ```
 
 ## Node Operations
@@ -578,7 +501,7 @@ Get information about the connected node.
 #### Python
 
 ```python
-async def get_node_info() -> NodeInfoResponse
+await client.rln.get_node_info() -> NodeInfoResponse
 ```
 
 **Returns**: `NodeInfoResponse` containing:
@@ -591,32 +514,18 @@ async def get_node_info() -> NodeInfoResponse
 
 **Example**:
 ```python
-node_info = await client.get_node_info()
+node_info = await client.rln.get_node_info()
 print(f"Node pubkey: {node_info.pubkey}")
 print(f"Channels: {node_info.num_channels}")
 print(f"Balance: {node_info.local_balance_sat} sats")
 ```
 
+> **Note**: There is no separate `get_node_pubkey()` method. Use `(await client.rln.get_node_info()).pubkey` instead.
+
 #### TypeScript
 
 ```typescript
 async getNodeInfo(): Promise<{ pubkey: string }>
-```
-
-### Get Node Public Key
-
-Get just the node's public key.
-
-#### Python
-
-```python
-async def get_node_pubkey() -> str
-```
-
-#### TypeScript
-
-```typescript
-async getNodePubkey(): Promise<string>
 ```
 
 ### Connect Peer
@@ -626,7 +535,7 @@ Connect to a Lightning Network peer.
 #### Python
 
 ```python
-async def connect_peer(request: ConnectPeerRequest) -> Dict[str, Any]
+await client.rln.connect_peer(body: ConnectPeerRequest)
 ```
 
 **Parameters**: `ConnectPeerRequest` containing:
@@ -634,13 +543,11 @@ async def connect_peer(request: ConnectPeerRequest) -> Dict[str, Any]
 
 **Example**:
 ```python
-from kaleidoswap_sdk.models import ConnectPeerRequest
+from kaleidoswap_sdk import ConnectPeerRequest
 
-result = await client.connect_peer(
-    ConnectPeerRequest(
-        peer_pubkey_and_addr="pubkey@host:port"
-    )
-)
+await client.rln.connect_peer(ConnectPeerRequest(
+    peer_pubkey_and_addr="pubkey@host:port"
+))
 ```
 
 #### TypeScript
@@ -656,7 +563,7 @@ Get list of connected peers.
 #### Python
 
 ```python
-async def list_peers() -> ListPeersResponse
+await client.rln.list_peers() -> ListPeersResponse
 ```
 
 **Returns**: `ListPeersResponse` containing:
@@ -668,14 +575,14 @@ async def list_peers() -> ListPeersResponse
 async listPeers(): Promise<any>
 ```
 
-### Get Onchain Address
+### Get Address
 
 Get a new onchain address.
 
 #### Python
 
 ```python
-async def get_onchain_address() -> AddressResponse
+await client.rln.get_address() -> AddressResponse
 ```
 
 **Returns**: `AddressResponse` containing:
@@ -684,7 +591,7 @@ async def get_onchain_address() -> AddressResponse
 #### TypeScript
 
 ```typescript
-async getOnchainAddress(): Promise<any>
+async getAddress(): Promise<any>
 ```
 
 ### Get Asset Metadata
@@ -694,13 +601,23 @@ Get metadata for a specific asset.
 #### Python
 
 ```python
-async def get_asset_metadata(request: GetAssetMetadataRequest) -> AssetMetadataResponse
+await client.rln.get_asset_metadata(body: AssetMetadataRequest) -> AssetMetadataResponse
 ```
 
-**Parameters**: `GetAssetMetadataRequest` containing:
+**Parameters**: `AssetMetadataRequest` containing:
 - `asset_id`: Asset ID
 
 **Returns**: `AssetMetadataResponse` containing asset details
+
+**Example**:
+```python
+from kaleidoswap_sdk import AssetMetadataRequest
+
+metadata = await client.rln.get_asset_metadata(AssetMetadataRequest(
+    asset_id="BTC"
+))
+print(f"Asset metadata: {metadata}")
+```
 
 #### TypeScript
 
@@ -710,6 +627,21 @@ async getAssetMetadata(assetId: string): Promise<any>
 
 ## WebSocket Operations
 
+### Enable WebSocket
+
+Create a WebSocket instance via the maker client.
+
+#### Python
+
+```python
+ws = client.maker.enable_websocket(url: str)
+```
+
+**Parameters**:
+- `url`: WebSocket endpoint URL (e.g. `"ws://localhost:8000/ws"`)
+
+**Returns**: WebSocket instance with `connect()`, `disconnect()`, and `on()` methods.
+
 ### Connect to WebSocket
 
 Establish WebSocket connection for real-time updates.
@@ -717,13 +649,7 @@ Establish WebSocket connection for real-time updates.
 #### Python
 
 ```python
-async def connect() -> None
-```
-
-**Example**:
-```python
-await client.connect()
-print("WebSocket connected")
+await ws.connect()
 ```
 
 ### Disconnect from WebSocket
@@ -733,7 +659,7 @@ Close WebSocket connection.
 #### Python
 
 ```python
-async def disconnect() -> None
+await ws.disconnect()
 ```
 
 ### Register Event Handlers
@@ -743,19 +669,24 @@ Register handlers for WebSocket events.
 #### Python
 
 ```python
-def on(action: str, handler: Callable) -> None
+ws.on(action: str, handler: Callable) -> None
 ```
 
 **Parameters**:
-- `action`: Event action to handle
+- `action`: Event action to handle (e.g. `"quote_response"`)
 - `handler`: Async function to handle the event
 
 **Example**:
 ```python
-async def handle_price_update(data):
-    print(f"Price update: {data}")
+async def handle_quote(data):
+    print(f"Quote update: {data}")
 
-client.on("price_update", handle_price_update)
+ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+await ws.connect()
+ws.on("quote_response", handle_quote)
+
+# When done:
+await ws.disconnect()
 ```
 
 ## Data Models
@@ -795,19 +726,29 @@ class TradingPair:
     quote_precision: int       # Quote asset precision
 ```
 
-### QuoteResponse
+### PairQuoteResponse
 
 ```python
-class QuoteResponse:
-    rfq_id: str           # Request for Quote ID
-    from_asset: str       # Source asset ID
-    to_asset: str         # Destination asset ID
-    from_amount: int      # Source amount (atomic)
-    to_amount: int        # Destination amount (atomic)
-    price: float          # Human-readable price
-    fee: Dict[str, Any]   # Fee information
-    timestamp: int        # Quote generation timestamp
-    expires_at: int       # Quote expiration timestamp
+class PairQuoteResponse:
+    # Response from get_quote containing price and trade details
+    ...
+```
+
+### SwapLegInput
+
+```python
+class SwapLegInput:
+    asset_id: str         # Asset identifier (e.g. "BTC", "USDT")
+    layer: Layer          # Network layer (e.g. Layer.BTC_LN, Layer.RGB_LN)
+    amount: int           # Amount in atomic units (optional on to_asset)
+```
+
+### PairQuoteRequest
+
+```python
+class PairQuoteRequest:
+    from_asset: SwapLegInput   # Source asset details
+    to_asset: SwapLegInput     # Destination asset details
 ```
 
 ### SwapStatus

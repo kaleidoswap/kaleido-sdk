@@ -21,8 +21,8 @@ This document provides comprehensive guidance on error handling, troubleshooting
 ```python
 # Error: Connection refused or timeout
 try:
-    await client.list_assets()
-except ConnectionError as e:
+    await client.maker.list_assets()
+except NetworkError as e:
     print(f"Connection failed: {e}")
     # Check network connectivity and API URL
 ```
@@ -30,7 +30,8 @@ except ConnectionError as e:
 **WebSocket Connection Failed**
 ```python
 try:
-    await client.connect()
+    ws = client.maker.enable_websocket("ws://localhost:8000/ws")
+    await ws.connect()
 except WebSocketError as e:
     print(f"WebSocket connection failed: {e}")
     # Check WebSocket URL and firewall settings
@@ -40,15 +41,17 @@ except WebSocketError as e:
 
 **Invalid Request Parameters**
 ```python
-from kaleidoswap_sdk.exceptions import KaleidoSDKError
+from kaleidoswap_sdk import KaleidoError, ValidationError
+from kaleidoswap_sdk import PairQuoteRequest, SwapLegInput, Layer
 
 try:
-    quote = await client.get_quote(
-        from_asset="INVALID_ASSET",
-        to_asset="USDT",
-        from_amount=100000000
+    quote = await client.maker.get_quote(
+        PairQuoteRequest(
+            from_asset=SwapLegInput(asset_id="INVALID_ASSET", layer=Layer.BTC_LN, amount=100000000),
+            to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN)
+        )
     )
-except KaleidoSDKError as e:
+except KaleidoError as e:
     print(f"API Error: {e}")
     # Check asset IDs and parameters
 ```
@@ -56,12 +59,13 @@ except KaleidoSDKError as e:
 **Insufficient Liquidity**
 ```python
 try:
-    quote = await client.get_quote(
-        from_asset="BTC",
-        to_asset="USDT", 
-        from_amount=10000000000  # Very large amount
+    quote = await client.maker.get_quote(
+        PairQuoteRequest(
+            from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=10000000000),
+            to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN)
+        )
     )
-except QuoteError as e:
+except ValidationError as e:
     print(f"Quote error: {e}")
     # Reduce amount or try different pair
 ```
@@ -72,7 +76,7 @@ except QuoteError as e:
 ```python
 try:
     # Quote expires before use
-    swap_init = await client.init_maker_swap(expired_quote)
+    swap_init = await client.maker.init_swap(SwapRequest(expired_quote))
 except SwapError as e:
     print(f"Swap error: {e}")
     # Get fresh quote
@@ -98,52 +102,53 @@ except TimeoutError as e:
 ```python
 import asyncio
 import logging
-from kaleidoswap_sdk.client import KaleidoClient
-from kaleidoswap_sdk.exceptions import (
-    KaleidoSDKError,
-    ConnectionError,
+from kaleidoswap_sdk import KaleidoClient
+from kaleidoswap_sdk import (
+    KaleidoError,
+    NetworkError,
     TimeoutError,
-    QuoteError,
     SwapError,
-    AssetError,
-    NodeError
+    ValidationError
 )
 
 async def robust_operation():
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
+    )
+    
+    try:
+        # Attempt operation
+        assets = await client.maker.list_assets()
+        return assets
         
-        try:
-            # Attempt operation
-            assets = await client.list_assets()
-            return assets
-            
-        except ConnectionError as e:
-            logging.error(f"Connection failed: {e}")
-            # Handle connection issues
-            return None
-            
-        except TimeoutError as e:
-            logging.error(f"Operation timed out: {e}")
-            # Handle timeout
-            return None
-            
-        except AssetError as e:
-            logging.error(f"Asset operation failed: {e}")
-            # Handle asset-specific errors
-            return None
-            
-        except KaleidoSDKError as e:
-            logging.error(f"SDK error: {e}")
-            # Handle general SDK errors
-            return None
-            
-        except Exception as e:
-            logging.error(f"Unexpected error: {e}")
-            # Handle unexpected errors
-            return None
+    except NetworkError as e:
+        logging.error(f"Connection failed: {e}")
+        # Handle connection issues
+        return None
+        
+    except TimeoutError as e:
+        logging.error(f"Operation timed out: {e}")
+        # Handle timeout
+        return None
+        
+    except ValidationError as e:
+        logging.error(f"Validation failed: {e}")
+        # Handle validation errors
+        return None
+        
+    except KaleidoError as e:
+        logging.error(f"SDK error: {e}")
+        # Handle general SDK errors
+        return None
+        
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        # Handle unexpected errors
+        return None
+    
+    finally:
+        await client.close()
 ```
 
 ### Comprehensive Error Handler
@@ -154,7 +159,7 @@ async def robust_operation():
 import asyncio
 import logging
 from typing import Optional, Any, Callable
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 class ErrorHandler:
     def __init__(self):
@@ -183,7 +188,7 @@ class ErrorHandler:
                 
                 return result
                 
-            except ConnectionError as e:
+            except NetworkError as e:
                 retry_count += 1
                 self.logger.warning(f"Connection error in {operation_name} (attempt {retry_count}): {e}")
                 
@@ -205,7 +210,7 @@ class ErrorHandler:
                 else:
                     return None
             
-            except QuoteError as e:
+            except ValidationError as e:
                 self.logger.error(f"Quote error in {operation_name}: {e}")
                 # Don't retry quote errors - they're usually parameter issues
                 return None
@@ -260,13 +265,14 @@ class ErrorHandler:
 async def error_handling_example():
     handler = ErrorHandler()
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    )
+    
+    try:
         # Use error handler for operations
-        assets = await handler.handle_with_retry(client.list_assets)
+        assets = await handler.handle_with_retry(client.maker.list_assets)
         
         if assets:
             print(f"Got {len(assets.assets)} assets")
@@ -277,6 +283,8 @@ async def error_handling_example():
         stats = handler.get_error_stats()
         if stats:
             print(f"Error statistics: {stats}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(error_handling_example())
@@ -351,23 +359,25 @@ async def retry_example():
         max_delay=30.0
     )
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
+    )
+    
+    try:
+        # Retry operation with backoff
+        assets = await retry_manager.retry_with_backoff(
+            client.maker.list_assets,
+            retry_on=(NetworkError, TimeoutError)
+        )
         
-        try:
-            # Retry operation with backoff
-            assets = await retry_manager.retry_with_backoff(
-                client.list_assets,
-                retry_on=(ConnectionError, TimeoutError)
-            )
-            
-            if assets:
-                print(f"Successfully got {len(assets.assets)} assets")
-            
-        except Exception as e:
-            print(f"Operation failed after all retries: {e}")
+        if assets:
+            print(f"Successfully got {len(assets.assets)} assets")
+        
+    except Exception as e:
+        print(f"Operation failed after all retries: {e}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(retry_example())
@@ -442,23 +452,26 @@ async def circuit_breaker_example():
     circuit_breaker = CircuitBreaker(
         failure_threshold=3,
         recovery_timeout=30.0,
-        expected_exception=(ConnectionError, TimeoutError)
+        expected_exception=(NetworkError, TimeoutError)
     )
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    )
+    
+    try:
         for i in range(10):
             try:
-                assets = await circuit_breaker.call(client.list_assets)
+                assets = await circuit_breaker.call(client.maker.list_assets)
                 print(f"Request {i + 1}: Success")
                 
             except Exception as e:
                 print(f"Request {i + 1}: Failed - {e}")
             
             await asyncio.sleep(5)
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(circuit_breaker_example())
@@ -474,7 +487,7 @@ if __name__ == "__main__":
 import logging
 import asyncio
 from logging.handlers import RotatingFileHandler
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
 def setup_logging():
     """Set up comprehensive logging configuration."""
@@ -526,35 +539,38 @@ async def logging_example():
     """Example with comprehensive logging."""
     logger = setup_logging()
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    )
+    
+    try:
         logger.info("Starting Kaleidoswap operations")
         
-        try:
-            logger.debug("Fetching assets list")
-            assets = await client.list_assets()
-            logger.info(f"Retrieved {len(assets.assets)} assets")
-            
-            logger.debug("Fetching trading pairs")
-            pairs = await client.list_pairs()
-            logger.info(f"Retrieved {len(pairs.pairs)} trading pairs")
-            
-            # Log specific operations
-            logger.debug("Requesting quote for BTC/USDT")
-            quote = await client.get_quote(
-                from_asset="BTC",
-                to_asset="USDT",
-                from_amount=100000000
-            )
-            logger.info(f"Quote received: {quote.rfq_id}, Price: ${quote.price:.2f}")
-            
-        except Exception as e:
-            logger.error(f"Operation failed: {e}", exc_info=True)
+        logger.debug("Fetching assets list")
+        assets = await client.maker.list_assets()
+        logger.info(f"Retrieved {len(assets.assets)} assets")
         
+        logger.debug("Fetching trading pairs")
+        pairs = await client.maker.list_pairs()
+        logger.info(f"Retrieved {len(pairs.pairs)} trading pairs")
+        
+        # Log specific operations
+        logger.debug("Requesting quote for BTC/USDT")
+        quote = await client.maker.get_quote(
+            PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=100000000),
+                to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN)
+            )
+        )
+        logger.info(f"Quote received: {quote.rfq_id}, Price: ${quote.price:.2f}")
+        
+    except Exception as e:
+        logger.error(f"Operation failed: {e}", exc_info=True)
+    
+    finally:
         logger.info("Kaleidoswap operations completed")
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(logging_example())
@@ -568,64 +584,68 @@ if __name__ == "__main__":
 import asyncio
 import json
 import logging
-from kaleidoswap_sdk.client import KaleidoClient
+from kaleidoswap_sdk import KaleidoClient
 
-class DebugClient(KaleidoClient):
-    """KaleidoClient with debug logging."""
+class DebugWrapper:
+    """Wrapper around KaleidoClient with debug logging."""
     
-    def __init__(self, *args, debug=False, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, client: KaleidoClient, debug=False):
+        self.client = client
         self.debug = debug
         
         if debug:
             logging.basicConfig(level=logging.DEBUG)
             self.logger = logging.getLogger(__name__)
     
-    async def _log_request(self, method: str, endpoint: str, data=None):
+    def _log_request(self, method: str, endpoint: str, data=None):
         """Log request details."""
         if self.debug:
             self.logger.debug(f"REQUEST: {method} {endpoint}")
             if data:
                 self.logger.debug(f"REQUEST DATA: {json.dumps(data, indent=2)}")
     
-    async def _log_response(self, response_data):
+    def _log_response(self, response_data):
         """Log response details."""
         if self.debug:
             self.logger.debug(f"RESPONSE: {json.dumps(response_data, indent=2)}")
     
-    # Override methods to add logging
     async def list_assets(self):
-        await self._log_request("GET", "/market/assets")
-        result = await super().list_assets()
-        await self._log_response(result.model_dump() if hasattr(result, 'model_dump') else result)
+        self._log_request("GET", "/market/assets")
+        result = await self.client.maker.list_assets()
+        self._log_response(result.model_dump() if hasattr(result, 'model_dump') else result)
         return result
     
-    async def get_quote(self, from_asset: str, to_asset: str, from_amount: int):
-        request_data = {
-            "from_asset": from_asset,
-            "to_asset": to_asset,
-            "from_amount": from_amount
-        }
-        await self._log_request("POST", "/market/quote", request_data)
-        result = await super().get_quote(from_asset, to_asset, from_amount)
-        await self._log_response(result.model_dump() if hasattr(result, 'model_dump') else result)
+    async def get_quote(self, request):
+        self._log_request("POST", "/market/quote", request.model_dump() if hasattr(request, 'model_dump') else str(request))
+        result = await self.client.maker.get_quote(request)
+        self._log_response(result.model_dump() if hasattr(result, 'model_dump') else result)
         return result
 
 async def debug_example():
     """Example with debug logging."""
-    async with DebugClient(
-        api_url="https://api.kaleidoswap.com",
-        node_url="https://node.kaleidoswap.com",
-        debug=True
-    ) as client:
-        
+    from kaleidoswap_sdk import PairQuoteRequest, SwapLegInput, Layer
+    
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
+        node_url="https://node.kaleidoswap.com"
+    )
+    debug = DebugWrapper(client, debug=True)
+    
+    try:
         print("=== Debug mode enabled ===")
         
         # Operations will be logged with full request/response details
-        assets = await client.list_assets()
-        quote = await client.get_quote("BTC", "USDT", 100000000)
+        assets = await debug.list_assets()
+        quote = await debug.get_quote(
+            PairQuoteRequest(
+                from_asset=SwapLegInput(asset_id="BTC", layer=Layer.BTC_LN, amount=100000000),
+                to_asset=SwapLegInput(asset_id="USDT", layer=Layer.RGB_LN)
+            )
+        )
         
         print("=== Debug example completed ===")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(debug_example())
@@ -775,21 +795,22 @@ class RateLimitedClient:
         return await operation(*args, **kwargs)
     
     async def list_assets(self):
-        return await self.rate_limited_call(self.client.list_assets)
+        return await self.rate_limited_call(self.client.maker.list_assets)
     
     async def get_quote(self, *args, **kwargs):
-        return await self.rate_limited_call(self.client.get_quote, *args, **kwargs)
+        return await self.rate_limited_call(self.client.maker.get_quote, *args, **kwargs)
 
 # Example usage
 async def rate_limiting_example():
     # Allow 10 requests per minute
     rate_limiter = RateLimiter(max_requests=10, time_window=60.0)
     
-    async with KaleidoClient(
-        api_url="https://api.kaleidoswap.com",
+    client = KaleidoClient.create(
+        base_url="https://api.kaleidoswap.com",
         node_url="https://node.kaleidoswap.com"
-    ) as client:
-        
+    )
+    
+    try:
         rate_limited_client = RateLimitedClient(client, rate_limiter)
         
         # Make multiple requests (will be rate limited)
@@ -799,6 +820,8 @@ async def rate_limiting_example():
                 print(f"Request {i + 1}: Got {len(assets.assets)} assets")
             except Exception as e:
                 print(f"Request {i + 1}: Failed - {e}")
+    finally:
+        await client.close()
 
 if __name__ == "__main__":
     asyncio.run(rate_limiting_example())
@@ -852,8 +875,8 @@ ssl_context.verify_mode = ssl.CERT_NONE
 - Implement proper error handling
 
 ```python
-client = KaleidoClient(
-    api_url="https://api.kaleidoswap.com",
+client = KaleidoClient.create(
+    base_url="https://api.kaleidoswap.com",
     node_url="https://node.kaleidoswap.com",
     timeout=60  # Increase timeout
 )

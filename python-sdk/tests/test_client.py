@@ -7,11 +7,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from kaleidoswap_sdk import (
-    CreateUtxosRequest,
-    DecodeRGBInvoiceRequest,
     KaleidoClient,
     KaleidoConfig,
-    MakerExecuteRequest,
     NetworkError,
     NodeNotConfiguredError,
     get_sdk_name,
@@ -19,11 +16,14 @@ from kaleidoswap_sdk import (
     to_display_units,
     to_smallest_units,
 )
-from kaleidoswap_sdk.generated.node_types import (
+from kaleidoswap_sdk.rln import (
     AssetSchema,
+    CreateUtxosRequest,
+    DecodeRGBInvoiceRequest,
     DecodeRGBInvoiceResponse,
     EmptyResponse,
     ListAssetsRequest,
+    MakerExecuteRequest,
 )
 
 
@@ -195,7 +195,7 @@ class TestMakerExecuteType:
         assert isinstance(result, EmptyResponse)
 
     def test_type_exported_from_package(self) -> None:
-        from kaleidoswap_sdk import EmptyResponse as Exported
+        from kaleidoswap_sdk.rln import EmptyResponse as Exported
 
         assert Exported is EmptyResponse
 
@@ -220,7 +220,7 @@ class TestListAssetsEnumSerialization:
         http = client_with_node.rln._http
         body = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia])
 
-        with patch.object(http, "_request_with_retry", new_callable=AsyncMock) as mock:
+        with patch.object(http, "_request", new_callable=AsyncMock) as mock:
             mock.return_value = {"nia": [], "uda": [], "cfa": []}
             await http.node_post("/listassets", body)
 
@@ -238,7 +238,7 @@ class TestConnectionErrorHandling:
         with pytest.raises(NetworkError) as exc_info:
             await client.maker.list_assets()
 
-        assert "Failed to connect" in str(exc_info.value)
+        assert "Network error" in str(exc_info.value) or "Failed to connect" in str(exc_info.value)
         assert exc_info.value.code == "NETWORK_ERROR"
 
     async def test_dns_error_user_friendly(self) -> None:

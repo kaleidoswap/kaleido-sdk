@@ -11,11 +11,10 @@ from kaleidoswap_sdk import (
     ReceiverAddressFormat,
     RoutesRequest,
     SwapCompletionOptions,
-    SwapLeg,
     SwapRequest,
     SwapStatusRequest,
 )
-from kaleidoswap_sdk.generated.node_types import TakerRequest
+from kaleidoswap_sdk.rln import TakerRequest
 from tests.utils import get_fresh_quote, initiate_swap
 
 
@@ -142,11 +141,7 @@ class TestMakerClientIntegration:
         usdt_asset = next((a for a in assets.assets if a.ticker == "USDT"), None)
         assert usdt_asset is not None, "USDT asset not found in list_assets"
         pid = usdt_asset.protocol_ids
-        asset_id = (
-            getattr(pid, "additional_properties", {}).get("RGB")
-            if pid is not None and hasattr(pid, "additional_properties")
-            else None
-        )
+        asset_id = (pid or {}).get("RGB") if isinstance(pid, dict) else None
         assert asset_id is not None, "USDT RGB asset id not found in protocol_ids"
         quote = await get_fresh_quote(
             client,
@@ -167,13 +162,21 @@ class TestMakerClientIntegration:
         address_response = await second_client_with_node.rln.get_address()
         receiver_address_str = address_response.address
 
-        # Step 3: Create swap order
-        from_leg = SwapLeg.model_validate(quote.from_asset.to_dict())
-        to_leg = SwapLeg.model_validate(quote.to_asset.to_dict())
+        # Step 3: Create swap order (use quote's from_asset/to_asset as dicts for generated client)
+        from_asset_dict = (
+            quote.from_asset.to_dict()
+            if hasattr(quote.from_asset, "to_dict")
+            else getattr(quote.from_asset, "model_dump", lambda: quote.from_asset)()
+        )
+        to_asset_dict = (
+            quote.to_asset.to_dict()
+            if hasattr(quote.to_asset, "to_dict")
+            else getattr(quote.to_asset, "model_dump", lambda: quote.to_asset)()
+        )
         request = CreateSwapOrderRequest(
             rfq_id=quote.rfq_id,
-            from_asset=from_leg,
-            to_asset=to_leg,
+            from_asset=from_asset_dict,
+            to_asset=to_asset_dict,
             receiver_address=ReceiverAddress(
                 address=receiver_address_str,
                 format=ReceiverAddressFormat.btc_address,
@@ -188,7 +191,8 @@ class TestMakerClientIntegration:
         order_id = getattr(order, "order_id", None) or getattr(order, "id", None)
         assert order_id is not None, "Order must have id or order_id"
         assert hasattr(order, "status")
-        assert order.status == "PENDING_PAYMENT"
+        status_val = getattr(order.status, "value", str(order.status))
+        assert status_val == "PENDING_PAYMENT"
 
     @pytest.mark.integration
     @pytest.mark.skip(reason="Requires existing swap order in backend")
@@ -313,7 +317,8 @@ class TestMakerClientIntegration:
         # Verify response
         assert status_response is not None
         assert status_response.swap.payment_hash == swap.payment_hash
-        assert status_response.swap.status in [
+        status_val = getattr(status_response.swap.status, "value", str(status_response.swap.status))
+        assert status_val in [
             "Waiting",
             "Pending",
             "Succeeded",
@@ -348,7 +353,8 @@ class TestMakerClientIntegration:
         # Step 3: Check initial status
         status_request = SwapStatusRequest(payment_hash=swap.payment_hash)
         initial_status = await client.maker.get_atomic_swap_status(status_request)
-        assert initial_status.swap.status in ["Waiting", "Pending"]
+        status_val = getattr(initial_status.swap.status, "value", str(initial_status.swap.status))
+        assert status_val in ["Waiting", "Pending"]
 
     # ==========================================================================
     # LSPS1 CHANNEL ORDER ENDPOINTS (/lsps1/*)

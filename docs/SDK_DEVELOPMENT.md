@@ -42,7 +42,7 @@ Each language SDK is **maintained separately** and generates its own models dire
         │  openapi-typescript │   │  datamodel-codegen  │
         │                     │   │                     │
         │  Output:            │   │  Output:            │
-        │  src/generated/     │   │  generated/         │
+        │  src/generated/     │   │  _generated/        │
         │  - api-types.ts     │   │  - api_types.py     │
         │  - node-types.ts    │   │  - node_types.py    │
         └─────────────────────┘   └─────────────────────┘
@@ -99,19 +99,19 @@ pnpm run format
 cd python-sdk
 
 # Install in dev mode
-pip install -e ".[dev]"
+uv sync --all-extras --dev
 
 # Run tests
-pytest tests/ -v
+uv run pytest tests/ -v
 
 # Type check
-mypy kaleidoswap_sdk
+uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 # Lint
-ruff check kaleidoswap_sdk
+uv run ruff check kaleidoswap_sdk
 
 # Format
-ruff format kaleidoswap_sdk
+uv run ruff format kaleidoswap_sdk
 ```
 
 ### 3. When OpenAPI Specs Change
@@ -136,12 +136,12 @@ make generate-python-sdk-models
 
 **What each script does:**
 - `scripts/generate_typescript_types.sh` → Generates TypeScript types → `typescript-sdk/src/generated/`
-- `scripts/generate_python_sdk_models.sh` → Generates Pydantic models → `python-sdk/kaleidoswap_sdk/generated/`
+- `scripts/generate_python_sdk_models.sh` → Generates Pydantic models → `python-sdk/kaleidoswap_sdk/_generated/`
 
 **Important:** Always commit the generated files after regeneration.
 
 ```bash
-git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/
+git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/
 git commit -m "chore: regenerate SDK models from OpenAPI specs"
 ```
 
@@ -412,6 +412,33 @@ Follow [Semantic Versioning](https://semver.org/):
 - **MINOR** (0.X.0): New features, backward compatible
 - **PATCH** (0.0.X): Bug fixes, backward compatible
 
+### How to bump the SDK version
+
+When releasing a new version (e.g. `0.5.4`), update the version string in **every** place below so `get_version()` and package manifests stay in sync.
+
+| Location | What to change |
+|----------|----------------|
+| **Python SDK** | |
+| `python-sdk/pyproject.toml` | `version = "X.Y.Z"` |
+| `python-sdk/kaleidoswap_sdk/client.py` | `__version__ = "X.Y.Z"` |
+| `python-sdk/kaleidoswap_sdk/__init__.py` | `__version__ = "X.Y.Z"` |
+| **TypeScript SDK** | |
+| `typescript-sdk/package.json` | `"version": "X.Y.Z"` |
+| `typescript-sdk/src/client.ts` | In `getVersion()`, `return 'X.Y.Z';` |
+| **Rust (workspace)** | |
+| `Cargo.toml` (workspace root) | `[workspace.package]` → `version = "X.Y.Z"` |
+| **Docs** | |
+| `docs/README.md` | Rust install example: `kaleidoswap-sdk = "X.Y.Z"` |
+
+**Checklist:**
+
+1. Set the new version (e.g. `0.5.4`) in all 7 places above.
+2. Run tests: `make test` or per-SDK test commands.
+3. Commit: `git commit -am "chore: bump version to X.Y.Z"`.
+4. Tag and release following the [Release Process](#release-process) above.
+
+Optional: update `CHANGELOG.md` and any docs that mention the current version (e.g. ROADMAP.md).
+
 ### Pre-release Versions
 
 - `X.Y.Z-alpha.N` - Alpha releases
@@ -427,7 +454,7 @@ Pre-release versions are published with the `beta` tag on npm.
 ```bash
 # Error: "Generated models are out of date"
 make generate-models
-git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/generated/
+git add typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/
 git commit -m "chore: regenerate SDK models"
 ```
 
@@ -495,14 +522,14 @@ python-sdk/
 ├── kaleidoswap_sdk/
 │   ├── __init__.py           # Public exports
 │   ├── client.py             # KaleidoClient
-│   ├── maker_client.py       # MakerClient
-│   ├── rln_client.py         # RlnClient
-│   ├── http_client.py        # HTTP wrapper
-│   ├── ws_client.py          # WebSocket
+│   ├── _maker_client.py      # MakerClient
+│   ├── _rln_client.py        # RlnClient
+│   ├── _http_client.py       # HTTP wrapper
+│   ├── _ws_client.py        # WebSocket
 │   ├── errors.py             # Error classes
 │   ├── types.py              # Re-exports generated types
-│   ├── utils/                # Utilities
-│   └── generated/            # Auto-generated (DO NOT EDIT)
+│   ├── _utils/               # Utilities
+│   └── _generated/           # Auto-generated (DO NOT EDIT)
 │       ├── api_types.py
 │       └── node_types.py
 ├── tests/
@@ -519,12 +546,12 @@ python-sdk/
 | Pre-commit Python | `make pre-commit-python-sdk` |
 | Regenerate all models | `make generate-models` |
 | Test TypeScript | `cd typescript-sdk && pnpm test` |
-| Test Python | `cd python-sdk && pytest` |
+| Test Python | `cd python-sdk && uv run pytest` |
 | Lint TypeScript | `cd typescript-sdk && pnpm run lint` |
-| Lint Python | `cd python-sdk && ruff check kaleidoswap_sdk` |
+| Lint Python | `cd python-sdk && uv run ruff check kaleidoswap_sdk` |
 | Format TypeScript | `cd typescript-sdk && pnpm run format` |
-| Format Python | `cd python-sdk && ruff format kaleidoswap_sdk` |
+| Format Python | `cd python-sdk && uv run ruff format kaleidoswap_sdk` |
 | Type check TypeScript | `cd typescript-sdk && pnpm run typecheck` |
-| Type check Python | `cd python-sdk && mypy kaleidoswap_sdk` |
+| Type check Python | `cd python-sdk && uv run mypy kaleidoswap_sdk --ignore-missing-imports` |
 | Build TypeScript | `cd typescript-sdk && pnpm run build` |
-| Build Python | `cd python-sdk && python -m build` |
+| Build Python | `cd python-sdk && uv build` |

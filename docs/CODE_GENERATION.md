@@ -29,7 +29,7 @@ OpenAPI Specs (crates/kaleidoswap-core/specs/)
 └── rln.yaml (RGB Lightning Node API)
     │
     ├─→ Python SDK: scripts/generate_python_sdk_models.sh
-    │   └─→ python-sdk/kaleidoswap_sdk/generated/
+    │   └─→ python-sdk/kaleidoswap_sdk/_generated/
     │       ├── api_types.py
     │       └── node_types.py
     │
@@ -46,7 +46,7 @@ OpenAPI Specs (crates/kaleidoswap-core/specs/)
 
 ## 1. Python SDK Model Generation
 
-Python SDK models are generated using `datamodel-code-generator`:
+The Python SDK uses **only** `datamodel-code-generator` for code generation. There is no `openapi-python-client` usage for the Maker API anymore; the attrs-based generated HTTP client has been removed. The Maker client uses `HttpClient` + Pydantic models directly.
 
 ### Source Files
 - `crates/kaleidoswap-core/specs/maker.json` - Kaleidoswap Market API
@@ -54,8 +54,9 @@ Python SDK models are generated using `datamodel-code-generator`:
 
 ### Output
 ```
-python-sdk/kaleidoswap_sdk/generated/
+python-sdk/kaleidoswap_sdk/_generated/
 ├── __init__.py          # Re-exports all types
+├── base.py              # Base model utilities
 ├── api_types.py         # Pydantic models from maker.json
 └── node_types.py        # Pydantic models from rln.yaml
 ```
@@ -76,6 +77,9 @@ make generate-python-sdk-models
 - Auto-fixes naming conflicts (e.g., `PaymentStatus1` → `PaymentStatus`)
 - Generates type-safe Pydantic models
 - Includes field constraints and validation
+
+### Note on `generate-python-sdk-client`
+The `generate-python-sdk-client` make target still exists but only generates the RLN client (which is unused by the SDK directly). The Maker client no longer needs generated code—it uses `HttpClient` + Pydantic models directly.
 
 ---
 
@@ -215,7 +219,7 @@ use kaleidoswap_core::models::rgb_node::Channel;
 
 3. **Commit the generated files**:
    ```bash
-   git add python-sdk/kaleidoswap_sdk/generated/
+   git add python-sdk/kaleidoswap_sdk/_generated/
    git add typescript-sdk/src/generated/
    git commit -m "chore: regenerate SDK models from OpenAPI specs"
    ```

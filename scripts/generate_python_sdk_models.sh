@@ -3,7 +3,7 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
-OUTPUT_DIR="$ROOT_DIR/python-sdk/kaleidoswap_sdk/generated"
+OUTPUT_DIR="$ROOT_DIR/python-sdk/kaleidoswap_sdk/_generated"
 
 echo "🔧 Generating Python Pydantic models for kaleidoswap-sdk from OpenAPI specs..."
 
@@ -37,7 +37,7 @@ $CODEGEN_CMD \
     --use-double-quotes \
     --collapse-root-models \
     --disable-timestamp \
-    --base-class kaleidoswap_sdk.generated.base.BaseNodeModel
+    --base-class kaleidoswap_sdk._generated.base.BaseNodeModel
 
 # Generate from rln.yaml (RGB Lightning Node API)
 echo "  → Generating from rln.yaml..."
@@ -57,7 +57,7 @@ $CODEGEN_CMD \
     --use-double-quotes \
     --collapse-root-models \
     --disable-timestamp \
-    --base-class kaleidoswap_sdk.generated.base.BaseNodeModel
+    --base-class kaleidoswap_sdk._generated.base.BaseNodeModel
 
 # Fix naming conflicts: datamodel-code-generator renames types when field names conflict
 # Example: PaymentStatus enum gets renamed to PaymentStatus1 when there's a payment_status field

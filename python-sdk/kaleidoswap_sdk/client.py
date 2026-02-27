@@ -6,13 +6,13 @@ Main client class that coordinates Maker and RLN operations.
 
 from __future__ import annotations
 
+from ._http_client import HttpClient
+from ._maker_client import MakerClient
+from ._rln_client import RlnClient
 from .errors import NodeNotConfiguredError
-from .http_client import HttpClient
-from .maker_client import MakerClient
-from .rln_client import RlnClient
 from .types import KaleidoConfig
 
-__version__ = "0.5.0"
+__version__ = "0.5.3"
 __sdk_name__ = "kaleidoswap-sdk"
 
 
@@ -45,15 +45,9 @@ class KaleidoClient:
             config: Client configuration
         """
         self._config = config
-        # Initialize clients with base URL and credentials
-        self._maker = MakerClient(
-            base_url=config.base_url,
-            api_key=config.api_key,
-            timeout=config.timeout,
-        )
-        # Note: RlnClient needs similar refactoring
-        self._http = HttpClient(config)  # Temporary, for RlnClient
-        self._rln = RlnClient(self._http)  # TODO: Refactor RlnClient
+        self._http = HttpClient(config)
+        self._maker = MakerClient(self._http)
+        self._rln = RlnClient(self._http)
 
     @classmethod
     def create(

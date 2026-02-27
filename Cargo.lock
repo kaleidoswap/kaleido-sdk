@@ -857,7 +857,7 @@ dependencies = [
 
 [[package]]
 name = "kaleidoswap-core"
-version = "0.5.0"
+version = "0.5.3"
 dependencies = [
  "async-trait",
  "backoff",

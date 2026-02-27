@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kaleidoswap-sdk"
-version = "0.5.2"
+version = "0.5.3"
 description = "Python SDK for the Kaleidoswap protocol - Trade RGB assets on Lightning Network"
 readme = "README.md"
 license = "MIT"
@@ -40,7 +40,6 @@ dev = [
     "mypy>=1.0",
     "ruff>=0.1.0",
     "datamodel-code-generator>=0.25",
-    "openapi-python-client>=0.21.0",
 ]
 
 [project.urls]
@@ -66,7 +65,7 @@ warn_unused_ignores = true
 disallow_untyped_defs = false
 plugins = ["pydantic.mypy"]
 exclude = [
-    "kaleidoswap_sdk/generated/",
+    "kaleidoswap_sdk/_generated/",
 ]
 
 [[tool.mypy.overrides]]
@@ -82,7 +81,7 @@ line-length = 100
 target-version = "py310"
 # Exclude generated files from formatting (they're auto-generated with datamodel-code-generator)
 exclude = [
-    "kaleidoswap_sdk/generated/",
+    "kaleidoswap_sdk/_generated/",
 ]
 
 [tool.ruff.lint]
@@ -91,7 +90,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 # Ignore certain rules in auto-generated code
-"kaleidoswap_sdk/generated/**/*.py" = [
+"kaleidoswap_sdk/_generated/**/*.py" = [
     "F403",  # Star imports
     "F405",  # Undefined names from star imports
     "N818",  # Exception naming conventions

@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-python-sdk-client generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
+.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -44,7 +44,6 @@ help:
 	@echo "Code Generation:"
 	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
 	@echo "  generate-python-sdk-models - Generate Python SDK Pydantic models"
-	@echo "  generate-python-sdk-client - Generate Python SDK HTTP clients (openapi-python-client)"
 	@echo "  generate-ts-types          - Generate TypeScript types"
 	@echo "  generate-rust-models       - Generate Rust models (Progenitor via build.rs)"
 	@echo "  regenerate                 - Full regen: update-specs + generate-models + check"
@@ -172,7 +171,7 @@ format-python:
 	@echo "✨ Formatting Python SDK code..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/
+		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/
 
 format-typescript:
 	@echo "✨ Formatting TypeScript code..."
@@ -192,15 +191,15 @@ lint-python:
 	@echo "🛠️ Fixing Python SDK lint issues..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
-		uv run ruff check --fix kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
+		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
+		uv run ruff check --fix kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
 		uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/
+		uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
@@ -249,8 +248,8 @@ pre-commit-python-sdk:
 	@echo ""
 	cd $(PYTHON_SDK) && \
 		uv sync --all-extras --dev && \
-		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
-		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/generated/ && \
+		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
+		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
 		echo "  → Type checking (warnings only)..." && (uv run mypy kaleidoswap_sdk --ignore-missing-imports || echo "    ⚠️  Type check warnings (non-blocking)") && \
 		echo "  → Running tests (excluding integration)..." && uv run pytest tests/ -v -m "not integration"
 	@echo ""
@@ -266,10 +265,6 @@ generate-models: generate-python-sdk-models generate-ts-types
 generate-python-sdk-models:
 	@echo "🐍 Generating Python SDK Pydantic models from OpenAPI specs..."
 	bash scripts/generate_python_sdk_models.sh
-
-generate-python-sdk-client:
-	@echo "🐍 Generating Python SDK HTTP clients from OpenAPI specs..."
-	bash scripts/generate_python_sdk_client.sh
 
 generate-ts-types:
 	@echo "📦 Generating TypeScript types from OpenAPI specs..."
