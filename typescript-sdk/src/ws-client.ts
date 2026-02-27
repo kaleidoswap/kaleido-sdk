@@ -8,6 +8,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { randomUUID } from 'crypto';
 import type {
     WebSocketMessage,
     WebSocketResponse,
@@ -20,6 +21,11 @@ export interface WSClientConfig {
     maxReconnectAttempts?: number;
     reconnectDelay?: number;
     pingInterval?: number;
+    /**
+     * Optional client/user UUID for the WebSocket path (.../ws/<userId>).
+     * If not provided, a UUID is generated automatically.
+     */
+    userId?: string;
 }
 
 export class WSClient extends EventEmitter {
@@ -30,15 +36,32 @@ export class WSClient extends EventEmitter {
     private pingInterval: number;
     private pingTimer?: NodeJS.Timeout;
     private url: string;
+    private _clientId: string;
     private isConnecting = false;
     private isClosed = false;
 
     constructor(config: WSClientConfig) {
         super();
-        this.url = config.url;
+        this._clientId = config.userId ?? randomUUID();
+        this.url = WSClient.buildUrlWithClientId(config.url, this._clientId);
         this.maxReconnectAttempts = config.maxReconnectAttempts ?? 5;
         this.reconnectDelay = config.reconnectDelay ?? 1000;
         this.pingInterval = config.pingInterval ?? 30000; // 30 seconds
+    }
+
+    /**
+     * Client UUID used for the WebSocket path (user-provided or auto-generated).
+     */
+    get clientId(): string {
+        return this._clientId;
+    }
+
+    /**
+     * Append clientId as path segment: .../ws/{clientId}
+     */
+    private static buildUrlWithClientId(url: string, clientId: string): string {
+        // Remove trailing slash, then append clientId
+        return url.replace(/\/$/, '') + '/' + clientId;
     }
 
     /**
