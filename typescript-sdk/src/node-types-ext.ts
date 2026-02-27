@@ -146,3 +146,18 @@ export type NodeAsset = components['schemas']['AssetNIA'];
 export type NiaAsset = NodeAsset;
 export type Recipient = components['schemas']['Recipient'];
 export type RecipientType = components['schemas']['RecipientType'];
+
+// Additional schema types
+export type BlockTime = components['schemas']['BlockTime'];
+export type EmbeddedMedia = components['schemas']['EmbeddedMedia'];
+export type Media = components['schemas']['Media'];
+export type PostAssetMediaRequest = components['schemas']['PostAssetMediaRequest'];
+export type PostAssetMediaResponse = components['schemas']['PostAssetMediaResponse'];
+export type ProofOfReserves = components['schemas']['ProofOfReserves'];
+export type RgbAllocation = components['schemas']['RgbAllocation'];
+export type Token = components['schemas']['Token'];
+export type TokenLight = components['schemas']['TokenLight'];
+export type TransactionType = components['schemas']['TransactionType'];
+export type TransferTransportEndpoint = components['schemas']['TransferTransportEndpoint'];
+export type Utxo = components['schemas']['Utxo'];
+export type WitnessData = components['schemas']['WitnessData'];
