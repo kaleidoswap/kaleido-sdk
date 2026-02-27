@@ -89,27 +89,51 @@ export class MakerClient {
 
     /**
      * Enable WebSocket for real-time updates
+     *
+     * @param wsUrl - WebSocket server URL (e.g. ws://localhost:8000/ws)
+     * @param userId - Optional client/user UUID for the path .../ws/<userId>. If not provided, the client generates one.
+     * @returns WSClient instance (use ws.clientId to read the UUID used)
      */
-    enableWebSocket(wsUrl: string): WSClient {
-        this.ws = new WSClient({ url: wsUrl });
+    enableWebSocket(wsUrl: string, userId?: string): WSClient {
+        this.ws = new WSClient({ url: wsUrl, userId });
         return this.ws;
     }
 
     /**
-     * Stream real-time quote updates
+     * Stream real-time quote updates with automatic polling.
+     *
+     * The server sends one quote per request, so this function automatically
+     * requests new quotes at the specified interval to provide continuous updates.
+     *
+     * Use this for monitoring price changes over time. For a single one-time quote,
+     * use `getQuote()` instead (simpler HTTP request, no WebSocket needed).
+     *
+     * @param from_asset - Source asset ticker
+     * @param to_asset - Destination asset ticker
+     * @param from_amount - Amount to convert (in smallest units)
+     * @param from_layer - Source layer
+     * @param to_layer - Destination layer
+     * @param onUpdate - Callback for quote updates
+     * @param pollInterval - Milliseconds between quote requests (default: 2000)
+     * @returns Stop function (stops polling and unsubscribes from updates)
      *
      * @example
      * ```typescript
-     * const unsubscribe = await client.maker.streamQuotes(
-     *   'btc',
-     *   'usdt',
+     * const stop = await client.maker.streamQuotes(
+     *   'BTC',
+     *   'USDT',
      *   10000000, // 0.1 BTC
      *   'BTC_LN',
      *   'RGB_LN',
-     *   (quote) => console.log('Quote:', quote)
+     *   (quote) => console.log('Quote:', quote),
+     *   2000, // poll every 2 seconds
      * );
      *
-     * // Later: unsubscribe();
+     * // Quotes arrive every 2 seconds via callback
+     * await new Promise(resolve => setTimeout(resolve, 30000));
+     *
+     * // Stop streaming
+     * stop();
      * ```
      */
     async streamQuotes(
@@ -119,6 +143,7 @@ export class MakerClient {
         from_layer: Layer | null,
         to_layer: Layer | null,
         onUpdate: (quote: QuoteResponse) => void,
+        pollInterval: number = 2000,
     ): Promise<() => void> {
         if (!this.ws) {
             throw new Error('WebSocket not enabled. Call enableWebSocket() first.');
@@ -131,18 +156,36 @@ export class MakerClient {
         // Subscribe to quote updates
         this.ws.on('quoteResponse', onUpdate);
 
-        // Send initial quote request
-        this.ws.requestQuote({
+        // Quote request parameters
+        const quoteParams = {
             from_asset,
             to_asset,
             from_amount,
-            to_amount: null,
+            to_amount: null as null,
             from_layer,
             to_layer,
-        });
+        };
 
-        // Return unsubscribe function
+        // Send initial quote request
+        this.ws.requestQuote(quoteParams);
+
+        // Set up periodic polling for continuous quote updates
+        let pollingTimer: ReturnType<typeof setInterval> | undefined;
+        let stopped = false;
+
+        pollingTimer = setInterval(() => {
+            if (!stopped && this.ws && this.ws.isConnected()) {
+                this.ws.requestQuote(quoteParams);
+            }
+        }, pollInterval);
+
+        // Return stop function
         return () => {
+            stopped = true;
+            if (pollingTimer !== undefined) {
+                clearInterval(pollingTimer);
+                pollingTimer = undefined;
+            }
             if (this.ws) {
                 this.ws.off('quoteResponse', onUpdate);
             }
@@ -199,23 +242,30 @@ export class MakerClient {
     /**
      * Stream quotes using ticker symbols with automatic route discovery
      *
+     * @param fromTicker - Source asset ticker
+     * @param toTicker - Destination asset ticker
+     * @param amount - Amount to convert (in smallest units)
+     * @param onUpdate - Callback for quote updates
+     * @param options - Optional settings including preferred layers and poll interval
+     * @returns Stop function
+     *
      * @example
      * ```typescript
      * // Stream quotes for BTC -> USDT using first available route
-     * const unsubscribe = await client.maker.streamQuotesByTicker(
+     * const stop = await client.maker.streamQuotesByTicker(
      *   'BTC',
      *   'USDT',
      *   10000000, // 0.1 BTC
      *   (quote) => console.log('Quote:', quote)
      * );
      *
-     * // With preferred layers
-     * const unsubscribe2 = await client.maker.streamQuotesByTicker(
+     * // With preferred layers and custom poll interval
+     * const stop2 = await client.maker.streamQuotesByTicker(
      *   'BTC',
      *   'USDT',
      *   10000000,
      *   (quote) => console.log('Quote:', quote),
-     *   { preferredFromLayer: 'BTC_LN', preferredToLayer: 'RGB_LN' }
+     *   { preferredFromLayer: 'BTC_LN', preferredToLayer: 'RGB_LN', pollInterval: 3000 }
      * );
      * ```
      */
@@ -227,6 +277,7 @@ export class MakerClient {
         options?: {
             preferredFromLayer?: Layer;
             preferredToLayer?: Layer;
+            pollInterval?: number;
         },
     ): Promise<() => void> {
         const routes = await this.getAvailableRoutes(fromTicker, toTicker);
@@ -258,15 +309,23 @@ export class MakerClient {
             selectedRoute.from_layer as Layer,
             selectedRoute.to_layer as Layer,
             onUpdate,
+            options?.pollInterval,
         );
     }
 
     /**
      * Stream quotes for all available routes of a trading pair
      *
+     * @param fromTicker - Source asset ticker
+     * @param toTicker - Destination asset ticker
+     * @param amount - Amount to convert (in smallest units)
+     * @param onUpdate - Callback receiving (routeKey, quote)
+     * @param pollInterval - Milliseconds between quote requests (default: 2000)
+     * @returns Map of route keys to stop functions
+     *
      * @example
      * ```typescript
-     * const unsubscribers = await client.maker.streamQuotesForAllRoutes(
+     * const stoppers = await client.maker.streamQuotesForAllRoutes(
      *   'BTC',
      *   'USDT',
      *   10000000,
@@ -275,8 +334,8 @@ export class MakerClient {
      *   }
      * );
      *
-     * // Later: unsubscribe from all routes
-     * unsubscribers.forEach((unsubscribe) => unsubscribe());
+     * // Later: stop all routes
+     * for (const stop of stoppers.values()) stop();
      * ```
      */
     async streamQuotesForAllRoutes(
@@ -284,6 +343,7 @@ export class MakerClient {
         toTicker: string,
         amount: number,
         onUpdate: (route: string, quote: QuoteResponse) => void,
+        pollInterval: number = 2000,
     ): Promise<Map<string, () => void>> {
         const routes = await this.getAvailableRoutes(fromTicker, toTicker);
 
@@ -293,25 +353,26 @@ export class MakerClient {
             );
         }
 
-        const unsubscribers = new Map<string, () => void>();
+        const stoppers = new Map<string, () => void>();
 
         // Subscribe to each route
         for (const route of routes) {
             const routeKey = `${route.from_layer}->${route.to_layer}`;
 
-            const unsubscribe = await this.streamQuotes(
+            const stop = await this.streamQuotes(
                 fromTicker.toUpperCase(),
                 toTicker.toUpperCase(),
                 amount,
                 route.from_layer as Layer,
                 route.to_layer as Layer,
                 (quote) => onUpdate(routeKey, quote),
+                pollInterval,
             );
 
-            unsubscribers.set(routeKey, unsubscribe);
+            stoppers.set(routeKey, stop);
         }
 
-        return unsubscribers;
+        return stoppers;
     }
 
     // ============================================================================
