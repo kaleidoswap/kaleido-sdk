@@ -7,10 +7,10 @@
 
 import { HttpClient } from './http-client.js';
 import { toRawAmount, toDisplayAmount } from './utils/index.js';
-import { mapHttpError } from './errors.js';
+import { assertResponse } from './errors.js';
 import { WSClient } from './ws-client.js';
 import type { QuoteResponse } from './ws-types.js';
-import type { Layer } from './types.js';
+import type { Layer } from './api-types-ext.js';
 import type {
     MarketListAssetsResponse,
     ListPairsResponse,
@@ -56,23 +56,6 @@ export interface SwapCompletionOptions {
     timeout?: number;
     pollInterval?: number;
     onStatusUpdate?: (status: string) => void;
-}
-
-/**
- * Unwrap openapi-fetch response - returns data or throws error
- * This eliminates non-null assertions throughout the codebase
- */
-function unwrapResponse<T>(result: { data?: T; error?: unknown; response?: Response }): T {
-    if (result.error) {
-        console.error('[SDK DEBUG] unwrapResponse error result:', JSON.stringify(result, null, 2));
-        throw mapHttpError({
-            status: result.response?.status || 500,
-            statusText: result.response?.statusText || 'API Error',
-            data: result.error,
-        });
-    }
-    // At this point, data must exist since there's no error
-    return result.data as T;
 }
 
 export class MakerClient {
@@ -380,23 +363,23 @@ export class MakerClient {
     // ============================================================================
 
     async listAssets(): Promise<MarketListAssetsResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/market/assets'));
+        return assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
     }
 
     async listPairs(): Promise<ListPairsResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/market/pairs'));
+        return assertResponse(await this.http.maker.GET('/api/v1/market/pairs'));
     }
 
     async getQuote(body: GetQuoteRequest): Promise<GetQuoteResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/market/quote', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/market/quote', { body }));
     }
 
     async getPairRoutes(body: GetPairRoutesRequest): Promise<GetPairRoutesResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/market/pairs/routes', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/market/pairs/routes', { body }));
     }
 
     async getMarketRoutes(body: DiscoverRoutesRequest): Promise<DiscoverRoutesResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/market/routes', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/market/routes', { body }));
     }
 
     // Note: /api/v1/market/routes/matrix endpoint not in OpenAPI spec
@@ -406,11 +389,11 @@ export class MakerClient {
     // ============================================================================
 
     async createSwapOrder(body: CreateSwapOrderRequest): Promise<CreateSwapOrderResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/swaps/orders', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/swaps/orders', { body }));
     }
 
     async getSwapOrderStatus(body: GetSwapOrderStatusRequest): Promise<GetSwapOrderStatusResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/swaps/orders/status', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/swaps/orders/status', { body }));
     }
 
     async getOrderHistory(params?: {
@@ -418,7 +401,7 @@ export class MakerClient {
         limit?: number;
         skip?: number;
     }): Promise<GetOrderHistoryResponse> {
-        return unwrapResponse(
+        return assertResponse(
             await this.http.maker.GET('/api/v1/swaps/orders/history', {
                 params: params ? { query: params as Record<string, unknown> } : undefined,
             }),
@@ -426,13 +409,13 @@ export class MakerClient {
     }
 
     async getOrderAnalytics(): Promise<GetOrderStatsResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/swaps/orders/analytics'));
+        return assertResponse(await this.http.maker.GET('/api/v1/swaps/orders/analytics'));
     }
 
     async submitRateDecision(
         body: SwapOrderRateDecisionRequest,
     ): Promise<SwapOrderRateDecisionResponse> {
-        return unwrapResponse(
+        return assertResponse(
             await this.http.maker.POST('/api/v1/swaps/orders/rate_decision', { body }),
         );
     }
@@ -442,19 +425,19 @@ export class MakerClient {
     // ============================================================================
 
     async initSwap(body: InitiateSwapRequest): Promise<InitiateSwapResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/swaps/init', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/swaps/init', { body }));
     }
 
     async executeSwap(body: ConfirmSwapRequest): Promise<ConfirmSwapResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/swaps/execute', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/swaps/execute', { body }));
     }
 
     async getAtomicSwapStatus(body: GetSwapStatusRequest): Promise<GetSwapStatusResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/swaps/atomic/status', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/swaps/atomic/status', { body }));
     }
 
     async getSwapNodeInfo(): Promise<GetNodeInfoResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/swaps/nodeinfo'));
+        return assertResponse(await this.http.maker.GET('/api/v1/swaps/nodeinfo'));
     }
 
     // ============================================================================
@@ -462,31 +445,31 @@ export class MakerClient {
     // ============================================================================
 
     async getLspInfo(): Promise<GetLspInfoResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/lsps1/get_info'));
+        return assertResponse(await this.http.maker.GET('/api/v1/lsps1/get_info'));
     }
 
     async getLspNetworkInfo(): Promise<GetLspNetworkInfoResponse> {
-        return unwrapResponse(await this.http.maker.GET('/api/v1/lsps1/network_info'));
+        return assertResponse(await this.http.maker.GET('/api/v1/lsps1/network_info'));
     }
 
     async createLspOrder(body: CreateLspOrderRequest): Promise<CreateLspOrderResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/lsps1/create_order', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/lsps1/create_order', { body }));
     }
 
     async getLspOrder(body: GetLspOrderRequest): Promise<GetLspOrderResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/lsps1/get_order', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/lsps1/get_order', { body }));
     }
 
     async estimateLspFees(body: EstimateLspFeesRequest): Promise<EstimateLspFeesResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/lsps1/estimate_fees', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/lsps1/estimate_fees', { body }));
     }
 
     async submitLspRateDecision(body: LspRateDecisionRequest): Promise<LspRateDecisionResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/lsps1/rate_decision', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/lsps1/rate_decision', { body }));
     }
 
     async retryAssetDelivery(body: RetryDeliveryRequest): Promise<RetryDeliveryResponse> {
-        return unwrapResponse(await this.http.maker.POST('/api/v1/lsps1/retry_delivery', { body }));
+        return assertResponse(await this.http.maker.POST('/api/v1/lsps1/retry_delivery', { body }));
     }
 
     // ============================================================================

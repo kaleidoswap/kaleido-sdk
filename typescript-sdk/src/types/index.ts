@@ -1,82 +1,40 @@
 /**
- * Kaleidoswap SDK - TypeScript/JavaScript
+ * Kaleidoswap SDK - Type Exports
  *
- * Pure TypeScript SDK for interacting with the Kaleidoswap protocol.
- * Trade RGB assets on Lightning Network with ease.
+ * Single entry point for all SDK type definitions.
+ * Developers should import types from here rather than from internal files.
  *
  * @example
- * ```typescript
- * import { KaleidoClient } from 'kaleidoswap-sdk';
- * import type { GetQuoteResponse, Asset } from 'kaleidoswap-sdk/types';
+ * // All types from one place
+ * import type { GetQuoteResponse, Asset, NodeInfoResponse, KaleidoConfig } from 'kaleidoswap-sdk/types';
  *
- * const client = KaleidoClient.create({
- *   baseUrl: 'https://api.regtest.kaleidoswap.com',
- * });
- *
- * const assets = await client.maker.listAssets();
- * const quote = await client.maker.getQuote({ ... });
- * ```
+ * // Or use domain-specific sub-paths for focused imports
+ * import type { GetQuoteResponse, Asset } from 'kaleidoswap-sdk/types/market';
+ * import type { NodeInfoResponse, Channel } from 'kaleidoswap-sdk/types/node';
  */
 
-// Export client classes
-export { KaleidoClient } from './client.js';
-export { MakerClient } from './maker-client.js';
-export { RlnClient } from './rln-client.js';
-
-// Export HTTP client (for advanced usage)
-export { HttpClient } from './http-client.js';
-
-// Export utility functions
-export { WSClient } from './ws-client.js';
-export { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from './client.js';
-export {
-    toRawAmount,
-    toDisplayAmount,
-    PrecisionHandler,
-    createPrecisionHandler,
-    AssetPairMapper,
-    createAssetPairMapper,
-} from './utils/index.js';
-
 // ============================================================================
-// Error classes
+// SDK Configuration (values + types)
 // ============================================================================
 
-export {
-    KaleidoError,
-    APIError,
-    NetworkError,
-    ValidationError,
-    TimeoutError,
-    WebSocketError,
-    NotFoundError,
-    ConfigError,
-    SwapError,
-    NodeNotConfiguredError,
-    QuoteExpiredError,
-    InsufficientBalanceError,
-    RateLimitError,
-    mapHttpError,
-    assertResponse,
-} from './errors.js';
+export type { KaleidoConfig } from './config.js';
+
+/**
+ * Runtime enum values for the Layer type.
+ * Use when you need to compare or assign layer values at runtime.
+ *
+ * @example
+ * import { LayerEnum } from 'kaleidoswap-sdk/types';
+ * if (route.from_layer === LayerEnum.RGB_LN) { ... }
+ */
+export { LayerEnum, ReceiverAddressFormatEnum } from './config.js';
 
 // ============================================================================
-// All type definitions
-//
-// Prefer importing from 'kaleidoswap-sdk/types' for a focused type-only import,
-// or use the domain sub-paths:
-//   import type { ... } from 'kaleidoswap-sdk/types/market';
-//   import type { ... } from 'kaleidoswap-sdk/types/node';
-//
-// Everything below is re-exported here for convenience so that plain
-// `import { ... } from 'kaleidoswap-sdk'` still works for types.
+// Market API Types
 // ============================================================================
 
 export type {
-    // ---- Configuration ----
-    KaleidoConfig,
-
-    // ---- Market schema types ----
+    // Schema types
     Asset,
     TradingPair,
     Quote,
@@ -86,22 +44,22 @@ export type {
     ReceiverAddressFormat,
     ApiComponents,
 
-    // ---- Market / Assets ----
+    // Market / Assets
     MarketListAssetsResponse,
     ListPairsResponse,
 
-    // ---- Routes ----
+    // Routes
     GetPairRoutesRequest,
     GetPairRoutesResponse,
     DiscoverRoutesRequest,
     DiscoverRoutesResponse,
     GetRouteMatrixResponse,
 
-    // ---- Quotes ----
+    // Quotes
     GetQuoteRequest,
     GetQuoteResponse,
 
-    // ---- Swap Orders ----
+    // Swap Orders
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
     GetSwapOrderStatusRequest,
@@ -111,7 +69,7 @@ export type {
     SwapOrderRateDecisionRequest,
     SwapOrderRateDecisionResponse,
 
-    // ---- Atomic Swaps ----
+    // Atomic Swaps
     InitiateSwapRequest,
     InitiateSwapResponse,
     ConfirmSwapRequest,
@@ -120,7 +78,7 @@ export type {
     GetSwapStatusResponse,
     GetNodeInfoResponse,
 
-    // ---- LSPS1 ----
+    // LSPS1
     GetLspInfoResponse,
     GetLspNetworkInfoResponse,
     CreateLspOrderRequest,
@@ -134,14 +92,20 @@ export type {
     RetryDeliveryRequest,
     RetryDeliveryResponse,
 
-    // ---- Market backward compat aliases ----
+    // Backward compat aliases
     SwapOrderStatusResponse,
     OrderHistoryResponse,
     OrderStatsResponse,
     LspInfo,
     NetworkInfo,
+} from './market.js';
 
-    // ---- Node schema types ----
+// ============================================================================
+// Node API Types
+// ============================================================================
+
+export type {
+    // Schema types
     Channel,
     NodeAsset,
     NiaAsset,
@@ -162,7 +126,7 @@ export type {
     WitnessData,
     NodeComponents,
 
-    // ---- Authentication & Wallet ----
+    // Authentication & Wallet
     InitWalletRequest,
     InitResponse,
     UnlockRequest,
@@ -175,11 +139,11 @@ export type {
     BackupResponse,
     ShutdownResponse,
 
-    // ---- Node Information ----
+    // Node Information
     NodeInfoResponse,
     NetworkInfoResponse,
 
-    // ---- Bitcoin Operations ----
+    // Bitcoin Operations
     AddressResponse,
     BtcBalanceResponse,
     SendBtcRequest,
@@ -193,7 +157,7 @@ export type {
     EstimateFeeRequest,
     EstimateFeeResponse,
 
-    // ---- RGB Asset Management ----
+    // RGB Asset Management
     ListAssetsRequest,
     ListAssetsResponse,
     AssetBalanceRequest,
@@ -205,7 +169,7 @@ export type {
     SendRgbRequest,
     SendRgbResponse,
 
-    // ---- Asset Issuance ----
+    // Asset Issuance
     IssueAssetNIARequest,
     IssueAssetNIAResponse,
     IssueAssetCFARequest,
@@ -213,13 +177,13 @@ export type {
     IssueAssetUDARequest,
     IssueAssetUDAResponse,
 
-    // ---- Transfers ----
+    // Transfers
     ListTransfersRequest,
     ListTransfersResponse,
     RefreshTransfersRequest,
     FailTransfersRequest,
 
-    // ---- Channels ----
+    // Channels
     ListChannelsResponse,
     OpenChannelRequest,
     OpenChannelResponse,
@@ -227,13 +191,13 @@ export type {
     GetChannelIdRequest,
     GetChannelIdResponse,
 
-    // ---- Peers ----
+    // Peers
     ListPeersResponse,
     ConnectPeerRequest,
     ConnectPeerResponse,
     DisconnectPeerRequest,
 
-    // ---- Invoices ----
+    // Invoices
     CreateLNInvoiceRequest,
     CreateLNInvoiceResponse,
     CreateRgbInvoiceRequest,
@@ -245,7 +209,7 @@ export type {
     GetInvoiceStatusRequest,
     GetInvoiceStatusResponse,
 
-    // ---- Payments ----
+    // Payments
     SendPaymentRequest,
     SendPaymentResponse,
     KeysendRequest,
@@ -254,7 +218,7 @@ export type {
     GetPaymentRequest,
     GetPaymentResponse,
 
-    // ---- Maker / Taker Swaps (on-node) ----
+    // Maker / Taker Swaps (on-node)
     WhitelistTradeRequest,
     MakerInitRequest,
     MakerInitResponse,
@@ -264,7 +228,7 @@ export type {
     GetSwapRequest,
     GetSwapResponse,
 
-    // ---- Utility ----
+    // Utility
     SignMessageRequest,
     SignMessageResponse,
     SendOnionMessageRequest,
@@ -272,14 +236,19 @@ export type {
     CheckProxyEndpointRequest,
     RevokeTokenRequest,
 
-    // ---- Node backward compat aliases ----
+    // Backward compat aliases
     InitRequest,
     UnlockWalletRequest,
     LNInvoiceResponse,
     AssetMediaRequest,
     AssetMediaResponse,
+} from './node.js';
 
-    // ---- WebSocket types ----
+// ============================================================================
+// WebSocket Types
+// ============================================================================
+
+export type {
     QuoteResponse,
     QuoteRequest,
     PongResponse,
@@ -287,10 +256,10 @@ export type {
     WebSocketResponse,
     WebSocketMessage,
     WSAction,
+} from '../ws-types.js';
 
-    // ---- Client types ----
-    SwapCompletionOptions,
-} from './types/index.js';
+// ============================================================================
+// Client Types
+// ============================================================================
 
-// ---- Runtime enum values (values, not types — must use plain export) ----
-export { LayerEnum, ReceiverAddressFormatEnum } from './types/index.js';
+export type { SwapCompletionOptions } from '../maker-client.js';

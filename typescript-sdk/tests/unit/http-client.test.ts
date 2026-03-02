@@ -43,7 +43,9 @@ describe('HttpClient', () => {
                 baseUrl: 'https://api.example.com',
             });
 
-            expect(() => client.node).toThrow('Node API client not configured');
+            expect(() => client.node).toThrow(
+                'Node API not configured. Provide "nodeUrl" when creating the client.',
+            );
         });
 
         it('should allow enabling node client later', () => {
