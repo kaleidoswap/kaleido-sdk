@@ -29,7 +29,6 @@ dependencies = [
     "httpx>=0.27.0",
     "websockets>=12.0",
     "pydantic[email]>=2.0",
-    "attrs>=23.0",  # Required by auto-generated clients
 ]
 
 [project.optional-dependencies]
@@ -39,7 +38,7 @@ dev = [
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1.0",
-    "datamodel-code-generator>=0.25",
+    "datamodel-code-generator>=0.54.0",
 ]
 
 [project.urls]
