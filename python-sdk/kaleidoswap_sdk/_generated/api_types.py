@@ -14,12 +14,12 @@ class AssetDeliveryStatus(Enum):
     Status of asset delivery via keysend after channel opening
     """
 
-    not_required = "NOT_REQUIRED"
-    pending = "PENDING"
-    in_progress = "IN_PROGRESS"
-    completed = "COMPLETED"
-    failed = "FAILED"
-    rate_changed = "RATE_CHANGED"
+    NOT_REQUIRED = "NOT_REQUIRED"
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    RATE_CHANGED = "RATE_CHANGED"
 
 
 class AssetsOptions(BaseNodeModel):
@@ -42,10 +42,10 @@ class AssetsOptions(BaseNodeModel):
 
 
 class BitcoinNetwork(Enum):
-    mainnet = "Mainnet"
-    testnet = "Testnet"
-    signet = "Signet"
-    regtest = "Regtest"
+    MAINNET = "Mainnet"
+    TESTNET = "Testnet"
+    SIGNET = "Signet"
+    REGTEST = "Regtest"
 
 
 class ChannelDetails(BaseNodeModel):
@@ -140,19 +140,19 @@ class Layer(Enum):
     The layer encodes both WHAT protocol the asset uses and WHERE it settles.
     """
 
-    btc_l1 = "BTC_L1"
-    btc_ln = "BTC_LN"
-    btc_spark = "BTC_SPARK"
-    btc_arkade = "BTC_ARKADE"
-    btc_liquid = "BTC_LIQUID"
-    btc_cashu = "BTC_CASHU"
-    rgb_l1 = "RGB_L1"
-    rgb_ln = "RGB_LN"
-    tapass_l1 = "TAPASS_L1"
-    tapass_ln = "TAPASS_LN"
-    liquid_liquid = "LIQUID_LIQUID"
-    arkade_arkade = "ARKADE_ARKADE"
-    spark_spark = "SPARK_SPARK"
+    BTC_L1 = "BTC_L1"
+    BTC_LN = "BTC_LN"
+    BTC_SPARK = "BTC_SPARK"
+    BTC_ARKADE = "BTC_ARKADE"
+    BTC_LIQUID = "BTC_LIQUID"
+    BTC_CASHU = "BTC_CASHU"
+    RGB_L1 = "RGB_L1"
+    RGB_LN = "RGB_LN"
+    TAPASS_L1 = "TAPASS_L1"
+    TAPASS_LN = "TAPASS_LN"
+    LIQUID_LIQUID = "LIQUID_LIQUID"
+    ARKADE_ARKADE = "ARKADE_ARKADE"
+    SPARK_SPARK = "SPARK_SPARK"
 
 
 class Media(BaseNodeModel):
@@ -211,11 +211,11 @@ class OrderOptions(BaseNodeModel):
 
 
 class OrderState(Enum):
-    created = "CREATED"
-    channel_opening = "CHANNEL_OPENING"
-    completed = "COMPLETED"
-    failed = "FAILED"
-    pending_rate_decision = "PENDING_RATE_DECISION"
+    CREATED = "CREATED"
+    CHANNEL_OPENING = "CHANNEL_OPENING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
 
 
 class OrderStatsResponse(BaseNodeModel):
@@ -255,11 +255,11 @@ class PaginationMeta(BaseNodeModel):
 
 
 class PaymentState(Enum):
-    expect_payment = "EXPECT_PAYMENT"
-    hold = "HOLD"
-    paid = "PAID"
-    refunded = "REFUNDED"
-    to_refund = "TO_REFUND"
+    EXPECT_PAYMENT = "EXPECT_PAYMENT"
+    HOLD = "HOLD"
+    PAID = "PAID"
+    REFUNDED = "REFUNDED"
+    TO_REFUND = "TO_REFUND"
 
 
 class PaymentStatus(Enum):
@@ -267,10 +267,10 @@ class PaymentStatus(Enum):
     Payment status for onchain payments with support for partial payments.
     """
 
-    not_paid = "NOT_PAID"
-    underpaid = "UNDERPAID"
-    paid = "PAID"
-    overpaid = "OVERPAID"
+    NOT_PAID = "NOT_PAID"
+    UNDERPAID = "UNDERPAID"
+    PAID = "PAID"
+    OVERPAID = "OVERPAID"
 
 
 class RateDecisionRequest(BaseNodeModel):
@@ -332,18 +332,18 @@ class ReceiverAddressFormat(Enum):
     for receiving payments.
     """
 
-    btc_address = "BTC_ADDRESS"
-    bolt11 = "BOLT11"
-    bolt12 = "BOLT12"
-    ln_address = "LN_ADDRESS"
-    rgb_invoice = "RGB_INVOICE"
-    liquid_address = "LIQUID_ADDRESS"
-    liquid_invoice = "LIQUID_INVOICE"
-    spark_address = "SPARK_ADDRESS"
-    spark_invoice = "SPARK_INVOICE"
-    arkade_address = "ARKADE_ADDRESS"
-    arkade_invoice = "ARKADE_INVOICE"
-    cashu_token = "CASHU_TOKEN"
+    BTC_ADDRESS = "BTC_ADDRESS"
+    BOLT11 = "BOLT11"
+    BOLT12 = "BOLT12"
+    LN_ADDRESS = "LN_ADDRESS"
+    RGB_INVOICE = "RGB_INVOICE"
+    LIQUID_ADDRESS = "LIQUID_ADDRESS"
+    LIQUID_INVOICE = "LIQUID_INVOICE"
+    SPARK_ADDRESS = "SPARK_ADDRESS"
+    SPARK_INVOICE = "SPARK_INVOICE"
+    ARKADE_ADDRESS = "ARKADE_ADDRESS"
+    ARKADE_INVOICE = "ARKADE_INVOICE"
+    CASHU_TOKEN = "CASHU_TOKEN"
 
 
 class RetryDeliveryRequest(BaseNodeModel):
@@ -361,10 +361,10 @@ class RetryDeliveryStatus(Enum):
     Status codes for /retry_delivery endpoint responses
     """
 
-    processing = "processing"
-    not_found = "not_found"
-    no_pending_delivery = "no_pending_delivery"
-    error = "error"
+    PROCESSING = "processing"
+    NOT_FOUND = "not_found"
+    NO_PENDING_DELIVERY = "no_pending_delivery"
+    ERROR = "error"
 
 
 class RouteStep(BaseNodeModel):
@@ -521,15 +521,15 @@ class SwapOrderRateDecisionResponse(BaseNodeModel):
 
 
 class SwapOrderStatus(Enum):
-    open = "OPEN"
-    pending_payment = "PENDING_PAYMENT"
-    paid = "PAID"
-    executing = "EXECUTING"
-    filled = "FILLED"
-    cancelled = "CANCELLED"
-    expired = "EXPIRED"
-    failed = "FAILED"
-    pending_rate_decision = "PENDING_RATE_DECISION"
+    OPEN = "OPEN"
+    PENDING_PAYMENT = "PENDING_PAYMENT"
+    PAID = "PAID"
+    EXECUTING = "EXECUTING"
+    FILLED = "FILLED"
+    CANCELLED = "CANCELLED"
+    EXPIRED = "EXPIRED"
+    FAILED = "FAILED"
+    PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
 
 
 class SwapOrderStatusRequest(BaseNodeModel):
@@ -576,11 +576,11 @@ class SwapRoute(BaseNodeModel):
 
 
 class SwapStatus(Enum):
-    waiting = "Waiting"
-    pending = "Pending"
-    succeeded = "Succeeded"
-    expired = "Expired"
-    failed = "Failed"
+    WAITING = "Waiting"
+    PENDING = "Pending"
+    SUCCEEDED = "Succeeded"
+    EXPIRED = "Expired"
+    FAILED = "Failed"
 
 
 class SwapStatusRequest(BaseNodeModel):

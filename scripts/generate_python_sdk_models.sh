@@ -33,6 +33,7 @@ $CODEGEN_CMD \
     --snake-case-field \
     --strict-nullable \
     --enum-field-as-literal one \
+    --capitalise-enum-members \
     --target-python-version 3.10 \
     --use-double-quotes \
     --collapse-root-models \
@@ -53,6 +54,7 @@ $CODEGEN_CMD \
     --snake-case-field \
     --strict-nullable \
     --enum-field-as-literal one \
+    --capitalise-enum-members \
     --target-python-version 3.10 \
     --use-double-quotes \
     --collapse-root-models \
