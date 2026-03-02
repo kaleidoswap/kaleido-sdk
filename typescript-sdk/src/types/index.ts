@@ -256,7 +256,7 @@ export type {
     WebSocketResponse,
     WebSocketMessage,
     WSAction,
-} from '../ws-types.js';
+} from './ws.js';
 
 // ============================================================================
 // Client Types

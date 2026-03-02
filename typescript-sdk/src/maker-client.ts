@@ -9,7 +9,7 @@ import { HttpClient } from './http-client.js';
 import { toRawAmount, toDisplayAmount } from './utils/index.js';
 import { assertResponse } from './errors.js';
 import { WSClient } from './ws-client.js';
-import type { QuoteResponse } from './ws-types.js';
+import type { QuoteResponse } from './types/ws.js';
 import type { Layer } from './api-types-ext.js';
 import type {
     MarketListAssetsResponse,
