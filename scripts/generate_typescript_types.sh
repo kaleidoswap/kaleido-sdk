@@ -2,7 +2,7 @@
 set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
+SPECS_DIR="$ROOT_DIR/specs"
 OUTPUT_DIR="$ROOT_DIR/typescript-sdk/src/generated"
 
 echo "🔧 Generating TypeScript types from OpenAPI specs..."
@@ -18,14 +18,14 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 # Generate Maker API types
-echo "  → Generating from maker.json..."
-$OPENAPI_CMD "$SPECS_DIR/maker.json" \
+echo "  → Generating from kaleidoswap.json..."
+$OPENAPI_CMD "$SPECS_DIR/kaleidoswap.json" \
     -o "$OUTPUT_DIR/api-types.ts" \
     --export-type
 
 # Generate Node API types
-echo "  → Generating from rln.yaml..."
-$OPENAPI_CMD "$SPECS_DIR/rln.yaml" \
+echo "  → Generating from rgb-lightning-node.yaml..."
+$OPENAPI_CMD "$SPECS_DIR/rgb-lightning-node.yaml" \
     -o "$OUTPUT_DIR/node-types.ts" \
     --export-type
 

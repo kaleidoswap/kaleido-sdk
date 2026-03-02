@@ -1,13 +1,13 @@
 {
-  "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "info": {
     "title": "Kaleidoswap RGB-LSP API",
     "description": "API for managing swaps and channels",
     "version": "0.1.0",
     "x-build-info": {
-      "version": "v0.4.0",
-      "commit": "02195d7a558a2b87f539f483a7b34ae4754d69a5",
-      "buildDate": "2026-02-10T15:22:28.397751+00:00"
+      "version": "v0.4.0-rc2",
+      "commit": "7a5c9bb9bc8d976980db110c70ba2fe99b110bad",
+      "buildDate": "2025-12-24T15:49:13.772687+00:00"
     },
     "license": {
       "name": "MIT",
@@ -21,7 +21,7 @@
           "lsps1"
         ],
         "summary": "Get Info",
-        "operationId": "get_info",
+        "operationId": "get_info_api_v1_lsps1_get_info_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -54,7 +54,7 @@
         ],
         "summary": "Get Network Info",
         "description": "Get network information including current blockchain height and network type.",
-        "operationId": "get_network_info",
+        "operationId": "get_network_info_api_v1_lsps1_network_info_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -75,7 +75,7 @@
           "lsps1"
         ],
         "summary": "Create Order",
-        "operationId": "create_order",
+        "operationId": "create_order_api_v1_lsps1_create_order_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -118,7 +118,7 @@
         ],
         "summary": "Estimate Fees",
         "description": "Estimate channel fees based on the provided parameters without creating an order.\nFor asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.",
-        "operationId": "estimate_fees",
+        "operationId": "estimate_fees_api_v1_lsps1_estimate_fees_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -160,7 +160,7 @@
           "lsps1"
         ],
         "summary": "Get Order",
-        "operationId": "get_order",
+        "operationId": "get_order_api_v1_lsps1_get_order_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -202,7 +202,7 @@
         ],
         "summary": "Handle Rate Decision",
         "description": "Handle user decision on rate change for LSPS1 orders.\nUser can either accept the new market rate or request a refund.",
-        "operationId": "handle_rate_decision",
+        "operationId": "handle_rate_decision_api_v1_lsps1_rate_decision_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -244,7 +244,7 @@
         ],
         "summary": "Retry Delivery",
         "description": "Endpoint for clients to queue their order for immediate retry of asset delivery.\n\nThis allows users to bypass the exponential backoff delay by queueing their order\nfor priority processing. The order will be processed by the background loop within\n60 seconds. Useful when a user comes back online after being offline during\nscheduled retry windows.\n\nArgs:\n    request: Contains the order_id\n\nReturns:\n    RetryDeliveryResponse with status and message",
-        "operationId": "retry_delivery",
+        "operationId": "retry_delivery_api_v1_lsps1_retry_delivery_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -285,7 +285,7 @@
           "swaps"
         ],
         "summary": "Get Node Info",
-        "operationId": "get_node_info",
+        "operationId": "get_node_info_api_v1_swaps_nodeinfo_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -306,7 +306,7 @@
           "swaps"
         ],
         "summary": "Initiate Swap",
-        "operationId": "initiate_swap",
+        "operationId": "initiate_swap_api_v1_swaps_init_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -348,7 +348,7 @@
           "swaps"
         ],
         "summary": "Confirm Swap",
-        "operationId": "confirm_swap",
+        "operationId": "confirm_swap_api_v1_swaps_execute_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -390,7 +390,7 @@
           "swaps"
         ],
         "summary": "Get Swap Status",
-        "operationId": "get_swap_status",
+        "operationId": "get_swap_status_api_v1_swaps_atomic_status_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -433,17 +433,23 @@
         ],
         "summary": "List Assets",
         "description": "List assets with optional filters and pagination.\n\nAll filters are AND-combined. Examples:\n- GET /assets                           \u2192 All active assets (paginated)\n- GET /assets?asset_id=rgb:2dkSTbr-...  \u2192 Single asset by ID\n- GET /assets?ticker=BTC                \u2192 Single asset by ticker\n- GET /assets?layer=BTC_LN              \u2192 Assets supporting BTC on Lightning\n- GET /assets?network=LN                \u2192 Assets on Lightning Network\n- GET /assets?protocol=RGB              \u2192 All RGB assets\n- GET /assets?is_active=true            \u2192 Only active assets (default behavior)\n- GET /assets?protocol=RGB&network=LN   \u2192 RGB assets on Lightning\n- GET /assets?limit=10&offset=20        \u2192 Pagination (page 3, 10 items per page)",
-        "operationId": "list_assets",
+        "operationId": "list_assets_api_v1_market_assets_get",
         "parameters": [
           {
             "name": "asset_id",
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by asset UUID (e.g., 'rgb:2dkSTbr-...')",
-              "title": "Asset Id",
-              "type": "string",
-              "nullable": true
+              "title": "Asset Id"
             },
             "description": "Filter by asset UUID (e.g., 'rgb:2dkSTbr-...')"
           },
@@ -452,10 +458,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by ticker (e.g., 'BTC', 'USDT')",
-              "title": "Ticker",
-              "type": "string",
-              "nullable": true
+              "title": "Ticker"
             },
             "description": "Filter by ticker (e.g., 'BTC', 'USDT')"
           },
@@ -464,10 +476,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by layer (e.g., 'BTC_LN', 'RGB_L1')",
-              "title": "Layer",
-              "type": "string",
-              "nullable": true
+              "title": "Layer"
             },
             "description": "Filter by layer (e.g., 'BTC_LN', 'RGB_L1')"
           },
@@ -476,10 +494,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by network (e.g., 'LN', 'L1')",
-              "title": "Network",
-              "type": "string",
-              "nullable": true
+              "title": "Network"
             },
             "description": "Filter by network (e.g., 'LN', 'L1')"
           },
@@ -488,10 +512,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by protocol (e.g., 'BTC', 'RGB')",
-              "title": "Protocol",
-              "type": "string",
-              "nullable": true
+              "title": "Protocol"
             },
             "description": "Filter by protocol (e.g., 'BTC', 'RGB')"
           },
@@ -500,10 +530,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by active status",
-              "title": "Is Active",
-              "type": "boolean",
-              "nullable": true
+              "title": "Is Active"
             },
             "description": "Filter by active status"
           },
@@ -566,17 +602,23 @@
         ],
         "summary": "Get Pairs",
         "description": "Get trading pairs with optional filters and pagination.\n\n**Single Pair Filters** (returns list with 0-1 items):\n- pair_id: Filter by pair UUID\n- pair_ticker: Filter by pair ticker (e.g., \"BTC/USDT\")\n- base_ticker + quote_ticker: Filter by asset tickers\n- from_asset_id + quote_asset_id: Filter by asset IDs\n\n**List Filters**:\n- layer: Filter by layer (e.g., BTC_LN, RGB_LN)\n- asset: Filter by asset ticker or ID\n- active_only: Only return active pairs (default: true)\n\n**Pagination**:\n- limit: Items per page (default: 50, max: 100)\n- offset: Offset for pagination (default: 0)\n\nAlways returns TradingPairsResponse with pagination metadata.",
-        "operationId": "get_pairs",
+        "operationId": "get_pairs_api_v1_market_pairs_get",
         "parameters": [
           {
             "name": "pair_id",
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Pair ID (UUID)",
-              "title": "Pair Id",
-              "type": "string",
-              "nullable": true
+              "title": "Pair Id"
             },
             "description": "Pair ID (UUID)"
           },
@@ -585,10 +627,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Base asset ID",
-              "title": "From Asset Id",
-              "type": "string",
-              "nullable": true
+              "title": "From Asset Id"
             },
             "description": "Base asset ID"
           },
@@ -597,10 +645,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Quote asset ID",
-              "title": "Quote Asset Id",
-              "type": "string",
-              "nullable": true
+              "title": "Quote Asset Id"
             },
             "description": "Quote asset ID"
           },
@@ -609,10 +663,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Pair ticker 'BASE/QUOTE'",
-              "title": "Pair Ticker",
-              "type": "string",
-              "nullable": true
+              "title": "Pair Ticker"
             },
             "description": "Pair ticker 'BASE/QUOTE'"
           },
@@ -621,10 +681,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Base asset ticker",
-              "title": "Base Ticker",
-              "type": "string",
-              "nullable": true
+              "title": "Base Ticker"
             },
             "description": "Base asset ticker"
           },
@@ -633,10 +699,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Quote asset ticker",
-              "title": "Quote Ticker",
-              "type": "string",
-              "nullable": true
+              "title": "Quote Ticker"
             },
             "description": "Quote asset ticker"
           },
@@ -645,10 +717,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by layer (e.g., BTC_LN, RGB_LN, BTC_L1)",
-              "title": "Layer",
-              "type": "string",
-              "nullable": true
+              "title": "Layer"
             },
             "description": "Filter by layer (e.g., BTC_LN, RGB_LN, BTC_L1)"
           },
@@ -657,10 +735,16 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "Filter by asset ticker or ID",
-              "title": "Asset",
-              "type": "string",
-              "nullable": true
+              "title": "Asset"
             },
             "description": "Filter by asset ticker or ID"
           },
@@ -735,7 +819,7 @@
         ],
         "summary": "Get Pair Routes",
         "description": "Get available swap routes for a trading pair.\n\nSupports multiple identification methods:\n1. By pair_id: {\"pair_id\": \"2c188c7b-a823-4e5b-a82f-4d9fcb5e80ba\"}\n2. By asset IDs: {\"from_asset_id\": \"BTC\", \"quote_asset_id\": \"rgb:...\"}\n3. By pair ticker: {\"pair_ticker\": \"BTC/USDT\"}\n4. By separate tickers: {\"base_ticker\": \"BTC\", \"quote_ticker\": \"USDT\"}\n\nExactly one identification method must be provided.\n\nReturns list of pre-computed routes with:\n- Source network and protocol\n- Destination network and protocol\n- Submarine swap indicator (same asset, different networks)",
-        "operationId": "get_pair_routes",
+        "operationId": "get_pair_routes_api_v1_market_pairs_routes_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -783,7 +867,7 @@
         ],
         "summary": "Discover Routes",
         "description": "Discover all possible routes from source to destination.\n\nSupports multi-hop routing up to max_hops (default: 2).\n\nRequest body:\n- from_asset: Source asset ticker (required)\n- from_layer: Filter by source layer (optional)\n- to_asset: Destination asset ticker (if None, returns all reachable assets)\n- to_layer: Filter by destination layer (optional)\n- max_hops: Maximum number of hops (1-5, default: 2)\n\nReturns list of routes, each with:\n- steps: List of RouteStep objects with asset, layer, and indicative price\n- total_hops: Number of hops in the route",
-        "operationId": "discover_routes",
+        "operationId": "discover_routes_api_v1_market_routes_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -825,7 +909,7 @@
         ],
         "summary": "Get Route Matrix",
         "description": "Get full reachability matrix for all assets.\n\nReturns a matrix showing which assets can reach which,\nwith available layer combinations and minimum hops required.",
-        "operationId": "get_route_matrix",
+        "operationId": "get_route_matrix_api_v1_market_routes_matrix_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -847,7 +931,7 @@
         ],
         "summary": "Get Quote",
         "description": "Get a quote for a swap between two assets.\n\nRequest body contains SwapLegInput for both from_asset and to_asset,\nspecifying asset_id, layer, and amount (on one side).\n\nReturns a quote with full SwapLeg details including:\n- Complete asset information (ticker, name, precision)\n- Layer configuration\n- Calculated amounts and fees\n- Submarine swap indicator (if same asset on different networks)",
-        "operationId": "get_quote",
+        "operationId": "get_quote_api_v1_market_quote_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -889,7 +973,7 @@
           "swap-orders"
         ],
         "summary": "Create Swap Order",
-        "operationId": "create_swap_order",
+        "operationId": "create_swap_order_api_v1_swaps_orders_post",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -931,7 +1015,7 @@
           "swap-orders"
         ],
         "summary": "Get Swap Order Status",
-        "operationId": "get_swap_order_status",
+        "operationId": "get_swap_order_status_api_v1_swaps_orders_status_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -973,20 +1057,22 @@
         ],
         "summary": "Get Order History",
         "description": "Get order history with optional status filtering and pagination",
-        "operationId": "get_order_history",
+        "operationId": "get_order_history_api_v1_swaps_orders_history_get",
         "parameters": [
           {
             "name": "status",
             "in": "query",
             "required": false,
             "schema": {
-              "title": "Status",
-              "allOf": [
+              "anyOf": [
                 {
                   "$ref": "#/components/schemas/SwapOrderStatus"
+                },
+                {
+                  "type": "null"
                 }
               ],
-              "nullable": true
+              "title": "Status"
             }
           },
           {
@@ -1044,7 +1130,7 @@
         ],
         "summary": "Get Order Stats",
         "description": "Get order statistics including counts by status and volume information",
-        "operationId": "get_order_stats",
+        "operationId": "get_order_stats_api_v1_swaps_orders_analytics_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -1077,7 +1163,7 @@
         ],
         "summary": "Handle Swap Order Rate Decision",
         "description": "Handle user decision on rate change for swap orders.\nUser can either accept the new market rate or request a refund.",
-        "operationId": "handle_swap_order_rate_decision",
+        "operationId": "handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1143,26 +1229,40 @@
             "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
           },
           "media": {
-            "description": "Logo/media",
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/Media"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "description": "Logo/media"
           },
           "issued_supply": {
-            "title": "Issued Supply",
-            "description": "Total issued supply",
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "format": "int64",
-            "nullable": true
+            "title": "Issued Supply",
+            "description": "Total issued supply"
           },
           "timestamp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Timestamp",
-            "description": "Creation timestamp",
-            "type": "integer",
-            "nullable": true
+            "description": "Creation timestamp"
           },
           "endpoints": {
             "items": {
@@ -1179,19 +1279,31 @@
             "default": true
           },
           "added_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Added At",
-            "description": "When added to wallet",
-            "type": "integer",
-            "nullable": true
+            "description": "When added to wallet"
           },
           "supported_layers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Supported Layers",
-            "description": "Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')",
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "nullable": true
+            "description": "Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')"
           }
         },
         "type": "object",
@@ -1224,10 +1336,16 @@
             "default": "US Dollar Notes"
           },
           "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Asset Id",
-            "default": "rgb:$i4cFKwt-2C5LZ3X-l$kOTGN-O6l1AOP-aP9COyn-7IeBkEM",
-            "type": "string",
-            "nullable": true
+            "default": "rgb:$i4cFKwt-2C5LZ3X-l$kOTGN-O6l1AOP-aP9COyn-7IeBkEM"
           },
           "ticker": {
             "type": "string",
@@ -1319,9 +1437,15 @@
             "title": "Offset"
           },
           "timestamp": {
-            "title": "Timestamp",
-            "type": "integer",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
           }
         },
         "type": "object",
@@ -1347,31 +1471,61 @@
       "ChannelDetails": {
         "properties": {
           "channel_id": {
-            "title": "Channel Id",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id"
           },
           "temporary_channel_id": {
-            "title": "Temporary Channel Id",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporary Channel Id"
           },
           "funded_at": {
-            "title": "Funded At",
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funded At"
           },
           "funding_outpoint": {
-            "title": "Funding Outpoint",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funding Outpoint"
           },
           "expires_at": {
-            "title": "Expires At",
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
           }
         },
         "type": "object",
@@ -1396,14 +1550,26 @@
             "title": "Total Fee"
           },
           "applied_discount": {
-            "title": "Applied Discount",
-            "type": "number",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Discount"
           },
           "discount_code": {
-            "title": "Discount Code",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Code"
           }
         },
         "type": "object",
@@ -1446,10 +1612,16 @@
             "title": "Channel Expiry Blocks"
           },
           "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Token",
-            "default": "",
-            "type": "string",
-            "nullable": true
+            "default": ""
           },
           "created_at": {
             "type": "string",
@@ -1467,66 +1639,124 @@
             "$ref": "#/components/schemas/PaymentDetails"
           },
           "channel": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/ChannelDetails"
+              },
+              {
+                "type": "null"
               }
-            ],
-            "nullable": true
+            ]
           },
           "asset_id": {
-            "title": "Asset Id",
-            "type": "string",
-            "nullable": true
-          },
-          "lsp_asset_amount": {
-            "title": "Lsp Asset Amount",
-            "type": "integer",
-            "nullable": true
-          },
-          "client_asset_amount": {
-            "title": "Client Asset Amount",
-            "type": "integer",
-            "nullable": true
-          },
-          "rfq_id": {
-            "title": "Rfq Id",
-            "type": "string",
-            "nullable": true
-          },
-          "asset_price_sat": {
-            "title": "Asset Price Sat",
-            "type": "integer",
-            "nullable": true
-          },
-          "asset_delivery_status": {
-            "allOf": [
+            "anyOf": [
               {
-                "$ref": "#/components/schemas/AssetDeliveryStatus"
+                "type": "string"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "title": "Asset Id"
+          },
+          "lsp_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lsp Asset Amount"
+          },
+          "client_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Asset Amount"
+          },
+          "rfq_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rfq Id"
+          },
+          "asset_price_sat": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Price Sat"
+          },
+          "asset_delivery_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetDeliveryStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "asset_delivery_payment_hash": {
-            "title": "Asset Delivery Payment Hash",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Delivery Payment Hash"
           },
           "asset_delivery_completed_at": {
-            "title": "Asset Delivery Completed At",
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Delivery Completed At"
           },
           "asset_delivery_error": {
-            "title": "Asset Delivery Error",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Delivery Error"
           },
           "failure_reason": {
-            "title": "Failure Reason",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason"
           }
         },
         "type": "object",
@@ -1632,14 +1862,26 @@
             "title": "Channel Expiry Blocks"
           },
           "token": {
-            "title": "Token",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
           },
           "refund_onchain_address": {
-            "title": "Refund Onchain Address",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Onchain Address"
           },
           "announce_channel": {
             "type": "boolean",
@@ -1647,30 +1889,60 @@
             "default": true
           },
           "asset_id": {
-            "title": "Asset Id",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
           },
           "lsp_asset_amount": {
-            "title": "Lsp Asset Amount",
-            "type": "integer",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lsp Asset Amount"
           },
           "client_asset_amount": {
-            "title": "Client Asset Amount",
-            "type": "integer",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Asset Amount"
           },
           "rfq_id": {
-            "title": "Rfq Id",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rfq Id"
           },
           "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email",
-            "description": "Optional email for notifications",
-            "type": "string",
-            "nullable": true
+            "description": "Optional email for notifications"
           }
         },
         "type": "object",
@@ -1705,22 +1977,40 @@
             "description": "Destination address/invoice for receiving the to_asset payout"
           },
           "min_onchain_conf": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Min Onchain Conf",
-            "default": 1,
-            "type": "integer",
-            "nullable": true
+            "default": 1
           },
           "refund_address": {
-            "title": "Refund Address",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Address"
           },
           "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email",
-            "description": "Optional email for notifications",
-            "type": "string",
-            "format": "email",
-            "nullable": true
+            "description": "Optional email for notifications"
           }
         },
         "type": "object",
@@ -1743,12 +2033,14 @@
             "title": "Rfq Id"
           },
           "deposit_address": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/ReceiverAddress"
+              },
+              {
+                "type": "null"
               }
-            ],
-            "nullable": true
+            ]
           },
           "status": {
             "$ref": "#/components/schemas/SwapOrderStatus"
@@ -2026,10 +2318,16 @@
             "description": "Order creation timestamp"
           },
           "filled_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Filled At",
-            "description": "Order completion timestamp",
-            "type": "integer",
-            "nullable": true
+            "description": "Order completion timestamp"
           }
         },
         "type": "object",
@@ -2060,10 +2358,16 @@
             "default": 0
           },
           "min_onchain_payment_confirmations": {
-            "title": "Min Onchain Payment Confirmations",
-            "type": "integer",
-            "minimum": 0.0,
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Payment Confirmations"
           },
           "supports_zero_channel_reserve": {
             "type": "boolean",
@@ -2071,11 +2375,17 @@
             "default": true
           },
           "min_onchain_payment_size_sat": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
             "format": "int64",
-            "title": "Min Onchain Payment Size Sat",
-            "type": "integer",
-            "minimum": 0.0,
-            "nullable": true
+            "title": "Min Onchain Payment Size Sat"
           },
           "max_channel_expiry_blocks": {
             "type": "integer",
@@ -2373,25 +2683,49 @@
             "title": "Min Onchain Payment Confirmations"
           },
           "refund_onchain_address": {
-            "title": "Refund Onchain Address",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Onchain Address"
           },
           "payment_status": {
-            "title": "Payment Status",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
           },
           "payment_difference": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Payment Difference",
-            "description": "Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment",
-            "type": "integer",
-            "nullable": true
+            "description": "Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment"
           },
           "last_payment_check": {
-            "title": "Last Payment Check",
-            "type": "integer",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Payment Check"
           }
         },
         "type": "object",
@@ -2462,9 +2796,15 @@
             "title": "Message"
           },
           "refund_txid": {
-            "title": "Refund Txid",
-            "type": "string",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Txid"
           }
         },
         "type": "object",
@@ -2656,11 +2996,17 @@
             "description": "Trading pair ticker (e.g., 'USDT/BTC')"
           },
           "indicative_price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Indicative Price",
-            "description": "Indicative price from cached pair data",
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "nullable": true
+            "description": "Indicative price from cached pair data"
           }
         },
         "type": "object",
@@ -2682,28 +3028,38 @@
             "description": "Source asset ticker or ID"
           },
           "from_layer": {
-            "description": "Filter by source layer (optional)",
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/Layer"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "description": "Filter by source layer (optional)"
           },
           "to_asset": {
-            "title": "To Asset",
-            "description": "Destination asset (if None, returns all reachable assets)",
-            "type": "string",
-            "nullable": true
-          },
-          "to_layer": {
-            "description": "Filter by destination layer (optional)",
-            "allOf": [
+            "anyOf": [
               {
-                "$ref": "#/components/schemas/Layer"
+                "type": "string"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "title": "To Asset",
+            "description": "Destination asset (if None, returns all reachable assets)"
+          },
+          "to_layer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Layer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter by destination layer (optional)"
           },
           "max_hops": {
             "type": "integer",
@@ -2762,20 +3118,32 @@
             ]
           },
           "from_asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "From Asset",
             "examples": [
               "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
-            ],
-            "type": "string",
-            "nullable": true
+            ]
           },
           "to_asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "To Asset",
             "examples": [
               "rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"
-            ],
-            "type": "string",
-            "nullable": true
+            ]
           },
           "payment_hash": {
             "type": "string",
@@ -2795,12 +3163,18 @@
             ]
           },
           "initiated_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Initiated At",
             "examples": [
               1691168512
-            ],
-            "type": "integer",
-            "nullable": true
+            ]
           },
           "expires_at": {
             "type": "integer",
@@ -2810,12 +3184,18 @@
             ]
           },
           "completed_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Completed At",
             "examples": [
               1691171075
-            ],
-            "type": "integer",
-            "nullable": true
+            ]
           }
         },
         "type": "object",
@@ -2907,14 +3287,20 @@
             ]
           },
           "amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Amount",
             "description": "Amount in smallest unit (optional - one side must have amount)",
             "examples": [
               1000000
-            ],
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
+            ]
           }
         },
         "type": "object",
@@ -2928,28 +3314,46 @@
       "SwapNodeInfoResponse": {
         "properties": {
           "pubkey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Pubkey",
             "examples": [
               "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
-            ],
-            "type": "string",
-            "nullable": true
+            ]
           },
           "network": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Network",
             "examples": [
               "Signet"
-            ],
-            "type": "string",
-            "nullable": true
+            ]
           },
           "block_height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Block Height",
             "examples": [
               805434
-            ],
-            "type": "integer",
-            "nullable": true
+            ]
           }
         },
         "type": "object",
@@ -2973,10 +3377,16 @@
             "description": "Quote identifier used to create the order"
           },
           "maker_pubkey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Maker Pubkey",
-            "description": "Maker node public key",
-            "type": "string",
-            "nullable": true
+            "description": "Maker node public key"
           },
           "from_asset": {
             "$ref": "#/components/schemas/SwapLeg",
@@ -2991,28 +3401,38 @@
             "title": "Price"
           },
           "deposit_address": {
-            "description": "Address/Invoice for the user to deposit funds into",
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/ReceiverAddress"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "description": "Address/Invoice for the user to deposit funds into"
           },
           "payout_address": {
-            "description": "Destination address/invoice for receiving the to_asset payout",
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/ReceiverAddress"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "description": "Destination address/invoice for receiving the to_asset payout"
           },
           "refund_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Refund Address",
-            "description": "Onchain refund address if provided",
-            "type": "string",
-            "nullable": true
+            "description": "Onchain refund address if provided"
           },
           "status": {
             "$ref": "#/components/schemas/SwapOrderStatus",
@@ -3024,72 +3444,122 @@
             "title": "Created At",
             "description": "Creation timestamp (seconds since epoch)",
             "examples": [
-              1770736947
+              1766591353
             ]
           },
           "expires_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expires At",
-            "description": "Expiry timestamp (seconds since epoch)",
-            "type": "integer",
-            "nullable": true
+            "description": "Expiry timestamp (seconds since epoch)"
           },
           "filled_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Filled At",
-            "description": "Timestamp when the order was filled",
-            "type": "integer",
-            "nullable": true
+            "description": "Timestamp when the order was filled"
           },
           "refund_txid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Refund Txid",
-            "description": "Transaction ID of any refund sent",
-            "type": "string",
-            "nullable": true
+            "description": "Transaction ID of any refund sent"
           },
           "requires_manual_refund": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Requires Manual Refund",
             "description": "Whether the order requires manual refund handling",
             "default": false,
             "examples": [
               false
-            ],
-            "type": "boolean",
-            "nullable": true
+            ]
           },
           "payment_status": {
-            "description": "Status of onchain payment verification",
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/PaymentStatus"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "description": "Status of onchain payment verification"
           },
           "payment_difference": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Payment Difference",
-            "description": "Payment difference in satoshis (positive for overpayment, negative for underpayment)",
-            "type": "integer",
-            "nullable": true
+            "description": "Payment difference in satoshis (positive for overpayment, negative for underpayment)"
           },
           "last_payment_check": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Last Payment Check",
-            "description": "Timestamp of the last payment verification",
-            "type": "integer",
-            "nullable": true
+            "description": "Timestamp of the last payment verification"
           },
           "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email",
             "description": "Notification email address",
             "examples": [
               "swap@example.com"
-            ],
-            "type": "string",
-            "nullable": true
+            ]
           },
           "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Failure Reason",
-            "description": "Reason the order failed, if applicable",
-            "type": "string",
-            "nullable": true
+            "description": "Reason the order failed, if applicable"
           },
           "fee": {
             "$ref": "#/components/schemas/Fee",
@@ -3143,10 +3613,16 @@
             "title": "Message"
           },
           "refund_txid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Refund Txid",
-            "description": "Present if refund was requested and processed",
-            "type": "string",
-            "nullable": true
+            "description": "Present if refund was requested and processed"
           }
         },
         "type": "object",
@@ -3328,12 +3804,14 @@
       "SwapStatusResponse": {
         "properties": {
           "swap": {
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/Swap"
+              },
+              {
+                "type": "null"
               }
-            ],
-            "nullable": true
+            ]
           }
         },
         "type": "object",
@@ -3367,26 +3845,40 @@
             "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
           },
           "media": {
-            "description": "Logo/media",
-            "allOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/Media"
+              },
+              {
+                "type": "null"
               }
             ],
-            "nullable": true
+            "description": "Logo/media"
           },
           "issued_supply": {
-            "title": "Issued Supply",
-            "description": "Total issued supply",
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "format": "int64",
-            "nullable": true
+            "title": "Issued Supply",
+            "description": "Total issued supply"
           },
           "timestamp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Timestamp",
-            "description": "Creation timestamp",
-            "type": "integer",
-            "nullable": true
+            "description": "Creation timestamp"
           },
           "endpoints": {
             "items": {
@@ -3453,10 +3945,16 @@
             "$ref": "#/components/schemas/TradableAsset"
           },
           "price": {
-            "title": "Price",
-            "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "nullable": true
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
           },
           "routes": {
             "items": {

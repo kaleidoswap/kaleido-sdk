@@ -9,8 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Configuration
-SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
-BACKUP_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs/backup"
+SPECS_DIR="$ROOT_DIR/specs"
+CRATES_SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
+BACKUP_DIR="$ROOT_DIR/specs/backup"
 
 # Default URLs
 RGB_NODE_URL="${RGB_NODE_URL:-https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/master/openapi.yaml}"
@@ -48,6 +49,7 @@ echo "==================================="
 echo "Specs Directory: $SPECS_DIR"
 
 mkdir -p "$SPECS_DIR"
+mkdir -p "$CRATES_SPECS_DIR"
 if [[ "$DO_BACKUP" == true ]]; then
     mkdir -p "$BACKUP_DIR"
 fi
@@ -56,17 +58,17 @@ download_spec() {
     local url="$1"
     local output="$2"
     local name="$3"
-    
+
     echo ""
     echo "📦 Fetching $name..."
     echo "   URL: $url"
-    
+
     if [[ "$DO_BACKUP" == true && -f "$output" ]]; then
         local backup_name="${BACKUP_DIR}/$(basename "$output").$(date +%Y%m%d_%H%M%S)"
         cp "$output" "$backup_name"
         echo "   Backed up to: $backup_name"
     fi
-    
+
     if curl -fsSL "$url" -o "$output.tmp"; then
         mv "$output.tmp" "$output"
         echo "   ✅ Downloaded: $output"
@@ -78,23 +80,32 @@ download_spec() {
 }
 
 # Download RGB Lightning Node spec
-download_spec "$RGB_NODE_URL" "$SPECS_DIR/rln.yaml" "RGB Lightning Node API"
+download_spec "$RGB_NODE_URL" "$SPECS_DIR/rgb-lightning-node.yaml" "RGB Lightning Node API"
 
 # Download Kaleidoswap Maker spec
-download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/maker.json" "Kaleidoswap Maker API"
+download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
 
 # Patch Maker API for compatibility using Python
 echo "🔧 Patching Maker API spec for compatibility..."
-python3 "$SCRIPT_DIR/sanitize_maker.py" "$SPECS_DIR/maker.json"
+python3 "$SCRIPT_DIR/sanitize_maker.py" "$SPECS_DIR/kaleidoswap.json"
 
 echo ""
 echo "🔧 Patching RLN API spec for compatibility..."
 # Use Python script (with PyYAML via uv) to safely remove examples
 if command -v uv &> /dev/null; then
-    uv run --with PyYAML python3 "$SCRIPT_DIR/sanitize_rln.py" "$SPECS_DIR/rln.yaml"
+    uv run --with PyYAML python3 "$SCRIPT_DIR/sanitize_rln.py" "$SPECS_DIR/rgb-lightning-node.yaml"
 else
     echo "⚠️  uv not found. Trying python3 assuming PyYAML is installed..."
-    python3 "$SCRIPT_DIR/sanitize_rln.py" "$SPECS_DIR/rln.yaml" || echo "❌ Failed to sanitize RLN spec (PyYAML missing?)."
+    python3 "$SCRIPT_DIR/sanitize_rln.py" "$SPECS_DIR/rgb-lightning-node.yaml" || echo "❌ Failed to sanitize RLN spec (PyYAML missing?)."
 fi
+
+# Sync specs to crates directory for backward compatibility
+echo ""
+echo "📋 Syncing specs to crates directory..."
+cp "$SPECS_DIR/kaleidoswap.json" "$CRATES_SPECS_DIR/maker.json"
+echo "   ✅ Synced: $CRATES_SPECS_DIR/maker.json"
+
+cp "$SPECS_DIR/rgb-lightning-node.yaml" "$CRATES_SPECS_DIR/rln.yaml"
+echo "   ✅ Synced: $CRATES_SPECS_DIR/rln.yaml"
 
 echo "✅ Update complete. Run 'make generate-models' (or cargo build) to compile."

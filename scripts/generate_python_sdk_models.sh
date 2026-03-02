@@ -2,7 +2,7 @@
 set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
+SPECS_DIR="$ROOT_DIR/specs"
 OUTPUT_DIR="$ROOT_DIR/python-sdk/kaleidoswap_sdk/_generated"
 
 echo "🔧 Generating Python Pydantic models for kaleidoswap-sdk from OpenAPI specs..."
@@ -19,10 +19,10 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
-# Generate from maker.json (Kaleidoswap Market API)
-echo "  → Generating from maker.json..."
+# Generate from kaleidoswap.json (Kaleidoswap Market API)
+echo "  → Generating from kaleidoswap.json..."
 $CODEGEN_CMD \
-    --input "$SPECS_DIR/maker.json" \
+    --input "$SPECS_DIR/kaleidoswap.json" \
     --output "$OUTPUT_DIR/api_types.py" \
     --input-file-type openapi \
     --output-model-type pydantic_v2.BaseModel \
@@ -39,10 +39,10 @@ $CODEGEN_CMD \
     --disable-timestamp \
     --base-class kaleidoswap_sdk._generated.base.BaseNodeModel
 
-# Generate from rln.yaml (RGB Lightning Node API)
-echo "  → Generating from rln.yaml..."
+# Generate from rgb-lightning-node.yaml (RGB Lightning Node API)
+echo "  → Generating from rgb-lightning-node.yaml..."
 $CODEGEN_CMD \
-    --input "$SPECS_DIR/rln.yaml" \
+    --input "$SPECS_DIR/rgb-lightning-node.yaml" \
     --output "$OUTPUT_DIR/node_types.py" \
     --input-file-type openapi \
     --output-model-type pydantic_v2.BaseModel \
@@ -62,7 +62,7 @@ $CODEGEN_CMD \
 # Fix naming conflicts: datamodel-code-generator renames types when field names conflict
 # Example: PaymentStatus enum gets renamed to PaymentStatus1 when there's a payment_status field
 # This is a known issue: https://github.com/koxudaxi/datamodel-code-generator/issues/2091
-# 
+#
 # The fix is deterministic and runs as part of generation, so CI checks will pass.
 # When new conflicts are found, add them to the CONFLICTS array below.
 echo "  → Fixing naming conflicts..."
@@ -73,7 +73,7 @@ fix_naming_conflict() {
     local original_name="$1"
     local conflicted_name="${original_name}1"
     local file="$2"
-    
+
     if grep -q "class ${conflicted_name}(" "$file" 2>/dev/null; then
         if [[ "$(uname)" == "Darwin" ]]; then
             # macOS/BSD sed
