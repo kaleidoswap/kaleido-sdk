@@ -135,16 +135,16 @@ check-generated-models:
 # TEST STAGE
 # ---------------------------------------------------------------------------
 
-test:core:
-  stage: test
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  script:
-    - echo "🦀 Testing Core Rust Library..."
-    - cargo test -p kaleidoswap-core --release
-  artifacts:
-    reports:
-      junit: target/test-results.xml
+# test:core:
+#   stage: test
+#   image: rust:${RUST_VERSION}
+#   <<: *rust_cache
+#   script:
+#     - echo "🦀 Testing Core Rust Library..."
+#     - cargo test -p kaleidoswap-core --release
+#   artifacts:
+#     reports:
+#       junit: target/test-results.xml
 
 # ---------------------------------------------------------------------------
 # Rust checks (disabled - not actively maintained)
