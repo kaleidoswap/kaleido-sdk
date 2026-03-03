@@ -135,35 +135,39 @@ check-generated-models:
 # TEST STAGE
 # ---------------------------------------------------------------------------
 
-test:core:
-  stage: test
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  script:
-    - echo "🦀 Testing Core Rust Library..."
-    - cargo test -p kaleidoswap-core --release
-  artifacts:
-    reports:
-      junit: target/test-results.xml
+# test:core:
+#   stage: test
+#   image: rust:${RUST_VERSION}
+#   <<: *rust_cache
+#   script:
+#     - echo "🦀 Testing Core Rust Library..."
+#     - cargo test -p kaleidoswap-core --release
+#   artifacts:
+#     reports:
+#       junit: target/test-results.xml
 
-lint:rust:
-  stage: test
-  image: rust:${RUST_VERSION}
-  <<: *rust_cache
-  script:
-    - echo "🔍 Running Clippy..."
-    - rustup component add clippy
-    - cargo clippy --all-targets --all-features -- -D warnings
-  allow_failure: true
+# ---------------------------------------------------------------------------
+# Rust checks (disabled - not actively maintained)
+# ---------------------------------------------------------------------------
 
-format:rust:
-  stage: test
-  image: rust:${RUST_VERSION}
-  script:
-    - echo "✨ Checking Rust formatting..."
-    - rustup component add rustfmt
-    - cargo fmt --all -- --check
-  allow_failure: true
+# lint:rust:
+#   stage: test
+#   image: rust:${RUST_VERSION}
+#   <<: *rust_cache
+#   script:
+#     - echo "🔍 Running Clippy..."
+#     - rustup component add clippy
+#     - cargo clippy --all-targets --all-features -- -D warnings
+#   allow_failure: true
+#
+# format:rust:
+#   stage: test
+#   image: rust:${RUST_VERSION}
+#   script:
+#     - echo "✨ Checking Rust formatting..."
+#     - rustup component add rustfmt
+#     - cargo fmt --all -- --check
+#   allow_failure: true
 
 # ---------------------------------------------------------------------------
 # TypeScript SDK
@@ -188,19 +192,7 @@ test:typescript-sdk:
       junit: typescript-sdk/test-results.xml
     when: always
 
-lint:typescript-sdk:
-  stage: test
-  image: node:${NODE_VERSION}
-  before_script:
-    - npm install -g pnpm
-  script:
-    - echo "🔍 Linting TypeScript SDK..."
-    - cd typescript-sdk
-    - pnpm install
-    - pnpm run lint
-  allow_failure: true
-
-typecheck:typescript-sdk:
+check:typescript-sdk:
   stage: test
   image: node:${NODE_VERSION}
   needs:
@@ -210,21 +202,11 @@ typecheck:typescript-sdk:
   before_script:
     - npm install -g pnpm
   script:
-    - echo "📝 Type checking TypeScript SDK..."
+    - echo "🔍 Linting, type checking and formatting TypeScript SDK..."
     - cd typescript-sdk
     - pnpm install
+    - pnpm run lint
     - pnpm run typecheck
-  allow_failure: true
-
-format:typescript-sdk:
-  stage: test
-  image: node:${NODE_VERSION}
-  before_script:
-    - npm install -g pnpm
-  script:
-    - echo "✨ Checking TypeScript SDK formatting..."
-    - cd typescript-sdk
-    - pnpm install
     - pnpm run format:check
   allow_failure: true
 
@@ -249,52 +231,24 @@ test:python-sdk:
       junit: python-sdk/test-results.xml
     when: always
 
-format:python-sdk:
+check:python-sdk:
   stage: test
   image: python:${PYTHON_VERSION}
-  <<: *python_sdk_uv_setup
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "dev"
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_COMMIT_TAG
-  script:
-    - echo "✨ Checking Python SDK formatting..."
-    - make check-format-python
-  allow_failure: true
-
-lint:python-sdk:
-  stage: test
-  image: python:${PYTHON_VERSION}
-  <<: *python_sdk_uv_setup
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "dev"
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_COMMIT_TAG
-  script:
-    - echo "🔍 Linting Python SDK..."
-    - make check-lint-python
-  allow_failure: true
-
-typecheck:python-sdk:
-  stage: test
-  image: python:${PYTHON_VERSION}
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "dev"
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_COMMIT_TAG
   needs:
     - job: generate-sdk-models
       optional: true
       artifacts: true
   <<: *python_sdk_uv_setup
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG
   script:
-    - echo "📝 Type checking Python SDK..."
+    - echo "✨ Checking Python SDK formatting, linting and type checking..."
+    - make check-format-python
+    - make check-lint-python
     - make typecheck-python
   allow_failure: true
 

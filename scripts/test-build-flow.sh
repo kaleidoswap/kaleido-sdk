@@ -74,13 +74,6 @@ check_command pip3
 check_command node
 check_command npm
 
-# Check for maturin
-if ! command -v maturin &> /dev/null; then
-    echo -e "${YELLOW}Installing maturin...${NC}"
-    pip3 install maturin
-fi
-success "maturin available"
-
 # =============================================================================
 # Step 1: Sync Version
 # =============================================================================
@@ -118,22 +111,9 @@ cargo build -p kaleidoswap-core --release
 success "kaleidoswap-core built"
 
 # =============================================================================
-# Step 4: Build UniFFI Library
+# Step 4: Build Python SDK
 # =============================================================================
-step "Step 4: Building UniFFI Library"
-
-cargo build -p kaleidoswap-uniffi --release
-success "kaleidoswap-uniffi built"
-
-# Show the built library
-echo ""
-echo "Built libraries:"
-ls -lh target/release/libkaleidoswap* 2>/dev/null || echo "  (no library files found - may be normal on some platforms)"
-
-# =============================================================================
-# Step 5: Build Python SDK
-# =============================================================================
-step "Step 5: Building Python SDK"
+step "Step 4: Building Python SDK"
 
 cd python-sdk
 
@@ -148,9 +128,9 @@ fi
 cd "$ROOT_DIR"
 
 # =============================================================================
-# Step 6: Build TypeScript SDK
+# Step 5: Build TypeScript SDK
 # =============================================================================
-step "Step 6: Building TypeScript SDK"
+step "Step 5: Building TypeScript SDK"
 
 cd typescript-sdk
 
@@ -168,9 +148,9 @@ fi
 cd "$ROOT_DIR"
 
 # =============================================================================
-# Step 7: Run Tests
+# Step 6: Run Tests
 # =============================================================================
-step "Step 7: Running Tests"
+step "Step 6: Running Tests"
 
 echo "Running Rust tests..."
 cargo test -p kaleidoswap-core --release -- --test-threads=1 2>/dev/null || echo -e "${YELLOW}⚠ Some Rust tests failed or skipped${NC}"
@@ -206,7 +186,6 @@ echo ""
 echo "Artifacts:"
 echo "  • Python SDK:       python-sdk/dist/"
 echo "  • TypeScript SDK:   typescript-sdk/dist/"
-echo "  • Rust library:     target/release/libkaleidoswap_uniffi.*"
 echo ""
 echo "Next steps:"
 echo "  1. To publish Python SDK: cd python-sdk && uv build && uv run twine upload dist/*"
