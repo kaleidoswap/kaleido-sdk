@@ -5,11 +5,13 @@
  * logging interface.
  *
  * Logging philosophy (mirroring the Python SDK):
- *   - The SDK is completely silent by default — no console noise unless you
- *     opt in by setting `logLevel` in the config.
+ *   - The SDK is completely silent by default — no output unless you opt in
+ *     by setting `logLevel` in the config.
  *   - `logLevel` controls *which* records the SDK emits.
- *   - An optional `logger` controls *where* they go (defaults to `console`).
- *   - Per-component overrides let you fine-tune verbosity after creation.
+ *   - An optional `logger` controls *where* they go (defaults to stderr via
+ *     the built-in StreamLogger).
+ *   - Per-component overrides let you fine-tune verbosity after creation via
+ *     the client's `logState`.
  */
 
 import {
@@ -17,8 +19,10 @@ import {
     getSdkName,
     getVersion,
     LogLevel,
+    StreamLogger,
     applyLogLevel,
     setComponentLogLevel,
+    setLogger,
 } from '../src/index.js';
 
 const API_URL = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com';
@@ -27,20 +31,24 @@ const API_URL = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.
 // Logging setup  (application's responsibility — the SDK never does this)
 // ---------------------------------------------------------------------------
 //
-// Option A — built-in console logger, all levels:
-//   Pass logLevel in the config (see client creation below).
+// Option A — built-in StreamLogger (writes to process.stderr, default):
+//   Pass logLevel in the config. No logger needed — the SDK will use stderr.
 //
-// Option B — your own logger (Winston, Pino, etc.):
+// Option B — custom stream (e.g. stdout or a file stream):
+//   import { createWriteStream } from 'fs';
+//   const logger = new StreamLogger({ stream: createWriteStream('sdk.log') });
+//   KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger });
+//
+// Option C — your own logger (Winston, Pino, etc.):
 //   import pino from 'pino';
 //   const logger = pino();
 //   KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger });
 //
-// Option C — silence a noisy sub-component after creation:
-//   applyLogLevel(LogLevel.DEBUG);
-//   setComponentLogLevel('http', LogLevel.WARNING);  // mute HTTP noise
+// Option D — silence a noisy sub-component after creation:
+//   setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
 //
-// The example below uses Option A so you can see all SDK log output.
-// Change LogLevel.DEBUG to LogLevel.WARNING to reduce noise.
+// The example below uses Option A so you can see all SDK log output on stderr.
+// Change LogLevel.DEBUG to LogLevel.WARN to reduce noise.
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
@@ -48,11 +56,11 @@ async function main(): Promise<void> {
     console.log('-'.repeat(40));
 
     // Create client — logLevel tells the SDK which records to emit.
-    // The SDK defaults to LogLevel.SILENT when logLevel is omitted.
+    // Omitting logLevel (or setting it to LogLevel.SILENT) produces zero output.
     const client = KaleidoClient.create({
         baseUrl: API_URL,
-        logLevel: LogLevel.DEBUG, // Show all HTTP, WebSocket, and swap traces
-        // logger: console,       // Explicit — also the built-in default
+        logLevel: LogLevel.DEBUG, // Show all HTTP and swap traces on stderr
+        // logger: new StreamLogger({ stream: process.stdout }), // redirect to stdout
     });
 
     // ---------------------------------------------------------------------------
@@ -84,22 +92,39 @@ async function main(): Promise<void> {
     }
 
     // ---------------------------------------------------------------------------
-    // Demonstrate per-component level control
+    // Demonstrate per-component level control via client.logState
     // ---------------------------------------------------------------------------
-    console.log('\n🔧 Adjusting log levels at runtime…');
+    console.log('\n🔧 Adjusting log levels at runtime via client.logState…');
 
-    // Silence HTTP noise — keep maker-level events visible
-    setComponentLogLevel('http', LogLevel.WARNING);
-    console.log('  HTTP component set to WARNING (HTTP debug logs will be suppressed)');
+    // Silence HTTP noise — keep maker-level events visible.
+    // Each client has its own logState, so this only affects *this* client.
+    setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
+    console.log('  HTTP component → WARN (HTTP debug logs suppressed)');
 
     // Re-fetch assets — no HTTP debug output this time
-    console.log('\n📦 Fetching assets again (HTTP logs now suppressed)…');
+    console.log('\n📦 Fetching assets again (HTTP logs suppressed)…');
     await client.maker.listAssets();
 
-    // Restore full debug output
-    setComponentLogLevel('http', null); // null = inherit root level (DEBUG)
-    applyLogLevel(LogLevel.INFO); // Drop root level to INFO
-    console.log('\n  Root level set to INFO, http override cleared');
+    // Clear the component override — 'http' inherits the root level again
+    setComponentLogLevel(client.logState, 'http', null);
+    console.log('\n  HTTP override cleared — inheriting root level (DEBUG)');
+
+    // Raise root level to INFO for less noisy output going forward
+    applyLogLevel(client.logState, LogLevel.INFO);
+    console.log('  Root level raised to INFO');
+
+    // Swap to a custom formatter (still writing to stderr, but no timestamp)
+    setLogger(
+        client.logState,
+        new StreamLogger({
+            format: (label, msg) => `[${label.trim()}] ${msg}`,
+        }),
+    );
+    console.log('  Logger swapped to a compact formatter (no timestamp)\n');
+
+    // This fetch will use the compact formatter at INFO level
+    console.log('📦 Fetching assets one more time…');
+    await client.maker.listAssets();
 
     console.log('\n✅ Done!');
 }

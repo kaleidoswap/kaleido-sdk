@@ -9,7 +9,7 @@ import type { Middleware } from 'openapi-fetch';
 import type { paths } from './generated/api-types.js';
 import type { paths as nodePaths } from './generated/node-types.js';
 import { ConfigError } from './errors.js';
-import { getLogger } from './logging.js';
+import { createLogger, LogState } from './logging.js';
 
 export interface HttpClientConfig {
     baseUrl?: string;
@@ -19,26 +19,27 @@ export interface HttpClientConfig {
     maxRetries?: number;
 }
 
+// LogState is passed separately so HttpClientConfig stays a plain data bag.
+
 // ============================================================================
 // Logging middleware factory
 // ============================================================================
 
 /**
  * Build an openapi-fetch middleware that logs every request and response
- * through the SDK's named 'http' logger.
+ * through the SDK's named 'http' logger bound to a specific `LogState`.
  *
  * The same `Request` object flows from `onRequest` through to `onResponse`,
- * so we use a WeakMap to associate a high-resolution start timestamp with
- * each in-flight request and compute latency on the response side.
+ * so we use a WeakMap to associate a start timestamp with each in-flight
+ * request and compute latency on the response side.
  *
  * Records emitted:
  *   DEBUG  →  outgoing request:  "GET /api/v1/market/assets"
  *   INFO   →  successful reply:  "GET /api/v1/market/assets → 200 (45ms)"
  *   WARN   →  error reply:       "POST /api/v1/swaps/orders → 422 (12ms)"
- *   ERROR  →  middleware fault:  caught exceptions in the middleware itself
  */
-function _createLoggingMiddleware(): Middleware {
-    const log = getLogger('http');
+function _createLoggingMiddleware(state: LogState): Middleware {
+    const log = createLogger('http', state);
     // WeakMap is GC-safe: entries are automatically removed when the Request
     // object is collected, so there is no risk of unbounded memory growth.
     const _startTimes = new WeakMap<Request, number>();
@@ -88,8 +89,9 @@ export class HttpClient {
     private makerClient?: ReturnType<typeof createClient<paths>>;
     private nodeClient?: ReturnType<typeof createClient<nodePaths>>;
     private config: HttpClientConfig;
+    private _logState: LogState;
 
-    constructor(config: HttpClientConfig) {
+    constructor(config: HttpClientConfig, logState: LogState = new LogState()) {
         this.config = config;
 
         // Create type-safe Maker API client only if baseUrl is provided
@@ -98,7 +100,7 @@ export class HttpClient {
                 baseUrl: config.baseUrl,
                 headers: config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : undefined,
             });
-            this.makerClient.use(_createLoggingMiddleware());
+            this.makerClient.use(_createLoggingMiddleware(logState));
         }
 
         // Create Node API client only if nodeUrl is provided
@@ -106,8 +108,10 @@ export class HttpClient {
             this.nodeClient = createClient<nodePaths>({
                 baseUrl: config.nodeUrl,
             });
-            this.nodeClient.use(_createLoggingMiddleware());
+            this.nodeClient.use(_createLoggingMiddleware(logState));
         }
+
+        this._logState = logState;
     }
 
     /**
@@ -143,7 +147,7 @@ export class HttpClient {
         this.nodeClient = createClient<nodePaths>({
             baseUrl: nodeUrl,
         });
-        this.nodeClient.use(_createLoggingMiddleware());
+        this.nodeClient.use(_createLoggingMiddleware(this._logState));
     }
 
     /**

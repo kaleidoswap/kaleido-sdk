@@ -8,7 +8,8 @@ import { HttpClient } from './http-client.js';
 import { MakerClient } from './maker-client.js';
 import { RlnClient } from './rln-client.js';
 import { ConfigError } from './errors.js';
-import { applyLogConfig } from './logging.js';
+import { LogState, applyLogLevel, setComponentLogLevel, setLogger } from './logging.js';
+import type { LogLevel, LogLevelName, SdkLogger } from './logging.js';
 import type { KaleidoConfig } from './types/config.js';
 
 /**
@@ -46,20 +47,45 @@ export class KaleidoClient {
     private _maker: MakerClient;
     private _rln: RlnClient;
 
+    /**
+     * Per-instance log state.
+     *
+     * Use this to adjust log levels or swap loggers at runtime without
+     * affecting other `KaleidoClient` instances in the same process:
+     *
+     * ```typescript
+     * import { applyLogLevel, setComponentLogLevel, setLogger, LogLevel } from 'kaleidoswap-sdk';
+     *
+     * // Raise root level to INFO after creation:
+     * applyLogLevel(client.logState, LogLevel.INFO);
+     *
+     * // Silence HTTP noise while keeping maker events:
+     * setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
+     *
+     * // Swap in a Winston logger at runtime:
+     * setLogger(client.logState, myWinstonLogger);
+     * ```
+     */
+    readonly logState: LogState;
+
     private constructor(config: KaleidoConfig) {
         this.config = config;
-        // Apply log level and optional custom logger before any HTTP/WS clients
-        // are created so that their first log calls already respect the config.
-        applyLogConfig(config.logLevel, config.logger);
-        this.http = new HttpClient({
-            baseUrl: config.baseUrl,
-            nodeUrl: config.nodeUrl,
-            apiKey: config.apiKey,
-            timeout: (config.timeout ?? 30) * 1000, // Convert to milliseconds
-            maxRetries: config.maxRetries ?? 3,
-        });
-        this._maker = new MakerClient(this.http);
-        this._rln = new RlnClient(this.http);
+        // Build the per-instance LogState before constructing any sub-clients
+        // so that the very first log calls (e.g. HTTP middleware) already
+        // respect the configuration.
+        this.logState = new LogState(config.logLevel, config.logger);
+        this.http = new HttpClient(
+            {
+                baseUrl: config.baseUrl,
+                nodeUrl: config.nodeUrl,
+                apiKey: config.apiKey,
+                timeout: (config.timeout ?? 30) * 1000, // Convert to milliseconds
+                maxRetries: config.maxRetries ?? 3,
+            },
+            this.logState,
+        );
+        this._maker = new MakerClient(this.http, this.logState);
+        this._rln = new RlnClient(this.http, this.logState);
     }
 
     /**
@@ -132,6 +158,11 @@ export class KaleidoClient {
         await this._rln.close();
     }
 }
+
+// Re-export LogState helpers bound to the per-instance pattern for
+// convenience — users import these alongside KaleidoClient.
+export { applyLogLevel, setComponentLogLevel, setLogger };
+export type { LogLevel, LogLevelName, SdkLogger };
 
 // ============================================================================
 // Utility Functions

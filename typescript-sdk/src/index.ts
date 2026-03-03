@@ -53,45 +53,71 @@ export { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from './clien
 // const client = KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.INFO, logger: myLogger });
 //
 // // Silence the noisy HTTP sub-component after creation:
-// setComponentLogLevel('http', LogLevel.WARNING);
+// setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
 // ============================================================================
 
 export {
-    /** Numeric log level constants (DEBUG=10, INFO=20, WARNING=30, ERROR=40, SILENT=∞). */
+    /** Numeric log level constants (DEBUG=10, INFO=20, WARN=30, ERROR=40, SILENT=∞). */
     LogLevel,
     /**
-     * Set the root log level for all SDK loggers at runtime.
+     * Set the root log level on a client's LogState at runtime.
      * Component overrides (setComponentLogLevel) take precedence.
+     *
+     * @example
+     * applyLogLevel(client.logState, LogLevel.DEBUG);
      */
     applyLogLevel,
     /**
-     * Override the log level for a single sub-component ('http', 'ws', 'maker', 'rln').
+     * Override the log level for a single sub-component on a LogState.
      * Pass null to clear the override and inherit the root level again.
+     *
+     * @example
+     * setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
+     * setComponentLogLevel(client.logState, 'http', null); // clear override
      */
     setComponentLogLevel,
     /**
-     * Inject a custom logger (Winston, Pino, console, …).
-     * Pass null to revert to the built-in console output.
+     * Inject a custom logger into a LogState.
+     * Pass null to revert to the built-in StreamLogger (stderr) output.
+     *
+     * @example
+     * setLogger(client.logState, myWinstonLogger);
      */
     setLogger,
-    /** Read the current root log level. */
-    currentLogLevel,
-    /** Read the effective level for a specific sub-component. */
-    effectiveComponentLogLevel,
-    /** Convert a numeric level to its human-readable name. */
+    /** Convert a numeric level to its human-readable name ('DEBUG', 'INFO', 'WARN', …). */
     logLevelName,
+    /**
+     * Built-in logger that writes formatted lines to a Node.js Writable stream.
+     * Defaults to process.stderr. Configurable stream and format.
+     *
+     * @example
+     * import { StreamLogger } from 'kaleidoswap-sdk';
+     * KaleidoClient.create({
+     *   baseUrl: '…',
+     *   logLevel: LogLevel.DEBUG,
+     *   logger: new StreamLogger({ stream: process.stdout }),
+     * });
+     */
+    StreamLogger,
 } from './logging.js';
 
 export type {
     /** Numeric type for LogLevel constants. */
     LogLevel as LogLevelValue,
-    /** String aliases accepted wherever LogLevel is expected. */
+    /** String aliases accepted wherever LogLevel is expected ('debug', 'info', 'warn', …). */
     LogLevelName,
     /**
      * Minimal logger interface the SDK uses internally.
-     * Implement this to plug in any logging library.
+     * Implement this to plug in any logging library (Winston, Pino, console, …).
      */
     SdkLogger,
+    /** Formatter function signature for StreamLogger. */
+    StreamLogFormatter,
+    /**
+     * Per-instance log configuration. Exposed as client.logState.
+     * Pass to applyLogLevel / setComponentLogLevel / setLogger for runtime control.
+     */
+    LogState,
 } from './logging.js';
 export {
     toRawAmount,

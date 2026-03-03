@@ -9,6 +9,8 @@ import { HttpClient } from './http-client.js';
 import { toRawAmount, toDisplayAmount } from './utils/index.js';
 import { assertResponse } from './errors.js';
 import { WSClient } from './ws-client.js';
+import { createLogger, LogState } from './logging.js';
+import type { ComponentLogger } from './logging.js';
 import type { QuoteResponse } from './types/ws.js';
 import type { Layer } from './api-types-ext.js';
 import type {
@@ -61,9 +63,13 @@ export interface SwapCompletionOptions {
 export class MakerClient {
     private http: HttpClient;
     private ws?: WSClient;
+    private readonly _log: ComponentLogger;
+    private readonly _logState: LogState;
 
-    constructor(http: HttpClient) {
+    constructor(http: HttpClient, logState: LogState = new LogState()) {
         this.http = http;
+        this._logState = logState;
+        this._log = createLogger('maker', logState);
     }
 
     // ============================================================================
@@ -78,7 +84,7 @@ export class MakerClient {
      * @returns WSClient instance (use ws.clientId to read the UUID used)
      */
     enableWebSocket(wsUrl: string, userId?: string): WSClient {
-        this.ws = new WSClient({ url: wsUrl, userId });
+        this.ws = new WSClient({ url: wsUrl, userId }, this._logState);
         return this.ws;
     }
 
@@ -149,6 +155,13 @@ export class MakerClient {
             to_layer,
         };
 
+        this._log.info(
+            'streamQuotes() started: %s -> %s pollInterval=%dms',
+            from_asset,
+            to_asset,
+            pollInterval,
+        );
+
         // Send initial quote request
         this.ws.requestQuote(quoteParams);
 
@@ -172,6 +185,7 @@ export class MakerClient {
             if (this.ws) {
                 this.ws.off('quoteResponse', onUpdate);
             }
+            this._log.info('streamQuotes() stopped: %s -> %s', from_asset, to_asset);
         };
     }
 
@@ -363,22 +377,38 @@ export class MakerClient {
     // ============================================================================
 
     async listAssets(): Promise<MarketListAssetsResponse> {
-        return assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
+        this._log.debug('listAssets()');
+        const result = assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
+        this._log.debug('listAssets() -> %d assets', result.assets?.length ?? 0);
+        return result;
     }
 
     async listPairs(): Promise<ListPairsResponse> {
-        return assertResponse(await this.http.maker.GET('/api/v1/market/pairs'));
+        this._log.debug('listPairs()');
+        const result = assertResponse(await this.http.maker.GET('/api/v1/market/pairs'));
+        this._log.debug('listPairs() -> %d pairs', result.pairs?.length ?? 0);
+        return result;
     }
 
     async getQuote(body: GetQuoteRequest): Promise<GetQuoteResponse> {
-        return assertResponse(await this.http.maker.POST('/api/v1/market/quote', { body }));
+        this._log.debug('getQuote()');
+        const result = assertResponse(await this.http.maker.POST('/api/v1/market/quote', { body }));
+        this._log.info(
+            'getQuote() -> rfq_id=%s price=%s expires_at=%s',
+            result.rfq_id,
+            result.price,
+            result.expires_at,
+        );
+        return result;
     }
 
     async getPairRoutes(body: GetPairRoutesRequest): Promise<GetPairRoutesResponse> {
+        this._log.debug('getPairRoutes()');
         return assertResponse(await this.http.maker.POST('/api/v1/market/pairs/routes', { body }));
     }
 
     async getMarketRoutes(body: DiscoverRoutesRequest): Promise<DiscoverRoutesResponse> {
+        this._log.debug('getMarketRoutes()');
         return assertResponse(await this.http.maker.POST('/api/v1/market/routes', { body }));
     }
 
@@ -389,10 +419,14 @@ export class MakerClient {
     // ============================================================================
 
     async createSwapOrder(body: CreateSwapOrderRequest): Promise<CreateSwapOrderResponse> {
-        return assertResponse(await this.http.maker.POST('/api/v1/swaps/orders', { body }));
+        this._log.info('createSwapOrder(): rfq_id=%s', body.rfq_id);
+        const result = assertResponse(await this.http.maker.POST('/api/v1/swaps/orders', { body }));
+        this._log.info('createSwapOrder() -> order_id=%s', result.id);
+        return result;
     }
 
     async getSwapOrderStatus(body: GetSwapOrderStatusRequest): Promise<GetSwapOrderStatusResponse> {
+        this._log.debug('getSwapOrderStatus(): order_id=%s', body.order_id);
         return assertResponse(await this.http.maker.POST('/api/v1/swaps/orders/status', { body }));
     }
 
@@ -425,14 +459,23 @@ export class MakerClient {
     // ============================================================================
 
     async initSwap(body: InitiateSwapRequest): Promise<InitiateSwapResponse> {
-        return assertResponse(await this.http.maker.POST('/api/v1/swaps/init', { body }));
+        this._log.info('initSwap(): rfq_id=%s', body.rfq_id);
+        const result = assertResponse(await this.http.maker.POST('/api/v1/swaps/init', { body }));
+        this._log.info('initSwap() -> payment_hash=%s', result.payment_hash);
+        return result;
     }
 
     async executeSwap(body: ConfirmSwapRequest): Promise<ConfirmSwapResponse> {
-        return assertResponse(await this.http.maker.POST('/api/v1/swaps/execute', { body }));
+        this._log.info('executeSwap(): payment_hash=%s', body.payment_hash);
+        const result = assertResponse(
+            await this.http.maker.POST('/api/v1/swaps/execute', { body }),
+        );
+        this._log.info('executeSwap() -> status=%s', result.status);
+        return result;
     }
 
     async getAtomicSwapStatus(body: GetSwapStatusRequest): Promise<GetSwapStatusResponse> {
+        this._log.debug('getAtomicSwapStatus()');
         return assertResponse(await this.http.maker.POST('/api/v1/swaps/atomic/status', { body }));
     }
 
@@ -480,31 +523,54 @@ export class MakerClient {
         const { timeout = 300000, pollInterval = 2000, onStatusUpdate } = options;
         const startTime = Date.now();
 
+        this._log.info(
+            'waitForSwapCompletion(): order_id=%s timeout=%ds',
+            orderId,
+            Math.round(timeout / 1000),
+        );
+
         while (Date.now() - startTime < timeout) {
             try {
                 const statusResponse = await this.getSwapOrderStatus({ order_id: orderId });
                 const order = statusResponse.order;
 
-                if (order && onStatusUpdate) {
-                    onStatusUpdate(order.status);
-                }
+                if (order) {
+                    this._log.debug(
+                        'waitForSwapCompletion() status poll: order_id=%s status=%s',
+                        orderId,
+                        order.status,
+                    );
 
-                if (
-                    order &&
-                    (order.status === 'FILLED' ||
+                    if (onStatusUpdate) {
+                        onStatusUpdate(order.status);
+                    }
+
+                    if (
+                        order.status === 'FILLED' ||
                         order.status === 'FAILED' ||
                         order.status === 'EXPIRED' ||
-                        order.status === 'CANCELLED')
-                ) {
-                    return order;
+                        order.status === 'CANCELLED'
+                    ) {
+                        this._log.info(
+                            'waitForSwapCompletion(): order_id=%s terminal state=%s',
+                            orderId,
+                            order.status,
+                        );
+                        return order;
+                    }
                 }
             } catch (error) {
-                console.warn('Error checking swap status:', error);
+                this._log.warn('waitForSwapCompletion() status check error: %s', error);
             }
 
             await new Promise((resolve) => setTimeout(resolve, pollInterval));
         }
 
+        this._log.error(
+            'waitForSwapCompletion(): order_id=%s timed out after %ds',
+            orderId,
+            Math.round(timeout / 1000),
+        );
         throw new Error(`Swap completion timeout after ${timeout}ms for order ${orderId}`);
     }
 
