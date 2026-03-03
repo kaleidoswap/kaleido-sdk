@@ -204,21 +204,21 @@ class TestListAssetsEnumSerialization:
     """filter_asset_schemas enums must serialize to string values."""
 
     def test_json_mode_serializes_enums(self) -> None:
-        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia, AssetSchema.uda])
+        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.NIA, AssetSchema.UDA])
         dumped = req.model_dump(mode="json", exclude_none=True)
         for v in dumped["filter_asset_schemas"]:
             assert isinstance(v, str), f"Expected str, got {type(v)}"
 
     def test_python_mode_keeps_enum_objects(self) -> None:
         """Confirm mode='python' (old default) keeps Enum objects -- the original bug."""
-        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia])
+        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.NIA])
         dumped = req.model_dump(exclude_none=True)
         assert isinstance(dumped["filter_asset_schemas"][0], AssetSchema)
 
     async def test_node_post_serializes_enums(self, client_with_node: KaleidoClient) -> None:
         """HttpClient.node_post must produce JSON-safe dicts for enum fields."""
         http = client_with_node.rln._http
-        body = ListAssetsRequest(filter_asset_schemas=[AssetSchema.nia])
+        body = ListAssetsRequest(filter_asset_schemas=[AssetSchema.NIA])
 
         with patch.object(http, "_request", new_callable=AsyncMock) as mock:
             mock.return_value = {"nia": [], "uda": [], "cfa": []}
