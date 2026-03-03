@@ -8,6 +8,7 @@ import { HttpClient } from './http-client.js';
 import { MakerClient } from './maker-client.js';
 import { RlnClient } from './rln-client.js';
 import { ConfigError } from './errors.js';
+import { applyLogConfig } from './logging.js';
 import type { KaleidoConfig } from './types/config.js';
 
 /**
@@ -47,6 +48,9 @@ export class KaleidoClient {
 
     private constructor(config: KaleidoConfig) {
         this.config = config;
+        // Apply log level and optional custom logger before any HTTP/WS clients
+        // are created so that their first log calls already respect the config.
+        applyLogConfig(config.logLevel, config.logger);
         this.http = new HttpClient({
             baseUrl: config.baseUrl,
             nodeUrl: config.nodeUrl,

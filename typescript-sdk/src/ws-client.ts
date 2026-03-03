@@ -9,12 +9,15 @@
 
 import { EventEmitter } from 'events';
 import { randomUUID } from 'crypto';
+import { getLogger } from './logging.js';
 import type {
     WebSocketMessage,
     WebSocketResponse,
     QuoteRequest,
     QuoteResponse,
 } from './types/ws.js';
+
+const _log = getLogger('ws');
 
 export interface WSClientConfig {
     url: string;
@@ -75,6 +78,8 @@ export class WSClient extends EventEmitter {
         this.isConnecting = true;
         this.isClosed = false;
 
+        _log.debug('Connecting to %s (clientId=%s)', this.url, this._clientId);
+
         return new Promise((resolve, reject) => {
             try {
                 this.ws = new WebSocket(this.url);
@@ -83,6 +88,7 @@ export class WSClient extends EventEmitter {
                     this.isConnecting = false;
                     this.reconnectAttempts = 0;
                     this.startPing();
+                    _log.info('Connected to %s (clientId=%s)', this.url, this._clientId);
                     this.emit('connected');
                     resolve();
                 };
@@ -90,8 +96,13 @@ export class WSClient extends EventEmitter {
                 this.ws.onmessage = (event) => {
                     try {
                         const message: WebSocketResponse = JSON.parse(event.data);
+                        _log.debug(
+                            'Message received: action=%s',
+                            (message as { action?: string }).action ?? '<unknown>',
+                        );
                         this.handleMessage(message);
                     } catch (error) {
+                        _log.warn('Message parse error (raw: %s)', event.data);
                         this.emit('error', new Error('Failed to parse message'));
                     }
                 };
@@ -104,6 +115,7 @@ export class WSClient extends EventEmitter {
                 this.ws.onclose = () => {
                     this.isConnecting = false;
                     this.stopPing();
+                    _log.info('Disconnected from %s (clientId=%s)', this.url, this._clientId);
                     this.emit('disconnected');
 
                     if (!this.isClosed) {
@@ -116,11 +128,13 @@ export class WSClient extends EventEmitter {
                     if (this.isConnecting) {
                         this.isConnecting = false;
                         this.ws?.close();
+                        _log.error('Connection timeout: %s', this.url);
                         reject(new Error('Connection timeout'));
                     }
                 }, 10000);
             } catch (error) {
                 this.isConnecting = false;
+                _log.error('Connection failed: %s — %s', this.url, error);
                 reject(error);
             }
         });
@@ -138,13 +152,17 @@ export class WSClient extends EventEmitter {
                 this.emit('connectionEstablished', message.data);
                 break;
             case 'pong':
+                _log.debug('Pong received (clientId=%s)', this._clientId);
                 this.emit('pong', message);
                 break;
-            case 'error':
-                this.emit('error', new Error(message.error || 'Unknown error'));
+            case 'error': {
+                const errMsg = message.error || 'Unknown error';
+                _log.warn('Server error: %s', errMsg);
+                this.emit('error', new Error(errMsg));
                 break;
+            }
             default:
-                // Unknown message type
+                _log.debug('Unknown message action: %s', message.action);
                 break;
         }
     }
@@ -153,6 +171,13 @@ export class WSClient extends EventEmitter {
      * Request a quote
      */
     requestQuote(request: Omit<QuoteRequest, 'action'>): void {
+        _log.debug(
+            'quote_request: from=%s to=%s from_amount=%s (clientId=%s)',
+            request.from_asset,
+            request.to_asset,
+            request.from_amount,
+            this._clientId,
+        );
         this.send({
             action: 'quote_request',
             ...request,
@@ -164,6 +189,7 @@ export class WSClient extends EventEmitter {
      * Send ping to keep connection alive
      */
     ping(): void {
+        _log.debug('Ping sent (clientId=%s)', this._clientId);
         this.send({
             action: 'ping',
             timestamp: Date.now(),
@@ -177,6 +203,11 @@ export class WSClient extends EventEmitter {
         if (this.ws?.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(message));
         } else {
+            _log.warn(
+                'Send attempted while disconnected (action=%s, clientId=%s)',
+                (message as { action?: string }).action,
+                this._clientId,
+            );
             this.emit('error', new Error('WebSocket not connected'));
         }
     }
@@ -208,14 +239,27 @@ export class WSClient extends EventEmitter {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
             this.reconnectAttempts++;
+            _log.info(
+                'Reconnecting (attempt %d/%d) in %dms: %s',
+                this.reconnectAttempts,
+                this.maxReconnectAttempts,
+                delay,
+                this.url,
+            );
 
             setTimeout(() => {
                 this.emit('reconnecting', this.reconnectAttempts);
-                this.connect().catch(() => {
+                this.connect().catch((err) => {
+                    _log.warn('Reconnect attempt %d failed: %s', this.reconnectAttempts, err);
                     // Will retry in next attempt
                 });
             }, delay);
         } else {
+            _log.warn(
+                'Max reconnect attempts (%d) exceeded: %s',
+                this.maxReconnectAttempts,
+                this.url,
+            );
             this.emit('maxReconnectExceeded');
         }
     }
@@ -224,6 +268,7 @@ export class WSClient extends EventEmitter {
      * Disconnect from WebSocket server
      */
     disconnect(): void {
+        _log.info('Disconnecting from %s (clientId=%s)', this.url, this._clientId);
         this.isClosed = true;
         this.stopPing();
         this.ws?.close();
