@@ -50,8 +50,8 @@ async def main() -> None:
         from_layer = Layer(pair.routes[0].from_layer)
         to_layer = Layer(pair.routes[0].to_layer)
     else:
-        from_layer = Layer.BTC_LN
-        to_layer = Layer.RGB_LN
+        from_layer = Layer.btc_ln
+        to_layer = Layer.rgb_ln
 
     quote_request = PairQuoteRequest(
         from_asset=SwapLegInput(

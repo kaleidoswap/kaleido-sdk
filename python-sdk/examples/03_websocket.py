@@ -13,7 +13,7 @@ from kaleidoswap_sdk import KaleidoClient, Layer
 
 async def main() -> None:
     """Main entry point."""
-    client = KaleidoClient.create(base_url="http://localhost:8000")
+    client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
 
     # Enable WebSocket
     ws = client.maker.enable_websocket("wss://api.staging.kaleidoswap.com/api/v1/market/ws")
@@ -48,7 +48,7 @@ async def main() -> None:
 
         print(f"Found {len(routes)} routes:")
         for route in routes:
-            print(f"  - {route['from_layer']} -> {route['to_layer']}")
+            print(f"  - {route.from_layer} -> {route.to_layer}")
 
         print(f"\nStreaming quotes for BTC/USDT (automatically requests every 2 seconds)...")
 
@@ -57,8 +57,8 @@ async def main() -> None:
             from_asset="BTC",
             to_asset="USDT",
             from_amount=100000,
-            from_layer=Layer(routes[0]["from_layer"]),
-            to_layer=Layer(routes[0]["to_layer"]),
+            from_layer=Layer(routes[0].from_layer),
+            to_layer=Layer(routes[0].to_layer),
             on_update=on_quote,
             poll_interval=2.0,  # Request new quotes every 2 seconds
         )
