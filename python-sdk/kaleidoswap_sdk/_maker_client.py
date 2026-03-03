@@ -51,12 +51,15 @@ from ._generated.api_types import (
     TradingPairsResponse,
 )
 from ._http_client import HttpClient
+from ._logging import get_logger
 from ._utils import to_display_amount, to_raw_amount
 from .errors import SwapError
 from .types import Layer
 
 if TYPE_CHECKING:
     from ._ws_client import QuoteResponse, WSClient
+
+_log = get_logger("maker")
 
 
 @dataclass
@@ -180,6 +183,12 @@ class MakerClient:
             "to_layer": to_layer.value if to_layer else None,
         }
 
+        _log.info(
+            "maker.stream_quotes() started: %s -> %s poll_interval=%.1fs",
+            from_asset,
+            to_asset,
+            poll_interval,
+        )
         self._ws.request_quote(quote_params)
 
         polling_task: asyncio.Task[None] | None = None
@@ -201,6 +210,7 @@ class MakerClient:
                 polling_task.cancel()
             if self._ws:
                 self._ws.off("quote_response", on_update)
+            _log.info("maker.stream_quotes() stopped: %s -> %s", from_asset, to_asset)
 
         return stop
 
@@ -361,11 +371,15 @@ class MakerClient:
 
     async def list_assets(self) -> AssetsResponse:
         """List all available assets."""
+        _log.debug("maker.list_assets()")
         data = await self._http.maker_get("/api/v1/market/assets")
-        return AssetsResponse.model_validate(data)
+        result = AssetsResponse.model_validate(data)
+        _log.debug("maker.list_assets() -> %d assets", len(result.assets))
+        return result
 
     async def list_pairs(self) -> TradingPairsResponse:
         """List all trading pairs."""
+        _log.debug("maker.list_pairs()")
         data = await self._http.maker_get("/api/v1/market/pairs")
         pairs_list = data.get("pairs") or []
         normalized_pairs = [TradingPair.model_validate(p) for p in pairs_list]
@@ -403,7 +417,14 @@ class MakerClient:
             ```
         """
         data = await self._http.maker_post("/api/v1/market/quote", data=body)
-        return PairQuoteResponse.model_validate(data)
+        result = PairQuoteResponse.model_validate(data)
+        _log.info(
+            "maker.get_quote() -> rfq_id=%s price=%s expires_at=%s",
+            result.rfq_id,
+            result.price,
+            result.expires_at,
+        )
+        return result
 
     async def get_pair_routes(self, pair_ticker: str) -> list[SwapRoute]:
         """
@@ -444,8 +465,11 @@ class MakerClient:
         Args:
             body: Swap order creation request
         """
+        _log.info("maker.create_swap_order(): rfq_id=%s", body.rfq_id)
         data = await self._http.maker_post("/api/v1/swaps/orders", data=body)
-        return CreateSwapOrderResponse.model_validate(data)
+        result = CreateSwapOrderResponse.model_validate(data)
+        _log.info("maker.create_swap_order() -> order_id=%s", result.id)
+        return result
 
     async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
         """
@@ -509,8 +533,11 @@ class MakerClient:
         Args:
             body: Swap initialization request
         """
+        _log.info("maker.init_swap(): rfq_id=%s", body.rfq_id)
         data = await self._http.maker_post("/api/v1/swaps/init", data=body)
-        return SwapResponse.model_validate(data)
+        result = SwapResponse.model_validate(data)
+        _log.info("maker.init_swap() -> payment_hash=%s", result.payment_hash)
+        return result
 
     async def execute_swap(self, body: ConfirmSwapRequest) -> ConfirmSwapResponse:
         """
@@ -519,8 +546,11 @@ class MakerClient:
         Args:
             body: Swap execution request
         """
+        _log.info("maker.execute_swap(): payment_hash=%s", body.payment_hash)
         data = await self._http.maker_post("/api/v1/swaps/execute", data=body)
-        return ConfirmSwapResponse.model_validate(data)
+        result = ConfirmSwapResponse.model_validate(data)
+        _log.info("maker.execute_swap() -> status=%s", result.status)
+        return result
 
     async def get_atomic_swap_status(self, body: SwapStatusRequest) -> SwapStatusResponse:
         """
@@ -625,6 +655,11 @@ class MakerClient:
         """
         opts = options or SwapCompletionOptions()
         start_time = asyncio.get_event_loop().time()
+        _log.info(
+            "maker.wait_for_swap_completion(): order_id=%s timeout=%.0fs",
+            order_id,
+            opts.timeout,
+        )
 
         while asyncio.get_event_loop().time() - start_time < opts.timeout:
             try:
@@ -642,10 +677,17 @@ class MakerClient:
                     else:
                         status_value = None
 
+                    _log.debug("Swap order %s status poll: %s", order_id, status_value)
+
                     if status_value and opts.on_status_update:
                         opts.on_status_update(status_value)
 
                     if status_value in {"FILLED", "FAILED", "EXPIRED", "CANCELLED"}:
+                        _log.info(
+                            "maker.wait_for_swap_completion(): order_id=%s terminal state=%s",
+                            order_id,
+                            status_value,
+                        )
                         return order
 
             except Exception:
@@ -653,6 +695,11 @@ class MakerClient:
 
             await asyncio.sleep(opts.poll_interval)
 
+        _log.error(
+            "maker.wait_for_swap_completion(): order_id=%s timed out after %.0fs",
+            order_id,
+            opts.timeout,
+        )
         raise SwapError(
             f"Swap completion timeout after {opts.timeout}s for order {order_id}",
             swap_id=order_id,

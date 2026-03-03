@@ -94,9 +94,12 @@ from ._generated.node_types import (
     UnlockRequest,
 )
 from ._generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
+from ._logging import get_logger
 
 if TYPE_CHECKING:
     from ._http_client import HttpClient
+
+_log = get_logger("rln")
 
 
 class RlnClient:
@@ -129,11 +132,13 @@ class RlnClient:
 
     async def get_node_info(self) -> NodeInfoResponse:
         """Get node information."""
+        _log.debug("rln.get_node_info()")
         data = await self._http.node_get("/nodeinfo")
         return NodeInfoResponse.model_validate(data)
 
     async def get_network_info(self) -> NodeNetworkInfoResponse:
         """Get network information."""
+        _log.debug("rln.get_network_info()")
         data = await self._http.node_get("/networkinfo")
         return NodeNetworkInfoResponse.model_validate(data)
 
@@ -144,8 +149,11 @@ class RlnClient:
         Args:
             body: Wallet initialization request with password
         """
+        _log.info("rln.init_wallet()")
         data = await self._http.node_post("/init", body)
-        return InitResponse.model_validate(data)
+        result = InitResponse.model_validate(data)
+        _log.info("rln.init_wallet() -> ok")
+        return result
 
     async def unlock_wallet(self, body: UnlockRequest) -> None:
         """
@@ -154,10 +162,13 @@ class RlnClient:
         Args:
             body: Unlock request with password
         """
+        _log.info("rln.unlock_wallet()")
         await self._http.node_post("/unlock", body)
+        _log.debug("rln.unlock_wallet() -> ok")
 
     async def lock_wallet(self) -> None:
         """Lock the wallet."""
+        _log.info("rln.lock_wallet()")
         await self._http.node_post("/lock")
 
     async def change_password(self, body: ChangePasswordRequest) -> None:
@@ -167,7 +178,9 @@ class RlnClient:
         Args:
             body: Request with old and new password
         """
+        _log.info("rln.change_password()")
         await self._http.node_post("/changepassword", body)
+        _log.debug("rln.change_password() -> ok")
 
     async def backup(self, body: BackupRequest) -> None:
         """
@@ -176,7 +189,9 @@ class RlnClient:
         Args:
             body: Backup request with path and password
         """
+        _log.info("rln.backup()")
         await self._http.node_post("/backup", body)
+        _log.info("rln.backup() -> ok")
 
     async def restore(self, body: RestoreRequest) -> None:
         """
@@ -185,10 +200,13 @@ class RlnClient:
         Args:
             body: Restore request with backup path and password
         """
+        _log.info("rln.restore()")
         await self._http.node_post("/restore", body)
+        _log.info("rln.restore() -> ok")
 
     async def shutdown(self) -> None:
         """Gracefully shutdown the node."""
+        _log.info("rln.shutdown()")
         await self._http.node_post("/shutdown")
 
     # =========================================================================
@@ -217,8 +235,11 @@ class RlnClient:
         Args:
             body: Send request with address, amount, and fee rate
         """
+        _log.info("rln.send_btc(): address=%s amount=%s", body.address, body.amount)
         data = await self._http.node_post("/sendbtc", body)
-        return SendBtcResponse.model_validate(data)
+        result = SendBtcResponse.model_validate(data)
+        _log.info("rln.send_btc() -> txid=%s", result.txid)
+        return result
 
     async def list_transactions(
         self, body: ListTransactionsRequest | None = None
@@ -324,8 +345,14 @@ class RlnClient:
         Args:
             body: Asset issuance request
         """
+        _log.info("rln.issue_asset_nia(): ticker=%s", body.ticker)
         data = await self._http.node_post("/issueassetnia", body)
-        return IssueAssetNIAResponse.model_validate(data)
+        result = IssueAssetNIAResponse.model_validate(data)
+        _log.info(
+            "rln.issue_asset_nia() -> asset_id=%s",
+            result.asset.asset_id if result.asset else "<none>",
+        )
+        return result
 
     async def issue_asset_cfa(self, body: IssueAssetCFARequest) -> IssueAssetCFAResponse:
         """
@@ -334,8 +361,14 @@ class RlnClient:
         Args:
             body: Asset issuance request
         """
+        _log.info("rln.issue_asset_cfa(): name=%s", body.name)
         data = await self._http.node_post("/issueassetcfa", body)
-        return IssueAssetCFAResponse.model_validate(data)
+        result = IssueAssetCFAResponse.model_validate(data)
+        _log.info(
+            "rln.issue_asset_cfa() -> asset_id=%s",
+            result.asset.asset_id if result.asset else "<none>",
+        )
+        return result
 
     async def issue_asset_uda(self, body: IssueAssetUDARequest) -> IssueAssetUDAResponse:
         """
@@ -344,8 +377,14 @@ class RlnClient:
         Args:
             body: Asset issuance request
         """
+        _log.info("rln.issue_asset_uda(): ticker=%s", body.ticker)
         data = await self._http.node_post("/issueassetuda", body)
-        return IssueAssetUDAResponse.model_validate(data)
+        result = IssueAssetUDAResponse.model_validate(data)
+        _log.info(
+            "rln.issue_asset_uda() -> asset_id=%s",
+            result.asset.asset_id if result.asset else "<none>",
+        )
+        return result
 
     async def send_rgb(self, body: SendRgbRequest) -> SendRgbResponse:
         """
@@ -357,8 +396,11 @@ class RlnClient:
         Args:
             body: Send request with recipient_map and transfer options
         """
+        _log.info("rln.send_rgb()")
         data = await self._http.node_post("/sendrgb", body)
-        return SendRgbResponse.model_validate(data)
+        result = SendRgbResponse.model_validate(data)
+        _log.info("rln.send_rgb() -> txid=%s", result.txid)
+        return result
 
     async def list_transfers(self, body: ListTransfersRequest) -> ListTransfersResponse:
         """
@@ -409,8 +451,15 @@ class RlnClient:
         Args:
             body: Channel opening request
         """
+        _log.info(
+            "rln.open_channel(): peer=%s capacity_sat=%s",
+            body.peer_pubkey_and_opt_addr,
+            body.capacity_sat,
+        )
         data = await self._http.node_post("/openchannel", body)
-        return OpenChannelResponse.model_validate(data)
+        result = OpenChannelResponse.model_validate(data)
+        _log.info("rln.open_channel() -> temp_channel_id=%s", result.temporary_channel_id)
+        return result
 
     async def close_channel(self, body: CloseChannelRequest) -> None:
         """
@@ -419,7 +468,9 @@ class RlnClient:
         Args:
             body: Channel closing request
         """
+        _log.info("rln.close_channel(): channel_id=%s", body.channel_id)
         await self._http.node_post("/closechannel", body)
+        _log.info("rln.close_channel() -> initiated: channel_id=%s", body.channel_id)
 
     async def get_channel_id(self, body: GetChannelIdRequest) -> GetChannelIdResponse:
         """
@@ -447,6 +498,7 @@ class RlnClient:
         Args:
             body: Request with peer_pubkey_and_addr
         """
+        _log.info("rln.connect_peer(): peer=%s", body.peer_pubkey_and_addr)
         await self._http.node_post("/connectpeer", body)
 
     async def disconnect_peer(self, body: DisconnectPeerRequest) -> None:
@@ -456,6 +508,7 @@ class RlnClient:
         Args:
             body: Request with peer_pubkey
         """
+        _log.info("rln.disconnect_peer(): pubkey=%s", body.peer_pubkey)
         await self._http.node_post("/disconnectpeer", body)
 
     # =========================================================================
@@ -527,8 +580,17 @@ class RlnClient:
         Args:
             body: Payment request with invoice
         """
+        _log.info(
+            "rln.send_payment(): invoice=%s...", body.invoice[:30] if body.invoice else "<empty>"
+        )
         data = await self._http.node_post("/sendpayment", body)
-        return SendPaymentResponse.model_validate(data)
+        result = SendPaymentResponse.model_validate(data)
+        _log.info(
+            "rln.send_payment() -> payment_hash=%s status=%s",
+            result.payment_hash,
+            result.status,
+        )
+        return result
 
     async def keysend(self, body: KeysendRequest) -> KeysendResponse:
         """
@@ -573,6 +635,7 @@ class RlnClient:
         """
         if isinstance(body, str):
             body = TakerRequest(swapstring=body)
+        _log.info("rln.whitelist_swap(): swapstring=%.20s...", body.swapstring)
         await self._http.node_post("/taker", body)
 
     async def maker_init(self, body: MakerInitRequest) -> MakerInitResponse:
@@ -582,8 +645,16 @@ class RlnClient:
         Args:
             body: Maker swap initialization request
         """
+        _log.info(
+            "rln.maker_init(): from_asset=%s to_asset=%s qty_from=%s",
+            body.from_asset,
+            body.to_asset,
+            body.qty_from,
+        )
         data = await self._http.node_post("/makerinit", body)
-        return MakerInitResponse.model_validate(data)
+        result = MakerInitResponse.model_validate(data)
+        _log.info("rln.maker_init() -> ok")
+        return result
 
     async def maker_execute(self, body: MakerExecuteRequest) -> EmptyResponse:
         """
@@ -592,8 +663,11 @@ class RlnClient:
         Args:
             body: Maker execute request
         """
+        _log.info("rln.maker_execute()")
         data = await self._http.node_post("/makerexecute", body)
-        return EmptyResponse.model_validate(data)
+        result = EmptyResponse.model_validate(data)
+        _log.info("rln.maker_execute() -> ok")
+        return result
 
     async def list_swaps(self) -> ListSwapsResponse:
         """List all swaps (maker and taker)."""

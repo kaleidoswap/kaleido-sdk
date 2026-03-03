@@ -6,6 +6,7 @@ Example showing how to get a quote for a swap.
 """
 
 import asyncio
+import logging
 
 from kaleidoswap_sdk import (
     KaleidoClient,
@@ -16,10 +17,22 @@ from kaleidoswap_sdk import (
     to_smallest_units,
 )
 
+# ---------------------------------------------------------------------------
+# Logging setup (application's responsibility — the SDK never does this)
+# ---------------------------------------------------------------------------
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)-8s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
+
 
 async def main() -> None:
     """Main entry point."""
-    client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
+    client = KaleidoClient.create(
+        base_url="https://api.staging.kaleidoswap.com",
+        log_level=logging.DEBUG,
+    )
 
     # Discover trading pairs
     print("Fetching available pairs...")
@@ -68,10 +81,12 @@ async def main() -> None:
     try:
         quote = await client.maker.get_quote(quote_request)
 
-        from_display = to_display_units(quote.from_asset.amount, quote.from_asset.precision)
+        from_display = to_display_units(
+            quote.from_asset.amount, quote.from_asset.precision
+        )
         to_display = to_display_units(quote.to_asset.amount, quote.to_asset.precision)
 
-        print(f"\nQuote received:")
+        print("\nQuote received:")
         print(f"  RFQ ID: {quote.rfq_id}")
         print(f"  From: {from_display} {quote.from_asset.ticker}")
         print(f"  To: {to_display} {quote.to_asset.ticker}")

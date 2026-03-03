@@ -7,16 +7,33 @@ The SDK automatically requests quotes at a configurable interval.
 """
 
 import asyncio
+import logging
 
 from kaleidoswap_sdk import KaleidoClient, Layer
+
+# ---------------------------------------------------------------------------
+# Logging setup (application's responsibility — the SDK never does this)
+# ---------------------------------------------------------------------------
+# DEBUG shows every WS message, HTTP request, ping, reconnect, etc.
+# Switch to logging.INFO to see only meaningful lifecycle events.
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)-8s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 
 async def main() -> None:
     """Main entry point."""
-    client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
+    client = KaleidoClient.create(
+        base_url="https://api.staging.kaleidoswap.com",
+        log_level=logging.DEBUG,
+    )
 
     # Enable WebSocket
-    ws = client.maker.enable_websocket("wss://api.staging.kaleidoswap.com/api/v1/market/ws")
+    ws = client.maker.enable_websocket(
+        "wss://api.staging.kaleidoswap.com/api/v1/market/ws"
+    )
 
     quotes_received = 0
     max_quotes = 5
@@ -29,8 +46,12 @@ async def main() -> None:
         to_asset = quote.get("to_asset", {})
 
         print(f"\nQuote #{quotes_received}:")
-        print(f"  From: {from_asset.get('amount')} {from_asset.get('ticker')} ({from_asset.get('layer')})")
-        print(f"  To: {to_asset.get('amount')} {to_asset.get('ticker')} ({to_asset.get('layer')})")
+        print(
+            f"  From: {from_asset.get('amount')} {from_asset.get('ticker')} ({from_asset.get('layer')})"
+        )
+        print(
+            f"  To: {to_asset.get('amount')} {to_asset.get('ticker')} ({to_asset.get('layer')})"
+        )
         print(f"  Price: {quote.get('price')}")
         print(f"  RFQ ID: {quote.get('rfq_id')}")
 
@@ -50,7 +71,9 @@ async def main() -> None:
         for route in routes:
             print(f"  - {route.from_layer} -> {route.to_layer}")
 
-        print(f"\nStreaming quotes for BTC/USDT (automatically requests every 2 seconds)...")
+        print(
+            "\nStreaming quotes for BTC/USDT (automatically requests every 2 seconds)..."
+        )
 
         # Start streaming - quotes are automatically requested every 2 seconds
         stop = await client.maker.stream_quotes(

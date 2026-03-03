@@ -7,11 +7,13 @@ Single async HTTP client (httpx) shared by both Maker and Node APIs.
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import Any, TypeVar
 
 import httpx
 from pydantic import BaseModel
 
+from ._logging import get_logger
 from .errors import (
     KaleidoError,
     NetworkError,
@@ -21,6 +23,8 @@ from .errors import (
 from .types import KaleidoConfig
 
 T = TypeVar("T", bound=BaseModel)
+
+_log = get_logger("http")
 
 
 class HttpClient:
@@ -97,6 +101,12 @@ class HttpClient:
         except Exception:
             data = response.text
 
+        _log.debug(
+            "HTTP error response [%d %s]: %r",
+            response.status_code,
+            response.reason_phrase,
+            data,
+        )
         raise map_http_error(response.status_code, response.reason_phrase or "", data)
 
     async def _request(
@@ -111,22 +121,75 @@ class HttpClient:
         retries = self._config.max_retries
 
         for attempt in range(retries + 1):
+            t_start = time.monotonic()
             try:
+                _log.debug("%s %s (attempt %d/%d)", method, url, attempt + 1, retries + 1)
                 response = await client.request(method, url, **kwargs)
+                latency_ms = (time.monotonic() - t_start) * 1000
+                _log.info("%s %s -> %d (%.0fms)", method, url, response.status_code, latency_ms)
                 return await self._handle_response(response)
             except httpx.TimeoutException as e:
+                latency_ms = (time.monotonic() - t_start) * 1000
                 last_error = TimeoutError(f"Request timed out: {e}")
                 if attempt < retries:
-                    await asyncio.sleep(2**attempt)
+                    delay = 2**attempt
+                    _log.warning(
+                        "%s %s timed out after %.0fms (attempt %d/%d), retrying in %ds",
+                        method,
+                        url,
+                        latency_ms,
+                        attempt + 1,
+                        retries + 1,
+                        delay,
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    _log.error(
+                        "%s %s timed out after %.0fms, exhausted %d retries",
+                        method,
+                        url,
+                        latency_ms,
+                        retries,
+                    )
             except httpx.RequestError as e:
+                latency_ms = (time.monotonic() - t_start) * 1000
                 last_error = NetworkError(f"Network error: {e}")
                 if attempt < retries:
-                    await asyncio.sleep(2**attempt)
+                    delay = 2**attempt
+                    _log.warning(
+                        "%s %s network error (attempt %d/%d): %s, retrying in %ds",
+                        method,
+                        url,
+                        attempt + 1,
+                        retries + 1,
+                        type(e).__name__,
+                        delay,
+                    )
+                    await asyncio.sleep(delay)
+                else:
+                    _log.error(
+                        "%s %s network error after %d retries: %s",
+                        method,
+                        url,
+                        retries,
+                        type(e).__name__,
+                    )
             except KaleidoError as e:
                 if e.is_retryable() and attempt < retries:
                     last_error = e
-                    await asyncio.sleep(2**attempt)
+                    delay = 2**attempt
+                    _log.warning(
+                        "%s %s retryable error %s (attempt %d/%d), retrying in %ds",
+                        method,
+                        url,
+                        e.code,
+                        attempt + 1,
+                        retries + 1,
+                        delay,
+                    )
+                    await asyncio.sleep(delay)
                 else:
+                    _log.error("%s %s raised %s: %s", method, url, type(e).__name__, e.code)
                     raise
 
         if last_error:

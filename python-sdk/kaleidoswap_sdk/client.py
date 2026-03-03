@@ -6,7 +6,10 @@ Main client class that coordinates Maker and RLN operations.
 
 from __future__ import annotations
 
+import logging
+
 from ._http_client import HttpClient
+from ._logging import apply_log_level
 from ._maker_client import MakerClient
 from ._rln_client import RlnClient
 from .errors import NodeNotConfiguredError
@@ -45,6 +48,7 @@ class KaleidoClient:
             config: Client configuration
         """
         self._config = config
+        apply_log_level(config.log_level)
         self._http = HttpClient(config)
         self._maker = MakerClient(self._http)
         self._rln = RlnClient(self._http)
@@ -58,6 +62,7 @@ class KaleidoClient:
         timeout: float = 30.0,
         max_retries: int = 3,
         cache_ttl: int = 60,
+        log_level: int | str = logging.WARNING,
     ) -> KaleidoClient:
         """
         Create a new KaleidoClient instance.
@@ -69,6 +74,9 @@ class KaleidoClient:
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum retry attempts (default: 3)
             cache_ttl: Cache TTL in seconds (default: 60)
+            log_level: Python logging level for SDK loggers (default: logging.WARNING).
+                Set to logging.DEBUG to see full HTTP, WebSocket, and swap traces.
+                The application must configure log handlers separately.
 
         Returns:
             Initialized client
@@ -94,6 +102,7 @@ class KaleidoClient:
             timeout=timeout,
             max_retries=max_retries,
             cache_ttl=cache_ttl,
+            log_level=log_level,
         )
         return cls(config)
 

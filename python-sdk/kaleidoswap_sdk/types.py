@@ -7,6 +7,7 @@ Run `make generate-python-sdk-models` to regenerate from OpenAPI specs.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -96,6 +97,12 @@ class KaleidoConfig:
         timeout: Request timeout in seconds (default: 30)
         max_retries: Maximum retry attempts (default: 3)
         cache_ttl: Cache TTL in seconds (default: 60)
+        log_level: Python logging level for all SDK loggers (default: logging.WARNING).
+            Accepts integer constants (logging.DEBUG, logging.INFO, logging.WARNING, ...)
+            or their string equivalents ('DEBUG', 'INFO', 'WARNING', 'ERROR').
+            Set to logging.DEBUG to see full HTTP traces, WebSocket frames, and
+            swap lifecycle events. The application is responsible for configuring
+            log handlers and output destinations.
     """
 
     base_url: str
@@ -104,6 +111,7 @@ class KaleidoConfig:
     timeout: float = 30.0
     max_retries: int = 3
     cache_ttl: int = 60
+    log_level: int | str = logging.WARNING
 
 
 __all__ = [

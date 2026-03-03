@@ -6,8 +6,21 @@ Basic example showing how to create a client and list assets.
 """
 
 import asyncio
+import logging
 
 from kaleidoswap_sdk import KaleidoClient, get_sdk_name, get_version
+
+# ---------------------------------------------------------------------------
+# Logging setup (application's responsibility — the SDK never does this)
+# ---------------------------------------------------------------------------
+# Show all SDK log levels. Change to logging.INFO or logging.WARNING to reduce noise.
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)-8s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
+# Optionally silence the HTTP sub-logger if you only care about higher-level events:
+# logging.getLogger("kaleidoswap_sdk.http").setLevel(logging.WARNING)
 
 
 async def main() -> None:
@@ -16,8 +29,11 @@ async def main() -> None:
     print(f"{get_sdk_name()} v{get_version()}")
     print("-" * 40)
 
-    # Create client
-    client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
+    # Create client — log_level tells the SDK which records to emit
+    client = KaleidoClient.create(
+        base_url="https://api.staging.kaleidoswap.com",
+        log_level=logging.DEBUG,
+    )
 
     # List available assets
     print("\nFetching assets...")
