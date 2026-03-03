@@ -182,6 +182,36 @@ export class RateLimitError extends APIError {
 }
 
 /**
+ * Assert that an openapi-fetch response is successful and return its data.
+ * Throws a typed SDK error if the response contains an error.
+ *
+ * This is the single shared error-handling utility used by all API clients.
+ * It replaces both the inline `unwrapResponse` in MakerClient and the
+ * `checkError` helper in RlnClient with one consistent implementation.
+ *
+ * For void methods, call without capturing the return value:
+ *   assertResponse(await this.http.node.POST('/unlock', { body }));
+ *
+ * For data methods, capture and return:
+ *   return assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
+ *
+ * @example
+ * const assets = assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
+ * assertResponse(await this.http.node.POST('/unlock', { body }));
+ */
+
+export function assertResponse<T>(result: { data?: T; error?: unknown; response?: Response }): T {
+    if (result.error != null) {
+        throw mapHttpError({
+            status: result.response?.status ?? 500,
+            statusText: result.response?.statusText ?? 'API Error',
+            data: result.error as Record<string, unknown>,
+        });
+    }
+    return result.data as T;
+}
+
+/**
  * Map HTTP errors to typed SDK errors
  * @param error - HTTP error data from fetch
  */

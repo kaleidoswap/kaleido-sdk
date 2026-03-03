@@ -14,7 +14,7 @@ import type {
     WebSocketResponse,
     QuoteRequest,
     QuoteResponse,
-} from './ws-types.js';
+} from './types/ws.js';
 
 export interface WSClientConfig {
     url: string;

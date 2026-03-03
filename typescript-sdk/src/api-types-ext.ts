@@ -76,6 +76,7 @@ export type Quote = components['schemas']['PairQuoteResponse'];
 export type SwapOrder = components['schemas']['SwapOrder'];
 export type SwapOrderStatus = components['schemas']['SwapOrderStatus'];
 export type Layer = components['schemas']['Layer'];
+export type ReceiverAddressFormat = components['schemas']['ReceiverAddressFormat'];
 
 // Aliases for backward compatibility with types.ts
 export type SwapOrderStatusResponse = GetSwapOrderStatusResponse;

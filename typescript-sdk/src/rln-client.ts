@@ -6,7 +6,7 @@
  */
 
 import { HttpClient } from './http-client.js';
-import { mapHttpError } from './errors.js';
+import { assertResponse } from './errors.js';
 import type {
     InitWalletRequest,
     InitResponse,
@@ -92,20 +92,6 @@ import type {
     RevokeTokenRequest,
 } from './node-types-ext.js';
 
-/**
- * Check for error and throw if present (for void methods)
- */
-function checkError(result: { error?: unknown }): void {
-    if (result.error) {
-        const err = result.error as { status?: number };
-        throw mapHttpError({
-            status: err?.status || 500,
-            statusText: 'API Error',
-            data: result.error,
-        });
-    }
-}
-
 export class RlnClient {
     private http: HttpClient;
 
@@ -118,51 +104,39 @@ export class RlnClient {
     // ============================================================================
 
     async getNodeInfo(): Promise<NodeInfoResponse> {
-        const { data, error } = await this.http.node.GET('/nodeinfo');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.GET('/nodeinfo'));
     }
 
     async getNetworkInfo(): Promise<NetworkInfoResponse> {
-        const { data, error } = await this.http.node.GET('/networkinfo');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.GET('/networkinfo'));
     }
 
     async initWallet(body: InitWalletRequest): Promise<InitResponse> {
-        const { data, error } = await this.http.node.POST('/init', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/init', { body }));
     }
 
     async unlockWallet(body: UnlockWalletRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/unlock', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/unlock', { body }));
     }
 
     async lockWallet(): Promise<void> {
-        const { error } = await this.http.node.POST('/lock');
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/lock'));
     }
 
     async changePassword(body: ChangePasswordRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/changepassword', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/changepassword', { body }));
     }
 
     async backup(body: BackupRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/backup', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/backup', { body }));
     }
 
     async restore(body: RestoreRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/restore', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/restore', { body }));
     }
 
     async shutdown(): Promise<void> {
-        const { error } = await this.http.node.POST('/shutdown');
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/shutdown'));
     }
 
     // ============================================================================
@@ -170,49 +144,39 @@ export class RlnClient {
     // ============================================================================
 
     async getAddress(): Promise<AddressResponse> {
-        const { data, error } = await this.http.node.POST('/address');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/address'));
     }
 
     async getBtcBalance(skipSync: boolean = false): Promise<BtcBalanceResponse> {
-        const { data, error } = await this.http.node.POST('/btcbalance', {
-            body: { skip_sync: skipSync },
-        });
-        checkError({ error });
-        return data!;
+        return assertResponse(
+            await this.http.node.POST('/btcbalance', { body: { skip_sync: skipSync } }),
+        );
     }
 
     async sendBtc(body: SendBtcRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/sendbtc', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/sendbtc', { body }));
     }
 
     async listTransactions(request?: ListTransactionsRequest): Promise<ListTransactionsResponse> {
-        const { data, error } = await this.http.node.POST('/listtransactions', {
-            body: { skip_sync: false, ...request },
-        });
-        checkError({ error });
-        return data!;
+        return assertResponse(
+            await this.http.node.POST('/listtransactions', {
+                body: { skip_sync: false, ...request },
+            }),
+        );
     }
 
     async listUnspents(): Promise<ListUnspentsResponse> {
-        const { data, error } = await this.http.node.POST('/listunspents', {
-            body: { skip_sync: false },
-        });
-        checkError({ error });
-        return data!;
+        return assertResponse(
+            await this.http.node.POST('/listunspents', { body: { skip_sync: false } }),
+        );
     }
 
     async createUtxos(body: CreateUtxosRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/createutxos', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/createutxos', { body }));
     }
 
     async estimateFee(body: EstimateFeeRequest): Promise<EstimateFeeResponse> {
-        const { data, error } = await this.http.node.POST('/estimatefee', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/estimatefee', { body }));
     }
 
     // ============================================================================
@@ -222,74 +186,55 @@ export class RlnClient {
     async listAssets(
         filterAssetSchemas: ('Nia' | 'Uda' | 'Cfa')[] = [],
     ): Promise<ListAssetsResponse> {
-        const { data, error } = await this.http.node.POST('/listassets', {
-            body: { filter_asset_schemas: filterAssetSchemas },
-        });
-        checkError({ error });
-        return data!;
+        return assertResponse(
+            await this.http.node.POST('/listassets', {
+                body: { filter_asset_schemas: filterAssetSchemas },
+            }),
+        );
     }
 
     async getAssetBalance(body: AssetBalanceRequest): Promise<AssetBalanceResponse> {
-        const { data, error } = await this.http.node.POST('/assetbalance', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/assetbalance', { body }));
     }
 
     async getAssetMetadata(body: AssetMetadataRequest): Promise<AssetMetadataResponse> {
-        const { data, error } = await this.http.node.POST('/assetmetadata', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/assetmetadata', { body }));
     }
 
     async getAssetMedia(body: AssetMediaRequest): Promise<AssetMediaResponse> {
-        const { data, error } = await this.http.node.POST('/getassetmedia', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/getassetmedia', { body }));
     }
 
     async issueAssetNIA(body: IssueAssetNIARequest): Promise<IssueAssetNIAResponse> {
-        const { data, error } = await this.http.node.POST('/issueassetnia', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/issueassetnia', { body }));
     }
 
     async issueAssetCFA(body: IssueAssetCFARequest): Promise<IssueAssetCFAResponse> {
-        const { data, error } = await this.http.node.POST('/issueassetcfa', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/issueassetcfa', { body }));
     }
 
     async issueAssetUDA(body: IssueAssetUDARequest): Promise<IssueAssetUDAResponse> {
-        const { data, error } = await this.http.node.POST('/issueassetuda', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/issueassetuda', { body }));
     }
 
     async sendRgb(body: SendRgbRequest): Promise<SendRgbResponse> {
-        const { data, error } = await this.http.node.POST('/sendrgb', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/sendrgb', { body }));
     }
 
     async listTransfers(body: ListTransfersRequest): Promise<ListTransfersResponse> {
-        const { data, error } = await this.http.node.POST('/listtransfers', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/listtransfers', { body }));
     }
 
     async refreshTransfers(body?: RefreshTransfersRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/refreshtransfers', { body: body || {} });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/refreshtransfers', { body: body || {} }));
     }
 
     async syncRgbWallet(): Promise<void> {
-        const { error } = await this.http.node.POST('/sync');
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/sync'));
     }
 
     async failTransfers(body: FailTransfersRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/failtransfers', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/failtransfers', { body }));
     }
 
     // ============================================================================
@@ -297,26 +242,19 @@ export class RlnClient {
     // ============================================================================
 
     async listChannels(): Promise<ListChannelsResponse> {
-        const { data, error } = await this.http.node.GET('/listchannels');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.GET('/listchannels'));
     }
 
     async openChannel(body: OpenChannelRequest): Promise<OpenChannelResponse> {
-        const { data, error } = await this.http.node.POST('/openchannel', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/openchannel', { body }));
     }
 
     async closeChannel(body: CloseChannelRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/closechannel', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/closechannel', { body }));
     }
 
     async getChannelId(body: GetChannelIdRequest): Promise<GetChannelIdResponse> {
-        const { data, error } = await this.http.node.POST('/getchannelid', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/getchannelid', { body }));
     }
 
     // ============================================================================
@@ -324,20 +262,15 @@ export class RlnClient {
     // ============================================================================
 
     async listPeers(): Promise<ListPeersResponse> {
-        const { data, error } = await this.http.node.GET('/listpeers');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.GET('/listpeers'));
     }
 
     async connectPeer(body: ConnectPeerRequest): Promise<ConnectPeerResponse> {
-        const { data, error } = await this.http.node.POST('/connectpeer', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/connectpeer', { body }));
     }
 
     async disconnectPeer(body: DisconnectPeerRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/disconnectpeer', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/disconnectpeer', { body }));
     }
 
     // ============================================================================
@@ -345,60 +278,40 @@ export class RlnClient {
     // ============================================================================
 
     async createLNInvoice(body: CreateLNInvoiceRequest): Promise<CreateLNInvoiceResponse> {
-        const { data, error } = await this.http.node.POST('/lninvoice', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/lninvoice', { body }));
     }
 
     async createRgbInvoice(body: CreateRgbInvoiceRequest): Promise<CreateRgbInvoiceResponse> {
-        const { data, error } = await this.http.node.POST('/rgbinvoice', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/rgbinvoice', { body }));
     }
 
     async decodeLNInvoice(body: DecodeLNInvoiceRequest | string): Promise<DecodeLNInvoiceResponse> {
         const requestBody = typeof body === 'string' ? { invoice: body } : body;
-        const { data, error } = await this.http.node.POST('/decodelninvoice', {
-            body: requestBody,
-        });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/decodelninvoice', { body: requestBody }));
     }
 
     async decodeRgbInvoice(body: DecodeRgbInvoiceRequest): Promise<DecodeRgbInvoiceResponse> {
-        const { data, error } = await this.http.node.POST('/decodergbinvoice', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/decodergbinvoice', { body }));
     }
 
     async getInvoiceStatus(body: GetInvoiceStatusRequest): Promise<GetInvoiceStatusResponse> {
-        const { data, error } = await this.http.node.POST('/invoicestatus', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/invoicestatus', { body }));
     }
 
     async sendPayment(body: SendPaymentRequest): Promise<SendPaymentResponse> {
-        const { data, error } = await this.http.node.POST('/sendpayment', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/sendpayment', { body }));
     }
 
     async keysend(body: KeysendRequest): Promise<KeysendResponse> {
-        const { data, error } = await this.http.node.POST('/keysend', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/keysend', { body }));
     }
 
     async listPayments(): Promise<ListPaymentsResponse> {
-        const { data, error } = await this.http.node.GET('/listpayments');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.GET('/listpayments'));
     }
 
     async getPayment(body: GetPaymentRequest): Promise<GetPaymentResponse> {
-        const { data, error } = await this.http.node.POST('/getpayment', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/getpayment', { body }));
     }
 
     // ============================================================================
@@ -406,15 +319,13 @@ export class RlnClient {
     // ============================================================================
 
     async getTakerPubkey(): Promise<string> {
-        const { data, error } = await this.http.node.GET('/nodeinfo');
-        checkError({ error });
-        return data!.pubkey!;
+        const data = assertResponse(await this.http.node.GET('/nodeinfo'));
+        return data.pubkey!;
     }
 
     async whitelistSwap(body: WhitelistTradeRequest | string): Promise<void> {
         const requestBody = typeof body === 'string' ? { swapstring: body } : body;
-        const { error } = await this.http.node.POST('/taker', { body: requestBody });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/taker', { body: requestBody }));
     }
 
     async close(): Promise<void> {
@@ -422,27 +333,19 @@ export class RlnClient {
     }
 
     async makerInit(body: MakerInitRequest): Promise<MakerInitResponse> {
-        const { data, error } = await this.http.node.POST('/makerinit', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/makerinit', { body }));
     }
 
     async makerExecute(body: MakerExecuteRequest): Promise<MakerExecuteResponse> {
-        const { data, error } = await this.http.node.POST('/makerexecute', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/makerexecute', { body }));
     }
 
     async listSwaps(): Promise<ListSwapsResponse> {
-        const { data, error } = await this.http.node.GET('/listswaps');
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.GET('/listswaps'));
     }
 
     async getSwap(body: GetSwapRequest): Promise<GetSwapResponse> {
-        const { data, error } = await this.http.node.POST('/getswap', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/getswap', { body }));
     }
 
     // ============================================================================
@@ -450,28 +353,22 @@ export class RlnClient {
     // ============================================================================
 
     async signMessage(body: SignMessageRequest): Promise<SignMessageResponse> {
-        const { data, error } = await this.http.node.POST('/signmessage', { body });
-        checkError({ error });
-        return data!;
+        return assertResponse(await this.http.node.POST('/signmessage', { body }));
     }
 
     async sendOnionMessage(body: SendOnionMessageRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/sendonionmessage', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/sendonionmessage', { body }));
     }
 
     async checkIndexerUrl(body: CheckIndexerUrlRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/checkindexerurl', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/checkindexerurl', { body }));
     }
 
     async checkProxyEndpoint(body: CheckProxyEndpointRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/checkproxyendpoint', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/checkproxyendpoint', { body }));
     }
 
     async revokeToken(body: RevokeTokenRequest): Promise<void> {
-        const { error } = await this.http.node.POST('/revoketoken', { body });
-        checkError({ error });
+        assertResponse(await this.http.node.POST('/revoketoken', { body }));
     }
 }

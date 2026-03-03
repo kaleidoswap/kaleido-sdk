@@ -7,23 +7,36 @@
 import { HttpClient } from './http-client.js';
 import { MakerClient } from './maker-client.js';
 import { RlnClient } from './rln-client.js';
-import type { KaleidoConfig } from './types.js';
+import { ConfigError } from './errors.js';
+import type { KaleidoConfig } from './types/config.js';
 
 /**
  * Kaleidoswap SDK Client
  *
  * Provides a typed interface for interacting with the Kaleidoswap protocol.
+ * At least one of `baseUrl` (Maker API) or `nodeUrl` (RGB Node) must be provided.
  *
  * @example
  * ```typescript
  * import { KaleidoClient } from 'kaleidoswap-sdk';
  *
+ * // Market API only
  * const client = KaleidoClient.create({
- *     baseUrl: 'https://api.kaleidoswap.com'
+ *     baseUrl: 'https://api.regtest.kaleidoswap.com',
+ * });
+ *
+ * // RGB Node only
+ * const client = KaleidoClient.create({
+ *     nodeUrl: 'http://localhost:3001',
+ * });
+ *
+ * // Both APIs
+ * const client = KaleidoClient.create({
+ *     baseUrl: 'https://api.regtest.kaleidoswap.com',
+ *     nodeUrl: 'http://localhost:3001',
  * });
  *
  * const assets = await client.maker.listAssets();
- * console.log(assets[0].ticker); // "BTC"
  * ```
  */
 export class KaleidoClient {
@@ -46,31 +59,63 @@ export class KaleidoClient {
     }
 
     /**
-     * Create a new KaleidoClient instance
+     * Create a new KaleidoClient instance.
+     *
+     * At least one of `baseUrl` or `nodeUrl` must be provided, otherwise a
+     * `ConfigError` is thrown immediately.
      *
      * @param config - Client configuration
-     * @returns Initialized client (synchronous)
+     * @returns Initialized client
+     * @throws {ConfigError} When neither `baseUrl` nor `nodeUrl` is provided
+     *
+     * @example
+     * // Market API only
+     * const client = KaleidoClient.create({ baseUrl: 'https://api.kaleidoswap.com' });
+     *
+     * // RGB Node only
+     * const client = KaleidoClient.create({ nodeUrl: 'http://localhost:3001' });
+     *
+     * // Both APIs
+     * const client = KaleidoClient.create({
+     *     baseUrl: 'https://api.kaleidoswap.com',
+     *     nodeUrl: 'http://localhost:3001',
+     * });
      */
     static create(config: KaleidoConfig): KaleidoClient {
+        if (!config.baseUrl && !config.nodeUrl) {
+            throw new ConfigError(
+                'KaleidoClient requires at least one URL. ' +
+                    'Provide "baseUrl" for the Maker API, "nodeUrl" for the RGB Lightning Node, or both.',
+            );
+        }
         return new KaleidoClient(config);
     }
 
     /**
-     * Check if RGB Lightning Node is configured
+     * Check if the Maker API is configured (baseUrl was provided)
+     */
+    hasMaker(): boolean {
+        return !!this.config.baseUrl;
+    }
+
+    /**
+     * Check if the RGB Lightning Node is configured (nodeUrl was provided)
      */
     hasNode(): boolean {
         return !!this.config.nodeUrl;
     }
 
     /**
-     * Access Market (Maker) Operations
+     * Access Market (Maker) Operations.
+     * Requires `baseUrl` to have been set in the config.
      */
     get maker(): MakerClient {
         return this._maker;
     }
 
     /**
-     * Access RGB/Lightning Node Operations
+     * Access RGB/Lightning Node Operations.
+     * Requires `nodeUrl` to have been set in the config.
      */
     get rln(): RlnClient {
         return this._rln;
