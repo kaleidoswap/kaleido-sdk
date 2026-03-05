@@ -9,6 +9,8 @@
 
 import { EventEmitter } from 'events';
 import { randomUUID } from 'crypto';
+import { createLogger, LogState } from './logging.js';
+import type { ComponentLogger } from './logging.js';
 import type {
     WebSocketMessage,
     WebSocketResponse,
@@ -39,14 +41,16 @@ export class WSClient extends EventEmitter {
     private _clientId: string;
     private isConnecting = false;
     private isClosed = false;
+    private readonly _log: ComponentLogger;
 
-    constructor(config: WSClientConfig) {
+    constructor(config: WSClientConfig, logState: LogState = new LogState()) {
         super();
         this._clientId = config.userId ?? randomUUID();
         this.url = WSClient.buildUrlWithClientId(config.url, this._clientId);
         this.maxReconnectAttempts = config.maxReconnectAttempts ?? 5;
         this.reconnectDelay = config.reconnectDelay ?? 1000;
         this.pingInterval = config.pingInterval ?? 30000; // 30 seconds
+        this._log = createLogger('ws', logState);
     }
 
     /**
@@ -75,6 +79,8 @@ export class WSClient extends EventEmitter {
         this.isConnecting = true;
         this.isClosed = false;
 
+        this._log.debug('Connecting to %s (clientId=%s)', this.url, this._clientId);
+
         return new Promise((resolve, reject) => {
             try {
                 this.ws = new WebSocket(this.url);
@@ -83,6 +89,7 @@ export class WSClient extends EventEmitter {
                     this.isConnecting = false;
                     this.reconnectAttempts = 0;
                     this.startPing();
+                    this._log.info('Connected to %s (clientId=%s)', this.url, this._clientId);
                     this.emit('connected');
                     resolve();
                 };
@@ -90,8 +97,13 @@ export class WSClient extends EventEmitter {
                 this.ws.onmessage = (event) => {
                     try {
                         const message: WebSocketResponse = JSON.parse(event.data);
+                        this._log.debug(
+                            'Message received: action=%s',
+                            (message as { action?: string }).action ?? '<unknown>',
+                        );
                         this.handleMessage(message);
                     } catch (error) {
+                        this._log.warn('Message parse error (raw: %s)', event.data);
                         this.emit('error', new Error('Failed to parse message'));
                     }
                 };
@@ -104,6 +116,7 @@ export class WSClient extends EventEmitter {
                 this.ws.onclose = () => {
                     this.isConnecting = false;
                     this.stopPing();
+                    this._log.info('Disconnected from %s (clientId=%s)', this.url, this._clientId);
                     this.emit('disconnected');
 
                     if (!this.isClosed) {
@@ -116,11 +129,13 @@ export class WSClient extends EventEmitter {
                     if (this.isConnecting) {
                         this.isConnecting = false;
                         this.ws?.close();
+                        this._log.error('Connection timeout: %s', this.url);
                         reject(new Error('Connection timeout'));
                     }
                 }, 10000);
             } catch (error) {
                 this.isConnecting = false;
+                this._log.error('Connection failed: %s — %s', this.url, error);
                 reject(error);
             }
         });
@@ -138,13 +153,17 @@ export class WSClient extends EventEmitter {
                 this.emit('connectionEstablished', message.data);
                 break;
             case 'pong':
+                this._log.debug('Pong received (clientId=%s)', this._clientId);
                 this.emit('pong', message);
                 break;
-            case 'error':
-                this.emit('error', new Error(message.error || 'Unknown error'));
+            case 'error': {
+                const errMsg = message.error || 'Unknown error';
+                this._log.warn('Server error: %s', errMsg);
+                this.emit('error', new Error(errMsg));
                 break;
+            }
             default:
-                // Unknown message type
+                this._log.debug('Unknown message action: %s', message.action);
                 break;
         }
     }
@@ -153,6 +172,13 @@ export class WSClient extends EventEmitter {
      * Request a quote
      */
     requestQuote(request: Omit<QuoteRequest, 'action'>): void {
+        this._log.debug(
+            'quote_request: from=%s to=%s from_amount=%s (clientId=%s)',
+            request.from_asset,
+            request.to_asset,
+            request.from_amount,
+            this._clientId,
+        );
         this.send({
             action: 'quote_request',
             ...request,
@@ -164,6 +190,7 @@ export class WSClient extends EventEmitter {
      * Send ping to keep connection alive
      */
     ping(): void {
+        this._log.debug('Ping sent (clientId=%s)', this._clientId);
         this.send({
             action: 'ping',
             timestamp: Date.now(),
@@ -177,6 +204,11 @@ export class WSClient extends EventEmitter {
         if (this.ws?.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(message));
         } else {
+            this._log.warn(
+                'Send attempted while disconnected (action=%s, clientId=%s)',
+                (message as { action?: string }).action,
+                this._clientId,
+            );
             this.emit('error', new Error('WebSocket not connected'));
         }
     }
@@ -208,14 +240,27 @@ export class WSClient extends EventEmitter {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
             this.reconnectAttempts++;
+            this._log.info(
+                'Reconnecting (attempt %d/%d) in %dms: %s',
+                this.reconnectAttempts,
+                this.maxReconnectAttempts,
+                delay,
+                this.url,
+            );
 
             setTimeout(() => {
                 this.emit('reconnecting', this.reconnectAttempts);
-                this.connect().catch(() => {
+                this.connect().catch((err) => {
+                    this._log.warn('Reconnect attempt %d failed: %s', this.reconnectAttempts, err);
                     // Will retry in next attempt
                 });
             }, delay);
         } else {
+            this._log.warn(
+                'Max reconnect attempts (%d) exceeded: %s',
+                this.maxReconnectAttempts,
+                this.url,
+            );
             this.emit('maxReconnectExceeded');
         }
     }
@@ -224,6 +269,7 @@ export class WSClient extends EventEmitter {
      * Disconnect from WebSocket server
      */
     disconnect(): void {
+        this._log.info('Disconnecting from %s (clientId=%s)', this.url, this._clientId);
         this.isClosed = true;
         this.stopPing();
         this.ws?.close();
