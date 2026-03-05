@@ -23,7 +23,10 @@ import websockets
 from websockets.asyncio.client import ClientConnection
 from websockets.protocol import State
 
+from ._logging import get_logger
 from .errors import WebSocketError
+
+_log = get_logger("ws")
 
 # =============================================================================
 # WebSocket Types
@@ -212,6 +215,7 @@ class WSClient:
 
         self._is_connecting = True
         self._is_closed = False
+        _log.debug("Connecting to WebSocket: %s (client_id=%s)", self._url, self._client_id)
 
         try:
             self._ws = await asyncio.wait_for(
@@ -220,6 +224,7 @@ class WSClient:
             )
             self._is_connecting = False
             self._reconnect_attempts = 0
+            _log.info("WebSocket connected: %s (client_id=%s)", self._url, self._client_id)
 
             # Start background tasks
             self._start_ping()
@@ -229,13 +234,16 @@ class WSClient:
 
         except asyncio.TimeoutError:
             self._is_connecting = False
+            _log.error("WebSocket connection timeout: %s", self._url)
             raise WebSocketError("Connection timeout")
         except Exception as e:
             self._is_connecting = False
+            _log.error("WebSocket connection failed: %s — %s", self._url, e)
             raise WebSocketError(f"Connection failed: {e}")
 
     def disconnect(self) -> None:
         """Disconnect from WebSocket server."""
+        _log.info("WebSocket disconnecting: %s (client_id=%s)", self._url, self._client_id)
         self._is_closed = True
         self._stop_ping()
         self._stop_receive()
@@ -280,17 +288,24 @@ class WSClient:
                     message = await self._ws.recv()
                     try:
                         data: WebSocketResponse = json.loads(message)
+                        _log.debug(
+                            "WS message received: action=%s", data.get("action", "<unknown>")
+                        )
                         self._handle_message(data)
                     except json.JSONDecodeError:
+                        _log.warning("WS message parse error (raw: %r)", message)
                         self._emit("error", WebSocketError("Failed to parse message"))
                 except websockets.exceptions.ConnectionClosed:
+                    _log.info("WebSocket connection closed by server: %s", self._url)
                     break
         except asyncio.CancelledError:
             pass
         except Exception as e:
+            _log.error("WS receive loop error: %s", e)
             self._emit("error", WebSocketError(f"Receive error: {e}"))
 
         # Handle disconnect
+        _log.debug("WS receive loop ended (client_id=%s)", self._client_id)
         self._emit("disconnected")
         if not self._is_closed:
             self._attempt_reconnect()
@@ -307,6 +322,7 @@ class WSClient:
             self._emit("pong", message)
         elif action == "error":
             error_msg = message.get("error", "Unknown error")
+            _log.warning("WS server error: %s", error_msg)
             self._emit("error", WebSocketError(error_msg))
 
     # =========================================================================
@@ -335,6 +351,7 @@ class WSClient:
 
     def ping(self) -> None:
         """Send ping to keep connection alive."""
+        _log.debug("WS ping sent (client_id=%s)", self._client_id)
         self._send(
             {
                 "action": "ping",
@@ -353,6 +370,12 @@ class WSClient:
         Args:
             request: Quote request with from_asset, to_asset, amounts, layers
         """
+        _log.debug(
+            "WS quote_request: from=%s to=%s from_amount=%s",
+            request.get("from_asset"),
+            request.get("to_asset"),
+            request.get("from_amount"),
+        )
         self._send(
             {
                 "action": "quote_request",
@@ -370,6 +393,11 @@ class WSClient:
         if self._ws and self._ws.state is not State.CLOSED:
             asyncio.create_task(self._ws.send(json.dumps(message)))
         else:
+            _log.warning(
+                "WS send attempted while disconnected (action=%s, client_id=%s)",
+                message.get("action"),
+                self._client_id,
+            )
             self._emit("error", WebSocketError("WebSocket not connected"))
 
     # =========================================================================
@@ -381,10 +409,21 @@ class WSClient:
         if self._reconnect_attempts < self._max_reconnect_attempts:
             delay = self._reconnect_delay * (2**self._reconnect_attempts)
             self._reconnect_attempts += 1
-
+            _log.info(
+                "WS reconnecting (attempt %d/%d) in %.1fs: %s",
+                self._reconnect_attempts,
+                self._max_reconnect_attempts,
+                delay,
+                self._url,
+            )
             self._emit("reconnecting", self._reconnect_attempts)
             asyncio.create_task(self._delayed_reconnect(delay))
         else:
+            _log.warning(
+                "WS max reconnect attempts (%d) exceeded: %s",
+                self._max_reconnect_attempts,
+                self._url,
+            )
             self._emit("max_reconnect_exceeded")
 
     async def _delayed_reconnect(self, delay: float) -> None:

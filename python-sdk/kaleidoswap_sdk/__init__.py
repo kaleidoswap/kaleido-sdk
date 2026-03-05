@@ -16,6 +16,39 @@ Example:
         assets = await client.maker.list_assets()
         quote = await client.maker.get_quote(...)
     ```
+
+Logging:
+    The SDK uses Python's standard logging module and follows the library
+    logging best practice: a NullHandler is installed at the root logger so
+    no output is produced unless the application configures handlers.
+
+    Available loggers:
+        kaleidoswap_sdk        — root (controls all SDK logging at once)
+        kaleidoswap_sdk.http   — HTTP requests, responses, latency, retries
+        kaleidoswap_sdk.ws     — WebSocket lifecycle and messages
+        kaleidoswap_sdk.maker  — Quote, swap order, and atomic swap events
+        kaleidoswap_sdk.rln    — RGB Lightning Node operations
+
+    Quick start (configure handler in application code only):
+        ```python
+        import logging
+        import kaleidoswap_sdk as ks
+
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+        )
+        client = ks.KaleidoClient.create(
+            base_url="https://api.kaleidoswap.com",
+            log_level=logging.DEBUG,
+        )
+        ```
+
+    To route logs to a file (application responsibility):
+        ```python
+        handler = logging.FileHandler("kaleido.log")
+        logging.getLogger("kaleidoswap_sdk").addHandler(handler)
+        ```
 """
 
 from ._maker_client import MakerClient, SwapCompletionOptions

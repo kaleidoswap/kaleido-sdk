@@ -10,6 +10,7 @@
  */
 
 import type { Layer, ReceiverAddressFormat } from '../api-types-ext.js';
+import type { LogLevel, LogLevelName, SdkLogger } from '../logging.js';
 
 // ============================================================================
 // Client Configuration
@@ -34,6 +35,19 @@ import type { Layer, ReceiverAddressFormat } from '../api-types-ext.js';
  *   nodeUrl: 'http://localhost:3001',
  *   apiKey: 'my-api-key',
  * };
+ *
+ * // With debug logging to the built-in console logger:
+ * const config: KaleidoConfig = {
+ *   baseUrl: 'https://api.kaleidoswap.com',
+ *   logLevel: LogLevel.DEBUG,
+ * };
+ *
+ * // With a custom logger (Winston, Pino, etc.):
+ * const config: KaleidoConfig = {
+ *   baseUrl: 'https://api.kaleidoswap.com',
+ *   logLevel: LogLevel.INFO,
+ *   logger: myLogger,
+ * };
  */
 export interface KaleidoConfig {
     /** Base URL for the Kaleidoswap Maker API (e.g. https://api.kaleidoswap.com) */
@@ -48,6 +62,56 @@ export interface KaleidoConfig {
     maxRetries?: number;
     /** Cache TTL in seconds (default: 60) */
     cacheTtl?: number;
+    /**
+     * Log level for all SDK loggers.
+     *
+     * Controls which log records the SDK emits. Accepts a `LogLevel` constant
+     * (e.g. `LogLevel.DEBUG`) or a string name (`'debug'`, `'info'`,
+     * `'warning'`, `'warn'`, `'error'`, `'silent'`).
+     *
+     * When omitted the SDK defaults to `LogLevel.SILENT` — no console output
+     * is produced, mirroring the Python SDK's NullHandler behaviour.
+     *
+     * Set to `LogLevel.DEBUG` to see full HTTP traces, WebSocket lifecycle
+     * events, and swap operation details. Set to `LogLevel.WARNING` to see
+     * only problems.
+     *
+     * After client creation, call `applyLogLevel()` or `setComponentLogLevel()`
+     * for runtime adjustments.
+     *
+     * @example
+     * // See everything:
+     * { logLevel: LogLevel.DEBUG }
+     *
+     * // Only warnings and errors:
+     * { logLevel: 'warning' }
+     *
+     * // Silence all SDK output (default behaviour):
+     * {}  // logLevel omitted
+     */
+    logLevel?: LogLevel | LogLevelName;
+    /**
+     * Custom logger for SDK output.
+     *
+     * When provided, the SDK routes every log record through this object
+     * instead of the built-in `console`. Must implement `debug`, `info`,
+     * `warn`, and `error` methods.
+     *
+     * This is intentionally compatible with `console`, Winston, Pino,
+     * Bunyan, loglevel, and most other popular loggers.
+     *
+     * Note: `logLevel` still controls *which* records are emitted — the
+     * custom logger only decides *where* they go.
+     *
+     * @example
+     * import winston from 'winston';
+     * const logger = winston.createLogger({ … });
+     * KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.INFO, logger });
+     *
+     * // Pass console directly (useful for testing):
+     * KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger: console });
+     */
+    logger?: SdkLogger;
 }
 
 // ============================================================================
