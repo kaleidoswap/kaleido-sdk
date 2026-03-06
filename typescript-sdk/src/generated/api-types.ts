@@ -12,7 +12,7 @@ export type paths = {
             cookie?: never;
         };
         /** Get Info */
-        get: operations['get_info'];
+        get: operations['get_info_api_v1_lsps1_get_info_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -32,7 +32,7 @@ export type paths = {
          * Get Network Info
          * @description Get network information including current blockchain height and network type.
          */
-        get: operations['get_network_info'];
+        get: operations['get_network_info_api_v1_lsps1_network_info_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -51,7 +51,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Create Order */
-        post: operations['create_order'];
+        post: operations['create_order_api_v1_lsps1_create_order_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -72,7 +72,7 @@ export type paths = {
          * @description Estimate channel fees based on the provided parameters without creating an order.
          *     For asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.
          */
-        post: operations['estimate_fees'];
+        post: operations['estimate_fees_api_v1_lsps1_estimate_fees_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -89,7 +89,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Get Order */
-        post: operations['get_order'];
+        post: operations['get_order_api_v1_lsps1_get_order_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -110,7 +110,7 @@ export type paths = {
          * @description Handle user decision on rate change for LSPS1 orders.
          *     User can either accept the new market rate or request a refund.
          */
-        post: operations['handle_rate_decision'];
+        post: operations['handle_rate_decision_api_v1_lsps1_rate_decision_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -129,19 +129,13 @@ export type paths = {
         /**
          * Retry Delivery
          * @description Endpoint for clients to queue their order for immediate retry of asset delivery.
-         *
-         *     This allows users to bypass the exponential backoff delay by queueing their order
-         *     for priority processing. The order will be processed by the background loop within
-         *     60 seconds. Useful when a user comes back online after being offline during
-         *     scheduled retry windows.
-         *
          *     Args:
          *         request: Contains the order_id
          *
          *     Returns:
          *         RetryDeliveryResponse with status and message
          */
-        post: operations['retry_delivery'];
+        post: operations['retry_delivery_api_v1_lsps1_retry_delivery_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -156,7 +150,7 @@ export type paths = {
             cookie?: never;
         };
         /** Get Node Info */
-        get: operations['get_node_info'];
+        get: operations['get_node_info_api_v1_swaps_nodeinfo_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -175,7 +169,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Initiate Swap */
-        post: operations['initiate_swap'];
+        post: operations['initiate_swap_api_v1_swaps_init_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -192,7 +186,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Confirm Swap */
-        post: operations['confirm_swap'];
+        post: operations['confirm_swap_api_v1_swaps_execute_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -209,7 +203,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Get Swap Status */
-        post: operations['get_swap_status'];
+        post: operations['get_swap_status_api_v1_swaps_atomic_status_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -238,7 +232,7 @@ export type paths = {
          *     - GET /assets?protocol=RGB&network=LN   → RGB assets on Lightning
          *     - GET /assets?limit=10&offset=20        → Pagination (page 3, 10 items per page)
          */
-        get: operations['list_assets'];
+        get: operations['list_assets_api_v1_market_assets_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -275,7 +269,7 @@ export type paths = {
          *
          *     Always returns TradingPairsResponse with pagination metadata.
          */
-        get: operations['get_pairs'];
+        get: operations['get_pairs_api_v1_market_pairs_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -310,7 +304,7 @@ export type paths = {
          *     - Destination network and protocol
          *     - Submarine swap indicator (same asset, different networks)
          */
-        post: operations['get_pair_routes'];
+        post: operations['get_pair_routes_api_v1_market_pairs_routes_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -343,7 +337,7 @@ export type paths = {
          *     - steps: List of RouteStep objects with asset, layer, and indicative price
          *     - total_hops: Number of hops in the route
          */
-        post: operations['discover_routes'];
+        post: operations['discover_routes_api_v1_market_routes_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -364,7 +358,7 @@ export type paths = {
          *     Returns a matrix showing which assets can reach which,
          *     with available layer combinations and minimum hops required.
          */
-        get: operations['get_route_matrix'];
+        get: operations['get_route_matrix_api_v1_market_routes_matrix_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -395,7 +389,7 @@ export type paths = {
          *     - Calculated amounts and fees
          *     - Submarine swap indicator (if same asset on different networks)
          */
-        post: operations['get_quote'];
+        post: operations['get_quote_api_v1_market_quote_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -412,7 +406,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Create Swap Order */
-        post: operations['create_swap_order'];
+        post: operations['create_swap_order_api_v1_swaps_orders_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -429,7 +423,7 @@ export type paths = {
         get?: never;
         put?: never;
         /** Get Swap Order Status */
-        post: operations['get_swap_order_status'];
+        post: operations['get_swap_order_status_api_v1_swaps_orders_status_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -447,7 +441,7 @@ export type paths = {
          * Get Order History
          * @description Get order history with optional status filtering and pagination
          */
-        get: operations['get_order_history'];
+        get: operations['get_order_history_api_v1_swaps_orders_history_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -467,7 +461,7 @@ export type paths = {
          * Get Order Stats
          * @description Get order statistics including counts by status and volume information
          */
-        get: operations['get_order_stats'];
+        get: operations['get_order_stats_api_v1_swaps_orders_analytics_get'];
         put?: never;
         post?: never;
         delete?: never;
@@ -490,7 +484,7 @@ export type paths = {
          * @description Handle user decision on rate change for swap orders.
          *     User can either accept the new market rate or request a refund.
          */
-        post: operations['handle_swap_order_rate_decision'];
+        post: operations['handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post'];
         delete?: never;
         options?: never;
         head?: never;
@@ -544,7 +538,6 @@ export type components = {
             media?: components['schemas']['Media'] | null;
             /**
              * Issued Supply
-             * Format: int64
              * @description Total issued supply
              */
             issued_supply?: number | null;
@@ -684,17 +677,11 @@ export type components = {
             channel_id?: string | null;
             /** Temporary Channel Id */
             temporary_channel_id?: string | null;
-            /**
-             * Funded At
-             * Format: date-time
-             */
+            /** Funded At */
             funded_at?: string | null;
             /** Funding Outpoint */
             funding_outpoint?: string | null;
-            /**
-             * Expires At
-             * Format: date-time
-             */
+            /** Expires At */
             expires_at?: string | null;
         };
         /** ChannelFees */
@@ -756,10 +743,7 @@ export type components = {
             asset_delivery_status?: components['schemas']['AssetDeliveryStatus'] | null;
             /** Asset Delivery Payment Hash */
             asset_delivery_payment_hash?: string | null;
-            /**
-             * Asset Delivery Completed At
-             * Format: date-time
-             */
+            /** Asset Delivery Completed At */
             asset_delivery_completed_at?: string | null;
             /** Asset Delivery Error */
             asset_delivery_error?: string | null;
@@ -856,7 +840,6 @@ export type components = {
             refund_address?: string | null;
             /**
              * Email
-             * Format: email
              * @description Optional email for notifications
              */
             email?: string | null;
@@ -1609,7 +1592,6 @@ export type components = {
             layer: components['schemas']['Layer'];
             /**
              * Amount
-             * Format: int64
              * @description Amount in smallest unit (optional - one side must have amount)
              * @example 1000000
              */
@@ -1673,7 +1655,7 @@ export type components = {
             /**
              * Created At
              * @description Creation timestamp (seconds since epoch)
-             * @example 1770736947
+             * @example 1772663937
              */
             created_at?: number;
             /**
@@ -1889,7 +1871,6 @@ export type components = {
             media?: components['schemas']['Media'] | null;
             /**
              * Issued Supply
-             * Format: int64
              * @description Total issued supply
              */
             issued_supply?: number | null;
@@ -1991,7 +1972,7 @@ export type components = {
 };
 export type $defs = Record<string, never>;
 export interface operations {
-    get_info: {
+    get_info_api_v1_lsps1_get_info_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2020,7 +2001,7 @@ export interface operations {
             };
         };
     };
-    get_network_info: {
+    get_network_info_api_v1_lsps1_network_info_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2040,7 +2021,7 @@ export interface operations {
             };
         };
     };
-    create_order: {
+    create_order_api_v1_lsps1_create_order_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2073,7 +2054,7 @@ export interface operations {
             };
         };
     };
-    estimate_fees: {
+    estimate_fees_api_v1_lsps1_estimate_fees_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2106,7 +2087,7 @@ export interface operations {
             };
         };
     };
-    get_order: {
+    get_order_api_v1_lsps1_get_order_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2139,7 +2120,7 @@ export interface operations {
             };
         };
     };
-    handle_rate_decision: {
+    handle_rate_decision_api_v1_lsps1_rate_decision_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2172,7 +2153,7 @@ export interface operations {
             };
         };
     };
-    retry_delivery: {
+    retry_delivery_api_v1_lsps1_retry_delivery_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2205,7 +2186,7 @@ export interface operations {
             };
         };
     };
-    get_node_info: {
+    get_node_info_api_v1_swaps_nodeinfo_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2225,7 +2206,7 @@ export interface operations {
             };
         };
     };
-    initiate_swap: {
+    initiate_swap_api_v1_swaps_init_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2258,7 +2239,7 @@ export interface operations {
             };
         };
     };
-    confirm_swap: {
+    confirm_swap_api_v1_swaps_execute_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2291,7 +2272,7 @@ export interface operations {
             };
         };
     };
-    get_swap_status: {
+    get_swap_status_api_v1_swaps_atomic_status_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2324,7 +2305,7 @@ export interface operations {
             };
         };
     };
-    list_assets: {
+    list_assets_api_v1_market_assets_get: {
         parameters: {
             query?: {
                 /** @description Filter by asset UUID (e.g., 'rgb:2dkSTbr-...') */
@@ -2370,7 +2351,7 @@ export interface operations {
             };
         };
     };
-    get_pairs: {
+    get_pairs_api_v1_market_pairs_get: {
         parameters: {
             query?: {
                 /** @description Pair ID (UUID) */
@@ -2422,7 +2403,7 @@ export interface operations {
             };
         };
     };
-    get_pair_routes: {
+    get_pair_routes_api_v1_market_pairs_routes_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2457,7 +2438,7 @@ export interface operations {
             };
         };
     };
-    discover_routes: {
+    discover_routes_api_v1_market_routes_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2490,7 +2471,7 @@ export interface operations {
             };
         };
     };
-    get_route_matrix: {
+    get_route_matrix_api_v1_market_routes_matrix_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2510,7 +2491,7 @@ export interface operations {
             };
         };
     };
-    get_quote: {
+    get_quote_api_v1_market_quote_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2543,7 +2524,7 @@ export interface operations {
             };
         };
     };
-    create_swap_order: {
+    create_swap_order_api_v1_swaps_orders_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2576,7 +2557,7 @@ export interface operations {
             };
         };
     };
-    get_swap_order_status: {
+    get_swap_order_status_api_v1_swaps_orders_status_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -2609,7 +2590,7 @@ export interface operations {
             };
         };
     };
-    get_order_history: {
+    get_order_history_api_v1_swaps_orders_history_get: {
         parameters: {
             query?: {
                 status?: components['schemas']['SwapOrderStatus'] | null;
@@ -2642,7 +2623,7 @@ export interface operations {
             };
         };
     };
-    get_order_stats: {
+    get_order_stats_api_v1_swaps_orders_analytics_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2671,7 +2652,7 @@ export interface operations {
             };
         };
     };
-    handle_swap_order_rate_decision: {
+    handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post: {
         parameters: {
             query?: never;
             header?: never;

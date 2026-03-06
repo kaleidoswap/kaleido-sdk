@@ -3,67 +3,74 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Literal
+from enum import StrEnum
+from typing import Annotated, Literal
 
-from kaleidoswap_sdk._generated.base import BaseNodeModel
-from pydantic import Field
-
-
-class AddressResponse(BaseNodeModel):
-    address: str | None = None
+from pydantic import BaseModel, Field
 
 
-class AssetBalanceRequest(BaseNodeModel):
-    asset_id: str | None = None
+class AddressResponse(BaseModel):
+    address: Annotated[
+        str | None, Field(examples=["bcrt1qnc5y6j6dmejrkwy93farhvpezk0lf46gk7aecs"])
+    ] = None
 
 
-class AssetBalanceResponse(BaseNodeModel):
-    settled: int | None = None
-    future: int | None = None
-    spendable: int | None = None
-    offchain_outbound: int | None = None
-    offchain_inbound: int | None = None
+class AssetBalanceRequest(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
 
 
-class AssetMetadataRequest(BaseNodeModel):
-    asset_id: str | None = None
+class AssetBalanceResponse(BaseModel):
+    settled: Annotated[int | None, Field(examples=[777])] = None
+    future: Annotated[int | None, Field(examples=[777])] = None
+    spendable: Annotated[int | None, Field(examples=[777])] = None
+    offchain_outbound: Annotated[int | None, Field(examples=[444])] = None
+    offchain_inbound: Annotated[int | None, Field(examples=[0])] = None
 
 
-class AssetSchema(Enum):
+class AssetMetadataRequest(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+
+
+class AssetSchema(StrEnum):
     NIA = "Nia"
     UDA = "Uda"
     CFA = "Cfa"
 
 
-class AssignmentAny(BaseNodeModel):
+class AssignmentAny(BaseModel):
     type: Literal["Any"]
 
 
-class AssignmentFungible(BaseNodeModel):
+class AssignmentFungible(BaseModel):
     type: Literal["Fungible"]
-    value: int
+    value: Annotated[int, Field(examples=[42])]
 
 
-class AssignmentInflationRight(BaseNodeModel):
+class AssignmentInflationRight(BaseModel):
     type: Literal["InflationRight"]
-    value: int
+    value: Annotated[int, Field(examples=[200])]
 
 
-class AssignmentNonFungible(BaseNodeModel):
+class AssignmentNonFungible(BaseModel):
     type: Literal["NonFungible"]
 
 
-class AssignmentReplaceRight(BaseNodeModel):
+class AssignmentReplaceRight(BaseModel):
     type: Literal["ReplaceRight"]
 
 
-class BackupRequest(BaseNodeModel):
-    backup_path: str | None = None
-    password: str | None = None
+class BackupRequest(BaseModel):
+    backup_path: Annotated[str | None, Field(examples=["/path/where/to/save/the/backup/file"])] = (
+        None
+    )
+    password: Annotated[str | None, Field(examples=["nodepassword"])] = None
 
 
-class BitcoinNetwork(Enum):
+class BitcoinNetwork(StrEnum):
     MAINNET = "Mainnet"
     TESTNET = "Testnet"
     TESTNET4 = "Testnet4"
@@ -71,405 +78,637 @@ class BitcoinNetwork(Enum):
     REGTEST = "Regtest"
 
 
-class BlockTime(BaseNodeModel):
-    height: int | None = None
-    timestamp: int | None = None
+class BlockTime(BaseModel):
+    height: Annotated[int | None, Field(examples=[805434])] = None
+    timestamp: Annotated[int | None, Field(examples=[1691160659])] = None
 
 
-class BtcBalance(BaseNodeModel):
-    settled: int | None = None
-    future: int | None = None
-    spendable: int | None = None
+class BtcBalance(BaseModel):
+    settled: Annotated[int | None, Field(examples=[777000])] = None
+    future: Annotated[int | None, Field(examples=[777000])] = None
+    spendable: Annotated[int | None, Field(examples=[777000])] = None
 
 
-class BtcBalanceRequest(BaseNodeModel):
-    skip_sync: bool | None = None
+class BtcBalanceRequest(BaseModel):
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class BtcBalanceResponse(BaseNodeModel):
+class BtcBalanceResponse(BaseModel):
     vanilla: BtcBalance | None = None
     colored: BtcBalance | None = None
 
 
-class ChangePasswordRequest(BaseNodeModel):
-    old_password: str | None = None
-    new_password: str | None = None
+class ChangePasswordRequest(BaseModel):
+    old_password: Annotated[str | None, Field(examples=["nodepassword"])] = None
+    new_password: Annotated[str | None, Field(examples=["nodenewpassword"])] = None
 
 
-class ChannelStatus(Enum):
+class ChannelStatus(StrEnum):
     OPENING = "Opening"
     OPENED = "Opened"
     CLOSING = "Closing"
 
 
-class CheckIndexerUrlRequest(BaseNodeModel):
-    indexer_url: str | None = None
+class CheckIndexerUrlRequest(BaseModel):
+    indexer_url: Annotated[str | None, Field(examples=["127.0.0.1:50001"])] = None
 
 
-class CheckProxyEndpointRequest(BaseNodeModel):
-    proxy_url: str | None = None
+class CheckProxyEndpointRequest(BaseModel):
+    proxy_url: Annotated[str | None, Field(examples=["rpc://127.0.0.1:3000/json-rpc"])] = None
 
 
-class CloseChannelRequest(BaseNodeModel):
-    channel_id: str | None = None
-    peer_pubkey: str | None = None
-    force: bool | None = None
+class CloseChannelRequest(BaseModel):
+    channel_id: Annotated[
+        str | None,
+        Field(examples=["8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a"]),
+    ] = None
+    peer_pubkey: Annotated[
+        str | None,
+        Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"]),
+    ] = None
+    force: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class ConnectPeerRequest(BaseNodeModel):
-    peer_pubkey_and_addr: str | None = None
+class ConnectPeerRequest(BaseModel):
+    peer_pubkey_and_addr: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736"
+            ]
+        ),
+    ] = None
 
 
-class CreateUtxosRequest(BaseNodeModel):
-    up_to: bool | None = None
-    num: int | None = None
-    size: int | None = None
-    fee_rate: float | None = None
-    skip_sync: bool | None = None
+class CreateUtxosRequest(BaseModel):
+    up_to: Annotated[bool | None, Field(examples=[False])] = None
+    num: Annotated[int | None, Field(examples=[4])] = None
+    size: Annotated[int | None, Field(examples=[32500])] = None
+    fee_rate: Annotated[float | None, Field(examples=[5])] = None
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class DecodeLNInvoiceRequest(BaseNodeModel):
-    invoice: str | None = None
+class DecodeLNInvoiceRequest(BaseModel):
+    invoice: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
+            ]
+        ),
+    ] = None
 
 
-class DecodeLNInvoiceResponse(BaseNodeModel):
-    amt_msat: int | None = None
-    expiry_sec: int | None = None
-    timestamp: int | None = None
-    asset_id: str | None = None
-    asset_amount: int | None = None
-    payment_hash: str | None = None
-    payment_secret: str | None = None
-    payee_pubkey: str | None = None
+class DecodeLNInvoiceResponse(BaseModel):
+    amt_msat: Annotated[int | None, Field(examples=[3000000])] = None
+    expiry_sec: Annotated[int | None, Field(examples=[420])] = None
+    timestamp: Annotated[int | None, Field(examples=[1691160659])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    asset_amount: Annotated[int | None, Field(examples=[42])] = None
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"]),
+    ] = None
+    payment_secret: Annotated[
+        str | None,
+        Field(examples=["f9fa239a283a72fa351ec6d0d6fdb16f5e59a64cb10e64add0b57123855ff592"]),
+    ] = None
+    payee_pubkey: Annotated[
+        str | None,
+        Field(examples=["0343851df9e0e8aff0c10b3498ce723ff4c9b4a855e6c8819adcafbbb3e24ea2af"]),
+    ] = None
     network: BitcoinNetwork | None = None
 
 
-class DecodeRGBInvoiceRequest(BaseNodeModel):
-    invoice: str | None = None
+class DecodeRGBInvoiceRequest(BaseModel):
+    invoice: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1749906951&endpoints=rpcs://proxy.iriswallet.com/0.2/json-rpc"
+            ]
+        ),
+    ] = None
 
 
-class DisconnectPeerRequest(BaseNodeModel):
-    peer_pubkey: str | None = None
+class DisconnectPeerRequest(BaseModel):
+    peer_pubkey: Annotated[
+        str | None,
+        Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"]),
+    ] = None
 
 
-class EmbeddedMedia(BaseNodeModel):
-    mime: str | None = None
-    data: list[int] | None = None
+class EmbeddedMedia(BaseModel):
+    mime: Annotated[str | None, Field(examples=["text/plain"])] = None
+    data: Annotated[list[int] | None, Field(examples=[[82, 76, 78]])] = None
 
 
-class EmptyResponse(BaseNodeModel):
+class EmptyResponse(BaseModel):
     pass
 
 
-class EstimateFeeRequest(BaseNodeModel):
-    blocks: int | None = None
+class EstimateFeeRequest(BaseModel):
+    blocks: Annotated[int | None, Field(examples=[7])] = None
 
 
-class EstimateFeeResponse(BaseNodeModel):
-    fee_rate: float | None = None
+class EstimateFeeResponse(BaseModel):
+    fee_rate: Annotated[float | None, Field(examples=[9.3])] = None
 
 
-class FailTransfersRequest(BaseNodeModel):
-    batch_transfer_idx: int | None = None
-    no_asset_only: bool | None = None
-    skip_sync: bool | None = None
+class FailTransfersRequest(BaseModel):
+    batch_transfer_idx: Annotated[int | None, Field(examples=[None])] = None
+    no_asset_only: Annotated[bool | None, Field(examples=[False])] = None
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class FailTransfersResponse(BaseNodeModel):
-    transfers_changed: bool | None = None
+class FailTransfersResponse(BaseModel):
+    transfers_changed: Annotated[bool | None, Field(examples=[True])] = None
 
 
-class GetAssetMediaRequest(BaseNodeModel):
-    digest: str | None = None
+class GetAssetMediaRequest(BaseModel):
+    digest: Annotated[
+        str | None,
+        Field(examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"]),
+    ] = None
 
 
-class GetAssetMediaResponse(BaseNodeModel):
-    bytes_hex: str | None = None
+class GetAssetMediaResponse(BaseModel):
+    bytes_hex: Annotated[str | None, Field(examples=["68656c6c6f0a"])] = None
 
 
-class GetChannelIdRequest(BaseNodeModel):
-    temporary_channel_id: str | None = None
+class GetChannelIdRequest(BaseModel):
+    temporary_channel_id: Annotated[
+        str | None,
+        Field(examples=["a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5"]),
+    ] = None
 
 
-class GetChannelIdResponse(BaseNodeModel):
-    channel_id: str | None = None
+class GetChannelIdResponse(BaseModel):
+    channel_id: Annotated[
+        str | None,
+        Field(examples=["8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a"]),
+    ] = None
 
 
-class GetPaymentRequest(BaseNodeModel):
-    payment_hash: str | None = None
+class GetPaymentRequest(BaseModel):
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"]),
+    ] = None
 
 
-class GetSwapRequest(BaseNodeModel):
-    payment_hash: str | None = None
-    taker: bool | None = None
+class GetSwapRequest(BaseModel):
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"]),
+    ] = None
+    taker: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class HTLCStatus(Enum):
+class HTLCStatus(StrEnum):
     PENDING = "Pending"
     SUCCEEDED = "Succeeded"
     FAILED = "Failed"
 
 
-class IndexerProtocol(Enum):
+class IndexerProtocol(StrEnum):
     ELECTRUM = "Electrum"
     ESPLORA = "Esplora"
 
 
-class InitRequest(BaseNodeModel):
-    password: str | None = None
+class InitRequest(BaseModel):
+    password: Annotated[str | None, Field(examples=["nodepassword"])] = None
 
 
-class InitResponse(BaseNodeModel):
-    mnemonic: str | None = None
+class InitResponse(BaseModel):
+    mnemonic: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "skill lamp please gown put season degree collect decline account monitor insane"
+            ]
+        ),
+    ] = None
 
 
-class InvoiceStatus(Enum):
+class InvoiceStatus(StrEnum):
     PENDING = "Pending"
     SUCCEEDED = "Succeeded"
     FAILED = "Failed"
     EXPIRED = "Expired"
 
 
-class InvoiceStatusRequest(BaseNodeModel):
-    invoice: str | None = None
+class InvoiceStatusRequest(BaseModel):
+    invoice: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
+            ]
+        ),
+    ] = None
 
 
-class InvoiceStatusResponse(BaseNodeModel):
+class InvoiceStatusResponse(BaseModel):
     status: InvoiceStatus | None = None
 
 
-class IssueAssetCFARequest(BaseNodeModel):
-    amounts: list[int] | None = None
-    name: str | None = None
-    details: str | None = None
-    precision: int | None = None
-    file_digest: str | None = None
+class IssueAssetCFARequest(BaseModel):
+    amounts: Annotated[list[int] | None, Field(examples=[[1000, 600]])] = None
+    name: Annotated[str | None, Field(examples=["Tether"])] = None
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
+    file_digest: Annotated[
+        str | None,
+        Field(examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"]),
+    ] = None
 
 
-class IssueAssetNIARequest(BaseNodeModel):
-    amounts: list[int] | None = None
-    ticker: str | None = None
-    name: str | None = None
-    precision: int | None = None
+class IssueAssetNIARequest(BaseModel):
+    amounts: Annotated[list[int] | None, Field(examples=[[1000, 600]])] = None
+    ticker: Annotated[str | None, Field(examples=["USDT"])] = None
+    name: Annotated[str | None, Field(examples=["Tether"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
 
 
-class IssueAssetUDARequest(BaseNodeModel):
-    ticker: str | None = None
-    name: str | None = None
-    details: str | None = None
-    precision: int | None = None
-    media_file_digest: str | None = None
-    attachments_file_digests: list[str] | None = None
+class IssueAssetUDARequest(BaseModel):
+    ticker: Annotated[str | None, Field(examples=["UNI"])] = None
+    name: Annotated[str | None, Field(examples=["Unique"])] = None
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
+    media_file_digest: Annotated[str | None, Field(examples=["/path/to/media"])] = None
+    attachments_file_digests: Annotated[
+        list[str] | None,
+        Field(
+            examples=[
+                [
+                    "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+                    "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
+                ]
+            ]
+        ),
+    ] = None
 
 
-class KeysendRequest(BaseNodeModel):
-    dest_pubkey: str | None = None
-    amt_msat: int | None = None
-    asset_id: str | None = None
-    asset_amount: int | None = None
+class KeysendRequest(BaseModel):
+    dest_pubkey: Annotated[
+        str | None,
+        Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"]),
+    ] = None
+    amt_msat: Annotated[int | None, Field(examples=[3000000])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    asset_amount: Annotated[int | None, Field(examples=[42])] = None
 
 
-class KeysendResponse(BaseNodeModel):
-    payment_hash: str | None = None
-    payment_preimage: str | None = None
+class KeysendResponse(BaseModel):
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["8ffd4c0642047bc51ea01a22e6b2ede0fc001aee0e9929b2e84e41cf6589d61e"]),
+    ] = None
+    payment_preimage: Annotated[
+        str | None,
+        Field(examples=["89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578"]),
+    ] = None
     status: HTLCStatus | None = None
 
 
-class ListAssetsRequest(BaseNodeModel):
-    filter_asset_schemas: list[AssetSchema] | None = None
+class ListAssetsRequest(BaseModel):
+    filter_asset_schemas: Annotated[
+        list[AssetSchema] | None, Field(examples=[["Nia", "Uda", "Cfa"]])
+    ] = None
 
 
-class ListTransactionsRequest(BaseNodeModel):
-    skip_sync: bool | None = None
+class ListTransactionsRequest(BaseModel):
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class ListTransfersRequest(BaseNodeModel):
-    asset_id: str | None = None
+class ListTransfersRequest(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
 
 
-class ListUnspentsRequest(BaseNodeModel):
-    skip_sync: bool | None = None
+class ListUnspentsRequest(BaseModel):
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class LNInvoiceRequest(BaseNodeModel):
-    amt_msat: int | None = None
-    expiry_sec: int | None = None
-    asset_id: str | None = None
-    asset_amount: int | None = None
+class LNInvoiceRequest(BaseModel):
+    amt_msat: Annotated[int | None, Field(examples=[3000000])] = None
+    expiry_sec: Annotated[int | None, Field(examples=[420])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    asset_amount: Annotated[int | None, Field(examples=[42])] = None
 
 
-class LNInvoiceResponse(BaseNodeModel):
-    invoice: str | None = None
+class LNInvoiceResponse(BaseModel):
+    invoice: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
+            ]
+        ),
+    ] = None
 
 
-class MakerExecuteRequest(BaseNodeModel):
-    swapstring: str | None = None
-    payment_secret: str | None = None
-    taker_pubkey: str | None = None
+class MakerExecuteRequest(BaseModel):
+    swapstring: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+        ),
+    ] = None
+    payment_secret: Annotated[
+        str | None,
+        Field(examples=["777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2"]),
+    ] = None
+    taker_pubkey: Annotated[
+        str | None,
+        Field(examples=["02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043"]),
+    ] = None
 
 
-class MakerInitRequest(BaseNodeModel):
-    qty_from: int | None = None
-    qty_to: int | None = None
-    from_asset: str | None = None
-    to_asset: str | None = None
-    timeout_sec: int | None = None
+class MakerInitRequest(BaseModel):
+    qty_from: Annotated[int | None, Field(examples=[30])] = None
+    qty_to: Annotated[int | None, Field(examples=[10])] = None
+    from_asset: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    to_asset: Annotated[
+        str | None, Field(examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"])
+    ] = None
+    timeout_sec: Annotated[int | None, Field(examples=[100])] = None
 
 
-class MakerInitResponse(BaseNodeModel):
-    payment_hash: str | None = None
-    payment_secret: str | None = None
-    swapstring: str | None = None
+class MakerInitResponse(BaseModel):
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd"]),
+    ] = None
+    payment_secret: Annotated[
+        str | None,
+        Field(examples=["777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2"]),
+    ] = None
+    swapstring: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+        ),
+    ] = None
 
 
-class Media(BaseNodeModel):
-    file_path: str | None = None
-    mime: str | None = None
+class Media(BaseModel):
+    file_path: Annotated[str | None, Field(examples=["/path/to/media"])] = None
+    mime: Annotated[str | None, Field(examples=["text/plain"])] = None
 
 
-class NetworkInfoResponse(BaseNodeModel):
+class NetworkInfoResponse(BaseModel):
     network: BitcoinNetwork | None = None
-    height: int | None = None
+    height: Annotated[int | None, Field(examples=[805434])] = None
 
 
-class NodeInfoResponse(BaseNodeModel):
-    pubkey: str | None = None
-    num_channels: int | None = None
-    num_usable_channels: int | None = None
-    local_balance_sat: int | None = None
-    eventual_close_fees_sat: int | None = None
-    pending_outbound_payments_sat: int | None = None
-    num_peers: int | None = None
-    account_xpub_vanilla: str | None = None
-    account_xpub_colored: str | None = None
-    max_media_upload_size_mb: int | None = None
-    rgb_htlc_min_msat: int | None = None
-    rgb_channel_capacity_min_sat: int | None = None
-    channel_capacity_min_sat: int | None = None
-    channel_capacity_max_sat: int | None = None
-    channel_asset_min_amount: int | None = None
-    channel_asset_max_amount: int | None = None
-    network_nodes: int | None = None
-    network_channels: int | None = None
+class NodeInfoResponse(BaseModel):
+    pubkey: Annotated[
+        str | None,
+        Field(examples=["02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043"]),
+    ] = None
+    num_channels: Annotated[int | None, Field(examples=[1])] = None
+    num_usable_channels: Annotated[int | None, Field(examples=[0])] = None
+    local_balance_sat: Annotated[int | None, Field(examples=[28616])] = None
+    eventual_close_fees_sat: Annotated[int | None, Field(examples=[892])] = None
+    pending_outbound_payments_sat: Annotated[int | None, Field(examples=[7852])] = None
+    num_peers: Annotated[int | None, Field(examples=[1])] = None
+    account_xpub_vanilla: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "tpubDDfzqHEET3ksD81qshMHkw35yp6TuLP1kr5rWWeJcLAqDfMXKDJzmDwAnda6DCqw7kkkhPphuDZFE2a6Sw8h5ZA5NwmtTssEnjMqN7xMzSd"
+            ]
+        ),
+    ] = None
+    account_xpub_colored: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "tpubDDcdKhaxwVV2T6xwigti7dSY1a7LHFwZmKAaLWtNhzrvuTXqjjzo8U7YQkUuPah5yHvnk3cbXmb18ZRFwHEKTFUQmA9dij1nPVA2LCJCiEa"
+            ]
+        ),
+    ] = None
+    max_media_upload_size_mb: Annotated[int | None, Field(examples=[5])] = None
+    rgb_htlc_min_msat: Annotated[int | None, Field(examples=[3000000])] = None
+    rgb_channel_capacity_min_sat: Annotated[int | None, Field(examples=[30010])] = None
+    channel_capacity_min_sat: Annotated[int | None, Field(examples=[5506])] = None
+    channel_capacity_max_sat: Annotated[int | None, Field(examples=[16777215])] = None
+    channel_asset_min_amount: Annotated[int | None, Field(examples=[1])] = None
+    channel_asset_max_amount: Annotated[int | None, Field(examples=[18446744073709551615])] = None
+    network_nodes: Annotated[int | None, Field(examples=[987226])] = None
+    network_channels: Annotated[int | None, Field(examples=[7812821])] = None
 
 
-class OpenChannelRequest(BaseNodeModel):
-    peer_pubkey_and_opt_addr: str | None = None
-    capacity_sat: int | None = None
-    push_msat: int | None = None
-    asset_amount: int | None = None
-    asset_id: str | None = None
-    public: bool | None = None
-    with_anchors: bool | None = None
-    fee_base_msat: int | None = None
-    fee_proportional_millionths: int | None = None
-    temporary_channel_id: str | None = None
+class OpenChannelRequest(BaseModel):
+    peer_pubkey_and_opt_addr: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736"
+            ]
+        ),
+    ] = None
+    capacity_sat: Annotated[int | None, Field(examples=[30010])] = None
+    push_msat: Annotated[int | None, Field(examples=[1394000])] = None
+    asset_amount: Annotated[int | None, Field(examples=[333])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    public: Annotated[bool | None, Field(examples=[True])] = None
+    with_anchors: Annotated[bool | None, Field(examples=[True])] = None
+    fee_base_msat: Annotated[int | None, Field(examples=[1000])] = None
+    fee_proportional_millionths: Annotated[int | None, Field(examples=[0])] = None
+    temporary_channel_id: Annotated[
+        str | None,
+        Field(examples=["a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5"]),
+    ] = None
 
 
-class OpenChannelResponse(BaseNodeModel):
-    temporary_channel_id: str | None = None
+class OpenChannelResponse(BaseModel):
+    temporary_channel_id: Annotated[
+        str | None,
+        Field(examples=["a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5"]),
+    ] = None
 
 
-class Payment(BaseNodeModel):
-    amt_msat: int | None = None
-    asset_amount: int | None = None
-    asset_id: str | None = None
-    payment_hash: str | None = None
-    inbound: bool | None = None
+class Payment(BaseModel):
+    amt_msat: Annotated[int | None, Field(examples=[3000000])] = None
+    asset_amount: Annotated[int | None, Field(examples=[42])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd"]),
+    ] = None
+    inbound: Annotated[bool | None, Field(examples=[True])] = None
     status: HTLCStatus | None = None
-    created_at: int | None = None
-    updated_at: int | None = None
-    payee_pubkey: str | None = None
+    created_at: Annotated[int | None, Field(examples=[1691160765])] = None
+    updated_at: Annotated[int | None, Field(examples=[1691162674])] = None
+    expires_at: Annotated[int | None, Field(examples=[1691162674])] = None
+    payee_pubkey: Annotated[
+        str | None,
+        Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"]),
+    ] = None
 
 
-class Peer(BaseNodeModel):
-    pubkey: str | None = None
+class Peer(BaseModel):
+    pubkey: Annotated[
+        str | None,
+        Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"]),
+    ] = None
 
 
-class PostAssetMediaRequest(BaseNodeModel):
+class PostAssetMediaRequest(BaseModel):
     file: bytes | None = None
 
 
-class PostAssetMediaResponse(BaseNodeModel):
-    digest: str | None = None
+class PostAssetMediaResponse(BaseModel):
+    digest: Annotated[
+        str | None,
+        Field(examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"]),
+    ] = None
 
 
-class ProofOfReserves(BaseNodeModel):
-    utxo: str | None = None
-    proof: list[int] | None = None
+class ProofOfReserves(BaseModel):
+    utxo: Annotated[
+        str | None,
+        Field(examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"]),
+    ] = None
+    proof: Annotated[list[int] | None, Field(examples=[[6, 36, 87, 13, 5, 17]])] = None
 
 
-class RecipientType(Enum):
+class RecipientType(StrEnum):
     BLIND = "Blind"
     WITNESS = "Witness"
 
 
-class RefreshRequest(BaseNodeModel):
-    skip_sync: bool | None = None
+class RefreshRequest(BaseModel):
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class RestoreRequest(BaseNodeModel):
-    backup_path: str | None = None
-    password: str | None = None
+class RestoreRequest(BaseModel):
+    backup_path: Annotated[str | None, Field(examples=["/path/to/the/backup/file"])] = None
+    password: Annotated[str | None, Field(examples=["nodepassword"])] = None
 
 
-class RevokeTokenRequest(BaseNodeModel):
-    token: str | None = None
+class RevokeTokenRequest(BaseModel):
+    token: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "EnYKDBgDIggKBggGEgIYDRIkCAASICqCgqtFMIJ1eLCM3raDzqg9UqV-6nJWzGjjJG0S5IIUGkBpF-itmppHcdcSrSCiKklz9VZT4UmIND_0RFc32Imq3bLR_Y7GYaSpJo5lJfU1cA2BG_hy7P1UN4g5jKTKS88GIiIKIAUKXrrx0Ca-rMZa537VOFw2X8q_KVQ6OC4Z0ztro0sQ"
+            ]
+        ),
+    ] = None
 
 
-class RgbAllocation(BaseNodeModel):
-    asset_id: str | None = None
+class RgbAllocation(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
     assignment: AssignmentFungible | None = None
-    settled: bool | None = None
+    settled: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class RgbInvoiceResponse(BaseNodeModel):
-    recipient_id: str | None = None
-    invoice: str | None = None
-    expiration_timestamp: int | None = None
-    batch_transfer_idx: int | None = None
+class RgbInvoiceResponse(BaseModel):
+    recipient_id: Annotated[
+        str | None,
+        Field(examples=["bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX"]),
+    ] = None
+    invoice: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "rgb:~/~/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1695811760&endpoints=rpc://127.0.0.1:3000/json-rpc"
+            ]
+        ),
+    ] = None
+    expiration_timestamp: Annotated[int | None, Field(examples=[1695811760])] = None
+    batch_transfer_idx: Annotated[int | None, Field(examples=[1])] = None
 
 
-class SendBtcRequest(BaseNodeModel):
-    amount: int | None = None
-    address: str | None = None
-    fee_rate: float | None = None
-    skip_sync: bool | None = None
+class SendBtcRequest(BaseModel):
+    amount: Annotated[int | None, Field(examples=[16900])] = None
+    address: Annotated[
+        str | None, Field(examples=["bcrt1qwxht5tut39dws8tjcf649tp908r8fr2j75c94k"])
+    ] = None
+    fee_rate: Annotated[float | None, Field(examples=[5])] = None
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class SendBtcResponse(BaseNodeModel):
-    txid: str | None = None
+class SendBtcResponse(BaseModel):
+    txid: Annotated[
+        str | None,
+        Field(examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"]),
+    ] = None
 
 
-class SendOnionMessageRequest(BaseNodeModel):
+class SendOnionMessageRequest(BaseModel):
     node_ids: list[str] | None = None
-    tlv_type: int | None = None
-    data: str | None = None
+    tlv_type: Annotated[int | None, Field(examples=[77])] = None
+    data: Annotated[str | None, Field(examples=["message to send"])] = None
 
 
-class SendPaymentRequest(BaseNodeModel):
-    invoice: str | None = None
+class SendPaymentRequest(BaseModel):
+    invoice: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8"
+            ]
+        ),
+    ] = None
+    amt_msat: Annotated[int | None, Field(examples=[3000000])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    asset_amount: Annotated[int | None, Field(examples=[100])] = None
 
 
-class SendPaymentResponse(BaseNodeModel):
-    payment_hash: str | None = None
-    payment_secret: str | None = None
+class SendPaymentResponse(BaseModel):
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd"]),
+    ] = None
+    payment_secret: Annotated[
+        str | None,
+        Field(examples=["777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2"]),
+    ] = None
     status: HTLCStatus | None = None
 
 
-class SendRgbResponse(BaseNodeModel):
-    txid: str | None = None
+class SendRgbResponse(BaseModel):
+    txid: Annotated[
+        str | None,
+        Field(examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"]),
+    ] = None
 
 
-class SignMessageRequest(BaseNodeModel):
-    message: str | None = None
+class SignMessageRequest(BaseModel):
+    message: Annotated[str | None, Field(examples=["message to sign"])] = None
 
 
-class SignMessageResponse(BaseNodeModel):
-    signed_message: str | None = None
+class SignMessageResponse(BaseModel):
+    signed_message: Annotated[str | None, Field(examples=["signed message"])] = None
 
 
-class SwapStatus(Enum):
+class SwapStatus(StrEnum):
     WAITING = "Waiting"
     PENDING = "Pending"
     SUCCEEDED = "Succeeded"
@@ -477,40 +716,83 @@ class SwapStatus(Enum):
     FAILED = "Failed"
 
 
-class TakerRequest(BaseNodeModel):
-    swapstring: str | None = None
+class TakerRequest(BaseModel):
+    swapstring: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+        ),
+    ] = None
 
 
-class Token(BaseNodeModel):
-    index: int | None = None
-    ticker: str | None = None
-    name: str | None = None
-    details: str | None = None
+class Token(BaseModel):
+    index: Annotated[int | None, Field(examples=[0])] = None
+    ticker: Annotated[str | None, Field(examples=["TKN"])] = None
+    name: Annotated[str | None, Field(examples=["Token"])] = None
+    details: Annotated[str | None, Field(examples=["token details"])] = None
     embedded_media: EmbeddedMedia | None = None
     media: Media | None = None
-    attachments: dict[str, Media] | None = None
+    attachments: Annotated[
+        dict[str, Media] | None,
+        Field(
+            examples=[
+                {
+                    0: {
+                        "file_path": "path/to/attachment0",
+                        "digest": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+                        "mime": "text/plain",
+                    },
+                    1: {
+                        "file_path": "path/to/attachment1",
+                        "digest": "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
+                        "mime": "image/png",
+                    },
+                }
+            ]
+        ),
+    ] = None
     reserves: ProofOfReserves | None = None
 
 
-class TokenLight(BaseNodeModel):
-    index: int | None = None
-    ticker: str | None = None
-    name: str | None = None
-    details: str | None = None
-    embedded_media: bool | None = None
+class TokenLight(BaseModel):
+    index: Annotated[int | None, Field(examples=[0])] = None
+    ticker: Annotated[str | None, Field(examples=["TKN"])] = None
+    name: Annotated[str | None, Field(examples=["Token"])] = None
+    details: Annotated[str | None, Field(examples=["token details"])] = None
+    embedded_media: Annotated[bool | None, Field(examples=[True])] = None
     media: Media | None = None
-    attachments: dict[str, Media] | None = None
-    reserves: bool | None = None
+    attachments: Annotated[
+        dict[str, Media] | None,
+        Field(
+            examples=[
+                {
+                    0: {
+                        "file_path": "path/to/attachment0",
+                        "digest": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+                        "mime": "text/plain",
+                    },
+                    1: {
+                        "file_path": "path/to/attachment1",
+                        "digest": "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a",
+                        "mime": "image/png",
+                    },
+                }
+            ]
+        ),
+    ] = None
+    reserves: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class TransactionType(Enum):
+class TransactionType(StrEnum):
     RGB_SEND = "RgbSend"
     DRAIN = "Drain"
     CREATE_UTXOS = "CreateUtxos"
     USER = "User"
 
 
-class TransferKind(Enum):
+class TransferKind(StrEnum):
     ISSUANCE = "Issuance"
     RECEIVE_BLIND = "ReceiveBlind"
     RECEIVE_WITNESS = "ReceiveWitness"
@@ -518,265 +800,343 @@ class TransferKind(Enum):
     INFLATION = "Inflation"
 
 
-class TransferStatus(Enum):
+class TransferStatus(StrEnum):
     WAITING_COUNTERPARTY = "WaitingCounterparty"
     WAITING_CONFIRMATIONS = "WaitingConfirmations"
     SETTLED = "Settled"
     FAILED = "Failed"
 
 
-class UnlockRequest(BaseNodeModel):
-    password: str | None = None
-    bitcoind_rpc_username: str | None = None
-    bitcoind_rpc_password: str | None = None
-    bitcoind_rpc_host: str | None = None
-    bitcoind_rpc_port: int | None = None
-    indexer_url: str | None = None
-    proxy_endpoint: str | None = None
+class UnlockRequest(BaseModel):
+    password: Annotated[str | None, Field(examples=["nodepassword"])] = None
+    bitcoind_rpc_username: Annotated[str | None, Field(examples=["user"])] = None
+    bitcoind_rpc_password: Annotated[str | None, Field(examples=["password"])] = None
+    bitcoind_rpc_host: Annotated[str | None, Field(examples=["localhost"])] = None
+    bitcoind_rpc_port: Annotated[int | None, Field(examples=[18443])] = None
+    indexer_url: Annotated[str | None, Field(examples=["127.0.0.1:50001"])] = None
+    proxy_endpoint: Annotated[str | None, Field(examples=["rpc://127.0.0.1:3000/json-rpc"])] = None
     announce_addresses: list[str] | None = None
-    announce_alias: str | None = None
+    announce_alias: Annotated[str | None, Field(examples=["nodeAlias"])] = None
 
 
-class Utxo(BaseNodeModel):
-    outpoint: str | None = None
-    btc_amount: int | None = None
-    colorable: bool | None = None
+class Utxo(BaseModel):
+    outpoint: Annotated[
+        str | None,
+        Field(examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"]),
+    ] = None
+    btc_amount: Annotated[int | None, Field(examples=[1000])] = None
+    colorable: Annotated[bool | None, Field(examples=[True])] = None
 
 
-class WitnessData(BaseNodeModel):
-    amount_sat: float | None = None
-    blinding: float | None = None
+class WitnessData(BaseModel):
+    amount_sat: Annotated[float | None, Field(examples=[1000])] = None
+    blinding: Annotated[float | None, Field(examples=[439017309])] = None
 
 
-class AssetCFA(BaseNodeModel):
-    asset_id: str | None = None
-    name: str | None = None
-    details: str | None = None
-    precision: int | None = None
-    issued_supply: int | None = None
-    timestamp: int | None = None
-    added_at: int | None = None
+class AssetCFA(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    name: Annotated[str | None, Field(examples=["Collectible"])] = None
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
+    issued_supply: Annotated[int | None, Field(examples=[777])] = None
+    timestamp: Annotated[int | None, Field(examples=[1691160565])] = None
+    added_at: Annotated[int | None, Field(examples=[1691161979])] = None
     balance: AssetBalanceResponse | None = None
     media: Media | None = None
 
 
-class AssetMetadataResponse(BaseNodeModel):
+class AssetMetadataResponse(BaseModel):
     asset_schema: AssetSchema | None = None
-    initial_supply: int | None = None
-    max_supply: int | None = None
-    known_circulating_supply: int | None = None
-    timestamp: int | None = None
-    name: str | None = None
-    precision: int | None = None
-    ticker: str | None = None
-    details: str | None = None
+    initial_supply: Annotated[int | None, Field(examples=[777])] = None
+    max_supply: Annotated[int | None, Field(examples=[777])] = None
+    known_circulating_supply: Annotated[int | None, Field(examples=[777])] = None
+    timestamp: Annotated[int | None, Field(examples=[1691160565])] = None
+    name: Annotated[str | None, Field(examples=["Collectible"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
+    ticker: Annotated[str | None, Field(examples=["USDT"])] = None
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
     token: Token | None = None
 
 
-class AssetNIA(BaseNodeModel):
-    asset_id: str | None = None
-    ticker: str | None = None
-    name: str | None = None
-    details: str | None = None
-    precision: int | None = None
-    issued_supply: int | None = None
-    timestamp: int | None = None
-    added_at: int | None = None
+class AssetNIA(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    ticker: Annotated[str | None, Field(examples=["USDT"])] = None
+    name: Annotated[str | None, Field(examples=["Tether"])] = None
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
+    issued_supply: Annotated[int | None, Field(examples=[777])] = None
+    timestamp: Annotated[int | None, Field(examples=[1691160565])] = None
+    added_at: Annotated[int | None, Field(examples=[1691161979])] = None
     balance: AssetBalanceResponse | None = None
     media: Media | None = None
 
 
-class AssetUDA(BaseNodeModel):
-    asset_id: str | None = None
-    ticker: str | None = None
-    name: str | None = None
-    details: str | None = None
-    precision: int | None = None
-    timestamp: int | None = None
-    added_at: int | None = None
+class AssetUDA(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    ticker: Annotated[str | None, Field(examples=["UNI"])] = None
+    name: Annotated[str | None, Field(examples=["Unique"])] = None
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
+    precision: Annotated[int | None, Field(examples=[0])] = None
+    timestamp: Annotated[int | None, Field(examples=[1691160565])] = None
+    added_at: Annotated[int | None, Field(examples=[1691161979])] = None
     balance: AssetBalanceResponse | None = None
     token: TokenLight | None = None
 
 
-class Channel(BaseNodeModel):
-    channel_id: str | None = None
-    funding_txid: str | None = None
-    peer_pubkey: str | None = None
-    peer_alias: str | None = None
-    short_channel_id: int | None = None
+class Channel(BaseModel):
+    channel_id: Annotated[
+        str | None,
+        Field(examples=["8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a"]),
+    ] = None
+    funding_txid: Annotated[
+        str | None,
+        Field(examples=["5a106a814fe28404eece1754dfd45e92ec9bb0044cbfe1d560cfd7b1e1af2981"]),
+    ] = None
+    peer_pubkey: Annotated[
+        str | None,
+        Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"]),
+    ] = None
+    peer_alias: Annotated[str | None, Field(examples=[None])] = None
+    short_channel_id: Annotated[int | None, Field(examples=[120946279120896])] = None
     status: ChannelStatus | None = None
-    ready: bool | None = None
-    capacity_sat: int | None = None
-    local_balance_sat: int | None = None
-    outbound_balance_msat: int | None = None
-    inbound_balance_msat: int | None = None
-    next_outbound_htlc_limit_msat: int | None = None
-    next_outbound_htlc_minimum_msat: int | None = None
-    is_usable: bool | None = None
-    public: bool | None = None
-    asset_id: str | None = None
-    asset_local_amount: int | None = None
-    asset_remote_amount: int | None = None
+    ready: Annotated[bool | None, Field(examples=[False])] = None
+    capacity_sat: Annotated[int | None, Field(examples=[30010])] = None
+    local_balance_sat: Annotated[int | None, Field(examples=[28616])] = None
+    outbound_balance_msat: Annotated[int | None, Field(examples=[21616000])] = None
+    inbound_balance_msat: Annotated[int | None, Field(examples=[6394000])] = None
+    next_outbound_htlc_limit_msat: Annotated[int | None, Field(examples=[3001000])] = None
+    next_outbound_htlc_minimum_msat: Annotated[int | None, Field(examples=[1])] = None
+    is_usable: Annotated[bool | None, Field(examples=[False])] = None
+    public: Annotated[bool | None, Field(examples=[True])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    asset_local_amount: Annotated[int | None, Field(examples=[777])] = None
+    asset_remote_amount: Annotated[int | None, Field(examples=[0])] = None
 
 
-class CheckIndexerUrlResponse(BaseNodeModel):
+class CheckIndexerUrlResponse(BaseModel):
     indexer_protocol: IndexerProtocol | None = None
 
 
-class DecodeRGBInvoiceResponse(BaseNodeModel):
-    recipient_id: str | None = None
+class DecodeRGBInvoiceResponse(BaseModel):
+    recipient_id: Annotated[
+        str | None,
+        Field(examples=["bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX"]),
+    ] = None
     recipient_type: RecipientType | None = None
     asset_schema: AssetSchema | None = None
-    asset_id: str | None = None
-    assignment: (
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"])
+    ] = None
+    assignment: Annotated[
         AssignmentFungible
         | AssignmentNonFungible
         | AssignmentInflationRight
         | AssignmentReplaceRight
         | AssignmentAny
-        | None
-    ) = Field(None, discriminator="type")
+        | None,
+        Field(discriminator="type"),
+    ] = None
     network: BitcoinNetwork | None = None
-    expiration_timestamp: int | None = None
+    expiration_timestamp: Annotated[int | None, Field(examples=[1698325849])] = None
     transport_endpoints: list[str] | None = None
 
 
-class GetPaymentResponse(BaseNodeModel):
+class GetPaymentResponse(BaseModel):
     payment: Payment | None = None
 
 
-class IssueAssetCFAResponse(BaseNodeModel):
+class IssueAssetCFAResponse(BaseModel):
     asset: AssetCFA | None = None
 
 
-class IssueAssetNIAResponse(BaseNodeModel):
+class IssueAssetNIAResponse(BaseModel):
     asset: AssetNIA | None = None
 
 
-class IssueAssetUDAResponse(BaseNodeModel):
+class IssueAssetUDAResponse(BaseModel):
     asset: AssetUDA | None = None
 
 
-class ListAssetsResponse(BaseNodeModel):
+class ListAssetsResponse(BaseModel):
     nia: list[AssetNIA] | None = None
     uda: list[AssetUDA] | None = None
     cfa: list[AssetCFA] | None = None
 
 
-class ListChannelsResponse(BaseNodeModel):
+class ListChannelsResponse(BaseModel):
     channels: list[Channel] | None = None
 
 
-class ListPaymentsResponse(BaseNodeModel):
+class ListPaymentsResponse(BaseModel):
     payments: list[Payment] | None = None
 
 
-class ListPeersResponse(BaseNodeModel):
+class ListPeersResponse(BaseModel):
     peers: list[Peer] | None = None
 
 
-class Recipient(BaseNodeModel):
-    recipient_id: str | None = None
+class Recipient(BaseModel):
+    recipient_id: Annotated[
+        str | None,
+        Field(examples=["bcrt:utxob:2FZsSuk-iyVQLVuU4-Gc6J4qkE8-mLS17N4jd-MEx6cWz9F-MFkyE1n"]),
+    ] = None
     witness_data: WitnessData | None = None
-    assignment: (
+    assignment: Annotated[
         AssignmentFungible
         | AssignmentNonFungible
         | AssignmentInflationRight
         | AssignmentReplaceRight
         | AssignmentAny
-        | None
-    ) = Field(None, discriminator="type")
+        | None,
+        Field(discriminator="type"),
+    ] = None
     transport_endpoints: list[str] | None = None
 
 
-class RgbInvoiceRequest(BaseNodeModel):
-    min_confirmations: int | None = None
-    asset_id: str | None = None
-    assignment: (
+class RgbInvoiceRequest(BaseModel):
+    min_confirmations: Annotated[int | None, Field(examples=[1])] = None
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    assignment: Annotated[
         AssignmentFungible
         | AssignmentNonFungible
         | AssignmentInflationRight
         | AssignmentReplaceRight
         | AssignmentAny
-        | None
-    ) = Field(None, discriminator="type")
-    duration_seconds: int | None = None
-    witness: bool | None = None
+        | None,
+        Field(discriminator="type"),
+    ] = None
+    duration_seconds: Annotated[int | None, Field(examples=[86400])] = None
+    witness: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class SendRgbRequest(BaseNodeModel):
-    donation: bool | None = None
-    fee_rate: float | None = None
-    min_confirmations: int | None = None
-    recipient_map: dict[str, list[Recipient]] | None = None
-    skip_sync: bool | None = None
+class SendRgbRequest(BaseModel):
+    donation: Annotated[bool | None, Field(examples=[False])] = None
+    fee_rate: Annotated[float | None, Field(examples=[5])] = None
+    min_confirmations: Annotated[int | None, Field(examples=[1])] = None
+    recipient_map: Annotated[
+        dict[str, list[Recipient]] | None,
+        Field(
+            examples=[
+                {
+                    "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8": [
+                        {
+                            "recipient_id": "utxob:2FjRqgQ-eEWCVHY5-zmpFtYzT-gGm3MdR-sTnxNcS-7RtUbY9-4NYuuh",
+                            "assignment": {"Fungible": 400},
+                            "transport_endpoints": ["rpc://127.0.0.1:3000/json-rpc"],
+                        },
+                        {
+                            "recipient_id": "utxob:3GkRrhR-fFXDLIZ6-0anqGuzU-hHn4NeS-tUoyOdT-8SuVcZ0-5OZvvi",
+                            "assignment": {"Fungible": 200},
+                            "transport_endpoints": ["rpc://127.0.0.1:3000/json-rpc"],
+                        },
+                    ],
+                    "rgb:d8qDVS5X-ICVG2uM-CPr3yO4-lfBhgjt-7FN1EPE-ApY1LcM": [
+                        {
+                            "recipient_id": "utxob:4HlSsiS-gGYEMKA7-1borHvaV-iIo5OfT-uVpzPeU-9TvWdA1-6PAwwj",
+                            "assignment": {"Fungible": 100},
+                            "transport_endpoints": ["rpc://127.0.0.1:3000/json-rpc"],
+                        }
+                    ],
+                }
+            ]
+        ),
+    ] = None
+    skip_sync: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class Swap(BaseNodeModel):
-    qty_from: int | None = None
-    qty_to: int | None = None
-    from_asset: str | None = None
-    to_asset: str | None = None
-    payment_hash: str | None = None
+class Swap(BaseModel):
+    qty_from: Annotated[int | None, Field(examples=[30])] = None
+    qty_to: Annotated[int | None, Field(examples=[10])] = None
+    from_asset: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    to_asset: Annotated[
+        str | None, Field(examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"])
+    ] = None
+    payment_hash: Annotated[
+        str | None,
+        Field(examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"]),
+    ] = None
     status: SwapStatus | None = None
-    requested_at: int | None = None
-    initiated_at: int | None = None
-    expires_at: int | None = None
-    completed_at: int | None = None
+    requested_at: Annotated[int | None, Field(examples=[1691160765])] = None
+    initiated_at: Annotated[int | None, Field(examples=[1691168512])] = None
+    expires_at: Annotated[int | None, Field(examples=[1691172703])] = None
+    completed_at: Annotated[int | None, Field(examples=[1691171075])] = None
 
 
-class Transaction(BaseNodeModel):
+class Transaction(BaseModel):
     transaction_type: TransactionType | None = None
-    txid: str | None = None
-    received: int | None = None
-    sent: int | None = None
-    fee: int | None = None
+    txid: Annotated[
+        str | None,
+        Field(examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"]),
+    ] = None
+    received: Annotated[int | None, Field(examples=[650])] = None
+    sent: Annotated[int | None, Field(examples=[1050])] = None
+    fee: Annotated[int | None, Field(examples=[100])] = None
     confirmation_time: BlockTime | None = None
 
 
-class TransferTransportEndpoint(BaseNodeModel):
-    endpoint: str | None = None
+class TransferTransportEndpoint(BaseModel):
+    endpoint: Annotated[str | None, Field(examples=["http://127.0.0.1:3000/json-rpc"])] = None
     transport_type: Literal["JsonRpc"] | None = None
-    used: bool | None = None
+    used: Annotated[bool | None, Field(examples=[False])] = None
 
 
-class Unspent(BaseNodeModel):
+class Unspent(BaseModel):
     utxo: Utxo | None = None
     rgb_allocations: list[RgbAllocation] | None = None
 
 
-class GetSwapResponse(BaseNodeModel):
+class GetSwapResponse(BaseModel):
     swap: Swap | None = None
 
 
-class ListSwapsResponse(BaseNodeModel):
+class ListSwapsResponse(BaseModel):
     maker: list[Swap] | None = None
     taker: list[Swap] | None = None
 
 
-class ListTransactionsResponse(BaseNodeModel):
+class ListTransactionsResponse(BaseModel):
     transactions: list[Transaction] | None = None
 
 
-class ListUnspentsResponse(BaseNodeModel):
+class ListUnspentsResponse(BaseModel):
     unspents: list[Unspent] | None = None
 
 
-class Transfer(BaseNodeModel):
-    idx: int | None = None
-    created_at: int | None = None
-    updated_at: int | None = None
+class Transfer(BaseModel):
+    idx: Annotated[int | None, Field(examples=[1])] = None
+    created_at: Annotated[int | None, Field(examples=[1691160765])] = None
+    updated_at: Annotated[int | None, Field(examples=[1691162674])] = None
     status: TransferStatus | None = None
     requested_assignment: AssignmentFungible | None = None
     assignments: list[AssignmentFungible] | None = None
     kind: TransferKind | None = None
-    txid: str | None = None
-    recipient_id: str | None = None
-    receive_utxo: str | None = None
-    change_utxo: str | None = None
-    expiration: int | None = None
+    txid: Annotated[
+        str | None,
+        Field(examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"]),
+    ] = None
+    recipient_id: Annotated[
+        str | None, Field(examples=["61qsVbWtkNmU54F2i6qtB9uSmEGsPoaeypCi5uC5uctZ"])
+    ] = None
+    receive_utxo: Annotated[
+        str | None,
+        Field(examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"]),
+    ] = None
+    change_utxo: Annotated[str | None, Field(examples=[None])] = None
+    expiration: Annotated[int | None, Field(examples=[1691171612])] = None
     transport_endpoints: list[TransferTransportEndpoint] | None = None
 
 
-class ListTransfersResponse(BaseNodeModel):
+class ListTransfersResponse(BaseModel):
     transfers: list[Transfer] | None = None

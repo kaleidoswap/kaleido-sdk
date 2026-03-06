@@ -147,8 +147,8 @@ class TestMakerClientIntegration:
             client,
             from_asset=asset_id,
             to_asset="BTC",
-            from_layer=Layer.rgb_ln,
-            to_layer=Layer.btc_l1,
+            from_layer=Layer.RGB_LN,
+            to_layer=Layer.BTC_L1,
         )
         assert quote.rfq_id is not None, "Quote must have RFQ ID"
         assert quote.from_asset.amount is not None and quote.from_asset.amount > 0, (

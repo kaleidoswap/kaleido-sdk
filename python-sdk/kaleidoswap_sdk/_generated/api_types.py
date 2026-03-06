@@ -3,13 +3,13 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
+from typing import Annotated
 
-from kaleidoswap_sdk._generated.base import BaseNodeModel
-from pydantic import AwareDatetime, ConfigDict, EmailStr, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field, RootModel
 
 
-class AssetDeliveryStatus(Enum):
+class AssetDeliveryStatus(StrEnum):
     """
     Status of asset delivery via keysend after channel opening
     """
@@ -22,115 +22,123 @@ class AssetDeliveryStatus(Enum):
     RATE_CHANGED = "RATE_CHANGED"
 
 
-class AssetsOptions(BaseNodeModel):
+class AssetsOptions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    name: str = Field("US Dollar Notes", title="Name")
-    asset_id: str | None = Field(
-        "rgb:$i4cFKwt-2C5LZ3X-l$kOTGN-O6l1AOP-aP9COyn-7IeBkEM", title="Asset Id"
+    name: Annotated[str, Field(title="Name")] = "US Dollar Notes"
+    asset_id: Annotated[str | None, Field(title="Asset Id")] = (
+        "rgb:$i4cFKwt-2C5LZ3X-l$kOTGN-O6l1AOP-aP9COyn-7IeBkEM"
     )
-    ticker: str = Field("USDT", title="Ticker")
-    precision: int = Field(6, title="Precision")
-    issued_supply: int = Field(0, title="Issued Supply")
-    min_initial_client_amount: int = Field(0, ge=0, title="Min Initial Client Amount")
-    max_initial_client_amount: int = Field(0, ge=0, title="Max Initial Client Amount")
-    min_initial_lsp_amount: int = Field(0, ge=0, title="Min Initial Lsp Amount")
-    max_initial_lsp_amount: int = Field(10000, ge=0, title="Max Initial Lsp Amount")
-    min_channel_amount: int = Field(0, ge=0, title="Min Channel Amount")
-    max_channel_amount: int = Field(10000, ge=0, title="Max Channel Amount")
+    ticker: Annotated[str, Field(title="Ticker")] = "USDT"
+    precision: Annotated[int, Field(title="Precision")] = 6
+    issued_supply: Annotated[int, Field(title="Issued Supply")] = 0
+    min_initial_client_amount: Annotated[int, Field(ge=0, title="Min Initial Client Amount")] = 0
+    max_initial_client_amount: Annotated[int, Field(ge=0, title="Max Initial Client Amount")] = 0
+    min_initial_lsp_amount: Annotated[int, Field(ge=0, title="Min Initial Lsp Amount")] = 0
+    max_initial_lsp_amount: Annotated[int, Field(ge=0, title="Max Initial Lsp Amount")] = 10000
+    min_channel_amount: Annotated[int, Field(ge=0, title="Min Channel Amount")] = 0
+    max_channel_amount: Annotated[int, Field(ge=0, title="Max Channel Amount")] = 10000
 
 
-class BitcoinNetwork(Enum):
+class BitcoinNetwork(StrEnum):
     MAINNET = "Mainnet"
     TESTNET = "Testnet"
     SIGNET = "Signet"
     REGTEST = "Regtest"
 
 
-class ChannelDetails(BaseNodeModel):
-    channel_id: str | None = Field(None, title="Channel Id")
-    temporary_channel_id: str | None = Field(None, title="Temporary Channel Id")
-    funded_at: AwareDatetime | None = Field(None, title="Funded At")
-    funding_outpoint: str | None = Field(None, title="Funding Outpoint")
-    expires_at: AwareDatetime | None = Field(None, title="Expires At")
+class ChannelDetails(BaseModel):
+    channel_id: Annotated[str | None, Field(title="Channel Id")] = None
+    temporary_channel_id: Annotated[str | None, Field(title="Temporary Channel Id")] = None
+    funded_at: Annotated[AwareDatetime | None, Field(title="Funded At")] = None
+    funding_outpoint: Annotated[str | None, Field(title="Funding Outpoint")] = None
+    expires_at: Annotated[AwareDatetime | None, Field(title="Expires At")] = None
 
 
-class ChannelFees(BaseNodeModel):
-    setup_fee: int = Field(..., title="Setup Fee")
-    capacity_fee: int = Field(..., title="Capacity Fee")
-    duration_fee: int = Field(..., title="Duration Fee")
-    total_fee: int = Field(..., title="Total Fee")
-    applied_discount: float | None = Field(None, title="Applied Discount")
-    discount_code: str | None = Field(None, title="Discount Code")
+class ChannelFees(BaseModel):
+    setup_fee: Annotated[int, Field(title="Setup Fee")]
+    capacity_fee: Annotated[int, Field(title="Capacity Fee")]
+    duration_fee: Annotated[int, Field(title="Duration Fee")]
+    total_fee: Annotated[int, Field(title="Total Fee")]
+    applied_discount: Annotated[float | None, Field(title="Applied Discount")] = None
+    discount_code: Annotated[str | None, Field(title="Discount Code")] = None
 
 
-class ConfirmSwapRequest(BaseNodeModel):
-    swapstring: str = Field(
-        ...,
-        examples=[
-            "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-        ],
-        title="Swapstring",
-    )
-    taker_pubkey: str = Field(
-        ...,
-        examples=["034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"],
-        title="Taker Pubkey",
-    )
-    payment_hash: str = Field(
-        ...,
-        examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
-        title="Payment Hash",
-    )
+class ConfirmSwapRequest(BaseModel):
+    swapstring: Annotated[
+        str,
+        Field(
+            examples=[
+                "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ],
+            title="Swapstring",
+        ),
+    ]
+    taker_pubkey: Annotated[
+        str,
+        Field(
+            examples=["034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"],
+            title="Taker Pubkey",
+        ),
+    ]
+    payment_hash: Annotated[
+        str,
+        Field(
+            examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
+            title="Payment Hash",
+        ),
+    ]
 
 
-class ConfirmSwapResponse(BaseNodeModel):
-    status: int = Field(..., examples=[200], title="Status")
-    message: str = Field(..., examples=["Swap executed successfully."], title="Message")
+class ConfirmSwapResponse(BaseModel):
+    status: Annotated[int, Field(examples=[200], title="Status")]
+    message: Annotated[str, Field(examples=["Swap executed successfully."], title="Message")]
 
 
-class CreateOrderRequest(BaseNodeModel):
-    client_pubkey: str = Field(..., title="Client Pubkey")
-    lsp_balance_sat: int = Field(..., ge=0, title="Lsp Balance Sat")
-    client_balance_sat: int = Field(..., ge=0, title="Client Balance Sat")
-    required_channel_confirmations: int = Field(
-        ..., ge=0, title="Required Channel Confirmations"
-    )
-    funding_confirms_within_blocks: int = Field(
-        ..., ge=1, title="Funding Confirms Within Blocks"
-    )
-    channel_expiry_blocks: int = Field(..., ge=1, title="Channel Expiry Blocks")
-    token: str | None = Field(None, title="Token")
-    refund_onchain_address: str | None = Field(None, title="Refund Onchain Address")
-    announce_channel: bool = Field(True, title="Announce Channel")
-    asset_id: str | None = Field(None, title="Asset Id")
-    lsp_asset_amount: int | None = Field(None, title="Lsp Asset Amount")
-    client_asset_amount: int | None = Field(None, title="Client Asset Amount")
-    rfq_id: str | None = Field(None, title="Rfq Id")
-    email: str | None = Field(
-        None, description="Optional email for notifications", title="Email"
-    )
+class CreateOrderRequest(BaseModel):
+    client_pubkey: Annotated[str, Field(title="Client Pubkey")]
+    lsp_balance_sat: Annotated[int, Field(ge=0, title="Lsp Balance Sat")]
+    client_balance_sat: Annotated[int, Field(ge=0, title="Client Balance Sat")]
+    required_channel_confirmations: Annotated[
+        int, Field(ge=0, title="Required Channel Confirmations")
+    ]
+    funding_confirms_within_blocks: Annotated[
+        int, Field(ge=1, title="Funding Confirms Within Blocks")
+    ]
+    channel_expiry_blocks: Annotated[int, Field(ge=1, title="Channel Expiry Blocks")]
+    token: Annotated[str | None, Field(title="Token")] = None
+    refund_onchain_address: Annotated[str | None, Field(title="Refund Onchain Address")] = None
+    announce_channel: Annotated[bool, Field(title="Announce Channel")] = True
+    asset_id: Annotated[str | None, Field(title="Asset Id")] = None
+    lsp_asset_amount: Annotated[int | None, Field(title="Lsp Asset Amount")] = None
+    client_asset_amount: Annotated[int | None, Field(title="Client Asset Amount")] = None
+    rfq_id: Annotated[str | None, Field(title="Rfq Id")] = None
+    email: Annotated[
+        str | None, Field(description="Optional email for notifications", title="Email")
+    ] = None
 
 
-class Fee(BaseNodeModel):
-    base_fee: int = Field(..., examples=[1000000], title="Base Fee")
-    variable_fee: int = Field(..., examples=[1000000], title="Variable Fee")
-    fee_rate: float = Field(..., examples=[0.0001], title="Fee Rate")
-    final_fee: int = Field(..., examples=[2000000], title="Final Fee")
-    fee_asset: str = Field(
-        ...,
-        examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
-        title="Fee Asset",
-    )
-    fee_asset_precision: int = Field(..., examples=[6], title="Fee Asset Precision")
+class Fee(BaseModel):
+    base_fee: Annotated[int, Field(examples=[1000000], title="Base Fee")]
+    variable_fee: Annotated[int, Field(examples=[1000000], title="Variable Fee")]
+    fee_rate: Annotated[float, Field(examples=[0.0001], title="Fee Rate")]
+    final_fee: Annotated[int, Field(examples=[2000000], title="Final Fee")]
+    fee_asset: Annotated[
+        str,
+        Field(
+            examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
+            title="Fee Asset",
+        ),
+    ]
+    fee_asset_precision: Annotated[int, Field(examples=[6], title="Fee Asset Precision")]
 
 
-class GetOrderRequest(BaseNodeModel):
-    order_id: str = Field(..., title="Order Id")
+class GetOrderRequest(BaseModel):
+    order_id: Annotated[str, Field(title="Order Id")]
 
 
-class Layer(Enum):
+class Layer(StrEnum):
     """
     Settlement layer combining protocol and network as a single string.
 
@@ -155,62 +163,70 @@ class Layer(Enum):
     SPARK_SPARK = "SPARK_SPARK"
 
 
-class Media(BaseNodeModel):
-    file_path: str = Field(..., examples=["/path/to/media"], title="File Path")
-    digest: str = Field(
-        ...,
-        examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"],
-        title="Digest",
-    )
-    mime: str = Field(..., examples=["text/plain"], title="Mime")
+class Media(BaseModel):
+    file_path: Annotated[str, Field(examples=["/path/to/media"], title="File Path")]
+    digest: Annotated[
+        str,
+        Field(
+            examples=["5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"],
+            title="Digest",
+        ),
+    ]
+    mime: Annotated[str, Field(examples=["text/plain"], title="Mime")]
 
 
-class NetworkInfoResponse(BaseNodeModel):
+class NetworkInfoResponse(BaseModel):
     network: BitcoinNetwork
-    height: int = Field(..., examples=[805434], title="Height")
+    height: Annotated[int, Field(examples=[805434], title="Height")]
 
 
-class OrderOptions(BaseNodeModel):
+class MinOnchainPaymentConfirmations(RootModel[int]):
+    root: Annotated[int, Field(ge=0, title="Min Onchain Payment Confirmations")]
+
+
+class MinOnchainPaymentSizeSat(RootModel[int]):
+    root: Annotated[int, Field(ge=0, title="Min Onchain Payment Size Sat")]
+
+
+class OrderOptions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    min_required_channel_confirmations: int = Field(
-        0, ge=0, title="Min Required Channel Confirmations"
+    min_required_channel_confirmations: Annotated[
+        int, Field(ge=0, title="Min Required Channel Confirmations")
+    ] = 0
+    min_funding_confirms_within_blocks: Annotated[
+        int, Field(ge=0, title="Min Funding Confirms Within Blocks")
+    ] = 0
+    min_onchain_payment_confirmations: Annotated[
+        MinOnchainPaymentConfirmations | None, Field(title="Min Onchain Payment Confirmations")
+    ] = None
+    supports_zero_channel_reserve: Annotated[bool, Field(title="Supports Zero Channel Reserve")] = (
+        True
     )
-    min_funding_confirms_within_blocks: int = Field(
-        0, ge=0, title="Min Funding Confirms Within Blocks"
+    min_onchain_payment_size_sat: Annotated[
+        MinOnchainPaymentSizeSat | None, Field(title="Min Onchain Payment Size Sat")
+    ] = None
+    max_channel_expiry_blocks: Annotated[int, Field(ge=1, title="Max Channel Expiry Blocks")] = (
+        20160
     )
-    min_onchain_payment_confirmations: int | None = Field(
-        None, ge=0, title="Min Onchain Payment Confirmations"
-    )
-    supports_zero_channel_reserve: bool = Field(
-        True, title="Supports Zero Channel Reserve"
-    )
-    min_onchain_payment_size_sat: int | None = Field(
-        None, ge=0, title="Min Onchain Payment Size Sat"
-    )
-    max_channel_expiry_blocks: int = Field(
-        20160, ge=1, title="Max Channel Expiry Blocks"
-    )
-    min_initial_client_balance_sat: int = Field(
-        0, ge=0, title="Min Initial Client Balance Sat"
-    )
-    max_initial_client_balance_sat: int = Field(
-        1000000, ge=0, title="Max Initial Client Balance Sat"
-    )
-    min_initial_lsp_balance_sat: int = Field(
-        0, ge=0, title="Min Initial Lsp Balance Sat"
-    )
-    max_initial_lsp_balance_sat: int = Field(
-        16777215, ge=0, title="Max Initial Lsp Balance Sat"
-    )
-    min_channel_balance_sat: int = Field(50000, ge=0, title="Min Channel Balance Sat")
-    max_channel_balance_sat: int = Field(
-        16777215, ge=0, title="Max Channel Balance Sat"
-    )
+    min_initial_client_balance_sat: Annotated[
+        int, Field(ge=0, title="Min Initial Client Balance Sat")
+    ] = 0
+    max_initial_client_balance_sat: Annotated[
+        int, Field(ge=0, title="Max Initial Client Balance Sat")
+    ] = 1000000
+    min_initial_lsp_balance_sat: Annotated[
+        int, Field(ge=0, title="Min Initial Lsp Balance Sat")
+    ] = 0
+    max_initial_lsp_balance_sat: Annotated[
+        int, Field(ge=0, title="Max Initial Lsp Balance Sat")
+    ] = 16777215
+    min_channel_balance_sat: Annotated[int, Field(ge=0, title="Min Channel Balance Sat")] = 50000
+    max_channel_balance_sat: Annotated[int, Field(ge=0, title="Max Channel Balance Sat")] = 16777215
 
 
-class OrderState(Enum):
+class OrderState(StrEnum):
     CREATED = "CREATED"
     CHANNEL_OPENING = "CHANNEL_OPENING"
     COMPLETED = "COMPLETED"
@@ -218,43 +234,39 @@ class OrderState(Enum):
     PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
 
 
-class OrderStatsResponse(BaseNodeModel):
-    status_counts: dict[str, int] = Field(
-        ..., description="Count of orders by status", title="Status Counts"
-    )
-    filled_orders_volume: int = Field(
-        ..., description="Total volume of filled orders", title="Filled Orders Volume"
-    )
-    filled_orders_count: int = Field(
-        ..., description="Total count of filled orders", title="Filled Orders Count"
-    )
+class OrderStatsResponse(BaseModel):
+    status_counts: Annotated[
+        dict[str, int], Field(description="Count of orders by status", title="Status Counts")
+    ]
+    filled_orders_volume: Annotated[
+        int, Field(description="Total volume of filled orders", title="Filled Orders Volume")
+    ]
+    filled_orders_count: Annotated[
+        int, Field(description="Total count of filled orders", title="Filled Orders Count")
+    ]
 
 
-class PaginationMeta(BaseNodeModel):
+class PaginationMeta(BaseModel):
     """
     Pagination metadata
     """
 
-    total: int = Field(
-        ..., description="Total number of items matching the filter", title="Total"
-    )
-    limit: int = Field(..., description="Number of items per page", title="Limit")
-    skip: int = Field(..., description="Number of items skipped", title="Skip")
-    current_page: int = Field(
-        ..., description="Current page number (1-indexed)", title="Current Page"
-    )
-    total_pages: int = Field(
-        ..., description="Total number of pages", title="Total Pages"
-    )
-    has_next: bool = Field(
-        ..., description="Whether there is a next page", title="Has Next"
-    )
-    has_previous: bool = Field(
-        ..., description="Whether there is a previous page", title="Has Previous"
-    )
+    total: Annotated[
+        int, Field(description="Total number of items matching the filter", title="Total")
+    ]
+    limit: Annotated[int, Field(description="Number of items per page", title="Limit")]
+    skip: Annotated[int, Field(description="Number of items skipped", title="Skip")]
+    current_page: Annotated[
+        int, Field(description="Current page number (1-indexed)", title="Current Page")
+    ]
+    total_pages: Annotated[int, Field(description="Total number of pages", title="Total Pages")]
+    has_next: Annotated[bool, Field(description="Whether there is a next page", title="Has Next")]
+    has_previous: Annotated[
+        bool, Field(description="Whether there is a previous page", title="Has Previous")
+    ]
 
 
-class PaymentState(Enum):
+class PaymentState(StrEnum):
     EXPECT_PAYMENT = "EXPECT_PAYMENT"
     HOLD = "HOLD"
     PAID = "PAID"
@@ -262,7 +274,7 @@ class PaymentState(Enum):
     TO_REFUND = "TO_REFUND"
 
 
-class PaymentStatus(Enum):
+class PaymentStatus(StrEnum):
     """
     Payment status for onchain payments with support for partial payments.
     """
@@ -273,58 +285,55 @@ class PaymentStatus(Enum):
     OVERPAID = "OVERPAID"
 
 
-class RateDecisionRequest(BaseNodeModel):
+class RateDecisionRequest(BaseModel):
     """
     Request for user to accept new rate or request refund
     """
 
-    order_id: str = Field(..., title="Order Id")
-    accept_new_rate: bool = Field(..., title="Accept New Rate")
+    order_id: Annotated[str, Field(title="Order Id")]
+    accept_new_rate: Annotated[bool, Field(title="Accept New Rate")]
 
 
-class RateDecisionResponse(BaseNodeModel):
+class RateDecisionResponse(BaseModel):
     """
     Response after user makes rate decision
     """
 
-    order_id: str = Field(..., title="Order Id")
-    decision_accepted: bool = Field(..., title="Decision Accepted")
-    message: str = Field(..., title="Message")
-    refund_txid: str | None = Field(None, title="Refund Txid")
+    order_id: Annotated[str, Field(title="Order Id")]
+    decision_accepted: Annotated[bool, Field(title="Decision Accepted")]
+    message: Annotated[str, Field(title="Message")]
+    refund_txid: Annotated[str | None, Field(title="Refund Txid")] = None
 
 
-class ReachabilityCell(BaseNodeModel):
+class ReachabilityCell(BaseModel):
     """
     Single cell in reachability matrix.
     """
 
-    from_asset: str = Field(..., description="Source asset ticker", title="From Asset")
-    to_asset: str = Field(..., description="Destination asset ticker", title="To Asset")
-    layers: list[str] = Field(
-        ...,
-        description="Available layer combinations (e.g., 'RGB_LN->BTC_SPARK')",
-        title="Layers",
-    )
-    min_hops: int = Field(
-        ..., description="Minimum number of hops required", title="Min Hops"
-    )
+    from_asset: Annotated[str, Field(description="Source asset ticker", title="From Asset")]
+    to_asset: Annotated[str, Field(description="Destination asset ticker", title="To Asset")]
+    layers: Annotated[
+        list[str],
+        Field(
+            description="Available layer combinations (e.g., 'RGB_LN->BTC_SPARK')", title="Layers"
+        ),
+    ]
+    min_hops: Annotated[int, Field(description="Minimum number of hops required", title="Min Hops")]
 
 
-class ReachabilityMatrixResponse(BaseNodeModel):
+class ReachabilityMatrixResponse(BaseModel):
     """
     Full reachability matrix response.
     """
 
-    matrix: list[ReachabilityCell] = Field(
-        ..., description="Reachability cells", title="Matrix"
-    )
-    assets: list[str] = Field(
-        ..., description="All assets in the matrix", title="Assets"
-    )
-    timestamp: int = Field(..., description="Response timestamp", title="Timestamp")
+    matrix: Annotated[
+        list[ReachabilityCell], Field(description="Reachability cells", title="Matrix")
+    ]
+    assets: Annotated[list[str], Field(description="All assets in the matrix", title="Assets")]
+    timestamp: Annotated[int, Field(description="Response timestamp", title="Timestamp")]
 
 
-class ReceiverAddressFormat(Enum):
+class ReceiverAddressFormat(StrEnum):
     """
     Supported receiver address and invoice formats.
 
@@ -346,17 +355,17 @@ class ReceiverAddressFormat(Enum):
     CASHU_TOKEN = "CASHU_TOKEN"
 
 
-class RetryDeliveryRequest(BaseNodeModel):
+class RetryDeliveryRequest(BaseModel):
     """
     Request model for /retry_delivery endpoint to trigger immediate keysend retry
     """
 
-    order_id: str = Field(
-        ..., description="Order ID to retry asset delivery for", title="Order Id"
-    )
+    order_id: Annotated[
+        str, Field(description="Order ID to retry asset delivery for", title="Order Id")
+    ]
 
 
-class RetryDeliveryStatus(Enum):
+class RetryDeliveryStatus(StrEnum):
     """
     Status codes for /retry_delivery endpoint responses
     """
@@ -367,54 +376,63 @@ class RetryDeliveryStatus(Enum):
     ERROR = "error"
 
 
-class RouteStep(BaseNodeModel):
+class IndicativePrice(RootModel[str]):
+    model_config = ConfigDict(
+        regex_engine="python-re",
+    )
+    root: Annotated[
+        str,
+        Field(
+            description="Indicative price from cached pair data",
+            pattern="^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            title="Indicative Price",
+        ),
+    ]
+
+
+class RouteStep(BaseModel):
     """
     Single step in a route (one swap within a trading pair).
     """
 
-    model_config = ConfigDict(
-        regex_engine="python-re",
-    )
-    from_asset: str = Field(..., description="Source asset ticker", title="From Asset")
-    from_layer: Layer = Field(..., description="Source layer")
-    to_asset: str = Field(..., description="Destination asset ticker", title="To Asset")
-    to_layer: Layer = Field(..., description="Destination layer")
-    pair_ticker: str = Field(
-        ..., description="Trading pair ticker (e.g., 'USDT/BTC')", title="Pair Ticker"
-    )
-    indicative_price: str | None = Field(
-        None,
-        description="Indicative price from cached pair data",
-        pattern="^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-        title="Indicative Price",
-    )
+    from_asset: Annotated[str, Field(description="Source asset ticker", title="From Asset")]
+    from_layer: Annotated[Layer, Field(description="Source layer")]
+    to_asset: Annotated[str, Field(description="Destination asset ticker", title="To Asset")]
+    to_layer: Annotated[Layer, Field(description="Destination layer")]
+    pair_ticker: Annotated[
+        str, Field(description="Trading pair ticker (e.g., 'USDT/BTC')", title="Pair Ticker")
+    ]
+    indicative_price: Annotated[
+        IndicativePrice | None,
+        Field(description="Indicative price from cached pair data", title="Indicative Price"),
+    ] = None
 
 
-class RoutesRequest(BaseNodeModel):
+class RoutesRequest(BaseModel):
     """
     Request for route discovery.
     """
 
-    from_asset: str = Field(
-        ..., description="Source asset ticker or ID", title="From Asset"
+    from_asset: Annotated[str, Field(description="Source asset ticker or ID", title="From Asset")]
+    from_layer: Annotated[Layer | None, Field(description="Filter by source layer (optional)")] = (
+        None
     )
-    from_layer: Layer | None = Field(
-        None, description="Filter by source layer (optional)"
-    )
-    to_asset: str | None = Field(
-        None,
-        description="Destination asset (if None, returns all reachable assets)",
-        title="To Asset",
-    )
-    to_layer: Layer | None = Field(
-        None, description="Filter by destination layer (optional)"
-    )
-    max_hops: int = Field(
-        2, description="Maximum number of hops (1-5)", ge=1, le=5, title="Max Hops"
-    )
+    to_asset: Annotated[
+        str | None,
+        Field(
+            description="Destination asset (if None, returns all reachable assets)",
+            title="To Asset",
+        ),
+    ] = None
+    to_layer: Annotated[
+        Layer | None, Field(description="Filter by destination layer (optional)")
+    ] = None
+    max_hops: Annotated[
+        int, Field(description="Maximum number of hops (1-5)", ge=1, le=5, title="Max Hops")
+    ] = 2
 
 
-class SwapLeg(BaseNodeModel):
+class SwapLeg(BaseModel):
     """
     Swap Leg: Complete asset specification for one side of a swap.
 
@@ -423,39 +441,47 @@ class SwapLeg(BaseNodeModel):
     specifies an asset on a particular network with a specific amount.
     """
 
-    asset_id: str = Field(
-        ...,
-        description="Unique identifier for the asset (e.g., 'BTC', RGB contract ID, etc.)",
-        title="Asset Id",
-    )
-    name: str = Field(
-        ..., description="Full name of the asset", examples=["Bitcoin"], title="Name"
-    )
-    ticker: str = Field(
-        ...,
-        description="Asset ticker symbol for display (e.g., 'BTC', 'USDT', 'EURX')",
-        examples=["BTC"],
-        title="Ticker",
-    )
-    layer: Layer = Field(..., description="Settlement layer (e.g., 'BTC_LN', 'RGB_L1')")
-    amount: int = Field(
-        ...,
-        description="Amount of the asset in smallest unit. Must be greater than or equal to zero.",
-        examples=[100000],
-        ge=0,
-        title="Amount",
-    )
-    precision: int = Field(
-        ...,
-        description="Number of decimal places for this asset (e.g., 8 for BTC, 6 or 8 for stablecoins)",
-        examples=[8],
-        ge=0,
-        le=18,
-        title="Precision",
-    )
+    asset_id: Annotated[
+        str,
+        Field(
+            description="Unique identifier for the asset (e.g., 'BTC', RGB contract ID, etc.)",
+            title="Asset Id",
+        ),
+    ]
+    name: Annotated[
+        str, Field(description="Full name of the asset", examples=["Bitcoin"], title="Name")
+    ]
+    ticker: Annotated[
+        str,
+        Field(
+            description="Asset ticker symbol for display (e.g., 'BTC', 'USDT', 'EURX')",
+            examples=["BTC"],
+            title="Ticker",
+        ),
+    ]
+    layer: Annotated[Layer, Field(description="Settlement layer (e.g., 'BTC_LN', 'RGB_L1')")]
+    amount: Annotated[
+        int,
+        Field(
+            description="Amount of the asset in smallest unit. Must be greater than or equal to zero.",
+            examples=[100000],
+            ge=0,
+            title="Amount",
+        ),
+    ]
+    precision: Annotated[
+        int,
+        Field(
+            description="Number of decimal places for this asset (e.g., 8 for BTC, 6 or 8 for stablecoins)",
+            examples=[8],
+            ge=0,
+            le=18,
+            title="Precision",
+        ),
+    ]
 
 
-class SwapLegInput(BaseNodeModel):
+class SwapLegInput(BaseModel):
     """
     Lightweight input model for specifying one leg of a swap request.
 
@@ -463,64 +489,68 @@ class SwapLegInput(BaseNodeModel):
     look up additional details (name, ticker, precision) from the asset registry.
     """
 
-    asset_id: str = Field(
-        ...,
-        description="Asset identifier (e.g., 'BTC', RGB contract ID)",
-        examples=["BTC"],
-        title="Asset Id",
-    )
-    layer: Layer = Field(
-        ...,
-        description="Settlement layer (e.g., 'BTC_LN', 'RGB_L1')",
-        examples=["BTC_LN"],
-    )
-    amount: int | None = Field(
-        None,
-        description="Amount in smallest unit (optional - one side must have amount)",
-        examples=[1000000],
-        title="Amount",
-    )
+    asset_id: Annotated[
+        str,
+        Field(
+            description="Asset identifier (e.g., 'BTC', RGB contract ID)",
+            examples=["BTC"],
+            title="Asset Id",
+        ),
+    ]
+    layer: Annotated[
+        Layer, Field(description="Settlement layer (e.g., 'BTC_LN', 'RGB_L1')", examples=["BTC_LN"])
+    ]
+    amount: Annotated[
+        int | None,
+        Field(
+            description="Amount in smallest unit (optional - one side must have amount)",
+            examples=[1000000],
+            title="Amount",
+        ),
+    ] = None
 
 
-class SwapNodeInfoResponse(BaseNodeModel):
-    pubkey: str | None = Field(
-        ...,
-        examples=["034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"],
-        title="Pubkey",
-    )
-    network: str | None = Field(..., examples=["Signet"], title="Network")
-    block_height: int | None = Field(..., examples=[805434], title="Block Height")
+class SwapNodeInfoResponse(BaseModel):
+    pubkey: Annotated[
+        str | None,
+        Field(
+            examples=["034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"],
+            title="Pubkey",
+        ),
+    ]
+    network: Annotated[str | None, Field(examples=["Signet"], title="Network")]
+    block_height: Annotated[int | None, Field(examples=[805434], title="Block Height")]
 
 
-class SwapOrderRateDecisionRequest(BaseNodeModel):
+class SwapOrderRateDecisionRequest(BaseModel):
     """
     Request for user to accept new rate or request refund for a swap order
     """
 
-    order_id: str = Field(..., description="Swap order ID", title="Order Id")
-    accept_new_rate: bool = Field(
-        ...,
-        description="True to accept new rate, False to request refund",
-        title="Accept New Rate",
-    )
+    order_id: Annotated[str, Field(description="Swap order ID", title="Order Id")]
+    accept_new_rate: Annotated[
+        bool,
+        Field(
+            description="True to accept new rate, False to request refund", title="Accept New Rate"
+        ),
+    ]
 
 
-class SwapOrderRateDecisionResponse(BaseNodeModel):
+class SwapOrderRateDecisionResponse(BaseModel):
     """
     Response after user makes rate decision for a swap order
     """
 
-    order_id: str = Field(..., title="Order Id")
-    decision_accepted: bool = Field(..., title="Decision Accepted")
-    message: str = Field(..., title="Message")
-    refund_txid: str | None = Field(
-        None,
-        description="Present if refund was requested and processed",
-        title="Refund Txid",
-    )
+    order_id: Annotated[str, Field(title="Order Id")]
+    decision_accepted: Annotated[bool, Field(title="Decision Accepted")]
+    message: Annotated[str, Field(title="Message")]
+    refund_txid: Annotated[
+        str | None,
+        Field(description="Present if refund was requested and processed", title="Refund Txid"),
+    ] = None
 
 
-class SwapOrderStatus(Enum):
+class SwapOrderStatus(StrEnum):
     OPEN = "OPEN"
     PENDING_PAYMENT = "PENDING_PAYMENT"
     PAID = "PAID"
@@ -532,38 +562,44 @@ class SwapOrderStatus(Enum):
     PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
 
 
-class SwapOrderStatusRequest(BaseNodeModel):
-    order_id: str = Field(..., title="Order Id")
+class SwapOrderStatusRequest(BaseModel):
+    order_id: Annotated[str, Field(title="Order Id")]
 
 
-class SwapRequest(BaseNodeModel):
-    rfq_id: str = Field(..., examples=["1234567890"], title="Rfq Id")
-    from_asset: str = Field(..., examples=["BTC"], title="From Asset")
-    from_amount: int = Field(..., examples=[1000000], title="From Amount")
-    to_asset: str = Field(
-        ...,
-        examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
-        title="To Asset",
-    )
-    to_amount: int = Field(..., examples=[1000000], title="To Amount")
+class SwapRequest(BaseModel):
+    rfq_id: Annotated[str, Field(examples=["1234567890"], title="Rfq Id")]
+    from_asset: Annotated[str, Field(examples=["BTC"], title="From Asset")]
+    from_amount: Annotated[int, Field(examples=[1000000], title="From Amount")]
+    to_asset: Annotated[
+        str,
+        Field(
+            examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
+            title="To Asset",
+        ),
+    ]
+    to_amount: Annotated[int, Field(examples=[1000000], title="To Amount")]
 
 
-class SwapResponse(BaseNodeModel):
-    swapstring: str = Field(
-        ...,
-        examples=[
-            "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
-        ],
-        title="Swapstring",
-    )
-    payment_hash: str = Field(
-        ...,
-        examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
-        title="Payment Hash",
-    )
+class SwapResponse(BaseModel):
+    swapstring: Annotated[
+        str,
+        Field(
+            examples=[
+                "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ],
+            title="Swapstring",
+        ),
+    ]
+    payment_hash: Annotated[
+        str,
+        Field(
+            examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
+            title="Payment Hash",
+        ),
+    ]
 
 
-class SwapRoute(BaseNodeModel):
+class SwapRoute(BaseModel):
     """
     Pre-computed valid swap route between two layers.
 
@@ -575,7 +611,7 @@ class SwapRoute(BaseNodeModel):
     to_layer: str
 
 
-class SwapStatus(Enum):
+class SwapStatus(StrEnum):
     WAITING = "Waiting"
     PENDING = "Pending"
     SUCCEEDED = "Succeeded"
@@ -583,44 +619,49 @@ class SwapStatus(Enum):
     FAILED = "Failed"
 
 
-class SwapStatusRequest(BaseNodeModel):
-    payment_hash: str = Field(
-        ...,
-        examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
-        title="Payment Hash",
-    )
+class SwapStatusRequest(BaseModel):
+    payment_hash: Annotated[
+        str,
+        Field(
+            examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"],
+            title="Payment Hash",
+        ),
+    ]
 
 
-class TradingLimits(BaseNodeModel):
+class TradingLimits(BaseModel):
     """
     Trading limits for a layer.
 
     Combines a Layer (protocol/network) with min/max amount limits for trading.
     """
 
-    layer: str = Field(..., description="Settlement layer (e.g., 'BTC_LN', 'RGB_LN')")
-    min_amount: int = Field(
-        ...,
-        description="Minimum amount for trading (in smallest unit)",
-        title="Min Amount",
+    layer: Annotated[str, Field(description="Settlement layer (e.g., 'BTC_LN', 'RGB_LN')")]
+    min_amount: Annotated[
+        int, Field(description="Minimum amount for trading (in smallest unit)", title="Min Amount")
+    ]
+    max_amount: Annotated[
+        int, Field(description="Maximum amount for trading (in smallest unit)", title="Max Amount")
+    ]
+    is_active: Annotated[
+        bool, Field(description="Whether this layer is active for trading", title="Is Active")
+    ] = True
+
+
+class Price(RootModel[str]):
+    model_config = ConfigDict(
+        regex_engine="python-re",
     )
-    max_amount: int = Field(
-        ...,
-        description="Maximum amount for trading (in smallest unit)",
-        title="Max Amount",
-    )
-    is_active: bool = Field(
-        True, description="Whether this layer is active for trading", title="Is Active"
-    )
+    root: Annotated[str, Field(pattern="^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$", title="Price")]
 
 
-class ValidationError(BaseNodeModel):
-    loc: list[str | int] = Field(..., title="Location")
-    msg: str = Field(..., title="Message")
-    type: str = Field(..., title="Error Type")
+class ValidationError(BaseModel):
+    loc: Annotated[list[str | int], Field(title="Location")]
+    msg: Annotated[str, Field(title="Message")]
+    type: Annotated[str, Field(title="Error Type")]
 
 
-class Asset(BaseNodeModel):
+class Asset(BaseModel):
     """
     Extended asset definition for the trading system.
 
@@ -637,116 +678,115 @@ class Asset(BaseNodeModel):
     - LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK
     """
 
-    ticker: str = Field(
-        ..., description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker"
+    ticker: Annotated[
+        str, Field(description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker")
+    ]
+    name: Annotated[str, Field(description="Full name", title="Name")]
+    precision: Annotated[
+        int,
+        Field(
+            description="Decimal places (e.g., 8 for BTC, 6 for USDT)",
+            ge=0,
+            le=18,
+            title="Precision",
+        ),
+    ]
+    protocol_ids: Annotated[
+        dict[str, str] | None,
+        Field(
+            description="Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})",
+            title="Protocol Ids",
+        ),
+    ] = None
+    media: Annotated[Media | None, Field(description="Logo/media")] = None
+    issued_supply: Annotated[
+        int | None, Field(description="Total issued supply", title="Issued Supply")
+    ] = None
+    timestamp: Annotated[int | None, Field(description="Creation timestamp", title="Timestamp")] = (
+        None
     )
-    name: str = Field(..., description="Full name", title="Name")
-    precision: int = Field(
-        ...,
-        description="Decimal places (e.g., 8 for BTC, 6 for USDT)",
-        ge=0,
-        le=18,
-        title="Precision",
+    endpoints: Annotated[
+        list[TradingLimits] | None,
+        Field(description="Layer endpoints with trading limits", title="Endpoints"),
+    ] = None
+    is_active: Annotated[bool, Field(description="Active for trading", title="Is Active")] = True
+    added_at: Annotated[int | None, Field(description="When added to wallet", title="Added At")] = (
+        None
     )
-    protocol_ids: dict[str, str] | None = Field(
-        None,
-        description="Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})",
-        title="Protocol Ids",
-    )
-    media: Media | None = Field(None, description="Logo/media")
-    issued_supply: int | None = Field(
-        None, description="Total issued supply", title="Issued Supply"
-    )
-    timestamp: int | None = Field(
-        None, description="Creation timestamp", title="Timestamp"
-    )
-    endpoints: list[TradingLimits] | None = Field(
-        None, description="Layer endpoints with trading limits", title="Endpoints"
-    )
-    is_active: bool = Field(True, description="Active for trading", title="Is Active")
-    added_at: int | None = Field(
-        None, description="When added to wallet", title="Added At"
-    )
-    supported_layers: list[str] | None = Field(
-        None,
-        description="Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')",
-        title="Supported Layers",
-    )
+    supported_layers: Annotated[
+        list[str] | None,
+        Field(
+            description="Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')",
+            title="Supported Layers",
+        ),
+    ] = None
 
 
-class AssetsResponse(BaseNodeModel):
+class AssetsResponse(BaseModel):
     """
     Response model for asset listing endpoints with pagination support.
     """
 
-    assets: list[Asset] = Field(..., title="Assets")
-    network: str = Field("regtest", title="Network")
-    total: int = Field(..., title="Total")
-    limit: int = Field(..., title="Limit")
-    offset: int = Field(..., title="Offset")
-    timestamp: int | None = Field(None, title="Timestamp")
+    assets: Annotated[list[Asset], Field(title="Assets")]
+    network: Annotated[str, Field(title="Network")] = "regtest"
+    total: Annotated[int, Field(title="Total")]
+    limit: Annotated[int, Field(title="Limit")]
+    offset: Annotated[int, Field(title="Offset")]
+    timestamp: Annotated[int | None, Field(title="Timestamp")] = None
 
 
-class GetInfoResponseModel(BaseNodeModel):
-    lsp_connection_url: str = Field(..., title="Lsp Connection Url")
+class GetInfoResponseModel(BaseModel):
+    lsp_connection_url: Annotated[str, Field(title="Lsp Connection Url")]
     options: OrderOptions
-    assets: list[AssetsOptions] = Field(..., title="Assets")
+    assets: Annotated[list[AssetsOptions], Field(title="Assets")]
 
 
-class HTTPValidationError(BaseNodeModel):
-    detail: list[ValidationError] | None = Field(None, title="Detail")
+class HTTPValidationError(BaseModel):
+    detail: Annotated[list[ValidationError] | None, Field(title="Detail")] = None
 
 
-class MultiHopRoute(BaseNodeModel):
+class MultiHopRoute(BaseModel):
     """
     Complete route with one or more steps.
     """
 
-    steps: list[RouteStep] = Field(
-        ..., description="Ordered list of route steps", title="Steps"
-    )
-    total_hops: int = Field(
-        ..., description="Number of hops in the route", title="Total Hops"
-    )
+    steps: Annotated[
+        list[RouteStep], Field(description="Ordered list of route steps", title="Steps")
+    ]
+    total_hops: Annotated[int, Field(description="Number of hops in the route", title="Total Hops")]
 
 
-class OrderHistorySummary(BaseNodeModel):
+class OrderHistorySummary(BaseModel):
     """
     Simplified order information for history listing
     """
 
-    id: str = Field(..., description="Order ID", title="Id")
-    status: SwapOrderStatus = Field(..., description="Order status")
-    from_asset: str = Field(
-        ..., description="Asset being swapped from", title="From Asset"
-    )
-    from_amount: int = Field(
-        ..., description="Amount of from_asset", title="From Amount"
-    )
-    to_asset: str = Field(..., description="Asset being swapped to", title="To Asset")
-    to_amount: int = Field(..., description="Amount of to_asset", title="To Amount")
-    created_at: int = Field(
-        ..., description="Order creation timestamp", title="Created At"
-    )
-    filled_at: int | None = Field(
-        None, description="Order completion timestamp", title="Filled At"
-    )
+    id: Annotated[str, Field(description="Order ID", title="Id")]
+    status: Annotated[SwapOrderStatus, Field(description="Order status")]
+    from_asset: Annotated[str, Field(description="Asset being swapped from", title="From Asset")]
+    from_amount: Annotated[int, Field(description="Amount of from_asset", title="From Amount")]
+    to_asset: Annotated[str, Field(description="Asset being swapped to", title="To Asset")]
+    to_amount: Annotated[int, Field(description="Amount of to_asset", title="To Amount")]
+    created_at: Annotated[int, Field(description="Order creation timestamp", title="Created At")]
+    filled_at: Annotated[
+        int | None, Field(description="Order completion timestamp", title="Filled At")
+    ] = None
 
 
-class PairQuoteRequest(BaseNodeModel):
+class PairQuoteRequest(BaseModel):
     """
     Request for a quote on a trading pair using SwapLegInput.
     """
 
-    from_asset: SwapLegInput = Field(
-        ..., description="Source leg specification (asset_id, layer, amount)"
-    )
-    to_asset: SwapLegInput = Field(
-        ..., description="Destination leg specification (asset_id, layer, amount)"
-    )
+    from_asset: Annotated[
+        SwapLegInput, Field(description="Source leg specification (asset_id, layer, amount)")
+    ]
+    to_asset: Annotated[
+        SwapLegInput, Field(description="Destination leg specification (asset_id, layer, amount)")
+    ]
 
 
-class PairQuoteResponse(BaseNodeModel):
+class PairQuoteResponse(BaseModel):
     """
     Response containing a quote for a trading pair.
 
@@ -754,62 +794,61 @@ class PairQuoteResponse(BaseNodeModel):
     including ticker, name, precision, layer, and amount.
     """
 
-    rfq_id: str = Field(..., examples=["1234567890"], title="Rfq Id")
-    from_asset: SwapLeg = Field(
-        ..., description="Complete source leg specification with amount and details"
-    )
-    to_asset: SwapLeg = Field(
-        ...,
-        description="Complete destination leg specification with amount and details",
-    )
-    price: int = Field(
-        ...,
-        description="Price of 1 whole unit of from_asset (e.g., 1 BTC) in terms of the smallest unit of to_asset (e.g., USDT with precision 6). Matches PriceData.price for the given rfq_id.",
-        examples=[50000123456],
-        title="Price",
-    )
+    rfq_id: Annotated[str, Field(examples=["1234567890"], title="Rfq Id")]
+    from_asset: Annotated[
+        SwapLeg, Field(description="Complete source leg specification with amount and details")
+    ]
+    to_asset: Annotated[
+        SwapLeg, Field(description="Complete destination leg specification with amount and details")
+    ]
+    price: Annotated[
+        int,
+        Field(
+            description="Price of 1 whole unit of from_asset (e.g., 1 BTC) in terms of the smallest unit of to_asset (e.g., USDT with precision 6). Matches PriceData.price for the given rfq_id.",
+            examples=[50000123456],
+            title="Price",
+        ),
+    ]
     fee: Fee
-    timestamp: int = Field(
-        ...,
-        description="Quote creation timestamp (seconds since epoch)",
-        title="Timestamp",
-    )
-    expires_at: int = Field(
-        ...,
-        description="Quote expiry timestamp (seconds since epoch)",
-        title="Expires At",
-    )
+    timestamp: Annotated[
+        int, Field(description="Quote creation timestamp (seconds since epoch)", title="Timestamp")
+    ]
+    expires_at: Annotated[
+        int, Field(description="Quote expiry timestamp (seconds since epoch)", title="Expires At")
+    ]
 
 
-class PaymentBolt11(BaseNodeModel):
+class PaymentBolt11(BaseModel):
     state: PaymentState
-    expires_at: AwareDatetime = Field(..., title="Expires At")
-    fee_total_sat: int = Field(..., title="Fee Total Sat")
-    order_total_sat: int = Field(..., title="Order Total Sat")
-    invoice: str = Field(..., title="Invoice")
+    expires_at: Annotated[AwareDatetime, Field(title="Expires At")]
+    fee_total_sat: Annotated[int, Field(title="Fee Total Sat")]
+    order_total_sat: Annotated[int, Field(title="Order Total Sat")]
+    invoice: Annotated[str, Field(title="Invoice")]
 
 
-class PaymentOnchain(BaseNodeModel):
+class PaymentOnchain(BaseModel):
     state: PaymentState
-    expires_at: AwareDatetime = Field(..., title="Expires At")
-    fee_total_sat: int = Field(..., title="Fee Total Sat")
-    order_total_sat: int = Field(..., title="Order Total Sat")
-    address: str = Field(..., title="Address")
-    min_fee_for_0conf: int = Field(..., title="Min Fee For 0Conf")
-    min_onchain_payment_confirmations: int = Field(
-        ..., title="Min Onchain Payment Confirmations"
-    )
-    refund_onchain_address: str | None = Field(None, title="Refund Onchain Address")
-    payment_status: str | None = Field(None, title="Payment Status")
-    payment_difference: int | None = Field(
-        None,
-        description="Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment",
-        title="Payment Difference",
-    )
-    last_payment_check: int | None = Field(None, title="Last Payment Check")
+    expires_at: Annotated[AwareDatetime, Field(title="Expires At")]
+    fee_total_sat: Annotated[int, Field(title="Fee Total Sat")]
+    order_total_sat: Annotated[int, Field(title="Order Total Sat")]
+    address: Annotated[str, Field(title="Address")]
+    min_fee_for_0conf: Annotated[int, Field(title="Min Fee For 0Conf")]
+    min_onchain_payment_confirmations: Annotated[
+        int, Field(title="Min Onchain Payment Confirmations")
+    ]
+    refund_onchain_address: Annotated[str | None, Field(title="Refund Onchain Address")] = None
+    payment_status: Annotated[str | None, Field(title="Payment Status")] = None
+    payment_difference: Annotated[
+        int | None,
+        Field(
+            description="Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment",
+            title="Payment Difference",
+        ),
+    ] = None
+    last_payment_check: Annotated[int | None, Field(title="Last Payment Check")] = None
 
 
-class ReceiverAddress(BaseNodeModel):
+class ReceiverAddress(BaseModel):
     """
     Receiver address or invoice with its format.
 
@@ -817,148 +856,161 @@ class ReceiverAddress(BaseNodeModel):
     metadata about what format it uses.
     """
 
-    address: str = Field(
-        ..., description="The actual address, invoice, or token string", title="Address"
-    )
-    format: ReceiverAddressFormat = Field(
-        ..., description="Format of the receiver address"
-    )
+    address: Annotated[
+        str, Field(description="The actual address, invoice, or token string", title="Address")
+    ]
+    format: Annotated[ReceiverAddressFormat, Field(description="Format of the receiver address")]
 
 
-class RetryDeliveryResponse(BaseNodeModel):
+class RetryDeliveryResponse(BaseModel):
     """
     Response model for /retry_delivery endpoint
     """
 
-    status: RetryDeliveryStatus = Field(..., description="Status of the request")
-    message: str = Field(
-        ..., description="Human-readable message about the result", title="Message"
-    )
+    status: Annotated[RetryDeliveryStatus, Field(description="Status of the request")]
+    message: Annotated[
+        str, Field(description="Human-readable message about the result", title="Message")
+    ]
 
 
-class RoutesResponse(BaseNodeModel):
+class RoutesResponse(BaseModel):
     """
     Response with discovered routes.
     """
 
-    routes: list[MultiHopRoute] = Field(
-        ..., description="List of discovered routes", title="Routes"
-    )
-    timestamp: int = Field(..., description="Response timestamp", title="Timestamp")
+    routes: Annotated[
+        list[MultiHopRoute], Field(description="List of discovered routes", title="Routes")
+    ]
+    timestamp: Annotated[int, Field(description="Response timestamp", title="Timestamp")]
 
 
-class Swap(BaseNodeModel):
-    qty_from: int = Field(..., examples=[30], title="Qty From")
-    qty_to: int = Field(..., examples=[10], title="Qty To")
-    from_asset: str | None = Field(
-        None,
-        examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
-        title="From Asset",
-    )
-    to_asset: str | None = Field(
-        None,
-        examples=["rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"],
-        title="To Asset",
-    )
-    payment_hash: str = Field(
-        ...,
-        examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
-        title="Payment Hash",
-    )
+class Swap(BaseModel):
+    qty_from: Annotated[int, Field(examples=[30], title="Qty From")]
+    qty_to: Annotated[int, Field(examples=[10], title="Qty To")]
+    from_asset: Annotated[
+        str | None,
+        Field(
+            examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
+            title="From Asset",
+        ),
+    ] = None
+    to_asset: Annotated[
+        str | None,
+        Field(
+            examples=["rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"],
+            title="To Asset",
+        ),
+    ] = None
+    payment_hash: Annotated[
+        str,
+        Field(
+            examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"],
+            title="Payment Hash",
+        ),
+    ]
     status: SwapStatus
-    requested_at: int = Field(..., examples=[1691160765], title="Requested At")
-    initiated_at: int | None = Field(None, examples=[1691168512], title="Initiated At")
-    expires_at: int = Field(..., examples=[1691172703], title="Expires At")
-    completed_at: int | None = Field(None, examples=[1691171075], title="Completed At")
+    requested_at: Annotated[int, Field(examples=[1691160765], title="Requested At")]
+    initiated_at: Annotated[int | None, Field(examples=[1691168512], title="Initiated At")] = None
+    expires_at: Annotated[int, Field(examples=[1691172703], title="Expires At")]
+    completed_at: Annotated[int | None, Field(examples=[1691171075], title="Completed At")] = None
 
 
-class SwapOrder(BaseNodeModel):
-    id: str = Field(..., description="Order identifier", title="Id")
-    rfq_id: str = Field(
-        ..., description="Quote identifier used to create the order", title="Rfq Id"
-    )
-    maker_pubkey: str | None = Field(
-        None, description="Maker node public key", title="Maker Pubkey"
-    )
-    from_asset: SwapLeg = Field(
-        ...,
-        description="Complete specification for input: asset, ticker, network, protocol, and amount",
-    )
-    to_asset: SwapLeg = Field(
-        ...,
-        description="Complete specification for output: asset, ticker, network, protocol, and amount",
-    )
-    price: int = Field(..., title="Price")
-    deposit_address: ReceiverAddress | None = Field(
-        None, description="Address/Invoice for the user to deposit funds into"
-    )
-    payout_address: ReceiverAddress | None = Field(
-        None,
-        description="Destination address/invoice for receiving the to_asset payout",
-    )
-    refund_address: str | None = Field(
-        None, description="Onchain refund address if provided", title="Refund Address"
-    )
-    status: SwapOrderStatus = Field("OPEN", description="Current order status")
-    created_at: int | None = Field(
-        None,
-        description="Creation timestamp (seconds since epoch)",
-        examples=[1770736947],
-        title="Created At",
-    )
-    expires_at: int | None = Field(
-        None, description="Expiry timestamp (seconds since epoch)", title="Expires At"
-    )
-    filled_at: int | None = Field(
-        None, description="Timestamp when the order was filled", title="Filled At"
-    )
-    refund_txid: str | None = Field(
-        None, description="Transaction ID of any refund sent", title="Refund Txid"
-    )
-    requires_manual_refund: bool | None = Field(
-        False,
-        description="Whether the order requires manual refund handling",
-        examples=[False],
-        title="Requires Manual Refund",
-    )
-    payment_status: PaymentStatus | None = Field(
-        None, description="Status of onchain payment verification"
-    )
-    payment_difference: int | None = Field(
-        None,
-        description="Payment difference in satoshis (positive for overpayment, negative for underpayment)",
-        title="Payment Difference",
-    )
-    last_payment_check: int | None = Field(
-        None,
-        description="Timestamp of the last payment verification",
-        title="Last Payment Check",
-    )
-    email: str | None = Field(
-        None,
-        description="Notification email address",
-        examples=["swap@example.com"],
-        title="Email",
-    )
-    failure_reason: str | None = Field(
-        None,
-        description="Reason the order failed, if applicable",
-        title="Failure Reason",
-    )
-    fee: Fee = Field(..., description="Fee information from the quote")
+class SwapOrder(BaseModel):
+    id: Annotated[str, Field(description="Order identifier", title="Id")]
+    rfq_id: Annotated[
+        str, Field(description="Quote identifier used to create the order", title="Rfq Id")
+    ]
+    maker_pubkey: Annotated[
+        str | None, Field(description="Maker node public key", title="Maker Pubkey")
+    ] = None
+    from_asset: Annotated[
+        SwapLeg,
+        Field(
+            description="Complete specification for input: asset, ticker, network, protocol, and amount"
+        ),
+    ]
+    to_asset: Annotated[
+        SwapLeg,
+        Field(
+            description="Complete specification for output: asset, ticker, network, protocol, and amount"
+        ),
+    ]
+    price: Annotated[int, Field(title="Price")]
+    deposit_address: Annotated[
+        ReceiverAddress | None,
+        Field(description="Address/Invoice for the user to deposit funds into"),
+    ] = None
+    payout_address: Annotated[
+        ReceiverAddress | None,
+        Field(description="Destination address/invoice for receiving the to_asset payout"),
+    ] = None
+    refund_address: Annotated[
+        str | None, Field(description="Onchain refund address if provided", title="Refund Address")
+    ] = None
+    status: Annotated[SwapOrderStatus, Field(description="Current order status")] = "OPEN"
+    created_at: Annotated[
+        int | None,
+        Field(
+            description="Creation timestamp (seconds since epoch)",
+            examples=[1772663937],
+            title="Created At",
+        ),
+    ] = None
+    expires_at: Annotated[
+        int | None, Field(description="Expiry timestamp (seconds since epoch)", title="Expires At")
+    ] = None
+    filled_at: Annotated[
+        int | None, Field(description="Timestamp when the order was filled", title="Filled At")
+    ] = None
+    refund_txid: Annotated[
+        str | None, Field(description="Transaction ID of any refund sent", title="Refund Txid")
+    ] = None
+    requires_manual_refund: Annotated[
+        bool | None,
+        Field(
+            description="Whether the order requires manual refund handling",
+            examples=[False],
+            title="Requires Manual Refund",
+        ),
+    ] = False
+    payment_status: Annotated[
+        PaymentStatus | None, Field(description="Status of onchain payment verification")
+    ] = None
+    payment_difference: Annotated[
+        int | None,
+        Field(
+            description="Payment difference in satoshis (positive for overpayment, negative for underpayment)",
+            title="Payment Difference",
+        ),
+    ] = None
+    last_payment_check: Annotated[
+        int | None,
+        Field(description="Timestamp of the last payment verification", title="Last Payment Check"),
+    ] = None
+    email: Annotated[
+        str | None,
+        Field(
+            description="Notification email address", examples=["swap@example.com"], title="Email"
+        ),
+    ] = None
+    failure_reason: Annotated[
+        str | None,
+        Field(description="Reason the order failed, if applicable", title="Failure Reason"),
+    ] = None
+    fee: Annotated[Fee, Field(description="Fee information from the quote")]
 
 
-class SwapOrderStatusResponse(BaseNodeModel):
-    order_id: str = Field(..., title="Order Id")
+class SwapOrderStatusResponse(BaseModel):
+    order_id: Annotated[str, Field(title="Order Id")]
     status: SwapOrderStatus
     order: SwapOrder
 
 
-class SwapStatusResponse(BaseNodeModel):
+class SwapStatusResponse(BaseModel):
     swap: Swap | None = None
 
 
-class TradableAsset(BaseNodeModel):
+class TradableAsset(BaseModel):
     """
     Asset with layer context(s) for trading operations.
 
@@ -967,35 +1019,40 @@ class TradableAsset(BaseNodeModel):
     - Multi-layer use cases (trading pairs): use endpoints list
     """
 
-    ticker: str = Field(
-        ..., description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker"
+    ticker: Annotated[
+        str, Field(description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker")
+    ]
+    name: Annotated[str, Field(description="Full name", title="Name")]
+    precision: Annotated[
+        int,
+        Field(
+            description="Decimal places (e.g., 8 for BTC, 6 for USDT)",
+            ge=0,
+            le=18,
+            title="Precision",
+        ),
+    ]
+    protocol_ids: Annotated[
+        dict[str, str] | None,
+        Field(
+            description="Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})",
+            title="Protocol Ids",
+        ),
+    ] = None
+    media: Annotated[Media | None, Field(description="Logo/media")] = None
+    issued_supply: Annotated[
+        int | None, Field(description="Total issued supply", title="Issued Supply")
+    ] = None
+    timestamp: Annotated[int | None, Field(description="Creation timestamp", title="Timestamp")] = (
+        None
     )
-    name: str = Field(..., description="Full name", title="Name")
-    precision: int = Field(
-        ...,
-        description="Decimal places (e.g., 8 for BTC, 6 for USDT)",
-        ge=0,
-        le=18,
-        title="Precision",
-    )
-    protocol_ids: dict[str, str] | None = Field(
-        None,
-        description="Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})",
-        title="Protocol Ids",
-    )
-    media: Media | None = Field(None, description="Logo/media")
-    issued_supply: int | None = Field(
-        None, description="Total issued supply", title="Issued Supply"
-    )
-    timestamp: int | None = Field(
-        None, description="Creation timestamp", title="Timestamp"
-    )
-    endpoints: list[TradingLimits] | None = Field(
-        None, description="Layer endpoints with trading limits", title="Endpoints"
-    )
+    endpoints: Annotated[
+        list[TradingLimits] | None,
+        Field(description="Layer endpoints with trading limits", title="Endpoints"),
+    ] = None
 
 
-class TradingPair(BaseNodeModel):
+class TradingPair(BaseModel):
     """
     Complete trading pair with full asset details, routes, and price.
 
@@ -1006,101 +1063,95 @@ class TradingPair(BaseNodeModel):
     Contains all pre-computed information needed to display and validate swaps.
     """
 
-    model_config = ConfigDict(
-        regex_engine="python-re",
-    )
-    id: str | None = Field(None, title="Id")
+    id: Annotated[str | None, Field(title="Id")] = None
     base: TradableAsset
     quote: TradableAsset
-    price: str | None = Field(
-        None, pattern="^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$", title="Price"
-    )
-    routes: list[SwapRoute] | None = Field(None, title="Routes")
-    is_active: bool = Field(True, title="Is Active")
+    price: Annotated[Price | None, Field(title="Price")] = None
+    routes: Annotated[list[SwapRoute] | None, Field(title="Routes")] = None
+    is_active: Annotated[bool, Field(title="Is Active")] = True
 
 
-class TradingPairsResponse(BaseNodeModel):
+class TradingPairsResponse(BaseModel):
     """
     Response containing list of trading pairs with pagination support.
     """
 
-    pairs: list[TradingPair] = Field(..., title="Pairs")
-    total: int = Field(..., title="Total")
-    limit: int = Field(..., title="Limit")
-    offset: int = Field(..., title="Offset")
-    timestamp: int = Field(..., title="Timestamp")
+    pairs: Annotated[list[TradingPair], Field(title="Pairs")]
+    total: Annotated[int, Field(title="Total")]
+    limit: Annotated[int, Field(title="Limit")]
+    offset: Annotated[int, Field(title="Offset")]
+    timestamp: Annotated[int, Field(title="Timestamp")]
 
 
-class CreateSwapOrderRequest(BaseNodeModel):
-    rfq_id: str = Field(
-        ..., description="RFQ ID cannot be empty", min_length=1, title="Rfq Id"
-    )
-    from_asset: SwapLeg = Field(
-        ...,
-        description="Complete input specification: asset, ticker, network, protocol, and amount",
-    )
-    to_asset: SwapLeg = Field(
-        ...,
-        description="Complete output specification: asset, ticker, network, protocol, and amount",
-    )
-    receiver_address: ReceiverAddress = Field(
-        ..., description="Destination address/invoice for receiving the to_asset payout"
-    )
-    min_onchain_conf: int | None = Field(1, title="Min Onchain Conf")
-    refund_address: str | None = Field(None, title="Refund Address")
-    email: EmailStr | None = Field(
-        None, description="Optional email for notifications", title="Email"
-    )
+class CreateSwapOrderRequest(BaseModel):
+    rfq_id: Annotated[
+        str, Field(description="RFQ ID cannot be empty", min_length=1, title="Rfq Id")
+    ]
+    from_asset: Annotated[
+        SwapLeg,
+        Field(
+            description="Complete input specification: asset, ticker, network, protocol, and amount"
+        ),
+    ]
+    to_asset: Annotated[
+        SwapLeg,
+        Field(
+            description="Complete output specification: asset, ticker, network, protocol, and amount"
+        ),
+    ]
+    receiver_address: Annotated[
+        ReceiverAddress,
+        Field(description="Destination address/invoice for receiving the to_asset payout"),
+    ]
+    min_onchain_conf: Annotated[int | None, Field(title="Min Onchain Conf")] = 1
+    refund_address: Annotated[str | None, Field(title="Refund Address")] = None
+    email: Annotated[
+        EmailStr | None, Field(description="Optional email for notifications", title="Email")
+    ] = None
 
 
-class CreateSwapOrderResponse(BaseNodeModel):
-    id: str = Field(..., title="Id")
-    rfq_id: str = Field(..., title="Rfq Id")
+class CreateSwapOrderResponse(BaseModel):
+    id: Annotated[str, Field(title="Id")]
+    rfq_id: Annotated[str, Field(title="Rfq Id")]
     deposit_address: ReceiverAddress | None = None
     status: SwapOrderStatus
 
 
-class OrderHistoryResponse(BaseNodeModel):
-    data: list[OrderHistorySummary] = Field(
-        ..., description="List of orders", title="Data"
-    )
+class OrderHistoryResponse(BaseModel):
+    data: Annotated[list[OrderHistorySummary], Field(description="List of orders", title="Data")]
     pagination: PaginationMeta
 
 
-class PaymentDetails(BaseNodeModel):
+class PaymentDetails(BaseModel):
     bolt11: PaymentBolt11
     onchain: PaymentOnchain
 
 
-class ChannelOrderResponse(BaseNodeModel):
-    order_id: str = Field(..., title="Order Id")
-    client_pubkey: str = Field(..., title="Client Pubkey")
-    lsp_balance_sat: int = Field(..., title="Lsp Balance Sat")
-    client_balance_sat: int = Field(..., title="Client Balance Sat")
-    required_channel_confirmations: int = Field(
-        ..., title="Required Channel Confirmations"
-    )
-    funding_confirms_within_blocks: int = Field(
-        ..., title="Funding Confirms Within Blocks"
-    )
-    channel_expiry_blocks: int = Field(..., title="Channel Expiry Blocks")
-    token: str | None = Field("", title="Token")
-    created_at: AwareDatetime | None = Field(None, title="Created At")
-    announce_channel: bool = Field(..., title="Announce Channel")
+class ChannelOrderResponse(BaseModel):
+    order_id: Annotated[str, Field(title="Order Id")]
+    client_pubkey: Annotated[str, Field(title="Client Pubkey")]
+    lsp_balance_sat: Annotated[int, Field(title="Lsp Balance Sat")]
+    client_balance_sat: Annotated[int, Field(title="Client Balance Sat")]
+    required_channel_confirmations: Annotated[int, Field(title="Required Channel Confirmations")]
+    funding_confirms_within_blocks: Annotated[int, Field(title="Funding Confirms Within Blocks")]
+    channel_expiry_blocks: Annotated[int, Field(title="Channel Expiry Blocks")]
+    token: Annotated[str | None, Field(title="Token")] = ""
+    created_at: Annotated[AwareDatetime | None, Field(title="Created At")] = None
+    announce_channel: Annotated[bool, Field(title="Announce Channel")]
     order_state: OrderState
     payment: PaymentDetails
     channel: ChannelDetails | None = None
-    asset_id: str | None = Field(None, title="Asset Id")
-    lsp_asset_amount: int | None = Field(None, title="Lsp Asset Amount")
-    client_asset_amount: int | None = Field(None, title="Client Asset Amount")
-    rfq_id: str | None = Field(None, title="Rfq Id")
-    asset_price_sat: int | None = Field(None, title="Asset Price Sat")
+    asset_id: Annotated[str | None, Field(title="Asset Id")] = None
+    lsp_asset_amount: Annotated[int | None, Field(title="Lsp Asset Amount")] = None
+    client_asset_amount: Annotated[int | None, Field(title="Client Asset Amount")] = None
+    rfq_id: Annotated[str | None, Field(title="Rfq Id")] = None
+    asset_price_sat: Annotated[int | None, Field(title="Asset Price Sat")] = None
     asset_delivery_status: AssetDeliveryStatus | None = None
-    asset_delivery_payment_hash: str | None = Field(
-        None, title="Asset Delivery Payment Hash"
-    )
-    asset_delivery_completed_at: AwareDatetime | None = Field(
-        None, title="Asset Delivery Completed At"
-    )
-    asset_delivery_error: str | None = Field(None, title="Asset Delivery Error")
-    failure_reason: str | None = Field(None, title="Failure Reason")
+    asset_delivery_payment_hash: Annotated[
+        str | None, Field(title="Asset Delivery Payment Hash")
+    ] = None
+    asset_delivery_completed_at: Annotated[
+        AwareDatetime | None, Field(title="Asset Delivery Completed At")
+    ] = None
+    asset_delivery_error: Annotated[str | None, Field(title="Asset Delivery Error")] = None
+    failure_reason: Annotated[str | None, Field(title="Failure Reason")] = None

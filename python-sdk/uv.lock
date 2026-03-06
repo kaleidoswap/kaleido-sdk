@@ -242,6 +242,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/2b/d9/fd646ea4ae48e374817b2750f5e678a5bf6e10d8924f09cf4cce86a81607/datamodel_code_generator-0.54.0-py3-none-any.whl", hash = "sha256:3156df7a7e8fa5a7c9a6d50836e5ba5abe0532f6b71eee6d73a0c8e1fb5b7e47", size = 261838, upload-time = "2026-02-14T16:19:03.298Z" },
 ]
 
+[package.optional-dependencies]
+ruff = [
+    { name = "ruff" },
+]
+
 [[package]]
 name = "dnspython"
 version = "2.8.0"
@@ -376,7 +381,7 @@ wheels = [
 
 [[package]]
 name = "kaleidoswap-sdk"
-version = "0.5.3"
+version = "0.5.4"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
@@ -386,7 +391,7 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
-    { name = "datamodel-code-generator" },
+    { name = "datamodel-code-generator", extra = ["ruff"] },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -396,7 +401,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datamodel-code-generator", marker = "extra == 'dev'", specifier = ">=0.54.0" },
+    { name = "datamodel-code-generator", extras = ["ruff"], marker = "extra == 'dev'", specifier = ">=0.54.0" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0" },
     { name = "pydantic", extras = ["email"], specifier = ">=2.0" },

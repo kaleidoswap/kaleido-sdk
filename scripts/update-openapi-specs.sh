@@ -85,27 +85,12 @@ download_spec "$RGB_NODE_URL" "$SPECS_DIR/rgb-lightning-node.yaml" "RGB Lightnin
 # Download Kaleidoswap Maker spec
 download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
 
-# Patch Maker API for compatibility using Python
-echo "🔧 Patching Maker API spec for compatibility..."
-python3 "$SCRIPT_DIR/sanitize_maker.py" "$SPECS_DIR/kaleidoswap.json"
+# Rust crate sync (not actively maintained)
+# echo ""
+# echo "📋 Syncing specs to crates directory..."
+# cp "$SPECS_DIR/kaleidoswap.json" "$CRATES_SPECS_DIR/maker.json"
+# echo "   ✅ Synced: $CRATES_SPECS_DIR/maker.json"
+# cp "$SPECS_DIR/rgb-lightning-node.yaml" "$CRATES_SPECS_DIR/rln.yaml"
+# echo "   ✅ Synced: $CRATES_SPECS_DIR/rln.yaml"
 
-echo ""
-echo "🔧 Patching RLN API spec for compatibility..."
-# Use Python script (with PyYAML via uv) to safely remove examples
-if command -v uv &> /dev/null; then
-    uv run --with PyYAML python3 "$SCRIPT_DIR/sanitize_rln.py" "$SPECS_DIR/rgb-lightning-node.yaml"
-else
-    echo "⚠️  uv not found. Trying python3 assuming PyYAML is installed..."
-    python3 "$SCRIPT_DIR/sanitize_rln.py" "$SPECS_DIR/rgb-lightning-node.yaml" || echo "❌ Failed to sanitize RLN spec (PyYAML missing?)."
-fi
-
-# Sync specs to crates directory for backward compatibility
-echo ""
-echo "📋 Syncing specs to crates directory..."
-cp "$SPECS_DIR/kaleidoswap.json" "$CRATES_SPECS_DIR/maker.json"
-echo "   ✅ Synced: $CRATES_SPECS_DIR/maker.json"
-
-cp "$SPECS_DIR/rgb-lightning-node.yaml" "$CRATES_SPECS_DIR/rln.yaml"
-echo "   ✅ Synced: $CRATES_SPECS_DIR/rln.yaml"
-
-echo "✅ Update complete. Run 'make generate-models' (or cargo build) to compile."
+echo "✅ Update complete. Run 'make generate-models' to regenerate."
