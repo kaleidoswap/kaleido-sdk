@@ -179,7 +179,7 @@ class TestMakerClientIntegration:
             to_asset=to_asset_dict,
             receiver_address=ReceiverAddress(
                 address=receiver_address_str,
-                format=ReceiverAddressFormat.btc_address,
+                format=ReceiverAddressFormat.BTC_ADDRESS,
             ),
             min_onchain_conf=1,
             refund_address=receiver_address_str,
