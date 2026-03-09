@@ -128,7 +128,7 @@ export class MakerClient {
     async streamQuotes(
         from_asset: string,
         to_asset: string,
-        from_amount: number | null,
+        from_amount: bigint | null,
         from_layer: Layer | null,
         to_layer: Layer | null,
         onUpdate: (quote: QuoteResponse) => void,
@@ -269,7 +269,7 @@ export class MakerClient {
     async streamQuotesByTicker(
         fromTicker: string,
         toTicker: string,
-        amount: number,
+        amount: bigint,
         onUpdate: (quote: QuoteResponse) => void,
         options?: {
             preferredFromLayer?: Layer;
@@ -338,7 +338,7 @@ export class MakerClient {
     async streamQuotesForAllRoutes(
         fromTicker: string,
         toTicker: string,
-        amount: number,
+        amount: bigint,
         onUpdate: (route: string, quote: QuoteResponse) => void,
         pollInterval: number = 2000,
     ): Promise<Map<string, () => void>> {
@@ -574,11 +574,11 @@ export class MakerClient {
         throw new Error(`Swap completion timeout after ${timeout}ms for order ${orderId}`);
     }
 
-    toRaw(amount: number, precision: number): number {
+    toRaw(amount: number, precision: number): bigint {
         return toRawAmount(amount, precision);
     }
 
-    toDisplay(rawAmount: number, precision: number): number {
+    toDisplay(rawAmount: bigint, precision: number): number {
         return toDisplayAmount(rawAmount, precision);
     }
 }

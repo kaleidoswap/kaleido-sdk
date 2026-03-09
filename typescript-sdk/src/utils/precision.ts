@@ -12,23 +12,23 @@ export interface MappedAsset {
     asset_id: string;
     ticker: string;
     precision: number;
-    min_order_size: number;
-    max_order_size: number;
+    min_order_size: bigint;
+    max_order_size: bigint;
 }
 
 export interface ValidationResult {
     valid: boolean;
     error?: string;
-    rawAmount: number;
-    minRawAmount: number;
-    maxRawAmount: number;
+    rawAmount: bigint;
+    minRawAmount: bigint;
+    maxRawAmount: bigint;
 }
 
 export interface OrderSizeLimits {
     minDisplayAmount: number;
     maxDisplayAmount: number;
-    minRawAmount: number;
-    maxRawAmount: number;
+    minRawAmount: bigint;
+    maxRawAmount: bigint;
     precision: number;
 }
 
@@ -53,28 +53,28 @@ export class PrecisionHandler {
      * @param assetId - Asset ID
      * @returns Raw amount in atomic units (e.g., 150000000 sats)
      */
-    toRawAmount(displayAmount: number, assetId: string): number {
+    toRawAmount(displayAmount: number, assetId: string): bigint {
         const assetPrecision = this.assetPrecisionMap.get(assetId);
         if (assetPrecision === undefined) {
             throw new Error(`Asset ${assetId} not found in precision handler`);
         }
 
-        return Math.floor(displayAmount * Math.pow(10, assetPrecision));
+        return BigInt(Math.floor(displayAmount * Math.pow(10, assetPrecision)));
     }
 
     /**
      * Convert raw/atomic units to display amount
-     * @param rawAmount - Amount in atomic units (e.g., 150000000 sats)
+     * @param rawAmount - Amount in atomic units (e.g., 150000000n sats)
      * @param assetId - Asset ID
      * @returns Human-readable amount (e.g., 1.5 BTC)
      */
-    toDisplayAmount(rawAmount: number, assetId: string): number {
+    toDisplayAmount(rawAmount: bigint, assetId: string): number {
         const assetPrecision = this.assetPrecisionMap.get(assetId);
         if (assetPrecision === undefined) {
             throw new Error(`Asset ${assetId} not found in precision handler`);
         }
 
-        return rawAmount / Math.pow(10, assetPrecision);
+        return Number(rawAmount) / Math.pow(10, assetPrecision);
     }
 
     /**
@@ -140,6 +140,7 @@ export class PrecisionHandler {
         };
     }
 
+
     /**
      * Get the order size limits for an asset
      * @param asset - Asset to get limits for
@@ -171,16 +172,16 @@ export function createPrecisionHandler(assets: MappedAsset[]): PrecisionHandler 
  * @param precision - Number of decimal places
  * @returns Raw amount in atomic units
  */
-export function toRawAmount(displayAmount: number, precision: number): number {
-    return Math.floor(displayAmount * Math.pow(10, precision));
+export function toRawAmount(displayAmount: number, precision: number): bigint {
+    return BigInt(Math.floor(displayAmount * Math.pow(10, precision)));
 }
 
 /**
  * Standalone function to convert raw amount to display amount
- * @param rawAmount - Amount in atomic units
+ * @param rawAmount - Amount in atomic units (bigint)
  * @param precision - Number of decimal places
  * @returns Human-readable amount
  */
-export function toDisplayAmount(rawAmount: number, precision: number): number {
-    return rawAmount / Math.pow(10, precision);
+export function toDisplayAmount(rawAmount: bigint, precision: number): number {
+    return Number(rawAmount) / Math.pow(10, precision);
 }

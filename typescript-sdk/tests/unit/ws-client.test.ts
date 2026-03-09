@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WSClient } from '../../src/ws-client.js';
-import type { QuoteResponse } from '../../src/ws-types.js';
+import type { QuoteResponse } from '../../src/types/ws.js';
 
 // Skip: WebSocket global is not available in Node.js test environment
 describe.skip('WSClient', () => {
@@ -54,22 +54,33 @@ describe.skip('WSClient', () => {
             return new Promise<void>((resolve) => {
                 const mockQuote: QuoteResponse = {
                     action: 'quote_response',
-                    from_asset: 'btc',
-                    to_asset: 'usdt',
-                    from_amount: 10000000,
-                    to_amount: 45000000000,
-                    price: 45000,
+                    from_asset: {
+                        asset_id: 'BTC',
+                        name: 'Bitcoin',
+                        ticker: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 10000000n,
+                        precision: 8,
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        name: 'Tether USD',
+                        ticker: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: 45000000000n,
+                        precision: 6,
+                    },
+                    price: 45000n,
                     rfq_id: 'rfq_123',
-                    price_precision: 2,
                     timestamp: Date.now(),
                     expires_at: Date.now() + 30000,
                     fee: {
                         fee_asset: 'usdt',
                         fee_precision: 6,
-                        base_fee: 1000000,
-                        variable_fee: 500000,
+                        base_fee: 1000000n,
+                        variable_fee: 500000n,
                         fee_rate: 0.001,
-                        final_fee: 1500000,
+                        final_fee: 1500000n,
                     },
                 };
 

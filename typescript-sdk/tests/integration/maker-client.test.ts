@@ -82,7 +82,7 @@ describe('MakerClient Integration', () => {
             const sats = client.maker.toRaw(1.5, btcPrecision);
             const btc = client.maker.toDisplay(sats, btcPrecision);
 
-            expect(sats).toBe(150000000);
+            expect(sats).toBe(150000000n);
             expect(btc).toBe(1.5);
         });
     });

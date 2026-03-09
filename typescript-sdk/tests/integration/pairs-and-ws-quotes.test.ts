@@ -7,8 +7,8 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { KaleidoClient } from '../../src/index.js';
-import type { QuoteResponse } from '../../src/ws-types.js';
-import type { Layer } from '../../src/types.js';
+import type { QuoteResponse } from '../../src/types/ws.js';
+import type { Layer } from '../../src/types/index.js';
 
 const TEST_API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 const TEST_WS_URL =
@@ -130,7 +130,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
             toAsset: string;
             fromLayer: Layer;
             toLayer: Layer;
-            amount: number;
+            amount: bigint;
         }> = [
             {
                 name: 'BTC_LN to RGB_LN',
@@ -138,7 +138,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 toAsset: 'usdt',
                 fromLayer: 'BTC_LN',
                 toLayer: 'RGB_LN',
-                amount: 10000000, // 0.1 BTC
+                amount: 10000000n, // 0.1 BTC
             },
             {
                 name: 'BTC_L1 to RGB_L1',
@@ -146,7 +146,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 toAsset: 'usdt',
                 fromLayer: 'BTC_L1',
                 toLayer: 'RGB_L1',
-                amount: 10000000, // 0.1 BTC
+                amount: 10000000n, // 0.1 BTC
             },
             {
                 name: 'RGB_LN to BTC_LN',
@@ -154,7 +154,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 toAsset: 'btc',
                 fromLayer: 'RGB_LN',
                 toLayer: 'BTC_LN',
-                amount: 10000000000, // 10000 USDT (assuming 6 decimals)
+                amount: 10000000000n, // 10000 USDT (assuming 6 decimals)
             },
             {
                 name: 'RGB_L1 to BTC_L1',
@@ -162,7 +162,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 toAsset: 'btc',
                 fromLayer: 'RGB_L1',
                 toLayer: 'BTC_L1',
-                amount: 10000000000, // 10000 USDT (assuming 6 decimals)
+                amount: 10000000000n, // 10000 USDT (assuming 6 decimals)
             },
             {
                 name: 'BTC_L1 to BTC_LN (submarine swap)',
@@ -170,7 +170,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 toAsset: 'btc',
                 fromLayer: 'BTC_L1',
                 toLayer: 'BTC_LN',
-                amount: 10000000, // 0.1 BTC
+                amount: 10000000n, // 0.1 BTC
             },
             {
                 name: 'RGB_L1 to RGB_LN (submarine swap)',
@@ -178,7 +178,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 toAsset: 'usdt',
                 fromLayer: 'RGB_L1',
                 toLayer: 'RGB_LN',
-                amount: 10000000000, // 10000 USDT
+                amount: 10000000000n, // 10000 USDT
             },
         ];
 
@@ -196,8 +196,10 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                         toLayer,
                         (quote) => {
                             console.log(`\n📊 Received quote for ${name}:`);
-                            console.log(`   From: ${quote.from_amount} ${quote.from_asset}`);
-                            console.log(`   To: ${quote.to_amount} ${quote.to_asset}`);
+                            console.log(
+                                `   From: ${quote.from_asset.amount} ${quote.from_asset.ticker}`,
+                            );
+                            console.log(`   To: ${quote.to_asset.amount} ${quote.to_asset.ticker}`);
                             console.log(`   Price: ${quote.price}`);
                             console.log(`   Fee: ${quote.fee.final_fee} ${quote.fee.fee_asset}`);
                             console.log(`   RFQ ID: ${quote.rfq_id}`);
@@ -217,9 +219,9 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                     expect(quote.action).toBe('quote_response');
                     expect(quote.from_asset).toBeDefined();
                     expect(quote.to_asset).toBeDefined();
-                    expect(quote.from_amount).toBeGreaterThan(0);
-                    expect(quote.to_amount).toBeGreaterThan(0);
-                    expect(quote.price).toBeGreaterThan(0);
+                    expect(quote.from_asset.amount).toBeGreaterThan(0n);
+                    expect(quote.to_asset.amount).toBeGreaterThan(0n);
+                    expect(quote.price).toBeGreaterThan(0n);
                     expect(quote.rfq_id).toBeDefined();
                     expect(quote.timestamp).toBeDefined();
                     expect(quote.expires_at).toBeGreaterThan(quote.timestamp);
@@ -228,7 +230,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                     // Verify fee structure
                     expect(quote.fee.fee_asset).toBeDefined();
                     expect(quote.fee.fee_precision).toBeGreaterThanOrEqual(0);
-                    expect(quote.fee.final_fee).toBeGreaterThanOrEqual(0);
+                    expect(quote.fee.final_fee).toBeGreaterThanOrEqual(0n);
 
                     unsubscribe();
                 } catch (error) {
@@ -248,13 +250,13 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribe1 = await client.maker.streamQuotes(
                     'btc',
                     'usdt',
-                    10000000,
+                    10000000n,
                     'BTC_LN',
                     'RGB_LN',
                     (quote) => {
                         console.log('\n📊 Stream 1 Quote:', {
-                            from: `${quote.from_amount} ${quote.from_asset}`,
-                            to: `${quote.to_amount} ${quote.to_asset}`,
+                            from: `${quote.from_asset.amount} ${quote.from_asset.ticker}`,
+                            to: `${quote.to_asset.amount} ${quote.to_asset.ticker}`,
                             price: quote.price,
                             fee: quote.fee.final_fee,
                         });
@@ -265,13 +267,13 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribe2 = await client.maker.streamQuotes(
                     'usdt',
                     'btc',
-                    10000000000,
+                    10000000000n,
                     'RGB_LN',
                     'BTC_LN',
                     (quote) => {
                         console.log('\n📊 Stream 2 Quote:', {
-                            from: `${quote.from_amount} ${quote.from_asset}`,
-                            to: `${quote.to_amount} ${quote.to_asset}`,
+                            from: `${quote.from_asset.amount} ${quote.from_asset.ticker}`,
+                            to: `${quote.to_asset.amount} ${quote.to_asset.ticker}`,
                             price: quote.price,
                             fee: quote.fee.final_fee,
                         });
@@ -306,14 +308,14 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribe = await client.maker.streamQuotes(
                     'btc',
                     'usdt',
-                    10000000,
+                    10000000n,
                     'BTC_LN',
                     'RGB_LN',
                     (quote) => {
                         console.log('📊 Quote received (testing unsubscribe):', {
                             count: quotes.length + 1,
-                            from: `${quote.from_amount} ${quote.from_asset}`,
-                            to: `${quote.to_amount} ${quote.to_asset}`,
+                            from: `${quote.from_asset.amount} ${quote.from_asset.ticker}`,
+                            to: `${quote.to_asset.amount} ${quote.to_asset.ticker}`,
                         });
                         quotes.push(quote);
                     },
@@ -346,7 +348,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 freshClient.maker.streamQuotes(
                     'btc',
                     'usdt',
-                    10000000,
+                    10000000n,
                     'BTC_LN',
                     'RGB_LN',
                     () => {},
@@ -384,7 +386,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribe = await client.maker.streamQuotes(
                     pairWithRoutes.base.ticker.toLowerCase(),
                     pairWithRoutes.quote.ticker.toLowerCase(),
-                    10000000, // Test amount
+                    10000000n, // Test amount
                     route.from_layer as Layer,
                     route.to_layer as Layer,
                     (quote) => {
@@ -392,8 +394,8 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                             `\n📊 Quote for ${pairWithRoutes.base.ticker}/${pairWithRoutes.quote.ticker}:`,
                             {
                                 route: `${route.from_layer} → ${route.to_layer}`,
-                                from: `${quote.from_amount} ${quote.from_asset}`,
-                                to: `${quote.to_amount} ${quote.to_asset}`,
+                                from: `${quote.from_asset.amount} ${quote.from_asset.ticker}`,
+                                to: `${quote.to_asset.amount} ${quote.to_asset.ticker}`,
                                 price: quote.price,
                             },
                         );
@@ -484,7 +486,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribe = await client.maker.streamQuotesByTicker(
                     'BTC',
                     'USDT',
-                    10000000,
+                    10000000n,
                     (quote) => {
                         console.log('📊 Quote received via streamQuotesByTicker');
                         quotes.push(quote);
@@ -501,7 +503,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const quote = quotes[0];
                 expect(quote.from_asset).toBeDefined();
                 expect(quote.to_asset).toBeDefined();
-                expect(quote.price).toBeGreaterThan(0);
+                expect(quote.price).toBeGreaterThan(0n);
 
                 unsubscribe();
             } catch (error) {
@@ -517,7 +519,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribe = await client.maker.streamQuotesByTicker(
                     'BTC',
                     'USDT',
-                    10000000,
+                    10000000n,
                     (quote) => quotes.push(quote),
                     {
                         preferredFromLayer: 'BTC_LN',
@@ -541,7 +543,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
             client.maker.enableWebSocket(TEST_WS_URL);
 
             await expect(
-                client.maker.streamQuotesByTicker('NONEXISTENT', 'PAIR', 10000000, () => {}),
+                client.maker.streamQuotesByTicker('NONEXISTENT', 'PAIR', 10000000n, () => {}),
             ).rejects.toThrow('No routes found');
         });
 
@@ -554,7 +556,7 @@ describe.skip('Trading Pairs and WebSocket Quotes Integration', () => {
                 const unsubscribers = await client.maker.streamQuotesForAllRoutes(
                     'BTC',
                     'USDT',
-                    10000000,
+                    10000000n,
                     (route, quote) => {
                         if (!quotesByRoute.has(route)) {
                             quotesByRoute.set(route, []);

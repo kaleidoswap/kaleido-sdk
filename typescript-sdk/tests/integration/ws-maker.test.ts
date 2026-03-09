@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { KaleidoClient } from '../../src/index.js';
-import type { QuoteResponse } from '../../src/ws-types.js';
+import type { QuoteResponse } from '../../src/types/ws.js';
 
 const TEST_API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 const TEST_WS_URL =
@@ -47,7 +47,7 @@ describe.skip('WebSocket Integration', () => {
                     const unsubscribe = await client.maker.streamQuotes(
                         'btc',
                         'usdt',
-                        10000000, // 0.1 BTC
+                        10000000n, // 0.1 BTC
                         'BTC_LN',
                         'RGB_LN',
                         (quote) => quotes.push(quote),
@@ -74,7 +74,7 @@ describe.skip('WebSocket Integration', () => {
                 const unsubscribe = await client.maker.streamQuotes(
                     'btc',
                     'usdt',
-                    10000000,
+                    10000000n,
                     'BTC_LN',
                     'RGB_LN',
                     () => {},
@@ -95,7 +95,7 @@ describe.skip('WebSocket Integration', () => {
                 freshClient.maker.streamQuotes(
                     'btc',
                     'usdt',
-                    10000000,
+                    10000000n,
                     'BTC_LN',
                     'RGB_LN',
                     () => {},

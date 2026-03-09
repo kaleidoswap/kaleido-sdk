@@ -52,7 +52,7 @@
         "README.md"
     ],
     "scripts": {
-        "generate:types": "bash ../scripts/generate_typescript_types.sh",
+        "generate:types": "node scripts/generate_typescript_types.mjs",
         "prebuild": "npm run generate:types",
         "build": "npm run build:ts",
         "build:ts": "tsc",
