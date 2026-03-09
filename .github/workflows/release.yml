@@ -1,0 +1,218 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  # ── Download latest OpenAPI specs ───────────────────────────────────────────
+  update-specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download OpenAPI specs
+        run: |
+          chmod +x scripts/update-openapi-specs.sh
+          ./scripts/update-openapi-specs.sh
+      - name: Upload specs
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-specs
+          path: specs/
+          retention-days: 7
+
+  # ── Generate SDK models from updated specs ───────────────────────────────────
+  generate-sdk-models:
+    runs-on: ubuntu-latest
+    needs: update-specs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download updated specs
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-specs
+          path: specs/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install generation dependencies
+        run: |
+          npm install -g pnpm openapi-typescript
+          pip install 'datamodel-code-generator[ruff]'
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Sync Python SDK
+        run: cd python-sdk && uv sync --frozen --all-extras --dev
+      - name: Generate TypeScript types
+        run: bash scripts/generate_typescript_types.sh
+      - name: Generate Python SDK models
+        run: bash scripts/generate_python_sdk_models.sh
+      - name: Upload generated models
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-sdk-models
+          path: |
+            typescript-sdk/src/generated/
+            python-sdk/kaleidoswap_sdk/_generated/
+          retention-days: 7
+
+  # ── TypeScript SDK ───────────────────────────────────────────────────────────
+  test-typescript-sdk:
+    runs-on: ubuntu-latest
+    needs: generate-sdk-models
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download generated models
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-sdk-models
+      - name: Test TypeScript SDK
+        run: |
+          npm install -g pnpm
+          cd typescript-sdk
+          pnpm install
+          pnpm test
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: typescript-test-results
+          path: typescript-sdk/test-results.xml
+
+  build-typescript-sdk:
+    runs-on: ubuntu-latest
+    needs: [generate-sdk-models, test-typescript-sdk]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download generated models
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-sdk-models
+      - name: Build TypeScript SDK
+        run: |
+          npm install -g pnpm
+          cd typescript-sdk
+          pnpm install
+          pnpm run build
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-sdk-dist
+          path: typescript-sdk/dist/
+          retention-days: 7
+
+  # ── Python SDK ───────────────────────────────────────────────────────────────
+  test-python-sdk:
+    runs-on: ubuntu-latest
+    needs: generate-sdk-models
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Download generated models
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-sdk-models
+      - name: Test Python SDK
+        run: |
+          cd python-sdk
+          pip install -e ".[dev]"
+          pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-test-results
+          path: python-sdk/test-results.xml
+
+  build-python-sdk:
+    runs-on: ubuntu-latest
+    needs: [generate-sdk-models, test-python-sdk]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Download generated models
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-sdk-models
+      - name: Build Python SDK
+        run: |
+          cd python-sdk
+          pip install build
+          python -m build
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-dist
+          path: python-sdk/dist/
+          retention-days: 7
+
+  # ── Deploy (manual approval via environment protection rules) ────────────────
+  deploy-pypi:
+    runs-on: ubuntu-latest
+    needs: build-python-sdk
+    environment:
+      name: pypi-sdk
+      url: https://pypi.org/project/kaleidoswap-sdk/
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: python-sdk-dist
+          path: python-sdk/dist/
+      - name: Publish to PyPI
+        run: |
+          pip install twine
+          twine upload --skip-existing -u __token__ -p ${{ secrets.PYPI_TOKEN }} python-sdk/dist/*
+
+  deploy-npm:
+    runs-on: ubuntu-latest
+    needs: build-typescript-sdk
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/kaleidoswap-sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: typescript-sdk-dist
+          path: typescript-sdk/dist/
+      - name: Publish to npm
+        run: |
+          npm install -g pnpm
+          cd typescript-sdk
+          pnpm install
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Detected version: $VERSION"
+          if [[ "$VERSION" =~ - ]]; then
+            TAG="beta"
+          else
+            TAG="latest"
+          fi
+          echo "Publishing with tag: $TAG"
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          pnpm publish --tag $TAG --access public --no-git-checks
