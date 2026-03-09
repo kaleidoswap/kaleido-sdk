@@ -24,48 +24,62 @@ type ResponseSuccess<T extends keyof operations> = operations[T] extends {
       : never;
 
 // Market API Types
-export type MarketListAssetsResponse = ResponseSuccess<'list_assets'>;
-export type ListPairsResponse = ResponseSuccess<'get_pairs'>;
-export type GetQuoteRequest = RequestBody<'get_quote'>;
-export type GetQuoteResponse = ResponseSuccess<'get_quote'>;
-export type GetPairRoutesRequest = RequestBody<'get_pair_routes'>;
-export type GetPairRoutesResponse = ResponseSuccess<'get_pair_routes'>;
-export type DiscoverRoutesRequest = RequestBody<'discover_routes'>;
-export type DiscoverRoutesResponse = ResponseSuccess<'discover_routes'>;
-export type GetRouteMatrixResponse = ResponseSuccess<'get_route_matrix'>;
+export type MarketListAssetsResponse = ResponseSuccess<'list_assets_api_v1_market_assets_get'>;
+export type ListPairsResponse = ResponseSuccess<'get_pairs_api_v1_market_pairs_get'>;
+export type GetQuoteRequest = RequestBody<'get_quote_api_v1_market_quote_post'>;
+export type GetQuoteResponse = ResponseSuccess<'get_quote_api_v1_market_quote_post'>;
+export type GetPairRoutesRequest = RequestBody<'get_pair_routes_api_v1_market_pairs_routes_post'>;
+export type GetPairRoutesResponse =
+    ResponseSuccess<'get_pair_routes_api_v1_market_pairs_routes_post'>;
+export type DiscoverRoutesRequest = RequestBody<'discover_routes_api_v1_market_routes_post'>;
+export type DiscoverRoutesResponse = ResponseSuccess<'discover_routes_api_v1_market_routes_post'>;
+export type GetRouteMatrixResponse =
+    ResponseSuccess<'get_route_matrix_api_v1_market_routes_matrix_get'>;
 
 // Swap Order API Types
-export type CreateSwapOrderRequest = RequestBody<'create_swap_order'>;
-export type CreateSwapOrderResponse = ResponseSuccess<'create_swap_order'>;
-export type GetSwapOrderStatusRequest = RequestBody<'get_swap_order_status'>;
-export type GetSwapOrderStatusResponse = ResponseSuccess<'get_swap_order_status'>;
-export type GetOrderHistoryResponse = ResponseSuccess<'get_order_history'>;
-export type GetOrderStatsResponse = ResponseSuccess<'get_order_stats'>;
-export type SwapOrderRateDecisionRequest = RequestBody<'handle_swap_order_rate_decision'>;
-export type SwapOrderRateDecisionResponse = ResponseSuccess<'handle_swap_order_rate_decision'>;
+export type CreateSwapOrderRequest = RequestBody<'create_swap_order_api_v1_swaps_orders_post'>;
+export type CreateSwapOrderResponse = ResponseSuccess<'create_swap_order_api_v1_swaps_orders_post'>;
+export type GetSwapOrderStatusRequest =
+    RequestBody<'get_swap_order_status_api_v1_swaps_orders_status_post'>;
+export type GetSwapOrderStatusResponse =
+    ResponseSuccess<'get_swap_order_status_api_v1_swaps_orders_status_post'>;
+export type GetOrderHistoryResponse =
+    ResponseSuccess<'get_order_history_api_v1_swaps_orders_history_get'>;
+export type GetOrderStatsResponse =
+    ResponseSuccess<'get_order_stats_api_v1_swaps_orders_analytics_get'>;
+export type SwapOrderRateDecisionRequest =
+    RequestBody<'handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post'>;
+export type SwapOrderRateDecisionResponse =
+    ResponseSuccess<'handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post'>;
 
 // Atomic Swap API Types
-export type InitiateSwapRequest = RequestBody<'initiate_swap'>;
-export type InitiateSwapResponse = ResponseSuccess<'initiate_swap'>;
-export type ConfirmSwapRequest = RequestBody<'confirm_swap'>;
-export type ConfirmSwapResponse = ResponseSuccess<'confirm_swap'>;
-export type GetSwapStatusRequest = RequestBody<'get_swap_status'>;
-export type GetSwapStatusResponse = ResponseSuccess<'get_swap_status'>;
-export type GetNodeInfoResponse = ResponseSuccess<'get_node_info'>;
+export type InitiateSwapRequest = RequestBody<'initiate_swap_api_v1_swaps_init_post'>;
+export type InitiateSwapResponse = ResponseSuccess<'initiate_swap_api_v1_swaps_init_post'>;
+export type ConfirmSwapRequest = RequestBody<'confirm_swap_api_v1_swaps_execute_post'>;
+export type ConfirmSwapResponse = ResponseSuccess<'confirm_swap_api_v1_swaps_execute_post'>;
+export type GetSwapStatusRequest = RequestBody<'get_swap_status_api_v1_swaps_atomic_status_post'>;
+export type GetSwapStatusResponse =
+    ResponseSuccess<'get_swap_status_api_v1_swaps_atomic_status_post'>;
+export type GetNodeInfoResponse = ResponseSuccess<'get_node_info_api_v1_swaps_nodeinfo_get'>;
 
 // LSPS1 API Types
-export type GetLspInfoResponse = ResponseSuccess<'get_info'>;
-export type GetLspNetworkInfoResponse = ResponseSuccess<'get_network_info'>;
-export type CreateLspOrderRequest = RequestBody<'create_order'>;
-export type CreateLspOrderResponse = ResponseSuccess<'create_order'>;
-export type GetLspOrderRequest = RequestBody<'get_order'>;
-export type GetLspOrderResponse = ResponseSuccess<'get_order'>;
-export type EstimateLspFeesRequest = RequestBody<'estimate_fees'>;
-export type EstimateLspFeesResponse = ResponseSuccess<'estimate_fees'>;
-export type LspRateDecisionRequest = RequestBody<'handle_rate_decision'>;
-export type LspRateDecisionResponse = ResponseSuccess<'handle_rate_decision'>;
-export type RetryDeliveryRequest = RequestBody<'retry_delivery'>;
-export type RetryDeliveryResponse = ResponseSuccess<'retry_delivery'>;
+export type GetLspInfoResponse = ResponseSuccess<'get_info_api_v1_lsps1_get_info_get'>;
+export type GetLspNetworkInfoResponse =
+    ResponseSuccess<'get_network_info_api_v1_lsps1_network_info_get'>;
+export type CreateLspOrderRequest = RequestBody<'create_order_api_v1_lsps1_create_order_post'>;
+export type CreateLspOrderResponse = ResponseSuccess<'create_order_api_v1_lsps1_create_order_post'>;
+export type GetLspOrderRequest = RequestBody<'get_order_api_v1_lsps1_get_order_post'>;
+export type GetLspOrderResponse = ResponseSuccess<'get_order_api_v1_lsps1_get_order_post'>;
+export type EstimateLspFeesRequest = RequestBody<'estimate_fees_api_v1_lsps1_estimate_fees_post'>;
+export type EstimateLspFeesResponse =
+    ResponseSuccess<'estimate_fees_api_v1_lsps1_estimate_fees_post'>;
+export type LspRateDecisionRequest =
+    RequestBody<'handle_rate_decision_api_v1_lsps1_rate_decision_post'>;
+export type LspRateDecisionResponse =
+    ResponseSuccess<'handle_rate_decision_api_v1_lsps1_rate_decision_post'>;
+export type RetryDeliveryRequest = RequestBody<'retry_delivery_api_v1_lsps1_retry_delivery_post'>;
+export type RetryDeliveryResponse =
+    ResponseSuccess<'retry_delivery_api_v1_lsps1_retry_delivery_post'>;
 
 // Re-export commonly used schema types
 // We don't export 'components' to avoid collision, but allow access via ApiComponents

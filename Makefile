@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-ts-types update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
+.PHONY: help build test clean format lint check check-python check-typescript check-format-python check-lint-python check-format-typescript check-lint-typescript generate-models generate-python-sdk-models generate-ts-types update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -31,6 +31,9 @@ help:
 	@echo "Code Quality:"
 	@echo "  format             - Format all code"
 	@echo "  lint               - Lint all code"
+	@echo "  check              - Check all SDKs (format, lint, typecheck)"
+	@echo "  check-python       - Check Python SDK (format, lint, typecheck)"
+	@echo "  check-typescript   - Check TypeScript SDK (format, lint, typecheck)"
 	@echo ""
 	@echo "Pre-commit (lint, typecheck, format check, test):"
 	@echo "  pre-commit              - Run all checks for both SDKs"
@@ -219,9 +222,24 @@ typecheck-python:
 check-python: check-format-python check-lint-python typecheck-python
 	@echo "✅ Python SDK format, lint, and type checks passed!"
 
+check-typescript: check-format-typescript check-lint-typescript typecheck-typescript
+	@echo "✅ TypeScript SDK format, lint, and type checks passed!"
+
+check: check-python check-typescript
+	@echo ""
+	@echo "✅ All SDKs passed format, lint, and type checks!"
+
 typecheck-typescript:
 	@echo "📝 Type checking TypeScript SDK..."
 	cd $(TYPESCRIPT_SDK) && pnpm run typecheck
+
+check-format-typescript:
+	@echo "🔍 Checking TypeScript SDK formatting..."
+	cd $(TYPESCRIPT_SDK) && pnpm run format:check
+
+check-lint-typescript:
+	@echo "🔍 Checking TypeScript SDK lint..."
+	cd $(TYPESCRIPT_SDK) && pnpm run lint
 
 # ============================================================================
 # Pre-commit targets (run before committing)
