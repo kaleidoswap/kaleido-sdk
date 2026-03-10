@@ -18,6 +18,7 @@
         "url": "https://github.com/kaleidoswap/kaleido-sdk"
     },
     "type": "module",
+    "packageManager": "pnpm@10.30.3",
     "main": "./dist/index.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
