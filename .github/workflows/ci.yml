@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: ["master", "dev"]
   pull_request:
+    branches: ["master"]
 
 env:
   PYTHON_VERSION: "3.11"
