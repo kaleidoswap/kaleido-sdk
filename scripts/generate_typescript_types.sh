@@ -49,5 +49,10 @@ TMP=$(mktemp)
 printf '%s\n' "$BANNER" | cat - "$OUTPUT_DIR/node-types.ts" > "$TMP" && mv "$TMP" "$OUTPUT_DIR/node-types.ts"
 echo "     ✔ Written to typescript-sdk/src/generated/node-types.ts"
 
+# Format the generated files with prettier
+echo "  → Formatting generated files with prettier..."
+cd "$ROOT_DIR/typescript-sdk"
+npx prettier --write "$OUTPUT_DIR/api-types.ts" "$OUTPUT_DIR/node-types.ts"
+
 echo ""
-echo "✅ TypeScript types generated successfully."
+echo "✅ TypeScript types generated and formatted successfully."
