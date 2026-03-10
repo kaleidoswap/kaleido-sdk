@@ -6,7 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PYTHON_DIR="$PROJECT_ROOT/python"
+PYTHON_DIR="$PROJECT_ROOT/python-sdk"
 
 # Colors for output
 RED='\033[0;31m'
@@ -34,7 +34,7 @@ fi
 if ! command -v uv &> /dev/null; then
     echo -e "${YELLOW}⚠️  Warning: uv is not installed. Installing...${NC}"
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    export PATH="$HOME/.cargo/bin:$PATH"
+    export PATH="$HOME/.local/bin:$PATH"
     if ! command -v uv &> /dev/null; then
         echo -e "${RED}❌ Error: Failed to install uv${NC}"
         exit 1

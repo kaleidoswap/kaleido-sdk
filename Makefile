@@ -63,12 +63,6 @@ PYTHON_SDK := python-sdk
 # ============================================================================
 
 build: build-python-sdk build-typescript
-# Rust (not actively maintained):
-# build: build-rust build-python-sdk build-typescript
-
-# build-rust:
-# 	@echo "🦀 Building Rust core library..."
-# 	cargo build -p kaleidoswap-core --release
 
 build-typescript:
 	@echo "📦 Building TypeScript SDK..."
@@ -83,12 +77,6 @@ build-python-sdk:
 # ============================================================================
 
 test: test-python-sdk test-typescript
-# Rust (not actively maintained):
-# test: test-rust test-python-sdk test-typescript
-
-# test-rust:
-# 	@echo "🧪 Running Rust core tests..."
-# 	cargo test -p kaleidoswap-core --release
 
 test-typescript:
 	@echo "🧪 Running TypeScript SDK tests..."
@@ -160,12 +148,6 @@ node-info:
 # ============================================================================
 
 format: format-python format-typescript
-# Rust (not actively maintained):
-# format: format-rust format-python format-typescript
-
-# format-rust:
-# 	@echo "✨ Formatting Rust code..."
-# 	cargo fmt --all
 
 format-python:
 	@echo "✨ Formatting Python SDK code..."
@@ -178,16 +160,6 @@ format-typescript:
 	cd $(TYPESCRIPT_SDK) && pnpm run format
 
 lint: lint-typescript check-python
-# Rust (not actively maintained):
-# lint: lint-rust lint-typescript check-python
-
-# lint-rust:
-# 	@echo "🔍 Checking Rust formatting..."
-# 	cargo fmt --all -- --check
-
-# clippy:
-# 	@echo "📎 Running clippy..."
-# 	cargo clippy --all-targets --all-features -- -D warnings
 
 lint-typescript:
 	@echo "🔍 Linting TypeScript code..."
@@ -277,11 +249,6 @@ pre-commit-python-sdk:
 # ============================================================================
 
 generate-models: generate-python-sdk-models generate-ts-types
-# Rust (not actively maintained):
-# generate-models: generate-python-sdk-models generate-ts-types generate-rust-models
-# generate-rust-models:
-# 	@echo "🦀 Generating Rust models (via cargo build)..."
-# 	cargo build -p kaleidoswap-core
 	@echo "✅ All models generated (Python SDK + TypeScript)"
 
 generate-python-sdk-models:
@@ -326,9 +293,6 @@ clean:
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
-# Rust (not actively maintained):
-# 	cargo clean
-# 	rm -rf target/
 
 # ============================================================================
 # Development helpers

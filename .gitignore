@@ -1,7 +1,4 @@
-# Rust build artifacts and toolchain
 target/
-.cargo/
-.rustup/
 
 # Node.js
 node_modules/
@@ -92,6 +89,9 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Ruff
+.ruff_cache/
 
 # Rope project settings
 .ropeproject

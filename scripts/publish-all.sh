@@ -18,8 +18,8 @@ if [ "$1" = "--dry-run" ]; then
     echo ""
 fi
 
-# Get version
-VERSION=$(grep '^version = ' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+# Get version from Python SDK manifest (single source for release script output)
+VERSION=$(grep '^version = ' python-sdk/pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
 echo -e "${BLUE}📦 Publishing Kaleidoswap SDK v${VERSION}${NC}"
 echo ""
 

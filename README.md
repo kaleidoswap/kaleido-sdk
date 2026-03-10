@@ -1,329 +1,182 @@
 # Kaleidoswap SDK
 
-Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidoswap.com) - a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
+Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidoswap.com), a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
 
-## 🌐 Unified Architecture
+## Current SDK Architecture
 
-The SDK provides implementations for multiple languages:
+The monorepo currently ships two production SDKs that are generated from shared OpenAPI specs:
 
 | Language | Status | Package |
 |----------|--------|---------|
-| **Rust** | ✅ Ready | `kaleidoswap-core` |
 | **Python** | ✅ Ready | `kaleidoswap-sdk` |
-| **TypeScript** | ✅ Ready | `@kaleidoswap/sdk` |
+| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` |
 | **Swift** | 🚧 Planned | - |
+| **Kotlin** | 🚧 Planned | - |
 
-## ✨ Features
+### How It Works
 
-- 📊 **Market Data** - Assets, trading pairs, and real-time quotes
-- 🔄 **Swap Operations** - Atomic swaps on Lightning and on-chain
-- 📦 **Swap Orders** - Order management and history
-- ⚡ **LSPS1 Channels** - Lightning channel creation via LSP
-- 🔗 **RGB Lightning Node** - Full RGB node integration
-- 🛡️ **Type Safe** - Auto-generated models from OpenAPI specs
-- 🔧 **Built-in Retry** - Exponential backoff for reliability
-- 📡 **WebSocket** - Real-time updates with auto-reconnection
+```text
+specs/kaleidoswap.json
+specs/rgb-lightning-node.yaml
+          |
+          +--> scripts/generate_python_sdk_models.sh --> python-sdk/kaleidoswap_sdk/_generated/
+          |
+          +--> scripts/generate_typescript_types.sh  --> typescript-sdk/src/generated/
+```
+
+Each SDK is implemented natively in its language and consumes generated types/models from the same API source of truth.
+
+## Features
+
+- Typed models generated from OpenAPI specs
+- Market operations (assets, pairs, quotes)
+- Swap operations and order flows
+- RGB Lightning Node support
+- WebSocket streaming
+- Retry and error handling utilities
 
 ## Installation
-
-### Rust
-
-Add to your `Cargo.toml`:
-
-```toml
-[dependencies]
-kaleidoswap-core = "0.2"
-```
 
 ### Python
 
 ```bash
-pip install kaleidoswap
+pip install kaleidoswap-sdk
 ```
 
-### TypeScript/Node.js
+### TypeScript / Node.js
 
 ```bash
 pnpm add kaleidoswap-sdk
+# or: npm install kaleidoswap-sdk
 ```
 
 ## Quick Start
 
-### Rust
-
-```rust
-use kaleidoswap_core::{KaleidoClient, KaleidoConfig, WsEvent};
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = KaleidoConfig::new("https://api.regtest.kaleidoswap.com");
-    let client = KaleidoClient::new(config)?;
-
-    // Get available assets
-    let assets = client.list_assets().await?;
-    println!("Found {} assets", assets.len());
-
-    // Get a quote (amounts are i64)
-    let quote = client.get_best_quote(
-        "BTC/USDT", 
-        Some(1000000), // 0.01 BTC
-        None
-    ).await?;
-    
-    println!("Quote: {} -> {}", 
-        quote.from_asset.amount, 
-        quote.to_asset.amount
-    );
-
-    // WebSocket - Real-time updates
-    client.connect_websocket().await?;
-    
-    client.on_websocket_event(WsEvent::PriceUpdate, |data| {
-        if let Some(pair) = data.get("pair") {
-            if let Some(price) = data.get("price") {
-                println!("Price: {} - ${}", pair, price);
-            }
-        }
-    }).await?;
-    
-    client.subscribe_to_pair("BTC/USDT").await?;
-
-    Ok(())
-}
-```
-
-
 ### Python
 
 ```python
-from kaleidoswap import KaleidoClient, KaleidoConfig, WsEvent
 import asyncio
+from kaleidoswap_sdk import KaleidoClient
 
-# Configure client
-config = KaleidoConfig(base_url="https://api.regtest.kaleidoswap.com")
-client = KaleidoClient(config)
+async def main() -> None:
+    client = KaleidoClient.create(base_url="https://api.regtest.kaleidoswap.com")
 
-# Market API - Returns typed Pydantic objects
-assets = client.market.list_assets()  # List[Asset]
-print(f"Found {len(assets)} assets")
+    async with client:
+        assets = await client.maker.list_assets()
+        print(f"Found {len(assets.assets)} assets")
 
-for asset in assets:
-    print(f"  {asset.ticker}: {asset.name}")
+        pairs = await client.maker.list_pairs()
+        print(f"Found {len(pairs.pairs)} pairs")
 
-# Get typed quote
-quote = client.market.get_best_quote("BTC/USDT", 1_000_000)  # PairQuoteResponse
-print(f"Rate: {quote.price}")
-print(f"Fee: {quote.fee.amount} {quote.fee.asset_ticker}")
-
-# WebSocket - Real-time updates
-async def websocket_example():
-    await client.connect_websocket()
-    
-    await client.on_websocket_event(
-        WsEvent.PriceUpdate,
-        lambda data: print(f"Price: {data['pair']} - ${data['price']}")
-    )
-    
-    await client.subscribe_to_pair('BTC/USDT')
-    
-    # Stream for 30 seconds
-    await asyncio.sleep(30)
-    
-    await client.disconnect_websocket()
-
-# Order management
-history = client.orders.get_order_history()  # OrderHistoryResponse
-print(f"Total orders: {history.total}")
-
-# RGB Node operations (if configured)
-if client.node:
-    node_info = client.node.get_rgb_node_info()  # RgbNodeInfoResponse
-    print(f"Node pubkey: {node_info.pubkey}")
-    
-    channels = client.node.list_channels()  # List[RgbChannel]
-    balance = client.node.get_btc_balance()  # BtcBalanceResponse
-    print(f"BTC Balance: {balance.vanilla.spendable} sats")
+asyncio.run(main())
 ```
 
-**Error Handling:**
-```python
-from kaleidoswap import QuoteExpiredError, InsufficientBalanceError
-
-try:
-    quote = client.market.get_quote_by_pair("BTC/USDT", 1_000_000)
-except QuoteExpiredError:
-    # Refresh quote
-    quote = client.market.get_quote_by_pair("BTC/USDT", 1_000_000)
-except InsufficientBalanceError as e:
-    print(f"Need {e.required_amount - e.available_amount} more")
-```
-
-### TypeScript/Node.js
+### TypeScript
 
 ```typescript
 import { KaleidoClient } from 'kaleidoswap-sdk';
 
-const config = {
-    baseUrl: 'https://api.regtest.kaleidoswap.com',
-};
-
-const client = new KaleidoClient(config);
-
-// Market API - Returns typed objects
-const assets = await client.market.listAssets();
-console.log(`Found ${assets.length} assets`);
-
-assets.forEach(asset => {
-    console.log(`  ${asset.ticker}: ${asset.name}`);
+const client = KaleidoClient.create({
+  baseUrl: 'https://api.regtest.kaleidoswap.com',
 });
 
-// Get typed quote
-const quote = await client.market.getBestQuote("BTC/USDT", 1_000_000);
-console.log(`Rate: ${quote.price}`);
-console.log(`Fee: ${quote.fee.amount} ${quote.fee.assetTicker}`);
+const assets = await client.maker.listAssets();
+console.log(`Found ${assets.assets.length} assets`);
 
-// Order management
-const history = await client.orders.getOrderHistory();
-console.log(`Total orders: ${history.total}`);
-
-// WebSocket - Real-time updates
-await client.connectWebsocket();
-
-client.onWebsocketEvent('price_update', (data) => {
-    console.log(`Price: ${data.pair} - $${data.price}`);
-});
-
-await client.subscribeToPair('BTC/USDT');
-
-// RGB Node operations (if configured)
-if (client.node) {
-    const nodeInfo = await client.node.getRgbNodeInfo();
-    console.log(`Node pubkey: ${nodeInfo.pubkey}`);
-    
-    const channels = await client.node.listChannels();
-    const balance = await client.node.getBtcBalance();
-}
+const pairs = await client.maker.listPairs();
+console.log(`Found ${pairs.pairs.length} pairs`);
 ```
 
-## 📚 Documentation
+## Documentation
 
-- **[Architecture](./docs/ARCHITECTURE.md)** - SDK design and structure
-- **[API Reference](./docs/API_REFERENCE.md)** - Complete API documentation
-- **[Examples](./docs/EXAMPLES.md)** - Code examples and workflows
-- **[Error Handling](./docs/ERROR_HANDLING.md)** - Error types and handling
-- **[WebSocket](./docs/WEBSOCKET.md)** - Real-time updates and streaming
+- [Architecture](./docs/ARCHITECTURE.md)
+- [API Reference](./docs/API_REFERENCE.md)
+- [Examples](./docs/EXAMPLES.md)
+- [Error Handling](./docs/ERROR_HANDLING.md)
+- [WebSocket](./docs/WEBSOCKET.md)
+- [SDK Development](./docs/SDK_DEVELOPMENT.md)
 
-## 🔧 Development
+## Development
 
 ### Prerequisites
 
-- Rust 1.75+
-- Python 3.8+ (for Python SDK)
-- Node.js 18+ (for TypeScript SDK)
-- Docker (for regenerating models)
+- Python 3.10+
+- Node.js 18+
+- pnpm
+- uv
 
-### Building
+### Build
 
 ```bash
-# Build everything
+# Build both SDKs
 make build
 
-# Build individual components
-make build-rust
+# Build individually
 make build-python-sdk
 make build-typescript
 ```
 
-### Testing
+### Test
 
 ```bash
 # Run all tests
 make test
 
-# Test specific language
-cargo test                    # Rust
-make test-python-sdk          # Python SDK
-make test-typescript          # TypeScript SDK
+# Run per SDK
+make test-python-sdk
+make test-typescript
 ```
 
-### Regenerating Models
+### Regenerate Models
 
-Each language SDK has its own script to generate models from OpenAPI specs:
-
-**Python SDK:**
 ```bash
+# Regenerate both SDK model/type outputs
+make generate-models
+
+# Regenerate one SDK
 make generate-python-sdk-models
-# Or directly:
-bash scripts/generate_python_sdk_models.sh
-```
-
-**TypeScript SDK:**
-```bash
 make generate-ts-types
-# Or directly:
-bash scripts/generate_typescript_types.sh
+
+# Full refresh (download latest specs + regenerate)
+make regenerate
 ```
 
-**All SDKs:**
-```bash
-make generate-models  # Generates models for all SDKs
-```
-
-**Using Remote Specs (CI/Default):**
-```bash
-make regenerate  # Updates specs + generates all models + verifies
-```
-
-**Using Local Spec (Development):**
-1. Ensure OpenAPI specs are in `crates/kaleidoswap-core/specs/`:
-   - `maker.json` - Kaleidoswap Market API
-   - `rln.yaml` - RGB Lightning Node API
-2. Run the generation script for the language you're working on:
-```bash
-make generate-python-sdk-models  # Python SDK
-make generate-ts-types           # TypeScript SDK
-```
-
-See [Architecture](./docs/ARCHITECTURE.md) and [Code Generation](./docs/CODE_GENERATION.md) for details.
-
-## 📖 API Coverage
+## API Coverage
 
 | API | Description | Status |
 |-----|-------------|--------|
 | Market | Assets, pairs, quotes | ✅ |
 | Swaps | Atomic swap operations | ✅ |
-| Swap Orders | Order creation and management | ✅ |
+| Swap Orders | Order creation and status | ✅ |
 | LSPS1 | Lightning channel service | ✅ |
-| RGB Node | Full RGB Lightning Node API | ✅ |
+| RGB Node | Node operations | ✅ |
 
-## 🗺️ Roadmap
+## Roadmap
 
-- [x] Core Rust library
 - [x] Python SDK
 - [x] TypeScript SDK
-- [x] Auto-generated models from OpenAPI
-- [x] WebSocket support for real-time updates
+- [x] OpenAPI-driven model generation
+- [x] WebSocket support
 - [ ] Swift SDK for iOS/macOS
 - [ ] Kotlin SDK for Android
 - [ ] CLI tool
 
-See [ROADMAP.md](./ROADMAP.md) for the complete development timeline.
+## Contributing
 
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+We welcome contributions. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Key points:
-- Never edit files in `models/` directly - regenerate from OpenAPI
-- All changes should include tests
-- Format code with `make format` before committing
+- Never edit generated model files directly.
+- Regenerate from OpenAPI specs when API changes.
+- Include tests for behavior changes.
+- Run format/lint checks before pushing.
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](./LICENSE).
 
-## 🔗 Resources
+## Resources
 
-- **API Specs**: [Kaleidoswap OpenAPI](./specs/kaleidoswap.json)
-- **RGB Node**: [rgb-lightning-node](https://github.com/RGB-Tools/rgb-lightning-node)
-- **Website**: [kaleidoswap.com](https://kaleidoswap.com)
+- Specs: [specs/kaleidoswap.json](./specs/kaleidoswap.json), [specs/rgb-lightning-node.yaml](./specs/rgb-lightning-node.yaml)
+- RGB Lightning Node: [RGB-Tools/rgb-lightning-node](https://github.com/RGB-Tools/rgb-lightning-node)
+- Website: [kaleidoswap.com](https://kaleidoswap.com)

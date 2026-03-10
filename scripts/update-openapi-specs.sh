@@ -10,7 +10,6 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Configuration
 SPECS_DIR="$ROOT_DIR/specs"
-CRATES_SPECS_DIR="$ROOT_DIR/crates/kaleidoswap-core/specs"
 BACKUP_DIR="$ROOT_DIR/specs/backup"
 
 # Default URLs
@@ -49,7 +48,6 @@ echo "==================================="
 echo "Specs Directory: $SPECS_DIR"
 
 mkdir -p "$SPECS_DIR"
-mkdir -p "$CRATES_SPECS_DIR"
 if [[ "$DO_BACKUP" == true ]]; then
     mkdir -p "$BACKUP_DIR"
 fi
@@ -84,13 +82,5 @@ download_spec "$RGB_NODE_URL" "$SPECS_DIR/rgb-lightning-node.yaml" "RGB Lightnin
 
 # Download Kaleidoswap Maker spec
 download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
-
-# Rust crate sync (not actively maintained)
-# echo ""
-# echo "📋 Syncing specs to crates directory..."
-# cp "$SPECS_DIR/kaleidoswap.json" "$CRATES_SPECS_DIR/maker.json"
-# echo "   ✅ Synced: $CRATES_SPECS_DIR/maker.json"
-# cp "$SPECS_DIR/rgb-lightning-node.yaml" "$CRATES_SPECS_DIR/rln.yaml"
-# echo "   ✅ Synced: $CRATES_SPECS_DIR/rln.yaml"
 
 echo "✅ Update complete. Run 'make generate-models' to regenerate."

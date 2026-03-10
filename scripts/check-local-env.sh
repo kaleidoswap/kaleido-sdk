@@ -56,17 +56,6 @@ echo ""
 echo -e "${YELLOW}🔧 Dependencies${NC}"
 echo "---"
 
-# Rust
-echo -n "Rust: "
-if command -v cargo &> /dev/null; then
-    rust_version=$(cargo --version | awk '{print $2}')
-    echo -e "${GREEN}✅ $rust_version${NC}"
-    RUST_OK=1
-else
-    echo -e "${RED}❌ Not installed${NC}"
-    RUST_OK=0
-fi
-
 # Python
 echo -n "Python: "
 if command -v python3 &> /dev/null; then
@@ -111,17 +100,6 @@ else
     PNPM_OK=0
 fi
 
-# wasm-pack
-echo -n "wasm-pack: "
-if command -v wasm-pack &> /dev/null; then
-    wasm_version=$(wasm-pack --version | awk '{print $2}')
-    echo -e "${GREEN}✅ $wasm_version${NC}"
-    WASM_OK=1
-else
-    echo -e "${YELLOW}⚠️  Not installed${NC} (cargo install wasm-pack)"
-    WASM_OK=0
-fi
-
 # jq (optional but useful)
 echo -n "jq (optional): "
 if command -v jq &> /dev/null; then
@@ -142,7 +120,6 @@ passed_checks=0
 
 # Critical checks
 if [ $API_OK -eq 1 ]; then ((passed_checks++)); fi; ((total_checks++))
-if [ $RUST_OK -eq 1 ]; then ((passed_checks++)); fi; ((total_checks++))
 
 # Python checks
 if [ $PYTHON_OK -eq 1 ]; then ((passed_checks++)); fi; ((total_checks++))
@@ -162,7 +139,7 @@ if [ $passed_checks -eq $total_checks ]; then
     echo "  make run-python-example  # Run Python example"
     echo "  make run-ts-example      # Run TypeScript example"
     exit 0
-elif [ $API_OK -eq 0 ] || [ $RUST_OK -eq 0 ]; then
+elif [ $API_OK -eq 0 ]; then
     echo -e "${RED}❌ Critical dependencies missing${NC}"
     exit 1
 else
