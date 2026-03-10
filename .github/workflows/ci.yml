@@ -33,14 +33,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: typescript-sdk/pnpm-lock.yaml
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -48,9 +47,6 @@ jobs:
         run: |
           npm install -g openapi-typescript
           pip install 'datamodel-code-generator[ruff]'
-      - name: Sync Python SDK
-        working-directory: python-sdk
-        run: uv sync --frozen --all-extras --dev
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
       - name: Generate Python SDK models
@@ -71,14 +67,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: typescript-sdk/pnpm-lock.yaml
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -86,9 +81,6 @@ jobs:
         run: |
           npm install -g openapi-typescript
           pip install 'datamodel-code-generator[ruff]'
-      - name: Sync Python SDK
-        working-directory: python-sdk
-        run: uv sync --frozen --all-extras --dev
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
       - name: Generate Python SDK models
@@ -114,6 +106,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -152,6 +146,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
