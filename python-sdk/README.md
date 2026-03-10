@@ -40,6 +40,26 @@ async def main():
 asyncio.run(main())
 ```
 
+## Examples
+
+Python examples now mirror the TypeScript scenario progression:
+
+- `01_hello.py` - Basic client setup and market discovery
+- `02_get_quote.py` - One-shot quote request
+- `03_websocket.py` - Real-time quote streaming
+- `04_create_swap_order.py` - Quote to swap-order flow
+- `05_quote_logging_demo.py` - Quote flow with SDK logging controls
+- `06_multi_route_streaming.py` - Streaming across multiple routes
+- `07_swap_demo.py` - End-to-end swap lifecycle demo
+- `08_advanced_market_data.py` - Route and market-data analysis
+- `09_error_handling.py` - Typed exception handling patterns
+
+Run any example with:
+
+```bash
+python examples/01_hello.py
+```
+
 ## Features
 
 - **Async-first design** - All API methods are async using `asyncio`
@@ -162,6 +182,12 @@ pip install -e ".[dev]"
 # Run tests
 pytest
 
+# Run unit tests
+pytest tests/unit
+
+# Run integration tests
+pytest -m integration
+
 # Run tests with coverage
 pytest --cov=kaleidoswap_sdk
 
@@ -170,6 +196,14 @@ mypy kaleidoswap_sdk
 
 # Linting
 ruff check kaleidoswap_sdk
+```
+
+### Test Structure
+
+```
+tests/
+    unit/         # fast, isolated tests
+    integration/  # environment-dependent tests
 ```
 
 ## License

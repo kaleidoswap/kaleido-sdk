@@ -95,18 +95,3 @@ class TestWSAction:
         assert WSAction.QUOTE_RESPONSE.value == "quote_response"
         assert WSAction.CONNECTION_ESTABLISHED.value == "connection_established"
         assert WSAction.ERROR.value == "error"
-
-
-# Integration tests would require a WebSocket server
-class TestWSClientIntegration:
-    """Integration tests for WSClient (requires WebSocket server)."""
-
-    @pytest.mark.integration
-    async def test_connect_disconnect(self) -> None:
-        """Test connecting and disconnecting."""
-        client = WSClient(url="ws://localhost:8000/api/v1/market/ws")
-        await client.connect()
-        assert client.is_connected()
-
-        client.disconnect()
-        # Note: disconnect is not immediate due to async
