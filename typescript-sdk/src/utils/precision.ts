@@ -140,7 +140,6 @@ export class PrecisionHandler {
         };
     }
 
-
     /**
      * Get the order size limits for an asset
      * @param asset - Asset to get limits for

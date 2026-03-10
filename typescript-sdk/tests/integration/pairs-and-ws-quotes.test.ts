@@ -123,8 +123,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                 if (btcLnPairs.length > 0) {
                     btcLnPairs.forEach((pair) => {
                         const hasLnRoute = pair.routes?.some(
-                            (route) =>
-                                route.from_layer === 'BTC_LN' || route.to_layer === 'BTC_LN',
+                            (route) => route.from_layer === 'BTC_LN' || route.to_layer === 'BTC_LN',
                         );
                         expect(hasLnRoute).toBe(true);
                     });
