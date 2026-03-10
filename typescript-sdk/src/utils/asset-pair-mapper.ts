@@ -17,8 +17,8 @@ export interface MappedAsset {
     name: string;
     precision: number;
     is_active: boolean;
-    min_order_size: bigint;
-    max_order_size: bigint;
+    min_order_size: number;
+    max_order_size: number;
     trading_pairs: string[]; // Asset IDs this asset can trade with
     protocol_ids: { [key: string]: string };
 }
@@ -92,8 +92,8 @@ export class AssetPairMapper {
                 name: pair.base.name,
                 precision: pair.base.precision,
                 is_active: pair.is_active,
-                min_order_size: baseEndpoint?.min_amount ?? 0n,
-                max_order_size: baseEndpoint?.max_amount ?? BigInt(Number.MAX_SAFE_INTEGER),
+                min_order_size: baseEndpoint?.min_amount ?? 0,
+                max_order_size: baseEndpoint?.max_amount ?? Number.MAX_SAFE_INTEGER,
                 trading_partner: quoteAssetId,
                 protocol_ids: pair.base.protocol_ids || {},
             });
@@ -105,8 +105,8 @@ export class AssetPairMapper {
                 name: pair.quote.name,
                 precision: pair.quote.precision,
                 is_active: pair.is_active,
-                min_order_size: quoteEndpoint?.min_amount ?? 0n,
-                max_order_size: quoteEndpoint?.max_amount ?? BigInt(Number.MAX_SAFE_INTEGER),
+                min_order_size: quoteEndpoint?.min_amount ?? 0,
+                max_order_size: quoteEndpoint?.max_amount ?? Number.MAX_SAFE_INTEGER,
                 trading_partner: baseAssetId,
                 protocol_ids: pair.quote.protocol_ids || {},
             });
@@ -119,8 +119,8 @@ export class AssetPairMapper {
         name: string;
         precision: number;
         is_active: boolean;
-        min_order_size: bigint;
-        max_order_size: bigint;
+        min_order_size: number;
+        max_order_size: number;
         trading_partner: string;
         protocol_ids: { [key: string]: string };
     }): void {
@@ -135,13 +135,13 @@ export class AssetPairMapper {
                 existing.trading_pairs.push(assetData.trading_partner);
             }
             // Use most restrictive order sizes
-            if (assetData.min_order_size > 0n) {
+            if (assetData.min_order_size > 0) {
                 existing.min_order_size =
                     existing.min_order_size > assetData.min_order_size
                         ? existing.min_order_size
                         : assetData.min_order_size;
             }
-            if (assetData.max_order_size < BigInt(Number.MAX_SAFE_INTEGER)) {
+            if (assetData.max_order_size < Number.MAX_SAFE_INTEGER) {
                 existing.max_order_size =
                     existing.max_order_size < assetData.max_order_size
                         ? existing.max_order_size

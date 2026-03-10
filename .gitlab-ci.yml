@@ -146,7 +146,7 @@ test:typescript-sdk:
     - echo "🧪 Testing TypeScript SDK..."
     - cd typescript-sdk
     - pnpm install
-    - pnpm test
+    - pnpm test:unit
   artifacts:
     reports:
       junit: typescript-sdk/test-results.xml

@@ -6,12 +6,8 @@
  * the Python SDK's `_ws_client.py` TypedDict definitions.
  *
  * Key design notes:
- * - `Fee.base_fee`, `Fee.variable_fee`, `Fee.final_fee` are int64 values and
- *   are typed as `bigint` to match the OpenAPI spec (format: int64).
  * - `QuoteResponse.from_asset` / `to_asset` are full SwapLeg-compatible objects,
  *   NOT plain ticker strings. The server sends the complete leg payload.
- * - `price` in `QuoteResponse` is an int64 value (bigint in TS).
- * - `from_amount` / `to_amount` in request/message types are int64 (bigint | null).
  */
 
 // ---------------------------------------------------------------------------
@@ -37,7 +33,6 @@ export type WSAction =
 //
 // fee_precision refers to the decimal precision of the fee asset
 // (distinct from fee_asset_precision used in the REST Fee schema).
-// base_fee / variable_fee / final_fee are int64 → bigint.
 // ---------------------------------------------------------------------------
 
 /**
@@ -50,14 +45,14 @@ export interface Fee {
     fee_asset: string;
     /** Decimal precision of the fee asset */
     fee_precision: number;
-    /** Fixed base fee (int64 → bigint) */
-    base_fee: bigint;
-    /** Variable fee based on trade size (int64 → bigint) */
-    variable_fee: bigint;
+    /** Fixed base fee */
+    base_fee: number;
+    /** Variable fee based on trade size */
+    variable_fee: number;
     /** Fee rate as a fraction (e.g. 0.001 = 0.1%) */
     fee_rate: number;
-    /** Total fee = base_fee + variable_fee (int64 → bigint) */
-    final_fee: bigint;
+    /** Total fee = base_fee + variable_fee */
+    final_fee: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -80,8 +75,8 @@ export interface SwapLegData {
     ticker: string;
     /** Settlement layer (e.g. 'BTC_LN', 'RGB_LN') */
     layer: string;
-    /** Amount in smallest unit (int64 → bigint) */
-    amount: bigint;
+    /** Amount in smallest unit */
+    amount: number;
     /** Decimal places for the asset (e.g. 8 for BTC, 6 for USDT) */
     precision: number;
 }
@@ -95,7 +90,7 @@ export interface SwapLegData {
  *
  * Mirrors Python `QuoteResponse` TypedDict in `_ws_client.py`.
  * NOTE: `from_asset` and `to_asset` are full `SwapLegData` objects, not
- * plain ticker strings.  `price` is an int64 value (bigint).
+ * plain ticker strings.
  */
 export interface QuoteResponse {
     action: 'quote_response';
@@ -104,10 +99,9 @@ export interface QuoteResponse {
     /** Complete specification for the destination leg of the swap */
     to_asset: SwapLegData;
     /**
-     * Price of 1 whole unit of from_asset expressed in the smallest unit of
-     * to_asset.  This is an int64 value on the wire (bigint in TypeScript).
+     * Price of 1 whole unit of from_asset expressed in the smallest unit of to_asset.
      */
-    price: bigint;
+    price: number;
     /** Quote / RFQ identifier — pass to createSwapOrder */
     rfq_id: string;
     /** Server-side Unix timestamp (seconds) when the quote was created */
@@ -134,10 +128,10 @@ export interface QuoteRequest {
     from_asset: string;
     /** Destination asset ticker (e.g. 'USDT') */
     to_asset: string;
-    /** Amount of from_asset in smallest unit, or null if specifying to_amount (int64 → bigint) */
-    from_amount?: bigint | null;
-    /** Amount of to_asset in smallest unit, or null if specifying from_amount (int64 → bigint) */
-    to_amount?: bigint | null;
+    /** Amount of from_asset in smallest unit, or null if specifying to_amount */
+    from_amount?: number | null;
+    /** Amount of to_asset in smallest unit, or null if specifying from_amount */
+    to_amount?: number | null;
     /** Source settlement layer filter (e.g. 'BTC_LN') */
     from_layer?: string | null;
     /** Destination settlement layer filter (e.g. 'RGB_LN') */
@@ -160,10 +154,8 @@ export interface WebSocketMessage {
     timestamp?: number;
     from_asset?: string;
     to_asset?: string;
-    /** int64 amount in smallest unit (bigint | null) */
-    from_amount?: bigint | null;
-    /** int64 amount in smallest unit (bigint | null) */
-    to_amount?: bigint | null;
+    from_amount?: number | null;
+    to_amount?: number | null;
     from_layer?: string | null;
     to_layer?: string | null;
 }

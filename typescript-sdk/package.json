@@ -52,13 +52,15 @@
         "README.md"
     ],
     "scripts": {
-        "generate:types": "node scripts/generate_typescript_types.mjs",
+        "generate:types": "bash ../scripts/generate_typescript_types.sh",
         "prebuild": "npm run generate:types",
         "build": "npm run build:ts",
         "build:ts": "tsc",
         "typecheck": "tsc --noEmit",
         "clean": "rm -rf dist pkg pkg-node src/generated",
         "test": "vitest run",
+        "test:unit": "vitest run tests/unit tests/type-safety tests/client.test.ts",
+        "test:integration": "vitest run tests/integration",
         "test:watch": "vitest",
         "lint": "eslint src --ext .ts",
         "lint:fix": "eslint src --ext .ts --fix",
