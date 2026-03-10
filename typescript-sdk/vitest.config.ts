@@ -31,6 +31,6 @@ export default defineConfig({
     testTimeout: 10000,
 
     // Reporter
-    reporters: ['verbose'],
+    reporters: ['verbose', ['junit', { outputFile: 'test-results.xml' }]],
   },
 });
