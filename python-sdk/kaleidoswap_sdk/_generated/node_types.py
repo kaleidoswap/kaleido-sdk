@@ -280,6 +280,14 @@ class IndexerProtocol(StrEnum):
 
 class InitRequest(BaseModel):
     password: Annotated[str | None, Field(examples=["nodepassword"])] = None
+    mnemonic: Annotated[
+        str | None,
+        Field(
+            examples=[
+                "skill lamp please gown put season degree collect decline account monitor insane"
+            ]
+        ),
+    ] = None
 
 
 class InitResponse(BaseModel):
