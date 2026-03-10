@@ -196,7 +196,7 @@ lint-typescript:
 lint-python:
 	@echo "🛠️ Fixing Python SDK lint issues..."
 	cd $(PYTHON_SDK) && \
-		uv sync --frozen --all-extras --dev && \
+		uv sync --frozen --extra lint && \
 		uv run ruff format kaleidoswap_sdk tests && \
 		uv run ruff check --fix kaleidoswap_sdk tests && \
 		uv run mypy kaleidoswap_sdk --ignore-missing-imports
@@ -204,19 +204,19 @@ lint-python:
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
 	cd $(PYTHON_SDK) && \
-		uv sync --frozen --all-extras --dev && \
+		uv sync --frozen --extra lint && \
 		uv run ruff format --check kaleidoswap_sdk tests
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
 	cd $(PYTHON_SDK) && \
-		uv sync --frozen --all-extras --dev && \
+		uv sync --frozen --extra lint && \
 		uv run ruff check kaleidoswap_sdk tests
 
 typecheck-python:
 	@echo "📝 Type checking Python SDK..."
 	cd $(PYTHON_SDK) && \
-		uv sync --frozen --all-extras --dev && \
+		uv sync --frozen --extra lint && \
 		uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 check-python: check-format-python check-lint-python typecheck-python
