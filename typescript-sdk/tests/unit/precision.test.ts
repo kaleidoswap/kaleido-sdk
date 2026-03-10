@@ -16,30 +16,30 @@ import {
 describe('Precision Utilities', () => {
     describe('toRawAmount', () => {
         it('should convert BTC to satoshis (8 decimals)', () => {
-            expect(toRawAmount(1, 8)).toBe(100000000n);
-            expect(toRawAmount(0.5, 8)).toBe(50000000n);
-            expect(toRawAmount(0.00000001, 8)).toBe(1n);
+            expect(toRawAmount(1, 8)).toBe(100000000);
+            expect(toRawAmount(0.5, 8)).toBe(50000000);
+            expect(toRawAmount(0.00000001, 8)).toBe(1);
         });
 
         it('should convert USDT to atomic units (6 decimals)', () => {
-            expect(toRawAmount(100, 6)).toBe(100000000n);
-            expect(toRawAmount(0.000001, 6)).toBe(1n);
+            expect(toRawAmount(100, 6)).toBe(100000000);
+            expect(toRawAmount(0.000001, 6)).toBe(1);
         });
 
         it('should handle precision 0', () => {
-            expect(toRawAmount(100, 0)).toBe(100n);
+            expect(toRawAmount(100, 0)).toBe(100);
         });
     });
 
     describe('toDisplayAmount', () => {
         it('should convert satoshis to BTC', () => {
-            expect(toDisplayAmount(100000000n, 8)).toBe(1);
-            expect(toDisplayAmount(50000000n, 8)).toBe(0.5);
-            expect(toDisplayAmount(1n, 8)).toBe(0.00000001);
+            expect(toDisplayAmount(100000000, 8)).toBe(1);
+            expect(toDisplayAmount(50000000, 8)).toBe(0.5);
+            expect(toDisplayAmount(1, 8)).toBe(0.00000001);
         });
 
         it('should convert USDT atomic to display', () => {
-            expect(toDisplayAmount(100000000n, 6)).toBe(100);
+            expect(toDisplayAmount(100000000, 6)).toBe(100);
         });
     });
 
@@ -49,15 +49,15 @@ describe('Precision Utilities', () => {
                 asset_id: 'btc',
                 ticker: 'BTC',
                 precision: 8,
-                min_order_size: 1000n, // 0.00001 BTC
-                max_order_size: 100000000n, // 1 BTC
+                min_order_size: 1000, // 0.00001 BTC
+                max_order_size: 100000000, // 1 BTC
             },
             {
                 asset_id: 'usdt',
                 ticker: 'USDT',
                 precision: 6,
-                min_order_size: 1000000n, // 1 USDT
-                max_order_size: 1000000000n, // 1000 USDT
+                min_order_size: 1000000, // 1 USDT
+                max_order_size: 1000000000, // 1000 USDT
             },
         ];
 
@@ -73,8 +73,8 @@ describe('Precision Utilities', () => {
         it('should convert amounts correctly', () => {
             const handler = new PrecisionHandler(mockAssets);
 
-            expect(handler.toRawAmount(1, 'btc')).toBe(100000000n);
-            expect(handler.toDisplayAmount(100000000n, 'btc')).toBe(1);
+            expect(handler.toRawAmount(1, 'btc')).toBe(100000000);
+            expect(handler.toDisplayAmount(100000000, 'btc')).toBe(1);
         });
 
         it('should throw error for unknown asset', () => {
@@ -117,8 +117,8 @@ describe('Precision Utilities', () => {
 
             expect(limits.minDisplayAmount).toBe(0.00001);
             expect(limits.maxDisplayAmount).toBe(1);
-            expect(limits.minRawAmount).toBe(1000n);
-            expect(limits.maxRawAmount).toBe(100000000n);
+            expect(limits.minRawAmount).toBe(1000);
+            expect(limits.maxRawAmount).toBe(100000000);
             expect(limits.precision).toBe(8);
         });
     });

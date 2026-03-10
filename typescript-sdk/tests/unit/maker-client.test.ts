@@ -33,7 +33,7 @@ describe('MakerClient - Quote Methods', () => {
                     ticker: 'BTC',
                     name: 'Bitcoin',
                     layer: 'BTC_LN',
-                    amount: 21000000n,
+                    amount: 21000000,
                     precision: 8,
                 },
                 to_asset: {
@@ -41,17 +41,17 @@ describe('MakerClient - Quote Methods', () => {
                     ticker: 'USDT',
                     name: 'Tether USD',
                     layer: 'RGB_LN',
-                    amount: 22000000000n,
+                    amount: 22000000000,
                     precision: 6,
                 },
-                price: 104761904761n,
+                price: 104761904761,
                 fee: {
                     fee_asset: 'BTC',
                     fee_asset_precision: 8,
-                    base_fee: 0n,
-                    variable_fee: 0n,
+                    base_fee: 0,
+                    variable_fee: 0,
                     fee_rate: 0.001,
-                    final_fee: 21000n,
+                    final_fee: 21000,
                 },
                 timestamp: Math.floor(Date.now() / 1000),
                 expires_at: Math.floor(Date.now() / 1000) + 60,
@@ -67,7 +67,7 @@ describe('MakerClient - Quote Methods', () => {
                 from_asset: {
                     asset_id: 'BTC',
                     layer: 'BTC_LN',
-                    amount: 21000000n,
+                    amount: 21000000,
                 },
                 to_asset: {
                     asset_id: 'USDT',
@@ -82,7 +82,7 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'BTC',
                         layer: 'BTC_LN',
-                        amount: 21000000n,
+                        amount: 21000000,
                     },
                     to_asset: {
                         asset_id: 'USDT',
@@ -95,8 +95,8 @@ describe('MakerClient - Quote Methods', () => {
             // Verify response
             expect(result).toEqual(mockQuoteResponse);
             expect(result.rfq_id).toBe('test-rfq-123');
-            expect(result.from_asset.amount).toBe(21000000n);
-            expect(result.to_asset.amount).toBe(22000000000n);
+            expect(result.from_asset.amount).toBe(21000000);
+            expect(result.to_asset.amount).toBe(22000000000);
         });
 
         it('should successfully get quote with to_amount specified (reverse quote)', async () => {
@@ -107,7 +107,7 @@ describe('MakerClient - Quote Methods', () => {
                     ticker: 'BTC',
                     name: 'Bitcoin',
                     layer: 'BTC_LN',
-                    amount: 19047619n,
+                    amount: 19047619,
                     precision: 8,
                 },
                 to_asset: {
@@ -115,17 +115,17 @@ describe('MakerClient - Quote Methods', () => {
                     ticker: 'USDT',
                     name: 'Tether USD',
                     layer: 'RGB_LN',
-                    amount: 20000000000n,
+                    amount: 20000000000,
                     precision: 6,
                 },
-                price: 104761904761n,
+                price: 104761904761,
                 fee: {
                     fee_asset: 'BTC',
                     fee_asset_precision: 8,
-                    base_fee: 0n,
-                    variable_fee: 0n,
+                    base_fee: 0,
+                    variable_fee: 0,
                     fee_rate: 0.001,
-                    final_fee: 19048n,
+                    final_fee: 19048,
                 },
                 timestamp: Math.floor(Date.now() / 1000),
                 expires_at: Math.floor(Date.now() / 1000) + 60,
@@ -145,13 +145,13 @@ describe('MakerClient - Quote Methods', () => {
                 to_asset: {
                     asset_id: 'USDT',
                     layer: 'RGB_LN',
-                    amount: 20000000000n,
+                    amount: 20000000000,
                 },
             });
 
             expect(result.rfq_id).toBe('test-rfq-456');
-            expect(result.to_asset.amount).toBe(20000000000n);
-            expect(result.from_asset.amount).toBe(19047619n);
+            expect(result.to_asset.amount).toBe(20000000000);
+            expect(result.from_asset.amount).toBe(19047619);
         });
 
         it('should handle API errors correctly', async () => {
@@ -168,7 +168,7 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'BTC',
                         layer: 'BTC_LN',
-                        amount: -1000n,
+                        amount: -1000,
                     },
                     to_asset: {
                         asset_id: 'USDT',
@@ -190,9 +190,9 @@ describe('MakerClient - Quote Methods', () => {
                 mockHttpClient.maker.POST.mockResolvedValue({
                     data: {
                         rfq_id: `test-${from}-${to}`,
-                        from_asset: { asset_id: 'BTC', layer: from, amount: 1000000n },
+                        from_asset: { asset_id: 'BTC', layer: from, amount: 1000000 },
                         to_asset: { asset_id: 'USDT', layer: to, amount: null },
-                        price: 100000n,
+                        price: 100000,
                         timestamp: Date.now(),
                         expires_at: Date.now() + 60000,
                     },
@@ -203,7 +203,7 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'BTC',
                         layer: from,
-                        amount: 1000000n,
+                        amount: 1000000,
                     },
                     to_asset: {
                         asset_id: 'USDT',
@@ -243,7 +243,7 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'BTC',
                         layer: 'BTC_LN',
-                        amount: 500n, // Below minimum
+                        amount: 500, // Below minimum
                     },
                     to_asset: {
                         asset_id: 'USDT',
@@ -271,7 +271,7 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'BTC',
                         layer: 'BTC_LN',
-                        amount: 200000n, // Above maximum
+                        amount: 200000, // Above maximum
                     },
                     to_asset: {
                         asset_id: 'USDT',
@@ -299,12 +299,12 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'BTC',
                         layer: 'BTC_LN',
-                        amount: 10000n,
+                        amount: 10000,
                     },
                     to_asset: {
                         asset_id: 'USDT',
                         layer: 'RGB_LN',
-                        amount: 500000000n, // Both provided - should error
+                        amount: 500000000, // Both provided - should error
                     },
                 }),
             ).rejects.toThrow(/exactly one of.*amount.*must be provided/i);
@@ -355,7 +355,7 @@ describe('MakerClient - Quote Methods', () => {
                     from_asset: {
                         asset_id: 'NONEXISTENT',
                         layer: 'BTC_LN',
-                        amount: 10000n,
+                        amount: 10000,
                     },
                     to_asset: {
                         asset_id: 'USDT',
@@ -382,7 +382,7 @@ describe('MakerClient - Quote Methods', () => {
 
             try {
                 await makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 });
                 expect.fail('Should have thrown an error');
@@ -406,7 +406,7 @@ describe('MakerClient - Quote Methods', () => {
 
             try {
                 await makerClient.getQuote({
-                    from_asset: { asset_id: 'NONEXISTENT', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'NONEXISTENT', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 });
                 expect.fail('Should have thrown an error');
@@ -437,7 +437,7 @@ describe('MakerClient - Quote Methods', () => {
 
             try {
                 await makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 });
                 expect.fail('Should have thrown an error');
@@ -462,7 +462,7 @@ describe('MakerClient - Quote Methods', () => {
 
             try {
                 await makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 });
                 expect.fail('Should have thrown an error');
@@ -489,7 +489,7 @@ describe('MakerClient - Quote Methods', () => {
 
             await expect(
                 makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 }),
             ).rejects.toThrow('Detailed error message');
@@ -509,7 +509,7 @@ describe('MakerClient - Quote Methods', () => {
 
             await expect(
                 makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 }),
             ).rejects.toThrow('Error message field');
@@ -540,7 +540,7 @@ describe('MakerClient - Quote Methods', () => {
 
             try {
                 await makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: -1000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: -1000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 });
                 expect.fail('Should have thrown an error');
@@ -565,7 +565,7 @@ describe('MakerClient - Quote Methods', () => {
 
             await expect(
                 makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000n },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 }),
             ).rejects.toThrow('Internal Server Error');
@@ -575,7 +575,7 @@ describe('MakerClient - Quote Methods', () => {
     describe('Precision Methods', () => {
         it('should convert raw amounts to display amounts', () => {
             const btcPrecision = 8;
-            const sats = 150000000n;
+            const sats = 150000000;
             const btc = makerClient.toDisplay(sats, btcPrecision);
 
             expect(btc).toBe(1.5);
@@ -586,7 +586,7 @@ describe('MakerClient - Quote Methods', () => {
             const btc = 1.5;
             const sats = makerClient.toRaw(btc, btcPrecision);
 
-            expect(sats).toBe(150000000n);
+            expect(sats).toBe(150000000);
         });
     });
 });
