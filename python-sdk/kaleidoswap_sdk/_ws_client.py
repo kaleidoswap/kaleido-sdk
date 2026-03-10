@@ -232,7 +232,7 @@ class WSClient:
 
             self._emit("connected")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self._is_connecting = False
             _log.error("WebSocket connection timeout: %s", self._url)
             raise WebSocketError("Connection timeout")

@@ -21,8 +21,8 @@ async def get_fresh_quote(
     *,
     from_asset: str = "BTC",
     to_asset: str = "USDT",
-    from_layer: Layer = Layer.btc_ln,
-    to_layer: Layer = Layer.rgb_ln,
+    from_layer: Layer = Layer.BTC_LN,
+    to_layer: Layer = Layer.RGB_LN,
     from_amount: int = 4_100_000,  # 4.1M sats
 ) -> PairQuoteResponse:
     """

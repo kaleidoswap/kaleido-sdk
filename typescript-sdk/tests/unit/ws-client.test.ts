@@ -6,10 +6,9 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WSClient } from '../../src/ws-client.js';
-import type { QuoteResponse } from '../../src/ws-types.js';
+import type { QuoteResponse } from '../../src/types/ws.js';
 
-// Skip: WebSocket global is not available in Node.js test environment
-describe.skip('WSClient', () => {
+describe('WSClient', () => {
     let wsClient: WSClient;
     const mockWsUrl = 'ws://localhost:8000/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe';
 
@@ -54,13 +53,24 @@ describe.skip('WSClient', () => {
             return new Promise<void>((resolve) => {
                 const mockQuote: QuoteResponse = {
                     action: 'quote_response',
-                    from_asset: 'btc',
-                    to_asset: 'usdt',
-                    from_amount: 10000000,
-                    to_amount: 45000000000,
+                    from_asset: {
+                        asset_id: 'BTC',
+                        name: 'Bitcoin',
+                        ticker: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 10000000,
+                        precision: 8,
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        name: 'Tether USD',
+                        ticker: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: 45000000000,
+                        precision: 6,
+                    },
                     price: 45000,
                     rfq_id: 'rfq_123',
-                    price_precision: 2,
                     timestamp: Date.now(),
                     expires_at: Date.now() + 30000,
                     fee: {

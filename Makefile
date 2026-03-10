@@ -1,4 +1,4 @@
-.PHONY: help build test clean format lint check generate-models generate-python-sdk-models generate-ts-types generate-rust-models update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python check-format-python check-lint-python check-python
+.PHONY: help build test clean format lint check check-python check-typescript check-format-python check-lint-python check-format-typescript check-lint-typescript generate-models generate-python-sdk-models generate-ts-types update-specs pre-commit pre-commit-typescript pre-commit-python-sdk typecheck-typescript typecheck-python lint-python
 
 # Environment variables with defaults for local development
 export KALEIDO_API_URL ?= http://localhost:8000
@@ -9,14 +9,12 @@ help:
 	@echo "Kaleidoswap SDK - Development Makefile"
 	@echo ""
 	@echo "Building:"
-	@echo "  build              - Build all components (Rust + SDKs)"
-	@echo "  build-rust         - Build Rust core library"
+	@echo "  build              - Build all SDKs"
 	@echo "  build-python-sdk   - Build Python SDK (pure Python)"
 	@echo "  build-typescript   - Build TypeScript SDK"
 	@echo ""
 	@echo "Testing:"
 	@echo "  test               - Run all tests"
-	@echo "  test-rust          - Run Rust tests"
 	@echo "  test-python-sdk    - Run Python SDK tests"
 	@echo "  test-typescript    - Run TypeScript SDK tests"
 	@echo ""
@@ -31,10 +29,11 @@ help:
 	@echo "  node-info          - Get local node information"
 	@echo ""
 	@echo "Code Quality:"
-	@echo "  check              - Run cargo check"
 	@echo "  format             - Format all code"
 	@echo "  lint               - Lint all code"
-	@echo "  clippy             - Run Rust clippy"
+	@echo "  check              - Check all SDKs (format, lint, typecheck)"
+	@echo "  check-python       - Check Python SDK (format, lint, typecheck)"
+	@echo "  check-typescript   - Check TypeScript SDK (format, lint, typecheck)"
 	@echo ""
 	@echo "Pre-commit (lint, typecheck, format check, test):"
 	@echo "  pre-commit              - Run all checks for both SDKs"
@@ -45,8 +44,7 @@ help:
 	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
 	@echo "  generate-python-sdk-models - Generate Python SDK Pydantic models"
 	@echo "  generate-ts-types          - Generate TypeScript types"
-	@echo "  generate-rust-models       - Generate Rust models (Progenitor via build.rs)"
-	@echo "  regenerate                 - Full regen: update-specs + generate-models + check"
+	@echo "  regenerate                 - Full regen: update-specs + generate-models"
 	@echo "  update-specs               - Download latest OpenAPI specs"
 	@echo ""
 	@echo "Deployment:"
@@ -64,11 +62,13 @@ PYTHON_SDK := python-sdk
 # Build targets
 # ============================================================================
 
-build: build-rust build-python-sdk build-typescript
+build: build-python-sdk build-typescript
+# Rust (not actively maintained):
+# build: build-rust build-python-sdk build-typescript
 
-build-rust:
-	@echo "🦀 Building Rust core library..."
-	cargo build --release --workspace
+# build-rust:
+# 	@echo "🦀 Building Rust core library..."
+# 	cargo build -p kaleidoswap-core --release
 
 build-typescript:
 	@echo "📦 Building TypeScript SDK..."
@@ -82,11 +82,13 @@ build-python-sdk:
 # Test targets
 # ============================================================================
 
-test: test-rust test-python-sdk test-typescript
+test: test-python-sdk test-typescript
+# Rust (not actively maintained):
+# test: test-rust test-python-sdk test-typescript
 
-test-rust:
-	@echo "🧪 Running Rust tests..."
-	cargo test --all
+# test-rust:
+# 	@echo "🧪 Running Rust core tests..."
+# 	cargo test -p kaleidoswap-core --release
 
 test-typescript:
 	@echo "🧪 Running TypeScript SDK tests..."
@@ -157,31 +159,35 @@ node-info:
 # Code quality targets
 # ============================================================================
 
-check:
-	@echo "🔍 Running cargo check..."
-	cargo check --all
+format: format-python format-typescript
+# Rust (not actively maintained):
+# format: format-rust format-python format-typescript
 
-format: format-rust format-python format-typescript
-
-format-rust:
-	@echo "✨ Formatting Rust code..."
-	cargo fmt --all
+# format-rust:
+# 	@echo "✨ Formatting Rust code..."
+# 	cargo fmt --all
 
 format-python:
 	@echo "✨ Formatting Python SDK code..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/
+		uv run ruff format kaleidoswap_sdk tests
 
 format-typescript:
 	@echo "✨ Formatting TypeScript code..."
 	cd $(TYPESCRIPT_SDK) && pnpm run format
 
-lint: lint-rust lint-typescript check-python
+lint: lint-typescript check-python
+# Rust (not actively maintained):
+# lint: lint-rust lint-typescript check-python
 
-lint-rust:
-	@echo "🔍 Linting Rust code..."
-	cargo fmt --all -- --check
+# lint-rust:
+# 	@echo "🔍 Checking Rust formatting..."
+# 	cargo fmt --all -- --check
+
+# clippy:
+# 	@echo "📎 Running clippy..."
+# 	cargo clippy --all-targets --all-features -- -D warnings
 
 lint-typescript:
 	@echo "🔍 Linting TypeScript code..."
@@ -191,15 +197,15 @@ lint-python:
 	@echo "🛠️ Fixing Python SDK lint issues..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
-		uv run ruff check --fix kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
+		uv run ruff format kaleidoswap_sdk tests && \
+		uv run ruff check --fix kaleidoswap_sdk tests && \
 		uv run mypy kaleidoswap_sdk --ignore-missing-imports
 
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
 	cd $(PYTHON_SDK) && \
 		uv sync --frozen --all-extras --dev && \
-		uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/
+		uv run ruff format --check kaleidoswap_sdk tests
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
@@ -216,13 +222,24 @@ typecheck-python:
 check-python: check-format-python check-lint-python typecheck-python
 	@echo "✅ Python SDK format, lint, and type checks passed!"
 
-clippy:
-	@echo "📎 Running clippy..."
-	cargo clippy --all-targets -- -D warnings
+check-typescript: check-format-typescript check-lint-typescript typecheck-typescript
+	@echo "✅ TypeScript SDK format, lint, and type checks passed!"
+
+check: check-python check-typescript
+	@echo ""
+	@echo "✅ All SDKs passed format, lint, and type checks!"
 
 typecheck-typescript:
 	@echo "📝 Type checking TypeScript SDK..."
 	cd $(TYPESCRIPT_SDK) && pnpm run typecheck
+
+check-format-typescript:
+	@echo "🔍 Checking TypeScript SDK formatting..."
+	cd $(TYPESCRIPT_SDK) && pnpm run format:check
+
+check-lint-typescript:
+	@echo "🔍 Checking TypeScript SDK lint..."
+	cd $(TYPESCRIPT_SDK) && pnpm run lint
 
 # ============================================================================
 # Pre-commit targets (run before committing)
@@ -248,8 +265,8 @@ pre-commit-python-sdk:
 	@echo ""
 	cd $(PYTHON_SDK) && \
 		uv sync --all-extras --dev && \
-		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
-		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests --exclude kaleidoswap_sdk/_generated/ && \
+		echo "  → Checking format..." && uv run ruff format --check kaleidoswap_sdk tests && \
+		echo "  → Linting..." && uv run ruff check kaleidoswap_sdk tests && \
 		echo "  → Type checking (warnings only)..." && (uv run mypy kaleidoswap_sdk --ignore-missing-imports || echo "    ⚠️  Type check warnings (non-blocking)") && \
 		echo "  → Running tests (excluding integration)..." && uv run pytest tests/ -v -m "not integration"
 	@echo ""
@@ -260,6 +277,11 @@ pre-commit-python-sdk:
 # ============================================================================
 
 generate-models: generate-python-sdk-models generate-ts-types
+# Rust (not actively maintained):
+# generate-models: generate-python-sdk-models generate-ts-types generate-rust-models
+# generate-rust-models:
+# 	@echo "🦀 Generating Rust models (via cargo build)..."
+# 	cargo build -p kaleidoswap-core
 	@echo "✅ All models generated (Python SDK + TypeScript)"
 
 generate-python-sdk-models:
@@ -270,12 +292,7 @@ generate-ts-types:
 	@echo "📦 Generating TypeScript types from OpenAPI specs..."
 	bash scripts/generate_typescript_types.sh
 
-generate-rust-models:
-	@echo "🔄 Generating Rust models from OpenAPI specs (Progenitor)..."
-	./scripts/generate-rust-models.sh
-	@echo "✅ Rust models generated via build.rs."
-
-regenerate: update-specs generate-models check
+regenerate: update-specs generate-models
 	@echo "✅ Full regeneration complete!"
 
 update-specs:
@@ -300,8 +317,6 @@ deploy-python-sdk:
 
 clean:
 	@echo "🧹 Cleaning build artifacts..."
-	cargo clean
-	rm -rf target/
 	rm -rf $(PYTHON_SDK)/*.egg-info/
 	rm -rf $(PYTHON_SDK)/dist/
 	rm -rf $(PYTHON_SDK)/build/
@@ -311,6 +326,9 @@ clean:
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
+# Rust (not actively maintained):
+# 	cargo clean
+# 	rm -rf target/
 
 # ============================================================================
 # Development helpers
@@ -323,13 +341,3 @@ dev-typescript:
 dev-python-sdk:
 	@echo "🐍 Installing Python SDK in development mode..."
 	cd $(PYTHON_SDK) && uv sync --all-extras --dev
-
-# Watch for changes and rebuild
-watch:
-	@echo "👀 Watching for changes..."
-	cargo watch -x check
-
-# Generate documentation
-docs:
-	@echo "📚 Generating documentation..."
-	cargo doc --no-deps --open

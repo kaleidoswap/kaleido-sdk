@@ -38,7 +38,7 @@ dev = [
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1.0",
-    "datamodel-code-generator>=0.54.0",
+    "datamodel-code-generator[ruff]>=0.54.0",
 ]
 
 [project.urls]
@@ -57,7 +57,7 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = false
 warn_return_any = false
 warn_unused_ignores = true
@@ -77,22 +77,12 @@ ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
-# Exclude generated files from formatting (they're auto-generated with datamodel-code-generator)
-exclude = [
-    "kaleidoswap_sdk/_generated/",
-]
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-# Ignore certain rules in auto-generated code
-"kaleidoswap_sdk/_generated/**/*.py" = [
-    "F403",  # Star imports
-    "F405",  # Undefined names from star imports
-    "N818",  # Exception naming conventions
-    "UP007", # Use X | Y for type annotations
-    "E501",  # Line too long
-]
+# Star imports in the generated re-export module are intentional
+"kaleidoswap_sdk/_generated/__init__.py" = ["F403", "F405"]

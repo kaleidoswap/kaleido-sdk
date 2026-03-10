@@ -149,11 +149,11 @@ export class QuoteExpiredError extends KaleidoError {
  * Insufficient balance for operation
  */
 export class InsufficientBalanceError extends KaleidoError {
-    readonly requiredAmount: bigint;
-    readonly availableAmount: bigint;
+    readonly requiredAmount: number;
+    readonly availableAmount: number;
     readonly asset?: string;
 
-    constructor(requiredAmount: bigint, availableAmount: bigint, asset?: string) {
+    constructor(requiredAmount: number, availableAmount: number, asset?: string) {
         const msg = asset
             ? `Insufficient ${asset} balance: need ${requiredAmount}, have ${availableAmount}`
             : `Insufficient balance: need ${requiredAmount}, have ${availableAmount}`;

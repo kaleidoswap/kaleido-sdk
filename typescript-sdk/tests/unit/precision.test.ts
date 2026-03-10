@@ -48,20 +48,16 @@ describe('Precision Utilities', () => {
             {
                 asset_id: 'btc',
                 ticker: 'BTC',
-                name: 'Bitcoin',
                 precision: 8,
                 min_order_size: 1000, // 0.00001 BTC
                 max_order_size: 100000000, // 1 BTC
-                is_active: true,
             },
             {
                 asset_id: 'usdt',
                 ticker: 'USDT',
-                name: 'Tether',
                 precision: 6,
                 min_order_size: 1000000, // 1 USDT
                 max_order_size: 1000000000, // 1000 USDT
-                is_active: true,
             },
         ];
 
@@ -121,6 +117,8 @@ describe('Precision Utilities', () => {
 
             expect(limits.minDisplayAmount).toBe(0.00001);
             expect(limits.maxDisplayAmount).toBe(1);
+            expect(limits.minRawAmount).toBe(1000);
+            expect(limits.maxRawAmount).toBe(100000000);
             expect(limits.precision).toBe(8);
         });
     });

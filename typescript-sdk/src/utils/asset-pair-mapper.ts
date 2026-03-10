@@ -136,16 +136,16 @@ export class AssetPairMapper {
             }
             // Use most restrictive order sizes
             if (assetData.min_order_size > 0) {
-                existing.min_order_size = Math.max(
-                    existing.min_order_size,
-                    assetData.min_order_size,
-                );
+                existing.min_order_size =
+                    existing.min_order_size > assetData.min_order_size
+                        ? existing.min_order_size
+                        : assetData.min_order_size;
             }
             if (assetData.max_order_size < Number.MAX_SAFE_INTEGER) {
-                existing.max_order_size = Math.min(
-                    existing.max_order_size,
-                    assetData.max_order_size,
-                );
+                existing.max_order_size =
+                    existing.max_order_size < assetData.max_order_size
+                        ? existing.max_order_size
+                        : assetData.max_order_size;
             }
         } else {
             // Create new mapped asset

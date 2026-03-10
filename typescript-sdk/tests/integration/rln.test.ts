@@ -3,11 +3,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const TEST_API_URL = process.env.TEST_API_URL || 'http://localhost:8000';
 const TEST_NODE_URL = process.env.TEST_NODE_URL || 'http://localhost:3001';
-const SKIP_RLN_TESTS = process.env.SKIP_RLN_TESTS === 'true';
 
-const describeRln = SKIP_RLN_TESTS ? describe.skip : describe;
-
-describeRln('RLN Client Integration', () => {
+describe('RLN Client Integration', () => {
     let client: KaleidoClient;
 
     beforeAll(async () => {

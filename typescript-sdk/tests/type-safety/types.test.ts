@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { KaleidoClient } from '../../src/index.js';
-import type { Quote, TradingPair, Asset } from '../../src/types.js';
+import type { TradingPair, Asset } from '../../src/types/index.js';
 
 describe('Type Safety', () => {
     describe('Client Types', () => {
@@ -26,9 +26,6 @@ describe('Type Safety', () => {
     describe('Response Types', () => {
         it('should properly type API responses', async () => {
             // This is a compile-time test - if types are wrong, TypeScript will error
-            const client = KaleidoClient.create({
-                baseUrl: 'https://api.example.com',
-            });
 
             // Mock response structure
             const mockAssets: Asset[] = [

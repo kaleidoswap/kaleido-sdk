@@ -4,130 +4,139 @@
  * Re-exports types from generated Node types for easier consumption.
  * This file extracts operation types (request/response) from the generated
  * OpenAPI types and exports them with simpler names.
+ *
+ * Note: The RGB Lightning Node spec doesn't use operationIds, so we extract
+ * types directly from paths instead of operations.
  */
 
-import type { operations, components } from './generated/node-types.js';
+import type { paths, components } from './generated/node-types.js';
 
-// Helper types (internal)
-type RequestBody<T extends keyof operations> = operations[T] extends {
-    requestBody?: { content: { 'application/json': infer R } };
-}
+// Helper types (internal) - extract from paths
+type RequestBody<
+    TPath extends keyof paths,
+    TMethod extends keyof paths[TPath],
+> = paths[TPath][TMethod] extends { requestBody?: { content: { 'application/json': infer R } } }
     ? R
     : never;
 
-type ResponseSuccess<T extends keyof operations> = operations[T] extends {
+type ResponseSuccess<
+    TPath extends keyof paths,
+    TMethod extends keyof paths[TPath],
+> = paths[TPath][TMethod] extends {
     responses: { 200: { content: { 'application/json': infer R } } };
 }
     ? R
-    : operations[T] extends { responses: { 201: { content: { 'application/json': infer R } } } }
+    : paths[TPath][TMethod] extends {
+            responses: { 201: { content: { 'application/json': infer R } } };
+        }
       ? R
       : never;
 
 // Authentication & Wallet
-export type InitWalletRequest = RequestBody<'post_init'>;
-export type InitResponse = ResponseSuccess<'post_init'>;
-export type UnlockRequest = RequestBody<'post_unlock'>;
-export type UnlockResponse = ResponseSuccess<'post_unlock'>;
-export type ChangePasswordRequest = RequestBody<'post_changepassword'>;
-export type ChangePasswordResponse = ResponseSuccess<'post_changepassword'>;
-export type RestoreRequest = RequestBody<'post_restore'>;
-export type RestoreResponse = ResponseSuccess<'post_restore'>;
-export type BackupRequest = RequestBody<'post_backup'>;
-export type BackupResponse = ResponseSuccess<'post_backup'>;
-export type ShutdownResponse = ResponseSuccess<'post_shutdown'>;
+export type InitWalletRequest = RequestBody<'/init', 'post'>;
+export type InitResponse = ResponseSuccess<'/init', 'post'>;
+export type UnlockRequest = RequestBody<'/unlock', 'post'>;
+export type UnlockResponse = ResponseSuccess<'/unlock', 'post'>;
+export type ChangePasswordRequest = RequestBody<'/changepassword', 'post'>;
+export type ChangePasswordResponse = ResponseSuccess<'/changepassword', 'post'>;
+export type RestoreRequest = RequestBody<'/restore', 'post'>;
+export type RestoreResponse = ResponseSuccess<'/restore', 'post'>;
+export type BackupRequest = RequestBody<'/backup', 'post'>;
+export type BackupResponse = ResponseSuccess<'/backup', 'post'>;
+export type ShutdownResponse = ResponseSuccess<'/shutdown', 'post'>;
 
 // Node Information
-export type NodeInfoResponse = ResponseSuccess<'get_nodeinfo'>;
-export type NetworkInfoResponse = ResponseSuccess<'get_networkinfo'>;
+export type NodeInfoResponse = ResponseSuccess<'/nodeinfo', 'get'>;
+export type NetworkInfoResponse = ResponseSuccess<'/networkinfo', 'get'>;
 
 // Assets - Management
-export type ListAssetsRequest = RequestBody<'post_listassets'>;
-export type ListAssetsResponse = ResponseSuccess<'post_listassets'>;
-export type AssetBalanceRequest = RequestBody<'post_assetbalance'>;
-export type AssetBalanceResponse = ResponseSuccess<'post_assetbalance'>;
-export type BtcBalanceResponse = ResponseSuccess<'post_btcbalance'>;
-export type AssetMetadataRequest = RequestBody<'post_assetmetadata'>;
-export type AssetMetadataResponse = ResponseSuccess<'post_assetmetadata'>;
-export type SendRgbRequest = RequestBody<'post_sendrgb'>;
-export type SendRgbResponse = ResponseSuccess<'post_sendrgb'>;
-export type SendBtcRequest = RequestBody<'post_sendbtc'>;
-export type SendBtcResponse = ResponseSuccess<'post_sendbtc'>;
-export type CreateUtxosRequest = RequestBody<'post_createutxos'>;
-export type CreateUtxosResponse = ResponseSuccess<'post_createutxos'>;
-export type ListUnspentsRequest = RequestBody<'post_listunspents'>;
-export type ListUnspentsResponse = ResponseSuccess<'post_listunspents'>;
-export type ListTransactionsRequest = RequestBody<'post_listtransactions'>;
-export type ListTransactionsResponse = ResponseSuccess<'post_listtransactions'>;
+export type ListAssetsRequest = RequestBody<'/listassets', 'post'>;
+export type ListAssetsResponse = ResponseSuccess<'/listassets', 'post'>;
+export type AssetBalanceRequest = RequestBody<'/assetbalance', 'post'>;
+export type AssetBalanceResponse = ResponseSuccess<'/assetbalance', 'post'>;
+export type BtcBalanceResponse = ResponseSuccess<'/btcbalance', 'post'>;
+export type AssetMetadataRequest = RequestBody<'/assetmetadata', 'post'>;
+export type AssetMetadataResponse = ResponseSuccess<'/assetmetadata', 'post'>;
+export type SendRgbRequest = RequestBody<'/sendrgb', 'post'>;
+export type SendRgbResponse = ResponseSuccess<'/sendrgb', 'post'>;
+export type SendBtcRequest = RequestBody<'/sendbtc', 'post'>;
+export type SendBtcResponse = ResponseSuccess<'/sendbtc', 'post'>;
+export type CreateUtxosRequest = RequestBody<'/createutxos', 'post'>;
+export type CreateUtxosResponse = ResponseSuccess<'/createutxos', 'post'>;
+export type ListUnspentsRequest = RequestBody<'/listunspents', 'post'>;
+export type ListUnspentsResponse = ResponseSuccess<'/listunspents', 'post'>;
+export type ListTransactionsRequest = RequestBody<'/listtransactions', 'post'>;
+export type ListTransactionsResponse = ResponseSuccess<'/listtransactions', 'post'>;
 
 // Assets - Issuance & Media
-export type GetAssetMediaRequest = RequestBody<'post_getassetmedia'>;
-export type GetAssetMediaResponse = ResponseSuccess<'post_getassetmedia'>;
-export type IssueAssetNIARequest = RequestBody<'post_issueassetnia'>;
-export type IssueAssetNIAResponse = ResponseSuccess<'post_issueassetnia'>;
-export type IssueAssetCFARequest = RequestBody<'post_issueassetcfa'>;
-export type IssueAssetCFAResponse = ResponseSuccess<'post_issueassetcfa'>;
-export type IssueAssetUDARequest = RequestBody<'post_issueassetuda'>;
-export type IssueAssetUDAResponse = ResponseSuccess<'post_issueassetuda'>;
+export type GetAssetMediaRequest = RequestBody<'/getassetmedia', 'post'>;
+export type GetAssetMediaResponse = ResponseSuccess<'/getassetmedia', 'post'>;
+export type IssueAssetNIARequest = RequestBody<'/issueassetnia', 'post'>;
+export type IssueAssetNIAResponse = ResponseSuccess<'/issueassetnia', 'post'>;
+export type IssueAssetCFARequest = RequestBody<'/issueassetcfa', 'post'>;
+export type IssueAssetCFAResponse = ResponseSuccess<'/issueassetcfa', 'post'>;
+export type IssueAssetUDARequest = RequestBody<'/issueassetuda', 'post'>;
+export type IssueAssetUDAResponse = ResponseSuccess<'/issueassetuda', 'post'>;
 
 // Transfers
-export type ListTransfersRequest = RequestBody<'post_listtransfers'>;
-export type ListTransfersResponse = ResponseSuccess<'post_listtransfers'>;
-export type RefreshTransfersRequest = RequestBody<'post_refreshtransfers'>;
-export type FailTransfersRequest = RequestBody<'post_failtransfers'>;
+export type ListTransfersRequest = RequestBody<'/listtransfers', 'post'>;
+export type ListTransfersResponse = ResponseSuccess<'/listtransfers', 'post'>;
+export type RefreshTransfersRequest = RequestBody<'/refreshtransfers', 'post'>;
+export type FailTransfersRequest = RequestBody<'/failtransfers', 'post'>;
 
 // Lightning Network - Channels
-export type ListChannelsResponse = ResponseSuccess<'get_listchannels'>;
-export type OpenChannelRequest = RequestBody<'post_openchannel'>;
-export type OpenChannelResponse = ResponseSuccess<'post_openchannel'>;
-export type CloseChannelRequest = RequestBody<'post_closechannel'>;
-export type GetChannelIdRequest = RequestBody<'post_getchannelid'>;
-export type GetChannelIdResponse = ResponseSuccess<'post_getchannelid'>;
+export type ListChannelsResponse = ResponseSuccess<'/listchannels', 'get'>;
+export type OpenChannelRequest = RequestBody<'/openchannel', 'post'>;
+export type OpenChannelResponse = ResponseSuccess<'/openchannel', 'post'>;
+export type CloseChannelRequest = RequestBody<'/closechannel', 'post'>;
+export type GetChannelIdRequest = RequestBody<'/getchannelid', 'post'>;
+export type GetChannelIdResponse = ResponseSuccess<'/getchannelid', 'post'>;
 
 // Lightning Network - Peers
-export type ListPeersResponse = ResponseSuccess<'get_listpeers'>;
-export type ConnectPeerRequest = RequestBody<'post_connectpeer'>;
-export type ConnectPeerResponse = ResponseSuccess<'post_connectpeer'>;
-export type DisconnectPeerRequest = RequestBody<'post_disconnectpeer'>;
+export type ListPeersResponse = ResponseSuccess<'/listpeers', 'get'>;
+export type ConnectPeerRequest = RequestBody<'/connectpeer', 'post'>;
+export type ConnectPeerResponse = ResponseSuccess<'/connectpeer', 'post'>;
+export type DisconnectPeerRequest = RequestBody<'/disconnectpeer', 'post'>;
 
 // Lightning Network - Invoices & Payments
-export type CreateLNInvoiceRequest = RequestBody<'post_lninvoice'>;
-export type CreateLNInvoiceResponse = ResponseSuccess<'post_lninvoice'>;
-export type CreateRgbInvoiceRequest = RequestBody<'post_rgbinvoice'>;
-export type CreateRgbInvoiceResponse = ResponseSuccess<'post_rgbinvoice'>;
-export type DecodeLNInvoiceRequest = RequestBody<'post_decodelninvoice'>;
-export type DecodeLNInvoiceResponse = ResponseSuccess<'post_decodelninvoice'>;
-export type DecodeRgbInvoiceRequest = RequestBody<'post_decodergbinvoice'>;
-export type DecodeRgbInvoiceResponse = ResponseSuccess<'post_decodergbinvoice'>;
-export type GetInvoiceStatusRequest = RequestBody<'post_invoicestatus'>;
-export type GetInvoiceStatusResponse = ResponseSuccess<'post_invoicestatus'>;
-export type SendPaymentRequest = RequestBody<'post_sendpayment'>;
-export type SendPaymentResponse = ResponseSuccess<'post_sendpayment'>;
-export type KeysendRequest = RequestBody<'post_keysend'>;
-export type KeysendResponse = ResponseSuccess<'post_keysend'>;
-export type ListPaymentsResponse = ResponseSuccess<'get_listpayments'>;
-export type GetPaymentRequest = RequestBody<'post_getpayment'>;
-export type GetPaymentResponse = ResponseSuccess<'post_getpayment'>;
+export type CreateLNInvoiceRequest = RequestBody<'/lninvoice', 'post'>;
+export type CreateLNInvoiceResponse = ResponseSuccess<'/lninvoice', 'post'>;
+export type CreateRgbInvoiceRequest = RequestBody<'/rgbinvoice', 'post'>;
+export type CreateRgbInvoiceResponse = ResponseSuccess<'/rgbinvoice', 'post'>;
+export type DecodeLNInvoiceRequest = RequestBody<'/decodelninvoice', 'post'>;
+export type DecodeLNInvoiceResponse = ResponseSuccess<'/decodelninvoice', 'post'>;
+export type DecodeRgbInvoiceRequest = RequestBody<'/decodergbinvoice', 'post'>;
+export type DecodeRgbInvoiceResponse = ResponseSuccess<'/decodergbinvoice', 'post'>;
+export type GetInvoiceStatusRequest = RequestBody<'/invoicestatus', 'post'>;
+export type GetInvoiceStatusResponse = ResponseSuccess<'/invoicestatus', 'post'>;
+export type SendPaymentRequest = RequestBody<'/sendpayment', 'post'>;
+export type SendPaymentResponse = ResponseSuccess<'/sendpayment', 'post'>;
+export type KeysendRequest = RequestBody<'/keysend', 'post'>;
+export type KeysendResponse = ResponseSuccess<'/keysend', 'post'>;
+export type ListPaymentsResponse = ResponseSuccess<'/listpayments', 'get'>;
+export type GetPaymentRequest = RequestBody<'/getpayment', 'post'>;
+export type GetPaymentResponse = ResponseSuccess<'/getpayment', 'post'>;
 
 // Maker/Taker Swaps
-export type WhitelistTradeRequest = RequestBody<'post_taker'>;
-export type MakerInitRequest = RequestBody<'post_makerinit'>;
-export type MakerInitResponse = ResponseSuccess<'post_makerinit'>;
-export type MakerExecuteRequest = RequestBody<'post_makerexecute'>;
-export type MakerExecuteResponse = ResponseSuccess<'post_makerexecute'>;
-export type ListSwapsResponse = ResponseSuccess<'get_listswaps'>;
-export type GetSwapRequest = RequestBody<'post_getswap'>;
-export type GetSwapResponse = ResponseSuccess<'post_getswap'>;
+export type WhitelistTradeRequest = RequestBody<'/taker', 'post'>;
+export type MakerInitRequest = RequestBody<'/makerinit', 'post'>;
+export type MakerInitResponse = ResponseSuccess<'/makerinit', 'post'>;
+export type MakerExecuteRequest = RequestBody<'/makerexecute', 'post'>;
+export type MakerExecuteResponse = ResponseSuccess<'/makerexecute', 'post'>;
+export type ListSwapsResponse = ResponseSuccess<'/listswaps', 'get'>;
+export type GetSwapRequest = RequestBody<'/getswap', 'post'>;
+export type GetSwapResponse = ResponseSuccess<'/getswap', 'post'>;
 
 // Utility Methods
-export type AddressResponse = ResponseSuccess<'post_address'>;
-export type SignMessageRequest = RequestBody<'post_signmessage'>;
-export type SignMessageResponse = ResponseSuccess<'post_signmessage'>;
-export type SendOnionMessageRequest = RequestBody<'post_sendonionmessage'>;
-export type CheckIndexerUrlRequest = RequestBody<'post_checkindexerurl'>;
-export type CheckProxyEndpointRequest = RequestBody<'post_checkproxyendpoint'>;
-export type RevokeTokenRequest = RequestBody<'post_revoketoken'>;
-export type EstimateFeeRequest = RequestBody<'post_estimatefee'>;
-export type EstimateFeeResponse = ResponseSuccess<'post_estimatefee'>;
+export type AddressResponse = ResponseSuccess<'/address', 'post'>;
+export type SignMessageRequest = RequestBody<'/signmessage', 'post'>;
+export type SignMessageResponse = ResponseSuccess<'/signmessage', 'post'>;
+export type SendOnionMessageRequest = RequestBody<'/sendonionmessage', 'post'>;
+export type CheckIndexerUrlRequest = RequestBody<'/checkindexerurl', 'post'>;
+export type CheckProxyEndpointRequest = RequestBody<'/checkproxyendpoint', 'post'>;
+export type RevokeTokenRequest = RequestBody<'/revoketoken', 'post'>;
+export type EstimateFeeRequest = RequestBody<'/estimatefee', 'post'>;
+export type EstimateFeeResponse = ResponseSuccess<'/estimatefee', 'post'>;
 
 // Re-export components for advanced usage
 export type NodeComponents = components;

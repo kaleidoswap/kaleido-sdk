@@ -147,8 +147,8 @@ class TestMakerClientIntegration:
             client,
             from_asset=asset_id,
             to_asset="BTC",
-            from_layer=Layer.rgb_ln,
-            to_layer=Layer.btc_l1,
+            from_layer=Layer.RGB_LN,
+            to_layer=Layer.BTC_L1,
         )
         assert quote.rfq_id is not None, "Quote must have RFQ ID"
         assert quote.from_asset.amount is not None and quote.from_asset.amount > 0, (
@@ -179,7 +179,7 @@ class TestMakerClientIntegration:
             to_asset=to_asset_dict,
             receiver_address=ReceiverAddress(
                 address=receiver_address_str,
-                format=ReceiverAddressFormat.btc_address,
+                format=ReceiverAddressFormat.BTC_ADDRESS,
             ),
             min_onchain_conf=1,
             refund_address=receiver_address_str,

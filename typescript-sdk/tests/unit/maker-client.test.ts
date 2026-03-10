@@ -7,7 +7,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MakerClient } from '../../src/maker-client.js';
 import { HttpClient } from '../../src/http-client.js';
-import type { Quote } from '../../src/types.js';
+import type { Quote } from '../../src/api-types-ext.js';
 
 describe('MakerClient - Quote Methods', () => {
     let makerClient: MakerClient;
@@ -45,7 +45,6 @@ describe('MakerClient - Quote Methods', () => {
                     precision: 6,
                 },
                 price: 104761904761,
-                price_precision: 6,
                 fee: {
                     fee_asset: 'BTC',
                     fee_asset_precision: 8,
@@ -120,7 +119,6 @@ describe('MakerClient - Quote Methods', () => {
                     precision: 6,
                 },
                 price: 104761904761,
-                price_precision: 6,
                 fee: {
                     fee_asset: 'BTC',
                     fee_asset_precision: 8,
@@ -384,7 +382,7 @@ describe('MakerClient - Quote Methods', () => {
 
             try {
                 await makerClient.getQuote({
-                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: -1 },
+                    from_asset: { asset_id: 'BTC', layer: 'BTC_LN', amount: 10000 },
                     to_asset: { asset_id: 'USDT', layer: 'RGB_LN', amount: null },
                 });
                 expect.fail('Should have thrown an error');

@@ -72,7 +72,7 @@ export class WSClient extends EventEmitter {
      * Connect to WebSocket server
      */
     async connect(): Promise<void> {
-        if (this.isConnecting || this.ws?.readyState === WebSocket.OPEN) {
+        if (this.isConnecting || this.ws?.readyState === 1 /* WebSocket.OPEN */) {
             return;
         }
 
@@ -201,7 +201,7 @@ export class WSClient extends EventEmitter {
      * Send message to WebSocket server
      */
     private send(message: WebSocketMessage): void {
-        if (this.ws?.readyState === WebSocket.OPEN) {
+        if (this.ws?.readyState === 1 /* WebSocket.OPEN */) {
             this.ws.send(JSON.stringify(message));
         } else {
             this._log.warn(
@@ -280,6 +280,6 @@ export class WSClient extends EventEmitter {
      * Check if connected
      */
     isConnected(): boolean {
-        return this.ws?.readyState === WebSocket.OPEN;
+        return this.ws?.readyState === 1 /* WebSocket.OPEN */;
     }
 }

@@ -160,7 +160,7 @@ class TestRlnClientIntegration:
     @pytest.mark.integration
     async def test_list_assets_with_filter(self, client_with_node: KaleidoClient) -> None:
         """Test listing assets with enum filter (regression: enum serialization)."""
-        resp = await client_with_node.rln.list_assets(filter_asset_schemas=[AssetSchema.nia])
+        resp = await client_with_node.rln.list_assets(filter_asset_schemas=[AssetSchema.NIA])
         assert resp is not None
         assert hasattr(resp, "nia")
 
