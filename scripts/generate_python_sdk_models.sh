@@ -64,7 +64,7 @@ generate_model() {
 generate_model "$SPECS_DIR/kaleidoswap.json"        "$OUTPUT_DIR/api_types.py"
 generate_model "$SPECS_DIR/rgb-lightning-node.yaml" "$OUTPUT_DIR/node_types.py" --use-title-as-name
 
-# Create __init__.py to re-export types
+# Create __init__.py exposing the two submodules
 cat > "$OUTPUT_DIR/__init__.py" << 'EOF'
 """
 Auto-generated Pydantic models from OpenAPI specifications.
@@ -73,8 +73,8 @@ DO NOT EDIT MANUALLY - These files are auto-generated.
 Run `make generate-python-sdk-models` to regenerate.
 """
 
-from .api_types import *
-from .node_types import *
+from . import api_types as api_types
+from . import node_types as node_types
 EOF
 
 echo ""

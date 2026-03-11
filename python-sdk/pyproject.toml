@@ -66,6 +66,10 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
+module = "kaleidoswap_sdk._generated.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
 module = "websockets.*"
 ignore_missing_imports = true
 
@@ -80,7 +84,3 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 ignore = ["E501"]
-
-[tool.ruff.lint.per-file-ignores]
-# Star imports in the generated re-export module are intentional
-"kaleidoswap_sdk/_generated/__init__.py" = ["F403", "F405"]
