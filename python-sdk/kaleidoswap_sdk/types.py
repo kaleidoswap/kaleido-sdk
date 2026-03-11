@@ -91,7 +91,8 @@ class KaleidoConfig:
     SDK client configuration.
 
     Attributes:
-        base_url: Base URL for the Kaleidoswap API
+        base_url: Base URL for the Kaleidoswap Maker API.
+            Defaults to https://api.regtest.kaleidoswap.com.
         node_url: Optional URL for RGB Lightning Node
         api_key: Optional API key for authenticated requests
         timeout: Request timeout in seconds (default: 30)
@@ -105,7 +106,7 @@ class KaleidoConfig:
             log handlers and output destinations.
     """
 
-    base_url: str
+    base_url: str = "https://api.regtest.kaleidoswap.com"
     node_url: str | None = None
     api_key: str | None = None
     timeout: float = 30.0

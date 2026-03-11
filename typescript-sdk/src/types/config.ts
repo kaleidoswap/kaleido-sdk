@@ -19,11 +19,14 @@ import type { LogLevel, LogLevelName, SdkLogger } from '../logging.js';
 /**
  * Configuration for the Kaleidoswap SDK client.
  *
- * At least one of `baseUrl` or `nodeUrl` must be provided.
- * Omitting both will throw a `ConfigError` at client creation time.
+ * All fields are optional. When `baseUrl` is omitted the client defaults to
+ * the regtest environment (https://api.regtest.kaleidoswap.com).
  *
  * @example
- * // Market API only
+ * // Zero-config — connects to regtest
+ * const config: KaleidoConfig = {};
+ *
+ * // Production Maker API
  * const config: KaleidoConfig = { baseUrl: 'https://api.kaleidoswap.com' };
  *
  * // RGB Node only
@@ -35,22 +38,9 @@ import type { LogLevel, LogLevelName, SdkLogger } from '../logging.js';
  *   nodeUrl: 'http://localhost:3001',
  *   apiKey: 'my-api-key',
  * };
- *
- * // With debug logging to the built-in console logger:
- * const config: KaleidoConfig = {
- *   baseUrl: 'https://api.kaleidoswap.com',
- *   logLevel: LogLevel.DEBUG,
- * };
- *
- * // With a custom logger (Winston, Pino, etc.):
- * const config: KaleidoConfig = {
- *   baseUrl: 'https://api.kaleidoswap.com',
- *   logLevel: LogLevel.INFO,
- *   logger: myLogger,
- * };
  */
 export interface KaleidoConfig {
-    /** Base URL for the Kaleidoswap Maker API (e.g. https://api.kaleidoswap.com) */
+    /** Base URL for the Kaleidoswap Maker API. Defaults to https://api.regtest.kaleidoswap.com */
     baseUrl?: string;
     /** URL for the RGB Lightning Node (e.g. http://localhost:3001) */
     nodeUrl?: string;

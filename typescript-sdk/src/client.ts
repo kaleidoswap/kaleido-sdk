@@ -7,7 +7,6 @@
 import { HttpClient } from './http-client.js';
 import { MakerClient } from './maker-client.js';
 import { RlnClient } from './rln-client.js';
-import { ConfigError } from './errors.js';
 import { LogState, applyLogLevel, setComponentLogLevel, setLogger } from './logging.js';
 import type { LogLevel, LogLevelName, SdkLogger } from './logging.js';
 import type { KaleidoConfig } from './types/config.js';
@@ -16,7 +15,8 @@ import type { KaleidoConfig } from './types/config.js';
  * Kaleidoswap SDK Client
  *
  * Provides a typed interface for interacting with the Kaleidoswap protocol.
- * At least one of `baseUrl` (Maker API) or `nodeUrl` (RGB Node) must be provided.
+ * Both `baseUrl` and `nodeUrl` are optional. When `baseUrl` is omitted it
+ * defaults to the regtest environment (https://api.regtest.kaleidoswap.com).
  *
  * @example
  * ```typescript
@@ -91,18 +91,20 @@ export class KaleidoClient {
     /**
      * Create a new KaleidoClient instance.
      *
-     * At least one of `baseUrl` or `nodeUrl` must be provided, otherwise a
-     * `ConfigError` is thrown immediately.
+     * Both `baseUrl` and `nodeUrl` are optional.
+     * When `baseUrl` is not provided it defaults to the regtest environment.
      *
-     * @param config - Client configuration
+     * @param config - Client configuration (all fields optional)
      * @returns Initialized client
-     * @throws {ConfigError} When neither `baseUrl` nor `nodeUrl` is provided
      *
      * @example
-     * // Market API only
+     * // Zero-config — connects to regtest
+     * const client = KaleidoClient.create();
+     *
+     * // Production Maker API
      * const client = KaleidoClient.create({ baseUrl: 'https://api.kaleidoswap.com' });
      *
-     * // RGB Node only
+     * // RGB Node only (still defaults baseUrl to regtest)
      * const client = KaleidoClient.create({ nodeUrl: 'http://localhost:3001' });
      *
      * // Both APIs
@@ -111,14 +113,11 @@ export class KaleidoClient {
      *     nodeUrl: 'http://localhost:3001',
      * });
      */
-    static create(config: KaleidoConfig): KaleidoClient {
-        if (!config.baseUrl && !config.nodeUrl) {
-            throw new ConfigError(
-                'KaleidoClient requires at least one URL. ' +
-                    'Provide "baseUrl" for the Maker API, "nodeUrl" for the RGB Lightning Node, or both.',
-            );
-        }
-        return new KaleidoClient(config);
+    static create(config: KaleidoConfig = {}): KaleidoClient {
+        return new KaleidoClient({
+            baseUrl: 'https://api.regtest.kaleidoswap.com',
+            ...config,
+        });
     }
 
     /**
