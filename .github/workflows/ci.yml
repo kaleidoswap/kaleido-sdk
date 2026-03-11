@@ -171,19 +171,16 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
       - name: Download generated models (if available)
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh run download ${{ github.run_id }} --name generated-sdk-models 2>/dev/null || true
       - name: Install dependencies
         working-directory: python-sdk
-        run: pip install -e ".[dev]"
+        run: uv sync --frozen --extra dev
       - name: Test
         working-directory: python-sdk
-        run: pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
+        run: uv run pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()

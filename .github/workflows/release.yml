@@ -37,20 +37,15 @@ jobs:
         with:
           name: openapi-specs
           path: specs/
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install generation dependencies
         run: |
-          npm install -g openapi-typescript
+          npm install -g openapi-typescript prettier
           pip install 'datamodel-code-generator[ruff]'
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
@@ -149,19 +144,16 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
       - name: Download generated models
         uses: actions/download-artifact@v4
         with:
           name: generated-sdk-models
       - name: Install dependencies
         working-directory: python-sdk
-        run: pip install -e ".[dev]"
+        run: uv sync --frozen --extra dev
       - name: Test
         working-directory: python-sdk
-        run: pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
+        run: uv run pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
