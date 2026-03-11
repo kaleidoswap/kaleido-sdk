@@ -72,7 +72,7 @@ generate-sdk-models:
       optional: true
   before_script:
     - apt-get update && apt-get install -y nodejs npm curl
-    - npm install -g pnpm openapi-typescript
+    - npm install -g pnpm openapi-typescript prettier
     - pip install 'datamodel-code-generator[ruff]'
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
