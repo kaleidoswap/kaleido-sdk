@@ -36,16 +36,20 @@ jobs:
     if: github.event_name == 'push' && needs.detect-changes.outputs.specs-changed == 'true'
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: actions/setup-python@v5
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install generation dependencies
-        run: |
-          npm install -g openapi-typescript prettier
-          pip install 'datamodel-code-generator[ruff]'
+      - name: Install TypeScript generation dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
       - name: Generate Python SDK models
@@ -65,16 +69,20 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: actions/setup-python@v5
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install generation dependencies
-        run: |
-          npm install -g openapi-typescript prettier
-          pip install 'datamodel-code-generator[ruff]'
+      - name: Install TypeScript generation dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
       - name: Generate Python SDK models
@@ -113,7 +121,7 @@ jobs:
         run: gh run download ${{ github.run_id }} --name generated-sdk-models 2>/dev/null || true
       - name: Install dependencies
         working-directory: typescript-sdk
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Test
         working-directory: typescript-sdk
         run: pnpm test:unit
@@ -226,4 +234,4 @@ jobs:
         run: uvx ruff check kaleidoswap_sdk tests
       - name: Type check
         working-directory: python-sdk
-        run: uvx mypy kaleidoswap_sdk --ignore-missing-imports
+        run: uvx --with pydantic mypy kaleidoswap_sdk --ignore-missing-imports

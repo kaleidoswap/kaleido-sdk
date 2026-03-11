@@ -37,16 +37,20 @@ jobs:
         with:
           name: openapi-specs
           path: specs/
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: actions/setup-python@v5
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install generation dependencies
-        run: |
-          npm install -g openapi-typescript prettier
-          pip install 'datamodel-code-generator[ruff]'
+      - name: Install TypeScript generation dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
       - name: Generate Python SDK models
@@ -83,7 +87,7 @@ jobs:
           name: generated-sdk-models
       - name: Install dependencies
         working-directory: typescript-sdk
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Test
         working-directory: typescript-sdk
         run: pnpm test
@@ -121,7 +125,7 @@ jobs:
           name: generated-sdk-models
       - name: Install dependencies
         working-directory: typescript-sdk
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Build
         working-directory: typescript-sdk
         run: pnpm run build
@@ -178,19 +182,14 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - uses: actions/setup-python@v5
-        with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Download generated models
         uses: actions/download-artifact@v4
         with:
           name: generated-sdk-models
-      - name: Install dependencies
-        working-directory: python-sdk
-        run: pip install build
       - name: Build
         working-directory: python-sdk
-        run: python -m build
+        run: uv build
       - name: Upload dist
         uses: actions/upload-artifact@v4
         with:
@@ -242,7 +241,7 @@ jobs:
           path: typescript-sdk/dist/
       - name: Install dependencies
         working-directory: typescript-sdk
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Publish to npm
         working-directory: typescript-sdk
         run: |

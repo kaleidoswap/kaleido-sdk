@@ -12,16 +12,13 @@ for spec in "$SPECS_DIR/kaleidoswap.json" "$SPECS_DIR/rgb-lightning-node.yaml"; 
     [ -f "$spec" ] || { echo "❌ Missing spec file: $spec"; exit 1; }
 done
 
-# Resolve datamodel-code-generator: direct command or python module
-if command -v datamodel-codegen &> /dev/null; then
-    CODEGEN_CMD="datamodel-codegen"
-elif python3 -m datamodel_code_generator --version &> /dev/null; then
-    CODEGEN_CMD="python3 -m datamodel_code_generator"
-else
-    echo "❌ datamodel-code-generator not found."
-    echo "   Install with: pip install datamodel-code-generator[http]"
+# Run datamodel-codegen via uvx (isolated ephemeral env, no manual install needed)
+if ! command -v uvx &> /dev/null; then
+    echo "❌ uvx (uv) not found."
+    echo "   Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
     exit 1
 fi
+CODEGEN_CMD=(uvx --from "datamodel-code-generator[ruff]" datamodel-codegen)
 
 mkdir -p "$OUTPUT_DIR"
 
@@ -60,7 +57,7 @@ generate_model() {
         args+=("$@")
     fi
 
-    $CODEGEN_CMD "${args[@]}"
+    "${CODEGEN_CMD[@]}" "${args[@]}"
     echo "     ✔ Written to ${output#$ROOT_DIR/}"
 }
 

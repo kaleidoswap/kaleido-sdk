@@ -94,7 +94,7 @@ test-typescript:
 
 test-python-sdk:
 	@echo "🧪 Running Python SDK tests..."
-	cd $(PYTHON_SDK) && uv sync --all-extras --dev && uv run pytest tests/ -v
+	cd $(PYTHON_SDK) && uv sync --frozen --extra dev && uv run pytest tests/ -v
 
 # ============================================================================
 # Code quality targets
@@ -110,7 +110,7 @@ check-lint-python:
 
 typecheck-python:
 	@echo "📝 Type checking Python SDK..."
-	cd $(PYTHON_SDK) && uvx mypy kaleidoswap_sdk --ignore-missing-imports
+	cd $(PYTHON_SDK) && uvx --with pydantic mypy kaleidoswap_sdk --ignore-missing-imports
 
 check-python: check-format-python check-lint-python typecheck-python
 	@echo "✅ Python SDK format, lint, and type checks passed!"

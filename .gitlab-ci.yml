@@ -72,11 +72,10 @@ generate-sdk-models:
       optional: true
   before_script:
     - apt-get update && apt-get install -y nodejs npm curl
-    - npm install -g pnpm openapi-typescript prettier
-    - pip install 'datamodel-code-generator[ruff]'
+    - npm install -g pnpm
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
-    - cd python-sdk && uv sync --frozen --all-extras --dev && cd ..
+    - cd typescript-sdk && pnpm install --frozen-lockfile && cd ..
   script:
     - |
       if [[ "${SPECS_CHANGED:-true}" != "true" ]]; then
@@ -108,11 +107,10 @@ check-generated-models:
   image: python:${PYTHON_VERSION}
   before_script:
     - apt-get update && apt-get install -y nodejs npm git curl
-    - npm install -g pnpm openapi-typescript prettier
-    - pip install 'datamodel-code-generator[ruff]'
+    - npm install -g pnpm
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
-    - cd python-sdk && uv sync --frozen --all-extras --dev && cd ..
+    - cd typescript-sdk && pnpm install --frozen-lockfile && cd ..
   script:
     - echo "🔍 Checking if generated models are up-to-date..."
     - bash scripts/generate_typescript_types.sh
@@ -186,11 +184,12 @@ test:python-sdk:
     - job: generate-sdk-models
       optional: true
       artifacts: true
+  <<: *python_sdk_uv_setup
   script:
     - echo "🧪 Testing Python SDK..."
     - cd python-sdk
-    - pip install -e ".[dev]"
-    - pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
+    - uv sync --frozen --extra dev
+    - uv run pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
   artifacts:
     reports:
       junit: python-sdk/test-results.xml
@@ -217,7 +216,7 @@ check:python-sdk:
     - echo "🔍 Linting Python SDK..."
     - uvx ruff check kaleidoswap_sdk tests
     - echo "📝 Type checking Python SDK..."
-    - uvx mypy kaleidoswap_sdk --ignore-missing-imports
+    - uvx --with pydantic mypy kaleidoswap_sdk --ignore-missing-imports
   allow_failure: true
 
 # ---------------------------------------------------------------------------
@@ -232,11 +231,11 @@ build:python-sdk:
       optional: true
       artifacts: true
     - job: test:python-sdk
+  <<: *python_sdk_uv_setup
   script:
     - echo "🐍 Building Python SDK..."
     - cd python-sdk
-    - pip install build
-    - python -m build
+    - uv build
   artifacts:
     paths:
       - python-sdk/dist/
