@@ -92,51 +92,6 @@ test-python-sdk:
 # Code quality targets
 # ============================================================================
 
-<<<<<<< github
-=======
-format: format-python format-typescript
-# Rust (not actively maintained):
-# format: format-rust format-python format-typescript
-
-# format-rust:
-# 	@echo "✨ Formatting Rust code..."
-# 	cargo fmt --all
-
-format-python:
-	@echo "✨ Formatting Python SDK code..."
-	cd $(PYTHON_SDK) && \
-		uv sync --frozen --all-extras --dev && \
-		uv run ruff format kaleidoswap_sdk tests
-
-format-typescript:
-	@echo "✨ Formatting TypeScript code..."
-	cd $(TYPESCRIPT_SDK) && pnpm run format
-
-lint: lint-typescript check-python
-# Rust (not actively maintained):
-# lint: lint-rust lint-typescript check-python
-
-# lint-rust:
-# 	@echo "🔍 Checking Rust formatting..."
-# 	cargo fmt --all -- --check
-
-# clippy:
-# 	@echo "📎 Running clippy..."
-# 	cargo clippy --all-targets --all-features -- -D warnings
-
-lint-typescript:
-	@echo "🔍 Linting TypeScript code..."
-	cd $(TYPESCRIPT_SDK) && pnpm run lint
-
-lint-python:
-	@echo "🛠️ Fixing Python SDK lint issues..."
-	cd $(PYTHON_SDK) && \
-		uv sync --frozen --extra lint && \
-		uv run ruff format kaleidoswap_sdk tests && \
-		uv run ruff check --fix kaleidoswap_sdk tests && \
-		uv run mypy kaleidoswap_sdk --ignore-missing-imports
-
->>>>>>> master
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
 	cd $(PYTHON_SDK) && \
