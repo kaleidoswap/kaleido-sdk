@@ -116,7 +116,7 @@ jobs:
         run: pnpm install
       - name: Test
         working-directory: typescript-sdk
-        run: pnpm test
+        run: pnpm test:unit
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
