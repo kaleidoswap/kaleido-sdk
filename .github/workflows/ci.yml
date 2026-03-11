@@ -153,13 +153,16 @@ jobs:
         run: gh run download ${{ github.run_id }} --name generated-sdk-models 2>/dev/null || true
       - name: Install dependencies
         working-directory: typescript-sdk
-        run: pnpm install
-      - name: Lint, typecheck and format
+        run: pnpm install --frozen-lockfile
+      - name: Lint
         working-directory: typescript-sdk
-        run: |
-          pnpm run lint
-          pnpm run typecheck
-          pnpm run format:check
+        run: pnpm run lint
+      - name: Type check
+        working-directory: typescript-sdk
+        run: pnpm run typecheck
+      - name: Format check
+        working-directory: typescript-sdk
+        run: pnpm run format:check
 
   # ── Python SDK ───────────────────────────────────────────────────────────────
   test-python-sdk:
@@ -215,8 +218,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh run download ${{ github.run_id }} --name generated-sdk-models 2>/dev/null || true
-      - name: Check formatting, linting and type checking
-        run: |
-          make check-format-python
-          make check-lint-python
-          make typecheck-python
+      - name: Format check
+        working-directory: python-sdk
+        run: uvx ruff format --check kaleidoswap_sdk tests
+      - name: Lint
+        working-directory: python-sdk
+        run: uvx ruff check kaleidoswap_sdk tests
+      - name: Type check
+        working-directory: python-sdk
+        run: uvx mypy kaleidoswap_sdk --ignore-missing-imports

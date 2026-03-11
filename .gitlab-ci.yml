@@ -148,7 +148,7 @@ test:typescript-sdk:
   script:
     - echo "🧪 Testing TypeScript SDK..."
     - cd typescript-sdk
-    - pnpm install
+    - pnpm install --frozen-lockfile
     - pnpm test:unit
   artifacts:
     reports:
@@ -165,11 +165,13 @@ check:typescript-sdk:
   before_script:
     - npm install -g pnpm
   script:
-    - echo "🔍 Linting, type checking and formatting TypeScript SDK..."
     - cd typescript-sdk
-    - pnpm install
+    - pnpm install --frozen-lockfile
+    - echo "🔍 Linting TypeScript SDK..."
     - pnpm run lint
+    - echo "📝 Type checking TypeScript SDK..."
     - pnpm run typecheck
+    - echo "🔍 Checking TypeScript SDK formatting..."
     - pnpm run format:check
   allow_failure: true
 
@@ -209,10 +211,13 @@ check:python-sdk:
     - if: $CI_PIPELINE_SOURCE == "push"
     - if: $CI_COMMIT_TAG
   script:
-    - echo "✨ Checking Python SDK formatting, linting and type checking..."
-    - make check-format-python
-    - make check-lint-python
-    - make typecheck-python
+    - cd python-sdk
+    - echo "🔍 Checking Python SDK formatting..."
+    - uvx ruff format --check kaleidoswap_sdk tests
+    - echo "🔍 Linting Python SDK..."
+    - uvx ruff check kaleidoswap_sdk tests
+    - echo "📝 Type checking Python SDK..."
+    - uvx mypy kaleidoswap_sdk --ignore-missing-imports
   allow_failure: true
 
 # ---------------------------------------------------------------------------
@@ -252,7 +257,7 @@ build:typescript-sdk:
   script:
     - echo "📦 Building TypeScript SDK..."
     - cd typescript-sdk
-    - pnpm install
+    - pnpm install --frozen-lockfile
     - pnpm run build
   artifacts:
     paths:
@@ -293,7 +298,7 @@ deploy:npm:
   script:
     - echo "🚀 Publishing TypeScript SDK to npm..."
     - cd typescript-sdk
-    - pnpm install
+    - pnpm install --frozen-lockfile
 
     # Determine tag based on version pattern
     - |

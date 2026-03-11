@@ -15,7 +15,7 @@ import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any, TypedDict
 from urllib.parse import urlparse, urlunparse
 
@@ -33,7 +33,7 @@ _log = get_logger("ws")
 # =============================================================================
 
 
-class WSAction(str, Enum):
+class WSAction(StrEnum):
     """WebSocket message actions."""
 
     PING = "ping"
@@ -289,7 +289,8 @@ class WSClient:
                     try:
                         data: WebSocketResponse = json.loads(message)
                         _log.debug(
-                            "WS message received: action=%s", data.get("action", "<unknown>")
+                            "WS message received: action=%s",
+                            data.get("action", "<unknown>"),
                         )
                         self._handle_message(data)
                     except json.JSONDecodeError:

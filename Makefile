@@ -5,6 +5,8 @@
 	check check-python check-typescript \
 	check-format-python check-lint-python typecheck-python \
 	check-format-typescript check-lint-typescript typecheck-typescript \
+	fix fix-python fix-typescript \
+	pre-commit \
 	generate-models generate-python-sdk-models generate-ts-types regenerate update-specs \
 	versions sync-version \
 	deploy-python-sdk deploy-typescript \
@@ -30,6 +32,12 @@ help:
 	@echo "  check              - Check all SDKs (format, lint, typecheck)"
 	@echo "  check-python       - Check Python SDK (format, lint, typecheck)"
 	@echo "  check-typescript   - Check TypeScript SDK (format, lint, typecheck)"
+	@echo ""
+	@echo "Fix:"
+	@echo "  fix                - Auto-fix format and lint issues in all SDKs"
+	@echo "  fix-python         - Auto-fix Python SDK (ruff format + ruff check --fix)"
+	@echo "  fix-typescript     - Auto-fix TypeScript SDK (prettier + eslint --fix)"
+	@echo "  pre-commit         - Run fix on all SDKs (alias for fix)"
 	@echo ""
 	@echo "Code Generation:"
 	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
@@ -94,21 +102,15 @@ test-python-sdk:
 
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
-	cd $(PYTHON_SDK) && \
-		uv sync --frozen --extra lint && \
-		uv run ruff format --check kaleidoswap_sdk tests
+	cd $(PYTHON_SDK) && uvx ruff format --check kaleidoswap_sdk tests examples
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
-	cd $(PYTHON_SDK) && \
-		uv sync --frozen --extra lint && \
-		uv run ruff check kaleidoswap_sdk tests
+	cd $(PYTHON_SDK) && uvx ruff check kaleidoswap_sdk tests examples
 
 typecheck-python:
 	@echo "📝 Type checking Python SDK..."
-	cd $(PYTHON_SDK) && \
-		uv sync --frozen --extra lint && \
-		uv run mypy kaleidoswap_sdk --ignore-missing-imports
+	cd $(PYTHON_SDK) && uvx mypy kaleidoswap_sdk --ignore-missing-imports
 
 check-python: check-format-python check-lint-python typecheck-python
 	@echo "✅ Python SDK format, lint, and type checks passed!"
@@ -120,17 +122,37 @@ check: check-python check-typescript
 	@echo ""
 	@echo "✅ All SDKs passed format, lint, and type checks!"
 
-typecheck-typescript:
+fix-python:
+	@echo "🔧 Auto-fixing Python SDK..."
+	cd $(PYTHON_SDK) && uvx ruff format kaleidoswap_sdk tests && uvx ruff check --fix kaleidoswap_sdk tests
+	@echo "✅ Python SDK fixed!"
+
+fix-typescript: $(TYPESCRIPT_SDK)/node_modules/.modules.yaml
+	@echo "🔧 Auto-fixing TypeScript SDK..."
+	cd $(TYPESCRIPT_SDK) && pnpm run format && pnpm run lint:fix
+	@echo "✅ TypeScript SDK fixed!"
+
+fix: fix-python fix-typescript
+	@echo ""
+	@echo "✅ All SDKs auto-fixed!"
+
+pre-commit: fix
+
+# Install TypeScript dependencies only when pnpm-lock.yaml changes
+$(TYPESCRIPT_SDK)/node_modules/.modules.yaml: $(TYPESCRIPT_SDK)/pnpm-lock.yaml
+	cd $(TYPESCRIPT_SDK) && pnpm install --frozen-lockfile
+
+typecheck-typescript: $(TYPESCRIPT_SDK)/node_modules/.modules.yaml
 	@echo "📝 Type checking TypeScript SDK..."
-	cd $(TYPESCRIPT_SDK) && pnpm install && pnpm run typecheck
+	cd $(TYPESCRIPT_SDK) && pnpm run typecheck
 
-check-format-typescript:
+check-format-typescript: $(TYPESCRIPT_SDK)/node_modules/.modules.yaml
 	@echo "🔍 Checking TypeScript SDK formatting..."
-	cd $(TYPESCRIPT_SDK) && pnpm install && pnpm run format:check
+	cd $(TYPESCRIPT_SDK) && pnpm run format:check
 
-check-lint-typescript:
+check-lint-typescript: $(TYPESCRIPT_SDK)/node_modules/.modules.yaml
 	@echo "🔍 Checking TypeScript SDK lint..."
-	cd $(TYPESCRIPT_SDK) && pnpm install && pnpm run lint
+	cd $(TYPESCRIPT_SDK) && pnpm run lint
 
 # ============================================================================
 # Code generation targets
