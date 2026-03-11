@@ -33,20 +33,15 @@ jobs:
     if: github.event_name == 'push' && needs.detect-changes.outputs.specs-changed == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install generation dependencies
         run: |
-          npm install -g openapi-typescript
+          npm install -g openapi-typescript prettier
           pip install 'datamodel-code-generator[ruff]'
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
@@ -67,20 +62,15 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.30.3
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install generation dependencies
         run: |
-          npm install -g openapi-typescript
+          npm install -g openapi-typescript prettier
           pip install 'datamodel-code-generator[ruff]'
       - name: Generate TypeScript types
         run: bash scripts/generate_typescript_types.sh
