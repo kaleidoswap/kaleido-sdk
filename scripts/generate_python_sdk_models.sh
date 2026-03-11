@@ -26,27 +26,41 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 generate_model() {
+    if [ "$#" -lt 2 ]; then
+        echo "❌ generate_model requires at least 2 arguments: input and output paths" >&2
+        return 1
+    fi
+
     local input="$1" output="$2"; shift 2
     echo "  → Generating from $(basename "$input")..."
-    $CODEGEN_CMD \
-        --input "$input" \
-        --output "$output" \
-        --input-file-type openapi \
-        --output-model-type pydantic_v2.BaseModel \
-        --use-standard-collections \
-        --use-annotated \
-        --use-schema-description \
-        --field-constraints \
-        --snake-case-field \
-        --strict-nullable \
-        --enum-field-as-literal one \
-        --capitalise-enum-members \
-        --target-python-version 3.11 \
-        --use-double-quotes \
-        --collapse-root-models \
-        --formatters ruff-format ruff-check \
-        --disable-timestamp \
-        "$@"
+
+    # Base arguments for datamodel-code-generator
+    local args=(
+        --input "$input"
+        --output "$output"
+        --input-file-type openapi
+        --output-model-type pydantic_v2.BaseModel
+        --use-standard-collections
+        --use-annotated
+        --use-schema-description
+        --field-constraints
+        --snake-case-field
+        --strict-nullable
+        --enum-field-as-literal one
+        --capitalise-enum-members
+        --target-python-version 3.11
+        --use-double-quotes
+        --collapse-root-models
+        --formatters ruff-format ruff-check
+        --disable-timestamp
+    )
+
+    # Append any additional options, if provided
+    if [ "$#" -gt 0 ]; then
+        args+=("$@")
+    fi
+
+    $CODEGEN_CMD "${args[@]}"
     echo "     ✔ Written to ${output#$ROOT_DIR/}"
 }
 

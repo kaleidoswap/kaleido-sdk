@@ -18,6 +18,7 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
+OTS_BIN=""
 # Resolve openapi-typescript binary: local node_modules, then global
 if [ -x "$ROOT_DIR/typescript-sdk/node_modules/.bin/openapi-typescript" ]; then
     OTS_BIN="$ROOT_DIR/typescript-sdk/node_modules/.bin/openapi-typescript"
