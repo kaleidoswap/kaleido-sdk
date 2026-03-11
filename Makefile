@@ -55,6 +55,11 @@ help:
 TYPESCRIPT_SDK := typescript-sdk
 PYTHON_SDK := python-sdk
 
+# OpenAPI spec sources and primary generated outputs (used for timestamp-based skipping)
+SPECS := specs/kaleidoswap.json specs/rgb-lightning-node.yaml
+PYTHON_GENERATED := python-sdk/kaleidoswap_sdk/_generated/api_types.py
+TS_GENERATED     := typescript-sdk/src/generated/api-types.ts
+
 # ============================================================================
 # Build targets
 # ============================================================================
@@ -131,23 +136,32 @@ check-lint-typescript:
 # Code generation targets
 # ============================================================================
 
+# Force regeneration of all models regardless of timestamps (use for manual runs)
 generate-models: generate-python-sdk-models generate-ts-types
 	@echo "✅ All models generated (Python SDK + TypeScript)"
 
 generate-python-sdk-models:
-	@echo "🐍 Generating Python SDK Pydantic models from OpenAPI specs..."
-	bash scripts/generate_python_sdk_models.sh
+	@bash scripts/generate_python_sdk_models.sh
 
 generate-ts-types:
-	@echo "📦 Generating TypeScript types from OpenAPI specs..."
-	bash scripts/generate_typescript_types.sh
+	@bash scripts/generate_typescript_types.sh
 
-regenerate: update-specs generate-models
+# File-based targets: Make skips regeneration when spec files are older than outputs.
+# Used exclusively by 'regenerate' — do not call directly.
+$(PYTHON_GENERATED): $(SPECS) scripts/generate_python_sdk_models.sh
+	@bash scripts/generate_python_sdk_models.sh
+
+$(TS_GENERATED): $(SPECS) scripts/generate_typescript_types.sh
+	@bash scripts/generate_typescript_types.sh
+
+# Smart regenerate: update specs, then only regenerate if specs actually changed.
+# Make compares spec file timestamps against generated outputs and skips if up-to-date.
+regenerate: update-specs $(PYTHON_GENERATED) $(TS_GENERATED)
 	@echo "✅ Full regeneration complete!"
 
 update-specs:
 	@echo "📥 Updating OpenAPI specifications..."
-	./scripts/update-openapi-specs.sh
+	@./scripts/update-openapi-specs.sh
 
 # ============================================================================
 # Deployment targets

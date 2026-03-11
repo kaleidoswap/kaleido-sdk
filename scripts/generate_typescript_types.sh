@@ -1,11 +1,16 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SPECS_DIR="$ROOT_DIR/specs"
 OUTPUT_DIR="$ROOT_DIR/typescript-sdk/src/generated"
 
 echo "🔧 Generating TypeScript types from OpenAPI specs..."
+
+# Validate spec files exist
+for spec in "$SPECS_DIR/kaleidoswap.json" "$SPECS_DIR/rgb-lightning-node.yaml"; do
+    [ -f "$spec" ] || { echo "❌ Missing spec file: $spec"; exit 1; }
+done
 
 # Resolve node: prefer the one in PATH, fail clearly if missing
 if ! command -v node &> /dev/null; then
@@ -14,7 +19,6 @@ if ! command -v node &> /dev/null; then
 fi
 
 # Resolve openapi-typescript binary: local node_modules, then global
-OTS_BIN=""
 if [ -x "$ROOT_DIR/typescript-sdk/node_modules/.bin/openapi-typescript" ]; then
     OTS_BIN="$ROOT_DIR/typescript-sdk/node_modules/.bin/openapi-typescript"
 elif command -v openapi-typescript &> /dev/null; then
@@ -22,6 +26,18 @@ elif command -v openapi-typescript &> /dev/null; then
 else
     echo "❌ openapi-typescript not found."
     echo "   Install with: npm install -g openapi-typescript"
+    echo "   Or: cd typescript-sdk && pnpm install"
+    exit 1
+fi
+
+# Resolve prettier binary: local node_modules, then global
+if [ -x "$ROOT_DIR/typescript-sdk/node_modules/.bin/prettier" ]; then
+    PRETTIER_BIN="$ROOT_DIR/typescript-sdk/node_modules/.bin/prettier"
+elif command -v prettier &> /dev/null; then
+    PRETTIER_BIN="prettier"
+else
+    echo "❌ prettier not found."
+    echo "   Install with: npm install -g prettier"
     echo "   Or: cd typescript-sdk && pnpm install"
     exit 1
 fi
@@ -37,22 +53,21 @@ BANNER="/**
 
 mkdir -p "$OUTPUT_DIR"
 
-echo "  → Generating from kaleidoswap.json → api-types.ts..."
-"$OTS_BIN" "$SPECS_DIR/kaleidoswap.json" --export-type -o "$OUTPUT_DIR/api-types.ts"
-TMP=$(mktemp)
-printf '%s\n' "$BANNER" | cat - "$OUTPUT_DIR/api-types.ts" > "$TMP" && mv "$TMP" "$OUTPUT_DIR/api-types.ts"
-echo "     ✔ Written to typescript-sdk/src/generated/api-types.ts"
+generate_types() {
+    local input="$1" output="$2" tmp
+    echo "  → Generating from $(basename "$input")..."
+    "$OTS_BIN" "$input" --export-type -o "$output"
+    tmp=$(mktemp)
+    printf '%s\n' "$BANNER" | cat - "$output" > "$tmp" && mv "$tmp" "$output"
+    echo "     ✔ Written to ${output#$ROOT_DIR/}"
+}
 
-echo "  → Generating from rgb-lightning-node.yaml → node-types.ts..."
-"$OTS_BIN" "$SPECS_DIR/rgb-lightning-node.yaml" --export-type -o "$OUTPUT_DIR/node-types.ts"
-TMP=$(mktemp)
-printf '%s\n' "$BANNER" | cat - "$OUTPUT_DIR/node-types.ts" > "$TMP" && mv "$TMP" "$OUTPUT_DIR/node-types.ts"
-echo "     ✔ Written to typescript-sdk/src/generated/node-types.ts"
+generate_types "$SPECS_DIR/kaleidoswap.json"        "$OUTPUT_DIR/api-types.ts"
+generate_types "$SPECS_DIR/rgb-lightning-node.yaml" "$OUTPUT_DIR/node-types.ts"
 
 # Format the generated files with prettier
 echo "  → Formatting generated files with prettier..."
-cd "$ROOT_DIR/typescript-sdk"
-npx prettier --write "$OUTPUT_DIR/api-types.ts" "$OUTPUT_DIR/node-types.ts"
+"$PRETTIER_BIN" --write "$OUTPUT_DIR/api-types.ts" "$OUTPUT_DIR/node-types.ts"
 
 echo ""
 echo "✅ TypeScript types generated and formatted successfully."

@@ -5,8 +5,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Configuration
 SPECS_DIR="$ROOT_DIR/specs"
@@ -18,6 +17,7 @@ MAKER_SPEC_URL="${MAKER_SPEC_URL:-https://raw.githubusercontent.com/kaleidoswap/
 
 # Parse arguments
 DO_BACKUP=true
+CHANGED=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --maker-url)
@@ -33,11 +33,17 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --help)
-            echo "Usage: $0 [--maker-url URL] [--rgb-url URL] [--no-backup]"
+            echo "Usage: $0 [options]"
+            echo ""
+            echo "Options:"
+            echo "  --maker-url URL   Override the Kaleidoswap Maker API spec URL"
+            echo "  --rgb-url URL     Override the RGB Lightning Node API spec URL"
+            echo "  --no-backup       Skip backing up existing specs before overwriting"
+            echo "  --help            Display this help message"
             exit 0
             ;;
         *)
-            echo "Unknown option: $1"
+            echo "❌ Unknown option: $1"
             exit 1
             ;;
     esac
@@ -45,7 +51,8 @@ done
 
 echo "📥 Updating OpenAPI Specifications"
 echo "==================================="
-echo "Specs Directory: $SPECS_DIR"
+echo "   Specs Directory:  $SPECS_DIR"
+[[ "$DO_BACKUP" == true ]] && echo "   Backup Directory: $BACKUP_DIR"
 
 mkdir -p "$SPECS_DIR"
 if [[ "$DO_BACKUP" == true ]]; then
@@ -58,22 +65,31 @@ download_spec() {
     local name="$3"
 
     echo ""
-    echo "📦 Fetching $name..."
-    echo "   URL: $url"
+    echo "  → Fetching $name..."
+    echo "     URL: $url"
 
-    if [[ "$DO_BACKUP" == true && -f "$output" ]]; then
-        local backup_name="${BACKUP_DIR}/$(basename "$output").$(date +%Y%m%d_%H%M%S)"
-        cp "$output" "$backup_name"
-        echo "   Backed up to: $backup_name"
-    fi
+    local old_hash=""
+    [[ -f "$output" ]] && old_hash=$(shasum "$output" | cut -d' ' -f1)
 
     if curl -fsSL "$url" -o "$output.tmp"; then
-        mv "$output.tmp" "$output"
-        echo "   ✅ Downloaded: $output"
+        local new_hash; new_hash=$(shasum "$output.tmp" | cut -d' ' -f1)
+        if [[ "$old_hash" == "$new_hash" ]]; then
+            rm -f "$output.tmp"
+            echo "     ↔ No changes detected"
+        else
+            if [[ "$DO_BACKUP" == true && -f "$output" ]]; then
+                local backup_name="${BACKUP_DIR}/$(basename "$output").$(date +%Y%m%d_%H%M%S)"
+                cp "$output" "$backup_name"
+                echo "     Backed up to: $(basename "$backup_name")"
+            fi
+            mv "$output.tmp" "$output"
+            CHANGED=true
+            echo "     ✔ Updated: ${output#$ROOT_DIR/}"
+        fi
     else
-        echo "   ❌ Failed to download"
+        echo "     ❌ Failed to download $name"
         rm -f "$output.tmp"
-        return 1
+        exit 1
     fi
 }
 
@@ -83,4 +99,9 @@ download_spec "$RGB_NODE_URL" "$SPECS_DIR/rgb-lightning-node.yaml" "RGB Lightnin
 # Download Kaleidoswap Maker spec
 download_spec "$MAKER_SPEC_URL" "$SPECS_DIR/kaleidoswap.json" "Kaleidoswap Maker API"
 
-echo "✅ Update complete. Run 'make generate-models' to regenerate."
+echo ""
+if [[ "$CHANGED" == true ]]; then
+    echo "✅ Specs updated. Run 'make generate-models' to regenerate."
+else
+    echo "✅ All specs are up-to-date. No regeneration needed."
+fi
