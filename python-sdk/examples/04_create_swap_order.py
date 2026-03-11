@@ -72,9 +72,7 @@ async def main() -> None:
         print(f"Created order: {order.id}")
         print(f"Status: {order.status}")
     except Exception as exc:
-        print(
-            "Order creation failed (often expected in demo env without a valid receiver):"
-        )
+        print("Order creation failed (often expected in demo env without a valid receiver):")
         print(f"  {exc}")
 
 

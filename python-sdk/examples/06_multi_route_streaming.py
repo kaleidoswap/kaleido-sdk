@@ -17,9 +17,7 @@ logging.basicConfig(
 )
 
 
-async def stream_route(
-    client: KaleidoClient, from_layer: Layer, to_layer: Layer
-) -> None:
+async def stream_route(client: KaleidoClient, from_layer: Layer, to_layer: Layer) -> None:
     received = 0
     done = asyncio.Event()
 
@@ -51,9 +49,7 @@ async def stream_route(
 
 async def main() -> None:
     client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
-    ws = client.maker.enable_websocket(
-        "wss://api.staging.kaleidoswap.com/api/v1/market/ws"
-    )
+    ws = client.maker.enable_websocket("wss://api.staging.kaleidoswap.com/api/v1/market/ws")
 
     routes = await client.maker.get_available_routes("BTC", "USDT")
     if not routes:

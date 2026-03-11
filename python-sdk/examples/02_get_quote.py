@@ -81,9 +81,7 @@ async def main() -> None:
     try:
         quote = await client.maker.get_quote(quote_request)
 
-        from_display = to_display_units(
-            quote.from_asset.amount, quote.from_asset.precision
-        )
+        from_display = to_display_units(quote.from_asset.amount, quote.from_asset.precision)
         to_display = to_display_units(quote.to_asset.amount, quote.to_asset.precision)
 
         print("\nQuote received:")

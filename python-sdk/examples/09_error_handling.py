@@ -20,9 +20,7 @@ from kaleidoswap_sdk import (
 
 async def main() -> None:
     # Intentionally invalid endpoint for demo purposes.
-    client = KaleidoClient.create(
-        base_url="http://invalid.nonexistent.kaleidoswap.local"
-    )
+    client = KaleidoClient.create(base_url="http://invalid.nonexistent.kaleidoswap.local")
 
     try:
         await client.maker.list_assets()
