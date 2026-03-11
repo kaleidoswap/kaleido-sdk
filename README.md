@@ -2,18 +2,14 @@
 
 Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidoswap.com), a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
 
-## Current SDK Architecture
+## SDKs
 
-The monorepo currently ships two production SDKs that are generated from shared OpenAPI specs:
+| Language | Status | Package | README |
+|----------|--------|---------|--------|
+| **Python** | ✅ Ready | `kaleidoswap-sdk` v0.5.4 | [python-sdk/README.md](./python-sdk/README.md) |
+| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` v0.5.4 | [typescript-sdk/README.md](./typescript-sdk/README.md) |
 
-| Language | Status | Package |
-|----------|--------|---------|
-| **Python** | ✅ Ready | `kaleidoswap-sdk` |
-| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` |
-| **Swift** | 🚧 Planned | - |
-| **Kotlin** | 🚧 Planned | - |
-
-### How It Works
+## How It Works
 
 ```text
 specs/kaleidoswap.json
@@ -24,16 +20,18 @@ specs/rgb-lightning-node.yaml
           +--> scripts/generate_typescript_types.sh  --> typescript-sdk/src/generated/
 ```
 
-Each SDK is implemented natively in its language and consumes generated types/models from the same API source of truth.
+Each SDK is implemented natively in its language and consumes generated types/models from the same OpenAPI source of truth.
 
 ## Features
 
 - Typed models generated from OpenAPI specs
-- Market operations (assets, pairs, quotes)
-- Swap operations and order flows
-- RGB Lightning Node support
-- WebSocket streaming
-- Retry and error handling utilities
+- Market operations: assets, pairs, quotes
+- Swap operations and order lifecycle
+- LSP (Lightning Service Provider) channel ordering
+- RGB Lightning Node control (wallet, channels, assets, payments)
+- WebSocket real-time quote streaming with auto-reconnect
+- Precision and unit conversion utilities
+- Typed error hierarchy with retryability hints
 
 ## Installation
 
@@ -59,7 +57,7 @@ import asyncio
 from kaleidoswap_sdk import KaleidoClient
 
 async def main() -> None:
-    client = KaleidoClient.create(base_url="https://api.regtest.kaleidoswap.com")
+    client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
 
     async with client:
         assets = await client.maker.list_assets()
@@ -71,13 +69,15 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
+See [python-sdk/README.md](./python-sdk/README.md) for the full usage guide.
+
 ### TypeScript
 
 ```typescript
 import { KaleidoClient } from 'kaleidoswap-sdk';
 
 const client = KaleidoClient.create({
-  baseUrl: 'https://api.regtest.kaleidoswap.com',
+  baseUrl: 'https://api.kaleidoswap.com',
 });
 
 const assets = await client.maker.listAssets();
@@ -87,14 +87,17 @@ const pairs = await client.maker.listPairs();
 console.log(`Found ${pairs.pairs.length} pairs`);
 ```
 
-## Documentation
+See [typescript-sdk/README.md](./typescript-sdk/README.md) for the full usage guide.
 
-- [Architecture](./docs/ARCHITECTURE.md)
-- [API Reference](./docs/API_REFERENCE.md)
-- [Examples](./docs/EXAMPLES.md)
-- [Error Handling](./docs/ERROR_HANDLING.md)
-- [WebSocket](./docs/WEBSOCKET.md)
-- [SDK Development](./docs/SDK_DEVELOPMENT.md)
+## API Coverage
+
+| API | Description | Status |
+|-----|-------------|--------|
+| Market | Assets, pairs, quotes | ✅ |
+| Swaps | Atomic swap operations | ✅ |
+| Swap Orders | Order creation, status, history | ✅ |
+| LSPS1 | Lightning channel service | ✅ |
+| RGB Node | Node, wallet, channels, payments | ✅ |
 
 ## Development
 
@@ -133,23 +136,13 @@ make test-typescript
 # Regenerate both SDK model/type outputs
 make generate-models
 
-# Regenerate one SDK
+# Regenerate individually
 make generate-python-sdk-models
 make generate-ts-types
 
 # Full refresh (download latest specs + regenerate)
 make regenerate
 ```
-
-## API Coverage
-
-| API | Description | Status |
-|-----|-------------|--------|
-| Market | Assets, pairs, quotes | ✅ |
-| Swaps | Atomic swap operations | ✅ |
-| Swap Orders | Order creation and status | ✅ |
-| LSPS1 | Lightning channel service | ✅ |
-| RGB Node | Node operations | ✅ |
 
 ## Roadmap
 
@@ -166,8 +159,7 @@ make regenerate
 We welcome contributions. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Key points:
-- Never edit generated model files directly.
-- Regenerate from OpenAPI specs when API changes.
+- Never edit generated model files directly — regenerate from OpenAPI specs.
 - Include tests for behavior changes.
 - Run format/lint checks before pushing.
 
