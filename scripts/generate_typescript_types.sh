@@ -57,7 +57,7 @@ mkdir -p "$OUTPUT_DIR"
 generate_types() {
     local input="$1" output="$2" tmp
     echo "  → Generating from $(basename "$input")..."
-    "$OTS_BIN" "$input" --export-type -o "$output"
+    "$OTS_BIN" "$input" --export-type --enum --dedupe-enums -o "$output"
     tmp=$(mktemp)
     printf '%s\n' "$BANNER" | cat - "$output" > "$tmp" && mv "$tmp" "$output"
     echo "     ✔ Written to ${output#$ROOT_DIR/}"

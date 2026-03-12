@@ -2424,7 +2424,7 @@ export type components = {
             media?: components['schemas']['Media'];
         };
         /** @enum {string} */
-        AssetSchema: 'Nia' | 'Uda' | 'Cfa';
+        AssetSchema: AssetSchema;
         AssetUDA: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string;
@@ -2454,7 +2454,7 @@ export type components = {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'Any';
+            type: AssignmentAnyType;
         };
         /**
          * @example {
@@ -2467,7 +2467,7 @@ export type components = {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'Fungible';
+            type: AssignmentFungibleType;
             /** @example 42 */
             value: number;
         };
@@ -2476,7 +2476,7 @@ export type components = {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'InflationRight';
+            type: AssignmentInflationRightType;
             /** @example 200 */
             value: number;
         };
@@ -2485,14 +2485,14 @@ export type components = {
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'NonFungible';
+            type: AssignmentNonFungibleType;
         };
         AssignmentReplaceRight: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: 'ReplaceRight';
+            type: AssignmentReplaceRightType;
         };
         BackupRequest: {
             /** @example /path/where/to/save/the/backup/file */
@@ -2504,7 +2504,7 @@ export type components = {
          * @example Regtest
          * @enum {string}
          */
-        BitcoinNetwork: 'Mainnet' | 'Testnet' | 'Testnet4' | 'Signet' | 'Regtest';
+        BitcoinNetwork: BitcoinNetwork;
         BlockTime: {
             /** @example 805434 */
             height?: number;
@@ -2571,7 +2571,7 @@ export type components = {
             asset_remote_amount?: number;
         };
         /** @enum {string} */
-        ChannelStatus: 'Opening' | 'Opened' | 'Closing';
+        ChannelStatus: ChannelStatus;
         CheckIndexerUrlRequest: {
             /** @example 127.0.0.1:50001 */
             indexer_url?: string;
@@ -2717,9 +2717,9 @@ export type components = {
             swap?: components['schemas']['Swap'];
         };
         /** @enum {string} */
-        HTLCStatus: 'Pending' | 'Succeeded' | 'Failed';
+        HTLCStatus: HTLCStatus;
         /** @enum {string} */
-        IndexerProtocol: 'Electrum' | 'Esplora';
+        IndexerProtocol: IndexerProtocol;
         InitRequest: {
             /** @example nodepassword */
             password?: string;
@@ -2731,7 +2731,7 @@ export type components = {
             mnemonic?: string;
         };
         /** @enum {string} */
-        InvoiceStatus: 'Pending' | 'Succeeded' | 'Failed' | 'Expired';
+        InvoiceStatus: InvoiceStatus;
         InvoiceStatusRequest: {
             /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
             invoice?: string;
@@ -3038,7 +3038,7 @@ export type components = {
             transport_endpoints?: string[];
         };
         /** @enum {string} */
-        RecipientType: 'Blind' | 'Witness';
+        RecipientType: RecipientType;
         RefreshRequest: {
             /** @example false */
             skip_sync?: boolean;
@@ -3201,7 +3201,7 @@ export type components = {
             completed_at?: number;
         };
         /** @enum {string} */
-        SwapStatus: 'Waiting' | 'Pending' | 'Succeeded' | 'Expired' | 'Failed';
+        SwapStatus: SwapStatus;
         TakerRequest: {
             /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
             swapstring?: string;
@@ -3281,7 +3281,7 @@ export type components = {
             confirmation_time?: components['schemas']['BlockTime'];
         };
         /** @enum {string} */
-        TransactionType: 'RgbSend' | 'Drain' | 'CreateUtxos' | 'User';
+        TransactionType: TransactionType;
         Transfer: {
             /** @example 1 */
             idx?: number;
@@ -3309,9 +3309,9 @@ export type components = {
          * @example ReceiveBlind
          * @enum {string}
          */
-        TransferKind: 'Issuance' | 'ReceiveBlind' | 'ReceiveWitness' | 'Send' | 'Inflation';
+        TransferKind: TransferKind;
         /** @enum {string} */
-        TransferStatus: 'WaitingCounterparty' | 'WaitingConfirmations' | 'Settled' | 'Failed';
+        TransferStatus: TransferStatus;
         TransferTransportEndpoint: {
             /** @example http://127.0.0.1:3000/json-rpc */
             endpoint?: string;
@@ -3320,7 +3320,7 @@ export type components = {
             used?: boolean;
         };
         /** @enum {string} */
-        TransportType: 'JsonRpc';
+        TransportType: TransportType;
         UnlockRequest: {
             /** @example nodepassword */
             password?: string;
@@ -3366,4 +3366,84 @@ export type components = {
     pathItems: never;
 };
 export type $defs = Record<string, never>;
+export enum AssetSchema {
+    Nia = 'Nia',
+    Uda = 'Uda',
+    Cfa = 'Cfa',
+}
+export enum AssignmentAnyType {
+    Any = 'Any',
+}
+export enum AssignmentFungibleType {
+    Fungible = 'Fungible',
+}
+export enum AssignmentInflationRightType {
+    InflationRight = 'InflationRight',
+}
+export enum AssignmentNonFungibleType {
+    NonFungible = 'NonFungible',
+}
+export enum AssignmentReplaceRightType {
+    ReplaceRight = 'ReplaceRight',
+}
+export enum BitcoinNetwork {
+    Mainnet = 'Mainnet',
+    Testnet = 'Testnet',
+    Testnet4 = 'Testnet4',
+    Signet = 'Signet',
+    Regtest = 'Regtest',
+}
+export enum ChannelStatus {
+    Opening = 'Opening',
+    Opened = 'Opened',
+    Closing = 'Closing',
+}
+export enum HTLCStatus {
+    Pending = 'Pending',
+    Succeeded = 'Succeeded',
+    Failed = 'Failed',
+}
+export enum IndexerProtocol {
+    Electrum = 'Electrum',
+    Esplora = 'Esplora',
+}
+export enum InvoiceStatus {
+    Pending = 'Pending',
+    Succeeded = 'Succeeded',
+    Failed = 'Failed',
+    Expired = 'Expired',
+}
+export enum RecipientType {
+    Blind = 'Blind',
+    Witness = 'Witness',
+}
+export enum SwapStatus {
+    Waiting = 'Waiting',
+    Pending = 'Pending',
+    Succeeded = 'Succeeded',
+    Expired = 'Expired',
+    Failed = 'Failed',
+}
+export enum TransactionType {
+    RgbSend = 'RgbSend',
+    Drain = 'Drain',
+    CreateUtxos = 'CreateUtxos',
+    User = 'User',
+}
+export enum TransferKind {
+    Issuance = 'Issuance',
+    ReceiveBlind = 'ReceiveBlind',
+    ReceiveWitness = 'ReceiveWitness',
+    Send = 'Send',
+    Inflation = 'Inflation',
+}
+export enum TransferStatus {
+    WaitingCounterparty = 'WaitingCounterparty',
+    WaitingConfirmations = 'WaitingConfirmations',
+    Settled = 'Settled',
+    Failed = 'Failed',
+}
+export enum TransportType {
+    JsonRpc = 'JsonRpc',
+}
 export type operations = Record<string, never>;

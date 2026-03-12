@@ -14,39 +14,39 @@ import type { ComponentLogger } from './logging.js';
 import type { QuoteResponse } from './types/ws.js';
 import type { Layer } from './api-types-ext.js';
 import type {
-    MarketListAssetsResponse,
-    ListPairsResponse,
-    GetQuoteRequest,
-    GetQuoteResponse,
-    GetPairRoutesRequest,
-    GetPairRoutesResponse,
+    AssetsResponse,
+    TradingPairsResponse,
+    PairQuoteRequest,
+    PairQuoteResponse,
+    RoutesRequest,
+    RoutesResponse,
     DiscoverRoutesRequest,
     DiscoverRoutesResponse,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
-    GetSwapOrderStatusRequest,
-    GetSwapOrderStatusResponse,
-    GetOrderHistoryResponse,
-    GetOrderStatsResponse,
+    SwapOrderStatusRequest,
+    SwapOrderStatusResponse,
+    OrderHistoryResponse,
+    OrderStatsResponse,
     SwapOrderRateDecisionRequest,
     SwapOrderRateDecisionResponse,
-    InitiateSwapRequest,
-    InitiateSwapResponse,
+    SwapRequest,
+    SwapResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
-    GetSwapStatusRequest,
-    GetSwapStatusResponse,
-    GetNodeInfoResponse,
-    GetLspInfoResponse,
-    GetLspNetworkInfoResponse,
-    CreateLspOrderRequest,
-    CreateLspOrderResponse,
-    GetLspOrderRequest,
+    SwapStatusRequest,
+    SwapStatusResponse,
+    SwapNodeInfoResponse,
+    GetInfoResponseModel,
+    NetworkInfoResponse,
+    CreateOrderRequest,
+    ChannelOrderResponse,
+    GetOrderRequest,
     GetLspOrderResponse,
     EstimateLspFeesRequest,
     EstimateLspFeesResponse,
-    LspRateDecisionRequest,
-    LspRateDecisionResponse,
+    RateDecisionRequest,
+    RateDecisionResponse,
     RetryDeliveryRequest,
     RetryDeliveryResponse,
 } from './api-types-ext.js';
@@ -376,21 +376,21 @@ export class MakerClient {
     // Market API - /api/v1/market/*
     // ============================================================================
 
-    async listAssets(): Promise<MarketListAssetsResponse> {
+    async listAssets(): Promise<AssetsResponse> {
         this._log.debug('listAssets()');
         const result = assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
         this._log.debug('listAssets() -> %d assets', result.assets?.length ?? 0);
         return result;
     }
 
-    async listPairs(): Promise<ListPairsResponse> {
+    async listPairs(): Promise<TradingPairsResponse> {
         this._log.debug('listPairs()');
         const result = assertResponse(await this.http.maker.GET('/api/v1/market/pairs'));
         this._log.debug('listPairs() -> %d pairs', result.pairs?.length ?? 0);
         return result;
     }
 
-    async getQuote(body: GetQuoteRequest): Promise<GetQuoteResponse> {
+    async getQuote(body: PairQuoteRequest): Promise<PairQuoteResponse> {
         this._log.debug('getQuote()');
         const result = assertResponse(await this.http.maker.POST('/api/v1/market/quote', { body }));
         this._log.info(
@@ -402,7 +402,7 @@ export class MakerClient {
         return result;
     }
 
-    async getPairRoutes(body: GetPairRoutesRequest): Promise<GetPairRoutesResponse> {
+    async getPairRoutes(body: RoutesRequest): Promise<RoutesResponse> {
         this._log.debug('getPairRoutes()');
         return assertResponse(await this.http.maker.POST('/api/v1/market/pairs/routes', { body }));
     }
@@ -425,7 +425,7 @@ export class MakerClient {
         return result;
     }
 
-    async getSwapOrderStatus(body: GetSwapOrderStatusRequest): Promise<GetSwapOrderStatusResponse> {
+    async getSwapOrderStatus(body: SwapOrderStatusRequest): Promise<SwapOrderStatusResponse> {
         this._log.debug('getSwapOrderStatus(): order_id=%s', body.order_id);
         return assertResponse(await this.http.maker.POST('/api/v1/swaps/orders/status', { body }));
     }
@@ -434,7 +434,7 @@ export class MakerClient {
         status?: string;
         limit?: number;
         skip?: number;
-    }): Promise<GetOrderHistoryResponse> {
+    }): Promise<OrderHistoryResponse> {
         return assertResponse(
             await this.http.maker.GET('/api/v1/swaps/orders/history', {
                 params: params ? { query: params as Record<string, unknown> } : undefined,
@@ -442,7 +442,7 @@ export class MakerClient {
         );
     }
 
-    async getOrderAnalytics(): Promise<GetOrderStatsResponse> {
+    async getOrderAnalytics(): Promise<OrderStatsResponse> {
         return assertResponse(await this.http.maker.GET('/api/v1/swaps/orders/analytics'));
     }
 
@@ -458,7 +458,7 @@ export class MakerClient {
     // Atomic Swaps API - /api/v1/swaps/*
     // ============================================================================
 
-    async initSwap(body: InitiateSwapRequest): Promise<InitiateSwapResponse> {
+    async initSwap(body: SwapRequest): Promise<SwapResponse> {
         this._log.info('initSwap(): rfq_id=%s', body.rfq_id);
         const result = assertResponse(await this.http.maker.POST('/api/v1/swaps/init', { body }));
         this._log.info('initSwap() -> payment_hash=%s', result.payment_hash);
@@ -474,12 +474,12 @@ export class MakerClient {
         return result;
     }
 
-    async getAtomicSwapStatus(body: GetSwapStatusRequest): Promise<GetSwapStatusResponse> {
+    async getAtomicSwapStatus(body: SwapStatusRequest): Promise<SwapStatusResponse> {
         this._log.debug('getAtomicSwapStatus()');
         return assertResponse(await this.http.maker.POST('/api/v1/swaps/atomic/status', { body }));
     }
 
-    async getSwapNodeInfo(): Promise<GetNodeInfoResponse> {
+    async getSwapNodeInfo(): Promise<SwapNodeInfoResponse> {
         return assertResponse(await this.http.maker.GET('/api/v1/swaps/nodeinfo'));
     }
 
@@ -487,19 +487,19 @@ export class MakerClient {
     // LSPS1 API - /api/v1/lsps1/*
     // ============================================================================
 
-    async getLspInfo(): Promise<GetLspInfoResponse> {
+    async getLspInfo(): Promise<GetInfoResponseModel> {
         return assertResponse(await this.http.maker.GET('/api/v1/lsps1/get_info'));
     }
 
-    async getLspNetworkInfo(): Promise<GetLspNetworkInfoResponse> {
+    async getLspNetworkInfo(): Promise<NetworkInfoResponse> {
         return assertResponse(await this.http.maker.GET('/api/v1/lsps1/network_info'));
     }
 
-    async createLspOrder(body: CreateLspOrderRequest): Promise<CreateLspOrderResponse> {
+    async createLspOrder(body: CreateOrderRequest): Promise<ChannelOrderResponse> {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/create_order', { body }));
     }
 
-    async getLspOrder(body: GetLspOrderRequest): Promise<GetLspOrderResponse> {
+    async getLspOrder(body: GetOrderRequest): Promise<GetLspOrderResponse> {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/get_order', { body }));
     }
 
@@ -507,7 +507,7 @@ export class MakerClient {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/estimate_fees', { body }));
     }
 
-    async submitLspRateDecision(body: LspRateDecisionRequest): Promise<LspRateDecisionResponse> {
+    async submitLspRateDecision(body: RateDecisionRequest): Promise<RateDecisionResponse> {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/rate_decision', { body }));
     }
 

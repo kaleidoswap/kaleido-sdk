@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * import { KaleidoClient } from 'kaleidoswap-sdk';
- * import type { GetQuoteResponse, Asset } from 'kaleidoswap-sdk/types';
+ * import type { PairQuoteResponse, Asset } from 'kaleidoswap-sdk';
  *
  * const client = KaleidoClient.create({
  *   baseUrl: 'https://api.regtest.kaleidoswap.com',
@@ -21,7 +21,6 @@
 // Export client classes
 export { KaleidoClient } from './client.js';
 export { MakerClient } from './maker-client.js';
-export { RlnClient } from './rln-client.js';
 
 // Export HTTP client (for advanced usage)
 export { HttpClient } from './http-client.js';
@@ -151,236 +150,20 @@ export {
 } from './errors.js';
 
 // ============================================================================
-// All type definitions
+// Type definitions
 //
-// Prefer importing from 'kaleidoswap-sdk/types' for a focused type-only import,
-// or use the domain sub-paths:
-//   import type { ... } from 'kaleidoswap-sdk/types/market';
-//   import type { ... } from 'kaleidoswap-sdk/types/node';
-//
-// Everything below is re-exported here for convenience so that plain
-// `import { ... } from 'kaleidoswap-sdk'` still works for types.
+// Market/maker types are exported here so `import type { ... } from 'kaleidoswap-sdk'` works.
+// RLN types are intentionally excluded — import from 'kaleidoswap-sdk/rln'.
 // ============================================================================
 
-export type {
-    // ---- Configuration ----
-    KaleidoConfig,
+// ---- Configuration ----
+export type { KaleidoConfig } from './types/config.js';
 
-    // ---- Market schema types ----
-    Asset,
-    TradingPair,
-    Quote,
-    SwapOrder,
-    SwapOrderStatus,
-    Layer,
-    ReceiverAddressFormat,
-    ApiComponents,
+// ---- Market types (includes enums as runtime values) ----
+export * from './api-types-ext.js';
 
-    // ---- Market / Assets ----
-    MarketListAssetsResponse,
-    ListPairsResponse,
+// ---- WebSocket types ----
+export type * from './types/ws.js';
 
-    // ---- Routes ----
-    GetPairRoutesRequest,
-    GetPairRoutesResponse,
-    DiscoverRoutesRequest,
-    DiscoverRoutesResponse,
-    GetRouteMatrixResponse,
-
-    // ---- Quotes ----
-    GetQuoteRequest,
-    GetQuoteResponse,
-
-    // ---- Swap Orders ----
-    CreateSwapOrderRequest,
-    CreateSwapOrderResponse,
-    GetSwapOrderStatusRequest,
-    GetSwapOrderStatusResponse,
-    GetOrderHistoryResponse,
-    GetOrderStatsResponse,
-    SwapOrderRateDecisionRequest,
-    SwapOrderRateDecisionResponse,
-
-    // ---- Atomic Swaps ----
-    InitiateSwapRequest,
-    InitiateSwapResponse,
-    ConfirmSwapRequest,
-    ConfirmSwapResponse,
-    GetSwapStatusRequest,
-    GetSwapStatusResponse,
-    GetNodeInfoResponse,
-
-    // ---- LSPS1 ----
-    GetLspInfoResponse,
-    GetLspNetworkInfoResponse,
-    CreateLspOrderRequest,
-    CreateLspOrderResponse,
-    GetLspOrderRequest,
-    GetLspOrderResponse,
-    EstimateLspFeesRequest,
-    EstimateLspFeesResponse,
-    LspRateDecisionRequest,
-    LspRateDecisionResponse,
-    RetryDeliveryRequest,
-    RetryDeliveryResponse,
-
-    // ---- Market backward compat aliases ----
-    SwapOrderStatusResponse,
-    OrderHistoryResponse,
-    OrderStatsResponse,
-    LspInfo,
-    NetworkInfo,
-
-    // ---- Node schema types ----
-    Channel,
-    NodeAsset,
-    NiaAsset,
-    Recipient,
-    RecipientType,
-    Utxo,
-    BlockTime,
-    EmbeddedMedia,
-    Media,
-    PostAssetMediaRequest,
-    PostAssetMediaResponse,
-    ProofOfReserves,
-    RgbAllocation,
-    Token,
-    TokenLight,
-    TransactionType,
-    TransferTransportEndpoint,
-    WitnessData,
-    NodeComponents,
-
-    // ---- Authentication & Wallet ----
-    InitWalletRequest,
-    InitResponse,
-    UnlockRequest,
-    UnlockResponse,
-    ChangePasswordRequest,
-    ChangePasswordResponse,
-    RestoreRequest,
-    RestoreResponse,
-    BackupRequest,
-    BackupResponse,
-    ShutdownResponse,
-
-    // ---- Node Information ----
-    NodeInfoResponse,
-    NetworkInfoResponse,
-
-    // ---- Bitcoin Operations ----
-    AddressResponse,
-    BtcBalanceResponse,
-    SendBtcRequest,
-    SendBtcResponse,
-    ListTransactionsRequest,
-    ListTransactionsResponse,
-    ListUnspentsRequest,
-    ListUnspentsResponse,
-    CreateUtxosRequest,
-    CreateUtxosResponse,
-    EstimateFeeRequest,
-    EstimateFeeResponse,
-
-    // ---- RGB Asset Management ----
-    ListAssetsRequest,
-    ListAssetsResponse,
-    AssetBalanceRequest,
-    AssetBalanceResponse,
-    AssetMetadataRequest,
-    AssetMetadataResponse,
-    GetAssetMediaRequest,
-    GetAssetMediaResponse,
-    SendRgbRequest,
-    SendRgbResponse,
-
-    // ---- Asset Issuance ----
-    IssueAssetNIARequest,
-    IssueAssetNIAResponse,
-    IssueAssetCFARequest,
-    IssueAssetCFAResponse,
-    IssueAssetUDARequest,
-    IssueAssetUDAResponse,
-
-    // ---- Transfers ----
-    ListTransfersRequest,
-    ListTransfersResponse,
-    RefreshTransfersRequest,
-    FailTransfersRequest,
-
-    // ---- Channels ----
-    ListChannelsResponse,
-    OpenChannelRequest,
-    OpenChannelResponse,
-    CloseChannelRequest,
-    GetChannelIdRequest,
-    GetChannelIdResponse,
-
-    // ---- Peers ----
-    ListPeersResponse,
-    ConnectPeerRequest,
-    ConnectPeerResponse,
-    DisconnectPeerRequest,
-
-    // ---- Invoices ----
-    CreateLNInvoiceRequest,
-    CreateLNInvoiceResponse,
-    CreateRgbInvoiceRequest,
-    CreateRgbInvoiceResponse,
-    DecodeLNInvoiceRequest,
-    DecodeLNInvoiceResponse,
-    DecodeRgbInvoiceRequest,
-    DecodeRgbInvoiceResponse,
-    GetInvoiceStatusRequest,
-    GetInvoiceStatusResponse,
-
-    // ---- Payments ----
-    SendPaymentRequest,
-    SendPaymentResponse,
-    KeysendRequest,
-    KeysendResponse,
-    ListPaymentsResponse,
-    GetPaymentRequest,
-    GetPaymentResponse,
-
-    // ---- Maker / Taker Swaps (on-node) ----
-    WhitelistTradeRequest,
-    MakerInitRequest,
-    MakerInitResponse,
-    MakerExecuteRequest,
-    MakerExecuteResponse,
-    ListSwapsResponse,
-    GetSwapRequest,
-    GetSwapResponse,
-
-    // ---- Utility ----
-    SignMessageRequest,
-    SignMessageResponse,
-    SendOnionMessageRequest,
-    CheckIndexerUrlRequest,
-    CheckProxyEndpointRequest,
-    RevokeTokenRequest,
-
-    // ---- Node backward compat aliases ----
-    InitRequest,
-    UnlockWalletRequest,
-    LNInvoiceResponse,
-    AssetMediaRequest,
-    AssetMediaResponse,
-
-    // ---- WebSocket types ----
-    QuoteResponse,
-    QuoteRequest,
-    PongResponse,
-    Fee,
-    WebSocketResponse,
-    WebSocketMessage,
-    WSAction,
-
-    // ---- Client types ----
-    SwapCompletionOptions,
-} from './types/index.js';
-
-// ---- Runtime enum values (values, not types — must use plain export) ----
-export { LayerEnum, ReceiverAddressFormatEnum } from './types/index.js';
+// ---- Client types ----
+export type { SwapCompletionOptions } from './maker-client.js';

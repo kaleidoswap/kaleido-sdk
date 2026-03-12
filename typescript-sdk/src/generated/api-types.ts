@@ -581,13 +581,7 @@ export type components = {
          * @description Status of asset delivery via keysend after channel opening
          * @enum {string}
          */
-        AssetDeliveryStatus:
-            | 'NOT_REQUIRED'
-            | 'PENDING'
-            | 'IN_PROGRESS'
-            | 'COMPLETED'
-            | 'FAILED'
-            | 'RATE_CHANGED';
+        AssetDeliveryStatus: AssetDeliveryStatus;
         /** AssetsOptions */
         AssetsOptions: {
             /**
@@ -678,7 +672,7 @@ export type components = {
          * BitcoinNetwork
          * @enum {string}
          */
-        BitcoinNetwork: 'Mainnet' | 'Testnet' | 'Signet' | 'Regtest';
+        BitcoinNetwork: BitcoinNetwork;
         /** ChannelDetails */
         ChannelDetails: {
             /** Channel Id */
@@ -925,20 +919,7 @@ export type components = {
          *     The layer encodes both WHAT protocol the asset uses and WHERE it settles.
          * @enum {string}
          */
-        Layer:
-            | 'BTC_L1'
-            | 'BTC_LN'
-            | 'BTC_SPARK'
-            | 'BTC_ARKADE'
-            | 'BTC_LIQUID'
-            | 'BTC_CASHU'
-            | 'RGB_L1'
-            | 'RGB_LN'
-            | 'TAPASS_L1'
-            | 'TAPASS_LN'
-            | 'LIQUID_LIQUID'
-            | 'ARKADE_ARKADE'
-            | 'SPARK_SPARK';
+        Layer: Layer;
         /** Media */
         Media: {
             /**
@@ -1104,12 +1085,7 @@ export type components = {
          * OrderState
          * @enum {string}
          */
-        OrderState:
-            | 'CREATED'
-            | 'CHANNEL_OPENING'
-            | 'COMPLETED'
-            | 'FAILED'
-            | 'PENDING_RATE_DECISION';
+        OrderState: OrderState;
         /** OrderStatsResponse */
         OrderStatsResponse: {
             /**
@@ -1271,13 +1247,13 @@ export type components = {
          * PaymentState
          * @enum {string}
          */
-        PaymentState: 'EXPECT_PAYMENT' | 'HOLD' | 'PAID' | 'REFUNDED' | 'TO_REFUND';
+        PaymentState: PaymentState;
         /**
          * PaymentStatus
          * @description Payment status for onchain payments with support for partial payments.
          * @enum {string}
          */
-        PaymentStatus: 'NOT_PAID' | 'UNDERPAID' | 'PAID' | 'OVERPAID';
+        PaymentStatus: PaymentStatus;
         /**
          * RateDecisionRequest
          * @description Request for user to accept new rate or request refund
@@ -1373,19 +1349,7 @@ export type components = {
          *     for receiving payments.
          * @enum {string}
          */
-        ReceiverAddressFormat:
-            | 'BTC_ADDRESS'
-            | 'BOLT11'
-            | 'BOLT12'
-            | 'LN_ADDRESS'
-            | 'RGB_INVOICE'
-            | 'LIQUID_ADDRESS'
-            | 'LIQUID_INVOICE'
-            | 'SPARK_ADDRESS'
-            | 'SPARK_INVOICE'
-            | 'ARKADE_ADDRESS'
-            | 'ARKADE_INVOICE'
-            | 'CASHU_TOKEN';
+        ReceiverAddressFormat: ReceiverAddressFormat;
         /**
          * RetryDeliveryRequest
          * @description Request model for /retry_delivery endpoint to trigger immediate keysend retry
@@ -1415,7 +1379,7 @@ export type components = {
          * @description Status codes for /retry_delivery endpoint responses
          * @enum {string}
          */
-        RetryDeliveryStatus: 'processing' | 'not_found' | 'no_pending_delivery' | 'error';
+        RetryDeliveryStatus: RetryDeliveryStatus;
         /**
          * RouteStep
          * @description Single step in a route (one swap within a trading pair).
@@ -1751,16 +1715,7 @@ export type components = {
          * SwapOrderStatus
          * @enum {string}
          */
-        SwapOrderStatus:
-            | 'OPEN'
-            | 'PENDING_PAYMENT'
-            | 'PAID'
-            | 'EXECUTING'
-            | 'FILLED'
-            | 'CANCELLED'
-            | 'EXPIRED'
-            | 'FAILED'
-            | 'PENDING_RATE_DECISION';
+        SwapOrderStatus: SwapOrderStatus;
         /** SwapOrderStatusRequest */
         SwapOrderStatusRequest: {
             /** Order Id */
@@ -1831,7 +1786,7 @@ export type components = {
          * SwapStatus
          * @enum {string}
          */
-        SwapStatus: 'Waiting' | 'Pending' | 'Succeeded' | 'Expired' | 'Failed';
+        SwapStatus: SwapStatus;
         /** SwapStatusRequest */
         SwapStatusRequest: {
             /**
@@ -2693,4 +2648,91 @@ export interface operations {
             };
         };
     };
+}
+export enum AssetDeliveryStatus {
+    NOT_REQUIRED = 'NOT_REQUIRED',
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED',
+    RATE_CHANGED = 'RATE_CHANGED',
+}
+export enum BitcoinNetwork {
+    Mainnet = 'Mainnet',
+    Testnet = 'Testnet',
+    Signet = 'Signet',
+    Regtest = 'Regtest',
+}
+export enum Layer {
+    BTC_L1 = 'BTC_L1',
+    BTC_LN = 'BTC_LN',
+    BTC_SPARK = 'BTC_SPARK',
+    BTC_ARKADE = 'BTC_ARKADE',
+    BTC_LIQUID = 'BTC_LIQUID',
+    BTC_CASHU = 'BTC_CASHU',
+    RGB_L1 = 'RGB_L1',
+    RGB_LN = 'RGB_LN',
+    TAPASS_L1 = 'TAPASS_L1',
+    TAPASS_LN = 'TAPASS_LN',
+    LIQUID_LIQUID = 'LIQUID_LIQUID',
+    ARKADE_ARKADE = 'ARKADE_ARKADE',
+    SPARK_SPARK = 'SPARK_SPARK',
+}
+export enum OrderState {
+    CREATED = 'CREATED',
+    CHANNEL_OPENING = 'CHANNEL_OPENING',
+    COMPLETED = 'COMPLETED',
+    FAILED = 'FAILED',
+    PENDING_RATE_DECISION = 'PENDING_RATE_DECISION',
+}
+export enum PaymentState {
+    EXPECT_PAYMENT = 'EXPECT_PAYMENT',
+    HOLD = 'HOLD',
+    PAID = 'PAID',
+    REFUNDED = 'REFUNDED',
+    TO_REFUND = 'TO_REFUND',
+}
+export enum PaymentStatus {
+    NOT_PAID = 'NOT_PAID',
+    UNDERPAID = 'UNDERPAID',
+    PAID = 'PAID',
+    OVERPAID = 'OVERPAID',
+}
+export enum ReceiverAddressFormat {
+    BTC_ADDRESS = 'BTC_ADDRESS',
+    BOLT11 = 'BOLT11',
+    BOLT12 = 'BOLT12',
+    LN_ADDRESS = 'LN_ADDRESS',
+    RGB_INVOICE = 'RGB_INVOICE',
+    LIQUID_ADDRESS = 'LIQUID_ADDRESS',
+    LIQUID_INVOICE = 'LIQUID_INVOICE',
+    SPARK_ADDRESS = 'SPARK_ADDRESS',
+    SPARK_INVOICE = 'SPARK_INVOICE',
+    ARKADE_ADDRESS = 'ARKADE_ADDRESS',
+    ARKADE_INVOICE = 'ARKADE_INVOICE',
+    CASHU_TOKEN = 'CASHU_TOKEN',
+}
+export enum RetryDeliveryStatus {
+    processing = 'processing',
+    not_found = 'not_found',
+    no_pending_delivery = 'no_pending_delivery',
+    error = 'error',
+}
+export enum SwapOrderStatus {
+    OPEN = 'OPEN',
+    PENDING_PAYMENT = 'PENDING_PAYMENT',
+    PAID = 'PAID',
+    EXECUTING = 'EXECUTING',
+    FILLED = 'FILLED',
+    CANCELLED = 'CANCELLED',
+    EXPIRED = 'EXPIRED',
+    FAILED = 'FAILED',
+    PENDING_RATE_DECISION = 'PENDING_RATE_DECISION',
+}
+export enum SwapStatus {
+    Waiting = 'Waiting',
+    Pending = 'Pending',
+    Succeeded = 'Succeeded',
+    Expired = 'Expired',
+    Failed = 'Failed',
 }
