@@ -6,7 +6,7 @@ These tests require a reachable WebSocket server.
 
 import pytest
 
-from kaleidoswap_sdk import WSClient
+from kaleido_sdk import WSClient
 
 
 class TestWSClientIntegration:

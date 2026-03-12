@@ -6,7 +6,7 @@ Trade RGB assets on Lightning Network with ease.
 
 Example:
     ```python
-    from kaleidoswap_sdk import KaleidoClient
+    from kaleido_sdk import KaleidoClient
 
     async def main():
         client = KaleidoClient.create(
@@ -23,16 +23,16 @@ Logging:
     no output is produced unless the application configures handlers.
 
     Available loggers:
-        kaleidoswap_sdk        — root (controls all SDK logging at once)
-        kaleidoswap_sdk.http   — HTTP requests, responses, latency, retries
-        kaleidoswap_sdk.ws     — WebSocket lifecycle and messages
-        kaleidoswap_sdk.maker  — Quote, swap order, and atomic swap events
-        kaleidoswap_sdk.rln    — RGB Lightning Node operations
+        kaleido_sdk        — root (controls all SDK logging at once)
+        kaleido_sdk.http   — HTTP requests, responses, latency, retries
+        kaleido_sdk.ws     — WebSocket lifecycle and messages
+        kaleido_sdk.maker  — Quote, swap order, and atomic swap events
+        kaleido_sdk.rln    — RGB Lightning Node operations
 
     Quick start (configure handler in application code only):
         ```python
         import logging
-        import kaleidoswap_sdk as ks
+        import kaleido_sdk as ks
 
         logging.basicConfig(
             level=logging.DEBUG,
@@ -47,7 +47,7 @@ Logging:
     To route logs to a file (application responsibility):
         ```python
         handler = logging.FileHandler("kaleido.log")
-        logging.getLogger("kaleidoswap_sdk").addHandler(handler)
+        logging.getLogger("kaleido_sdk").addHandler(handler)
         ```
 """
 
@@ -160,7 +160,7 @@ from .types import (
     TradingPairsResponse,
 )
 
-__version__ = "0.5.3"
+__version__ = "0.1.0"
 __all__ = [
     # Main client
     "KaleidoClient",

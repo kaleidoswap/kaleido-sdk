@@ -7,7 +7,7 @@ Demonstrates handling the SDK's typed exceptions.
 
 import asyncio
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     APIError,
     KaleidoClient,
     KaleidoError,

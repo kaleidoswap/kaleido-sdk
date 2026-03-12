@@ -4,12 +4,12 @@ Tests for RlnClient.
 
 import pytest
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     KaleidoClient,
     NodeNotConfiguredError,
     RlnClient,
 )
-from kaleidoswap_sdk.rln import (
+from kaleido_sdk.rln import (
     AssetBalanceRequest,
     AssetMetadataRequest,
     AssetSchema,
@@ -217,7 +217,7 @@ class TestRlnClientIntegration:
     @pytest.mark.skip(reason="Requires valid digest from an asset with media")
     async def test_get_asset_media(self, client_with_node: KaleidoClient) -> None:
         """Test getting asset media (POST /getassetmedia)."""
-        from kaleidoswap_sdk import GetAssetMediaRequest
+        from kaleido_sdk import GetAssetMediaRequest
 
         body = GetAssetMediaRequest(digest="")
         resp = await client_with_node.rln.get_asset_media(body)

@@ -3,9 +3,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SPECS_DIR="$ROOT_DIR/specs"
-OUTPUT_DIR="$ROOT_DIR/python-sdk/kaleidoswap_sdk/_generated"
+OUTPUT_DIR="$ROOT_DIR/python-sdk/kaleido_sdk/_generated"
 
-echo "🔧 Generating Python Pydantic models for kaleidoswap-sdk from OpenAPI specs..."
+echo "🔧 Generating Python Pydantic models for kaleido-sdk from OpenAPI specs..."
 
 # Validate spec files exist
 for spec in "$SPECS_DIR/kaleidoswap.json" "$SPECS_DIR/rgb-lightning-node.yaml"; do

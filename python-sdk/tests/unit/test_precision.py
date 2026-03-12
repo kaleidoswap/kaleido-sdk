@@ -4,7 +4,7 @@ Tests for precision utilities.
 
 import pytest
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     MappedAsset,
     PrecisionHandler,
     create_precision_handler,

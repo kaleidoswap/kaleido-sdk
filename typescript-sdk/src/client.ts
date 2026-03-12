@@ -20,7 +20,7 @@ import type { KaleidoConfig } from './types/config.js';
  *
  * @example
  * ```typescript
- * import { KaleidoClient } from 'kaleidoswap-sdk';
+ * import { KaleidoClient } from 'kaleido-sdk';
  *
  * // Market API only
  * const client = KaleidoClient.create({
@@ -54,7 +54,7 @@ export class KaleidoClient {
      * affecting other `KaleidoClient` instances in the same process:
      *
      * ```typescript
-     * import { applyLogLevel, setComponentLogLevel, setLogger, LogLevel } from 'kaleidoswap-sdk';
+     * import { applyLogLevel, setComponentLogLevel, setLogger, LogLevel } from 'kaleido-sdk';
      *
      * // Raise root level to INFO after creation:
      * applyLogLevel(client.logState, LogLevel.INFO);
@@ -193,12 +193,12 @@ export function toDisplayUnits(amount: number, precision: number): number {
  * Get SDK version
  */
 export function getVersion(): string {
-    return '0.5.3';
+    return '0.1.0';
 }
 
 /**
  * Get SDK name
  */
 export function getSdkName(): string {
-    return 'kaleidoswap-sdk';
+    return 'kaleido-sdk';
 }

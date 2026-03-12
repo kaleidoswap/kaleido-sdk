@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     KaleidoClient,
     KaleidoConfig,
     NetworkError,
@@ -16,7 +16,7 @@ from kaleidoswap_sdk import (
     to_display_units,
     to_smallest_units,
 )
-from kaleidoswap_sdk.rln import (
+from kaleido_sdk.rln import (
     AssetSchema,
     CreateUtxosRequest,
     DecodeRGBInvoiceRequest,
@@ -49,7 +49,7 @@ class TestKaleidoClient:
 
     def test_maker_property(self, client: KaleidoClient) -> None:
         """Test maker property returns MakerClient."""
-        from kaleidoswap_sdk import MakerClient
+        from kaleido_sdk import MakerClient
 
         assert isinstance(client.maker, MakerClient)
 
@@ -60,7 +60,7 @@ class TestKaleidoClient:
 
     def test_rln_property_with_node(self, client_with_node: KaleidoClient) -> None:
         """Test rln property returns RlnClient with node configured."""
-        from kaleidoswap_sdk import RlnClient
+        from kaleido_sdk import RlnClient
 
         assert isinstance(client_with_node.rln, RlnClient)
 
@@ -113,7 +113,7 @@ class TestUtilityFunctions:
     def test_get_sdk_name(self) -> None:
         """Test get_sdk_name returns expected name."""
         name = get_sdk_name()
-        assert name == "kaleidoswap-sdk"
+        assert name == "kaleido-sdk"
 
 
 # =============================================================================
@@ -195,7 +195,7 @@ class TestMakerExecuteType:
         assert isinstance(result, EmptyResponse)
 
     def test_type_exported_from_package(self) -> None:
-        from kaleidoswap_sdk.rln import EmptyResponse as Exported
+        from kaleido_sdk.rln import EmptyResponse as Exported
 
         assert Exported is EmptyResponse
 

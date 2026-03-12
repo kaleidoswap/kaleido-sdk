@@ -8,7 +8,7 @@ Full swap-order lifecycle demo: quote -> create order -> wait for terminal state
 import asyncio
 import logging
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     CreateSwapOrderRequest,
     KaleidoClient,
     Layer,

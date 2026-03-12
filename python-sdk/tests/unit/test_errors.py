@@ -4,7 +4,7 @@ Error Handling Tests
 Tests error mapping and custom error classes, matching TypeScript SDK coverage.
 """
 
-from kaleidoswap_sdk.errors import (
+from kaleido_sdk.errors import (
     APIError,
     ConfigError,
     KaleidoError,

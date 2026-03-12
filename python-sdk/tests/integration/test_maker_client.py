@@ -1,6 +1,6 @@
 import pytest
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     ConfirmSwapRequest,
     CreateOrderRequest,
     CreateSwapOrderRequest,
@@ -14,7 +14,7 @@ from kaleidoswap_sdk import (
     SwapRequest,
     SwapStatusRequest,
 )
-from kaleidoswap_sdk.rln import TakerRequest
+from kaleido_sdk.rln import TakerRequest
 from tests.utils import get_fresh_quote, initiate_swap
 
 

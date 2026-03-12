@@ -4,7 +4,7 @@ Test fixtures and configuration for Kaleidoswap SDK tests.
 
 import pytest
 
-from kaleidoswap_sdk import KaleidoClient, KaleidoConfig
+from kaleido_sdk import KaleidoClient, KaleidoConfig
 
 
 @pytest.fixture

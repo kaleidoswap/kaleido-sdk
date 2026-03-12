@@ -9,7 +9,7 @@ The SDK automatically requests quotes at a configurable interval.
 import asyncio
 import logging
 
-from kaleidoswap_sdk import KaleidoClient, Layer
+from kaleido_sdk import KaleidoClient, Layer
 
 # ---------------------------------------------------------------------------
 # Logging setup (application's responsibility — the SDK never does this)

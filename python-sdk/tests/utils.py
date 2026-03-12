@@ -5,7 +5,7 @@ Test utilities for Kaleidoswap SDK tests.
 
 from __future__ import annotations
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     KaleidoClient,
     Layer,
     PairQuoteRequest,

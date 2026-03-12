@@ -8,7 +8,7 @@ Shows asset/pair analysis and route discovery.
 import asyncio
 import logging
 
-from kaleidoswap_sdk import KaleidoClient, RoutesRequest
+from kaleido_sdk import KaleidoClient, RoutesRequest
 
 logging.basicConfig(
     level=logging.INFO,

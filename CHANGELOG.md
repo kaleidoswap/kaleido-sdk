@@ -104,19 +104,19 @@ This release introduces a complete architectural refactor, moving from hand-writ
 **TypeScript:**
 ```typescript
 // Before (v0.1.x)
-import { AssetResponse } from 'kaleidoswap-sdk';
+import { AssetResponse } from 'kaleido-sdk';
 
 // After (v0.2.0)
-import { AssetsResponse } from 'kaleidoswap-sdk';
+import { AssetsResponse } from 'kaleido-sdk';
 ```
 
 **Python:**
 ```python
 # Before (v0.1.x)
-from kaleidoswap_sdk import QuoteResponse
+from kaleido_sdk import QuoteResponse
 
 # After (v0.2.0)
-from kaleidoswap_sdk import PairQuoteResponse
+from kaleido_sdk import PairQuoteResponse
 ```
 
 #### Response Field Names

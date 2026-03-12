@@ -90,7 +90,7 @@ generate-sdk-models:
   artifacts:
     paths:
       - typescript-sdk/src/generated/
-      - python-sdk/kaleidoswap_sdk/_generated/
+      - python-sdk/kaleido_sdk/_generated/
     expire_in: 1 week
   rules:
     # On tag: always run after update-specs
@@ -116,10 +116,10 @@ check-generated-models:
     - bash scripts/generate_typescript_types.sh
     - bash scripts/generate_python_sdk_models.sh
     - |
-      if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/; then
+      if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleido_sdk/_generated/; then
         echo "❌ Generated models are out of date!"
         echo "Run 'make generate-models' locally and commit the changes."
-        git diff --stat typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/
+        git diff --stat typescript-sdk/src/generated/ python-sdk/kaleido_sdk/_generated/
         exit 1
       fi
     - echo "✅ Generated models are up-to-date"
@@ -174,7 +174,7 @@ check:typescript-sdk:
   allow_failure: true
 
 # ---------------------------------------------------------------------------
-# Python SDK (Pure Python - kaleidoswap-sdk)
+# Python SDK (Pure Python - kaleido-sdk)
 # ---------------------------------------------------------------------------
 
 test:python-sdk:
@@ -212,11 +212,11 @@ check:python-sdk:
   script:
     - cd python-sdk
     - echo "🔍 Checking Python SDK formatting..."
-    - uvx ruff format --check kaleidoswap_sdk tests
+    - uvx ruff format --check kaleido_sdk tests
     - echo "🔍 Linting Python SDK..."
-    - uvx ruff check kaleidoswap_sdk tests
+    - uvx ruff check kaleido_sdk tests
     - echo "📝 Type checking Python SDK..."
-    - uvx --with pydantic mypy kaleidoswap_sdk --ignore-missing-imports
+    - uvx --with pydantic mypy kaleido_sdk --ignore-missing-imports
   allow_failure: true
 
 # ---------------------------------------------------------------------------
@@ -284,7 +284,7 @@ deploy:pypi-sdk:
       when: manual
   environment:
     name: pypi-sdk
-    url: https://pypi.org/project/kaleidoswap-sdk/
+    url: https://pypi.org/project/kaleido-sdk/
 
 deploy:npm:
   stage: deploy
@@ -318,4 +318,4 @@ deploy:npm:
       when: manual
   environment:
     name: npm
-    url: https://www.npmjs.com/package/kaleidoswap-sdk
+    url: https://www.npmjs.com/package/kaleido-sdk

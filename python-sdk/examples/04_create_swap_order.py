@@ -8,7 +8,7 @@ Demonstrates quote -> order request flow.
 import asyncio
 import logging
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     CreateSwapOrderRequest,
     KaleidoClient,
     Layer,
