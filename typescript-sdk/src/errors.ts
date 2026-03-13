@@ -211,6 +211,21 @@ export function assertResponse<T>(result: { data?: T; error?: unknown; response?
     return result.data as T;
 }
 
+type ValidationErrorItem = {
+    loc: Array<string | number>;
+    msg: string;
+};
+
+type HttpErrorData =
+    | string
+    | {
+          message?: string;
+          code?: string;
+          error?: string;
+          detail?: string | ValidationErrorItem[];
+          details?: unknown;
+      };
+
 /**
  * Map HTTP errors to typed SDK errors
  * @param error - HTTP error data from fetch
@@ -218,13 +233,7 @@ export function assertResponse<T>(result: { data?: T; error?: unknown; response?
 export function mapHttpError(error: {
     status: number;
     statusText: string;
-    data?: {
-        message?: string;
-        code?: string;
-        error?: string;
-        detail?: string | any;
-        details?: any;
-    };
+    data?: HttpErrorData;
 }): KaleidoError {
     let message = error.statusText;
 
@@ -243,7 +252,7 @@ export function mapHttpError(error: {
             // Handle FastAPI validation errors which return detail as array
             if (Array.isArray(error.data.detail)) {
                 message = error.data.detail
-                    .map((err: any) => `${err.loc.join('.')}: ${err.msg}`)
+                    .map((err) => `${err.loc.join('.')}: ${err.msg}`)
                     .join('; ');
             }
         }

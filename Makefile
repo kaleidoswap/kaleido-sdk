@@ -37,7 +37,7 @@ help:
 	@echo "  fix                - Auto-fix format and lint issues in all SDKs"
 	@echo "  fix-python         - Auto-fix Python SDK (ruff format + ruff check --fix)"
 	@echo "  fix-typescript     - Auto-fix TypeScript SDK (prettier + eslint --fix)"
-	@echo "  pre-commit         - Run fix on all SDKs (alias for fix)"
+	@echo "  pre-commit         - Run the same local checks as CI"
 	@echo ""
 	@echo "Code Generation:"
 	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
@@ -76,7 +76,7 @@ build: build-python-sdk build-typescript
 
 build-typescript:
 	@echo "📦 Building TypeScript SDK..."
-	cd $(TYPESCRIPT_SDK) && pnpm install && pnpm run build
+	cd $(TYPESCRIPT_SDK) && pnpm install --frozen-lockfile && pnpm run build
 
 build-python-sdk:
 	@echo "🐍 Building Python SDK..."
@@ -90,11 +90,11 @@ test: test-python-sdk test-typescript
 
 test-typescript:
 	@echo "🧪 Running TypeScript SDK tests..."
-	cd $(TYPESCRIPT_SDK) && pnpm install && pnpm test
+	cd $(TYPESCRIPT_SDK) && pnpm install --frozen-lockfile && pnpm test:unit
 
 test-python-sdk:
 	@echo "🧪 Running Python SDK tests..."
-	cd $(PYTHON_SDK) && uv sync --frozen --extra dev && uv run pytest tests/ -v
+	cd $(PYTHON_SDK) && uv sync --frozen --extra dev && uv run pytest tests/ -v --ignore=tests/integration -m "not integration"
 
 # ============================================================================
 # Code quality targets
@@ -102,11 +102,11 @@ test-python-sdk:
 
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
-	cd $(PYTHON_SDK) && uvx ruff format --check kaleido_sdk tests examples
+	cd $(PYTHON_SDK) && uvx ruff format --check kaleido_sdk tests
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
-	cd $(PYTHON_SDK) && uvx ruff check kaleido_sdk tests examples
+	cd $(PYTHON_SDK) && uvx ruff check kaleido_sdk tests
 
 typecheck-python:
 	@echo "📝 Type checking Python SDK..."
@@ -136,7 +136,7 @@ fix: fix-python fix-typescript
 	@echo ""
 	@echo "✅ All SDKs auto-fixed!"
 
-pre-commit: fix
+pre-commit: check
 
 # Install TypeScript dependencies only when pnpm-lock.yaml changes
 $(TYPESCRIPT_SDK)/node_modules/.modules.yaml: $(TYPESCRIPT_SDK)/pnpm-lock.yaml

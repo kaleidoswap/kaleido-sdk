@@ -6,7 +6,7 @@
  */
 
 import { HttpClient } from './http-client.js';
-import { assertResponse } from './errors.js';
+import { APIError, assertResponse } from './errors.js';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
 // ComponentLogger and LogState are imported above for use in the class body.
@@ -278,7 +278,11 @@ export class RlnClient {
 
     async refreshTransfers(body?: RefreshRequest): Promise<void> {
         this._log.debug('refreshTransfers()');
-        assertResponse(await this.http.node.POST('/refreshtransfers', { body: body || {} }));
+        assertResponse(
+            await this.http.node.POST('/refreshtransfers', {
+                body: body || { skip_sync: false },
+            }),
+        );
     }
 
     async syncRgbWallet(): Promise<void> {
@@ -415,7 +419,10 @@ export class RlnClient {
         this._log.debug('getTakerPubkey()');
         const data = assertResponse(await this.http.node.GET('/nodeinfo'));
         this._log.debug('getTakerPubkey() -> %s', data.pubkey);
-        return data.pubkey!;
+        if (!data.pubkey) {
+            throw new APIError('Node info response did not include pubkey', 500);
+        }
+        return data.pubkey;
     }
 
     async whitelistSwap(body: TakerRequest | string): Promise<void> {
