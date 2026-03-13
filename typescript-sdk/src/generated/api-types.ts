@@ -717,11 +717,8 @@ export type components = {
             funding_confirms_within_blocks: number;
             /** Channel Expiry Blocks */
             channel_expiry_blocks: number;
-            /**
-             * Token
-             * @default
-             */
-            token: string | null;
+            /** Token */
+            token?: string | null;
             /**
              * Created At
              * Format: date-time

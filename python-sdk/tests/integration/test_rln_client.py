@@ -167,7 +167,7 @@ class TestRlnClientIntegration:
     @pytest.mark.integration
     async def test_create_utxos(self, client_with_node: KaleidoClient) -> None:
         """Test creating UTXOs with fee_rate (regression: fee_rate int cast)."""
-        body = CreateUtxosRequest(up_to=True, num=5, fee_rate=1.5, skip_sync=True)
+        body = CreateUtxosRequest(up_to=True, num=5, fee_rate=1, skip_sync=True)
         await client_with_node.rln.create_utxos(body)
 
     @pytest.mark.integration

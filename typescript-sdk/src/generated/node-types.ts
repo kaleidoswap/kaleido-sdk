@@ -2343,105 +2343,105 @@ export type components = {
     schemas: {
         AddressResponse: {
             /** @example bcrt1qnc5y6j6dmejrkwy93farhvpezk0lf46gk7aecs */
-            address?: string;
+            address: string;
         };
         AssetBalanceRequest: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id: string;
         };
         AssetBalanceResponse: {
             /** @example 777 */
-            settled?: number;
+            settled: number;
             /** @example 777 */
-            future?: number;
+            future: number;
             /** @example 777 */
-            spendable?: number;
+            spendable: number;
             /** @example 444 */
-            offchain_outbound?: number;
+            offchain_outbound: number;
             /** @example 0 */
-            offchain_inbound?: number;
+            offchain_inbound: number;
         };
         AssetCFA: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id: string;
             /** @example Collectible */
-            name?: string;
+            name: string;
             /** @example asset details */
-            details?: string;
+            details?: string | null;
             /** @example 0 */
-            precision?: number;
+            precision: number;
             /** @example 777 */
-            issued_supply?: number;
+            issued_supply: number;
             /** @example 1691160565 */
-            timestamp?: number;
+            timestamp: number;
             /** @example 1691161979 */
-            added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            media?: components['schemas']['Media'];
+            added_at: number;
+            balance: components['schemas']['AssetBalanceResponse'];
+            media?: components['schemas']['Media'] | null;
         };
         AssetMetadataRequest: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id: string;
         };
         AssetMetadataResponse: {
-            asset_schema?: components['schemas']['AssetSchema'];
+            asset_schema: components['schemas']['AssetSchema'];
             /** @example 777 */
-            initial_supply?: number;
+            initial_supply: number;
             /** @example 777 */
-            max_supply?: number;
+            max_supply: number;
             /** @example 777 */
-            known_circulating_supply?: number;
+            known_circulating_supply: number;
             /** @example 1691160565 */
-            timestamp?: number;
+            timestamp: number;
             /** @example Collectible */
-            name?: string;
+            name: string;
             /** @example 0 */
-            precision?: number;
+            precision: number;
             /** @example USDT */
-            ticker?: string;
+            ticker?: string | null;
             /** @example asset details */
-            details?: string;
-            token?: components['schemas']['Token'];
+            details?: string | null;
+            token?: components['schemas']['Token'] | null;
         };
         AssetNIA: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id: string;
             /** @example USDT */
-            ticker?: string;
+            ticker: string;
             /** @example Tether */
-            name?: string;
+            name: string;
             /** @example asset details */
-            details?: string;
+            details?: string | null;
             /** @example 0 */
-            precision?: number;
+            precision: number;
             /** @example 777 */
-            issued_supply?: number;
+            issued_supply: number;
             /** @example 1691160565 */
-            timestamp?: number;
+            timestamp: number;
             /** @example 1691161979 */
-            added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            media?: components['schemas']['Media'];
+            added_at: number;
+            balance: components['schemas']['AssetBalanceResponse'];
+            media?: components['schemas']['Media'] | null;
         };
         /** @enum {string} */
         AssetSchema: AssetSchema;
         AssetUDA: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id: string;
             /** @example UNI */
-            ticker?: string;
+            ticker: string;
             /** @example Unique */
-            name?: string;
+            name: string;
             /** @example asset details */
-            details?: string;
+            details?: string | null;
             /** @example 0 */
-            precision?: number;
+            precision: number;
             /** @example 1691160565 */
-            timestamp?: number;
+            timestamp: number;
             /** @example 1691161979 */
-            added_at?: number;
-            balance?: components['schemas']['AssetBalanceResponse'];
-            token?: components['schemas']['TokenLight'];
+            added_at: number;
+            balance: components['schemas']['AssetBalanceResponse'];
+            token?: components['schemas']['TokenLight'] | null;
         };
         Assignment:
             | components['schemas']['AssignmentFungible']
@@ -2496,9 +2496,9 @@ export type components = {
         };
         BackupRequest: {
             /** @example /path/where/to/save/the/backup/file */
-            backup_path?: string;
+            backup_path: string;
             /** @example nodepassword */
-            password?: string;
+            password: string;
         };
         /**
          * @example Regtest
@@ -2507,153 +2507,153 @@ export type components = {
         BitcoinNetwork: BitcoinNetwork;
         BlockTime: {
             /** @example 805434 */
-            height?: number;
+            height: number;
             /** @example 1691160659 */
-            timestamp?: number;
+            timestamp: number;
         };
         BtcBalance: {
             /** @example 777000 */
-            settled?: number;
+            settled: number;
             /** @example 777000 */
-            future?: number;
+            future: number;
             /** @example 777000 */
-            spendable?: number;
+            spendable: number;
         };
         BtcBalanceRequest: {
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         BtcBalanceResponse: {
-            vanilla?: components['schemas']['BtcBalance'];
-            colored?: components['schemas']['BtcBalance'];
+            vanilla: components['schemas']['BtcBalance'];
+            colored: components['schemas']['BtcBalance'];
         };
         ChangePasswordRequest: {
             /** @example nodepassword */
-            old_password?: string;
+            old_password: string;
             /** @example nodenewpassword */
-            new_password?: string;
+            new_password: string;
         };
         Channel: {
             /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
-            channel_id?: string;
+            channel_id: string;
             /** @example 5a106a814fe28404eece1754dfd45e92ec9bb0044cbfe1d560cfd7b1e1af2981 */
-            funding_txid?: string;
+            funding_txid?: string | null;
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
-            peer_pubkey?: string;
+            peer_pubkey: string;
             /** @example null */
-            peer_alias?: string;
+            peer_alias?: string | null;
             /** @example 120946279120896 */
-            short_channel_id?: number;
-            status?: components['schemas']['ChannelStatus'];
+            short_channel_id?: number | null;
+            status: components['schemas']['ChannelStatus'];
             /** @example false */
-            ready?: boolean;
+            ready: boolean;
             /** @example 30010 */
-            capacity_sat?: number;
+            capacity_sat: number;
             /** @example 28616 */
-            local_balance_sat?: number;
+            local_balance_sat: number;
             /** @example 21616000 */
-            outbound_balance_msat?: number;
+            outbound_balance_msat: number;
             /** @example 6394000 */
-            inbound_balance_msat?: number;
+            inbound_balance_msat: number;
             /** @example 3001000 */
-            next_outbound_htlc_limit_msat?: number;
+            next_outbound_htlc_limit_msat: number;
             /** @example 1 */
-            next_outbound_htlc_minimum_msat?: number;
+            next_outbound_htlc_minimum_msat: number;
             /** @example false */
-            is_usable?: boolean;
+            is_usable: boolean;
             /** @example true */
-            public?: boolean;
+            public: boolean;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example 777 */
-            asset_local_amount?: number;
+            asset_local_amount?: number | null;
             /** @example 0 */
-            asset_remote_amount?: number;
+            asset_remote_amount?: number | null;
         };
         /** @enum {string} */
         ChannelStatus: ChannelStatus;
         CheckIndexerUrlRequest: {
             /** @example 127.0.0.1:50001 */
-            indexer_url?: string;
+            indexer_url: string;
         };
         CheckIndexerUrlResponse: {
-            indexer_protocol?: components['schemas']['IndexerProtocol'];
+            indexer_protocol: components['schemas']['IndexerProtocol'];
         };
         CheckProxyEndpointRequest: {
             /** @example rpc://127.0.0.1:3000/json-rpc */
-            proxy_url?: string;
+            proxy_endpoint: string;
         };
         CloseChannelRequest: {
             /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
-            channel_id?: string;
+            channel_id: string;
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
-            peer_pubkey?: string;
+            peer_pubkey: string;
             /** @example false */
-            force?: boolean;
+            force: boolean;
         };
         ConnectPeerRequest: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736 */
-            peer_pubkey_and_addr?: string;
+            peer_pubkey_and_addr: string;
         };
         CreateUtxosRequest: {
             /** @example false */
-            up_to?: boolean;
+            up_to: boolean;
             /** @example 4 */
-            num?: number;
+            num?: number | null;
             /** @example 32500 */
-            size?: number;
+            size?: number | null;
             /** @example 5 */
-            fee_rate?: number;
+            fee_rate: number;
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         DecodeLNInvoiceRequest: {
             /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
-            invoice?: string;
+            invoice: string;
         };
         DecodeLNInvoiceResponse: {
             /** @example 3000000 */
-            amt_msat?: number;
+            amt_msat?: number | null;
             /** @example 420 */
-            expiry_sec?: number;
+            expiry_sec: number;
             /** @example 1691160659 */
-            timestamp?: number;
+            timestamp: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example 42 */
-            asset_amount?: number;
+            asset_amount?: number | null;
             /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
-            payment_hash?: string;
+            payment_hash: string;
             /** @example f9fa239a283a72fa351ec6d0d6fdb16f5e59a64cb10e64add0b57123855ff592 */
-            payment_secret?: string;
+            payment_secret: string;
             /** @example 0343851df9e0e8aff0c10b3498ce723ff4c9b4a855e6c8819adcafbbb3e24ea2af */
-            payee_pubkey?: string;
-            network?: components['schemas']['BitcoinNetwork'];
+            payee_pubkey?: string | null;
+            network: components['schemas']['BitcoinNetwork'];
         };
         DecodeRGBInvoiceRequest: {
             /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/RWhwUfTMpuP2Zfx1~j4nswCANGeJrYOqDcKelaMV4zU/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1749906951&endpoints=rpcs://proxy.iriswallet.com/0.2/json-rpc */
-            invoice?: string;
+            invoice: string;
         };
         DecodeRGBInvoiceResponse: {
             /** @example bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX */
-            recipient_id?: string;
-            recipient_type?: components['schemas']['RecipientType'];
-            asset_schema?: components['schemas']['AssetSchema'];
+            recipient_id: string;
+            recipient_type: components['schemas']['RecipientType'];
+            asset_schema?: components['schemas']['AssetSchema'] | null;
             /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
-            asset_id?: string;
-            assignment?: components['schemas']['Assignment'];
-            network?: components['schemas']['BitcoinNetwork'];
+            asset_id?: string | null;
+            assignment: components['schemas']['Assignment'];
+            network: components['schemas']['BitcoinNetwork'];
             /** @example 1698325849 */
-            expiration_timestamp?: number;
-            transport_endpoints?: string[];
+            expiration_timestamp?: number | null;
+            transport_endpoints: string[];
         };
         DisconnectPeerRequest: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
-            peer_pubkey?: string;
+            peer_pubkey: string;
         };
         EmbeddedMedia: {
             /** @example text/plain */
-            mime?: string;
+            mime: string;
             /**
              * @example [
              *       82,
@@ -2661,60 +2661,60 @@ export type components = {
              *       78
              *     ]
              */
-            data?: number[];
+            data: number[];
         };
         EmptyResponse: Record<string, never>;
         EstimateFeeRequest: {
             /** @example 7 */
-            blocks?: number;
+            blocks: number;
         };
         EstimateFeeResponse: {
             /** @example 9.3 */
-            fee_rate?: number;
+            fee_rate: number;
         };
         FailTransfersRequest: {
             /** @example null */
-            batch_transfer_idx?: number;
+            batch_transfer_idx?: number | null;
             /** @example false */
-            no_asset_only?: boolean;
+            no_asset_only: boolean;
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         FailTransfersResponse: {
             /** @example true */
-            transfers_changed?: boolean;
+            transfers_changed: boolean;
         };
         GetAssetMediaRequest: {
             /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
-            digest?: string;
+            digest: string;
         };
         GetAssetMediaResponse: {
             /** @example 68656c6c6f0a */
-            bytes_hex?: string;
+            bytes_hex: string;
         };
         GetChannelIdRequest: {
             /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
-            temporary_channel_id?: string;
+            temporary_channel_id: string;
         };
         GetChannelIdResponse: {
             /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
-            channel_id?: string;
+            channel_id: string;
         };
         GetPaymentRequest: {
             /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
-            payment_hash?: string;
+            payment_hash: string;
         };
         GetPaymentResponse: {
-            payment?: components['schemas']['Payment'];
+            payment: components['schemas']['Payment'];
         };
         GetSwapRequest: {
             /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
-            payment_hash?: string;
+            payment_hash: string;
             /** @example false */
-            taker?: boolean;
+            taker: boolean;
         };
         GetSwapResponse: {
-            swap?: components['schemas']['Swap'];
+            swap: components['schemas']['Swap'];
         };
         /** @enum {string} */
         HTLCStatus: HTLCStatus;
@@ -2722,22 +2722,22 @@ export type components = {
         IndexerProtocol: IndexerProtocol;
         InitRequest: {
             /** @example nodepassword */
-            password?: string;
+            password: string;
             /** @example skill lamp please gown put season degree collect decline account monitor insane */
-            mnemonic?: string;
+            mnemonic?: string | null;
         };
         InitResponse: {
             /** @example skill lamp please gown put season degree collect decline account monitor insane */
-            mnemonic?: string;
+            mnemonic: string;
         };
         /** @enum {string} */
         InvoiceStatus: InvoiceStatus;
         InvoiceStatusRequest: {
             /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
-            invoice?: string;
+            invoice: string;
         };
         InvoiceStatusResponse: {
-            status?: components['schemas']['InvoiceStatus'];
+            status: components['schemas']['InvoiceStatus'];
         };
         IssueAssetCFARequest: {
             /**
@@ -2746,18 +2746,18 @@ export type components = {
              *       600
              *     ]
              */
-            amounts?: number[];
+            amounts: number[];
             /** @example Tether */
-            name?: string;
+            name: string;
             /** @example asset details */
-            details?: string;
+            details?: string | null;
             /** @example 0 */
-            precision?: number;
+            precision: number;
             /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
-            file_digest?: string;
+            file_digest?: string | null;
         };
         IssueAssetCFAResponse: {
-            asset?: components['schemas']['AssetCFA'];
+            asset: components['schemas']['AssetCFA'];
         };
         IssueAssetNIARequest: {
             /**
@@ -2766,55 +2766,55 @@ export type components = {
              *       600
              *     ]
              */
-            amounts?: number[];
+            amounts: number[];
             /** @example USDT */
-            ticker?: string;
+            ticker: string;
             /** @example Tether */
-            name?: string;
+            name: string;
             /** @example 0 */
-            precision?: number;
+            precision: number;
         };
         IssueAssetNIAResponse: {
-            asset?: components['schemas']['AssetNIA'];
+            asset: components['schemas']['AssetNIA'];
         };
         IssueAssetUDARequest: {
             /** @example UNI */
-            ticker?: string;
+            ticker: string;
             /** @example Unique */
-            name?: string;
+            name: string;
             /** @example asset details */
-            details?: string;
+            details?: string | null;
             /** @example 0 */
-            precision?: number;
+            precision: number;
             /** @example /path/to/media */
-            media_file_digest?: string;
+            media_file_digest?: string | null;
             /**
              * @example [
              *       "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
              *       "d7516e3a27cdf35aa9dcb323b5f556344ef7f57570be30b88de2bfd4ba339b1a"
              *     ]
              */
-            attachments_file_digests?: string[];
+            attachments_file_digests: string[];
         };
         IssueAssetUDAResponse: {
-            asset?: components['schemas']['AssetUDA'];
+            asset: components['schemas']['AssetUDA'];
         };
         KeysendRequest: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
-            dest_pubkey?: string;
+            dest_pubkey: string;
             /** @example 3000000 */
-            amt_msat?: number;
+            amt_msat: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example 42 */
-            asset_amount?: number;
+            asset_amount?: number | null;
         };
         KeysendResponse: {
             /** @example 8ffd4c0642047bc51ea01a22e6b2ede0fc001aee0e9929b2e84e41cf6589d61e */
-            payment_hash?: string;
+            payment_hash: string;
             /** @example 89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578 */
-            payment_preimage?: string;
-            status?: components['schemas']['HTLCStatus'];
+            payment_preimage: string;
+            status: components['schemas']['HTLCStatus'];
         };
         ListAssetsRequest: {
             /**
@@ -2824,200 +2824,200 @@ export type components = {
              *       "Cfa"
              *     ]
              */
-            filter_asset_schemas?: components['schemas']['AssetSchema'][];
+            filter_asset_schemas: components['schemas']['AssetSchema'][];
         };
         ListAssetsResponse: {
-            nia?: components['schemas']['AssetNIA'][];
-            uda?: components['schemas']['AssetUDA'][];
-            cfa?: components['schemas']['AssetCFA'][];
+            nia: components['schemas']['AssetNIA'][] | null;
+            uda: components['schemas']['AssetUDA'][] | null;
+            cfa: components['schemas']['AssetCFA'][] | null;
         };
         ListChannelsResponse: {
-            channels?: components['schemas']['Channel'][];
+            channels: components['schemas']['Channel'][];
         };
         ListPaymentsResponse: {
-            payments?: components['schemas']['Payment'][];
+            payments: components['schemas']['Payment'][];
         };
         ListPeersResponse: {
-            peers?: components['schemas']['Peer'][];
+            peers: components['schemas']['Peer'][];
         };
         ListSwapsResponse: {
-            maker?: components['schemas']['Swap'][];
-            taker?: components['schemas']['Swap'][];
+            maker: components['schemas']['Swap'][];
+            taker: components['schemas']['Swap'][];
         };
         ListTransactionsRequest: {
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         ListTransactionsResponse: {
-            transactions?: components['schemas']['Transaction'][];
+            transactions: components['schemas']['Transaction'][];
         };
         ListTransfersRequest: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id: string;
         };
         ListTransfersResponse: {
-            transfers?: components['schemas']['Transfer'][];
+            transfers: components['schemas']['Transfer'][];
         };
         ListUnspentsRequest: {
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         ListUnspentsResponse: {
-            unspents?: components['schemas']['Unspent'][];
+            unspents: components['schemas']['Unspent'][];
         };
         LNInvoiceRequest: {
             /** @example 3000000 */
-            amt_msat?: number;
+            amt_msat?: number | null;
             /** @example 420 */
-            expiry_sec?: number;
+            expiry_sec: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example 42 */
-            asset_amount?: number;
+            asset_amount?: number | null;
         };
         LNInvoiceResponse: {
             /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
-            invoice?: string;
+            invoice: string;
         };
         MakerExecuteRequest: {
             /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
-            swapstring?: string;
+            swapstring: string;
             /** @example 777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2 */
-            payment_secret?: string;
+            payment_secret: string;
             /** @example 02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043 */
-            taker_pubkey?: string;
+            taker_pubkey: string;
         };
         MakerInitRequest: {
             /** @example 30 */
-            qty_from?: number;
+            qty_from: number;
             /** @example 10 */
-            qty_to?: number;
+            qty_to: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            from_asset?: string;
+            from_asset?: string | null;
             /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
-            to_asset?: string;
+            to_asset?: string | null;
             /** @example 100 */
-            timeout_sec?: number;
+            timeout_sec: number;
         };
         MakerInitResponse: {
             /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
-            payment_hash?: string;
+            payment_hash: string;
             /** @example 777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2 */
-            payment_secret?: string;
+            payment_secret: string;
             /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
-            swapstring?: string;
+            swapstring: string;
         };
         Media: {
             /** @example /path/to/media */
-            file_path?: string;
+            file_path: string;
+            /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
+            digest: string;
             /** @example text/plain */
-            mime?: string;
+            mime: string;
         };
         NetworkInfoResponse: {
-            network?: components['schemas']['BitcoinNetwork'];
+            network: components['schemas']['BitcoinNetwork'];
             /** @example 805434 */
-            height?: number;
+            height: number;
         };
         NodeInfoResponse: {
             /** @example 02270dadcd6e7ba0ef707dac72acccae1a3607453a8dd2aef36ff3be4e0d31f043 */
-            pubkey?: string;
+            pubkey: string;
             /** @example 1 */
-            num_channels?: number;
+            num_channels: number;
             /** @example 0 */
-            num_usable_channels?: number;
+            num_usable_channels: number;
             /** @example 28616 */
-            local_balance_sat?: number;
+            local_balance_sat: number;
             /** @example 892 */
-            eventual_close_fees_sat?: number;
+            eventual_close_fees_sat: number;
             /** @example 7852 */
-            pending_outbound_payments_sat?: number;
+            pending_outbound_payments_sat: number;
             /** @example 1 */
-            num_peers?: number;
+            num_peers: number;
             /** @example tpubDDfzqHEET3ksD81qshMHkw35yp6TuLP1kr5rWWeJcLAqDfMXKDJzmDwAnda6DCqw7kkkhPphuDZFE2a6Sw8h5ZA5NwmtTssEnjMqN7xMzSd */
-            account_xpub_vanilla?: string;
+            account_xpub_vanilla: string;
             /** @example tpubDDcdKhaxwVV2T6xwigti7dSY1a7LHFwZmKAaLWtNhzrvuTXqjjzo8U7YQkUuPah5yHvnk3cbXmb18ZRFwHEKTFUQmA9dij1nPVA2LCJCiEa */
-            account_xpub_colored?: string;
+            account_xpub_colored: string;
             /** @example 5 */
-            max_media_upload_size_mb?: number;
+            max_media_upload_size_mb: number;
             /** @example 3000000 */
-            rgb_htlc_min_msat?: number;
+            rgb_htlc_min_msat: number;
             /** @example 30010 */
-            rgb_channel_capacity_min_sat?: number;
+            rgb_channel_capacity_min_sat: number;
             /** @example 5506 */
-            channel_capacity_min_sat?: number;
+            channel_capacity_min_sat: number;
             /** @example 16777215 */
-            channel_capacity_max_sat?: number;
+            channel_capacity_max_sat: number;
             /** @example 1 */
-            channel_asset_min_amount?: number;
+            channel_asset_min_amount: number;
             /** @example 18446744073709552000 */
-            channel_asset_max_amount?: number;
+            channel_asset_max_amount: number;
             /** @example 987226 */
-            network_nodes?: number;
+            network_nodes: number;
             /** @example 7812821 */
-            network_channels?: number;
+            network_channels: number;
         };
         OpenChannelRequest: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d@localhost:9736 */
-            peer_pubkey_and_opt_addr?: string;
+            peer_pubkey_and_opt_addr: string;
             /** @example 30010 */
-            capacity_sat?: number;
+            capacity_sat: number;
             /** @example 1394000 */
-            push_msat?: number;
+            push_msat: number;
             /** @example 333 */
-            asset_amount?: number;
+            asset_amount?: number | null;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example true */
-            public?: boolean;
+            public: boolean;
             /** @example true */
-            with_anchors?: boolean;
+            with_anchors: boolean;
             /** @example 1000 */
-            fee_base_msat?: number;
+            fee_base_msat?: number | null;
             /** @example 0 */
-            fee_proportional_millionths?: number;
+            fee_proportional_millionths?: number | null;
             /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
-            temporary_channel_id?: string;
+            temporary_channel_id?: string | null;
         };
         OpenChannelResponse: {
             /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
-            temporary_channel_id?: string;
+            temporary_channel_id: string;
         };
         Payment: {
             /** @example 3000000 */
-            amt_msat?: number;
+            amt_msat?: number | null;
             /** @example 42 */
-            asset_amount?: number;
+            asset_amount?: number | null;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
-            payment_hash?: string;
+            payment_hash: string;
             /** @example true */
-            inbound?: boolean;
-            status?: components['schemas']['HTLCStatus'];
+            inbound: boolean;
+            status: components['schemas']['HTLCStatus'];
             /** @example 1691160765 */
-            created_at?: number;
+            created_at: number;
             /** @example 1691162674 */
-            updated_at?: number;
-            /** @example 1691162674 */
-            expires_at?: number;
+            updated_at: number;
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
-            payee_pubkey?: string;
+            payee_pubkey: string;
         };
         Peer: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
-            pubkey?: string;
+            pubkey: string;
         };
         PostAssetMediaRequest: {
             /** Format: binary */
-            file?: string;
+            file: string;
         };
         PostAssetMediaResponse: {
             /** @example 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 */
-            digest?: string;
+            digest: string;
         };
         ProofOfReserves: {
             /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
-            utxo?: string;
+            utxo: string;
             /**
              * @example [
              *       6,
@@ -3028,104 +3028,106 @@ export type components = {
              *       17
              *     ]
              */
-            proof?: number[];
+            proof: number[];
         };
         Recipient: {
             /** @example bcrt:utxob:2FZsSuk-iyVQLVuU4-Gc6J4qkE8-mLS17N4jd-MEx6cWz9F-MFkyE1n */
-            recipient_id?: string;
-            witness_data?: components['schemas']['WitnessData'];
-            assignment?: components['schemas']['Assignment'];
-            transport_endpoints?: string[];
+            recipient_id: string;
+            witness_data?: components['schemas']['WitnessData'] | null;
+            assignment: components['schemas']['Assignment'];
+            transport_endpoints: string[];
         };
         /** @enum {string} */
         RecipientType: RecipientType;
         RefreshRequest: {
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         RestoreRequest: {
             /** @example /path/to/the/backup/file */
-            backup_path?: string;
+            backup_path: string;
             /** @example nodepassword */
-            password?: string;
+            password: string;
         };
         RevokeTokenRequest: {
             /** @example EnYKDBgDIggKBggGEgIYDRIkCAASICqCgqtFMIJ1eLCM3raDzqg9UqV-6nJWzGjjJG0S5IIUGkBpF-itmppHcdcSrSCiKklz9VZT4UmIND_0RFc32Imq3bLR_Y7GYaSpJo5lJfU1cA2BG_hy7P1UN4g5jKTKS88GIiIKIAUKXrrx0Ca-rMZa537VOFw2X8q_KVQ6OC4Z0ztro0sQ */
-            token?: string;
+            token: string;
         };
         RgbAllocation: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
-            assignment?: components['schemas']['AssignmentFungible'];
+            asset_id?: string | null;
+            assignment: components['schemas']['Assignment'];
             /** @example false */
-            settled?: boolean;
+            settled: boolean;
         };
         RgbInvoiceRequest: {
             /** @example 1 */
-            min_confirmations?: number;
+            min_confirmations: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
-            assignment?: components['schemas']['Assignment'];
+            asset_id?: string | null;
+            assignment?: components['schemas']['Assignment'] | null;
             /** @example 86400 */
-            duration_seconds?: number;
+            duration_seconds?: number | null;
             /** @example false */
-            witness?: boolean;
+            witness: boolean;
         };
         RgbInvoiceResponse: {
             /** @example bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX */
-            recipient_id?: string;
+            recipient_id: string;
             /** @example rgb:~/~/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1695811760&endpoints=rpc://127.0.0.1:3000/json-rpc */
-            invoice?: string;
+            invoice: string;
             /** @example 1695811760 */
-            expiration_timestamp?: number;
+            expiration_timestamp?: number | null;
             /** @example 1 */
-            batch_transfer_idx?: number;
+            batch_transfer_idx: number;
         };
         SendBtcRequest: {
             /** @example 16900 */
-            amount?: number;
+            amount: number;
             /** @example bcrt1qwxht5tut39dws8tjcf649tp908r8fr2j75c94k */
-            address?: string;
+            address: string;
             /** @example 5 */
-            fee_rate?: number;
+            fee_rate: number;
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         SendBtcResponse: {
             /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
-            txid?: string;
+            txid: string;
         };
         SendOnionMessageRequest: {
-            node_ids?: string[];
+            node_ids: string[];
             /** @example 77 */
-            tlv_type?: number;
+            tlv_type: number;
             /** @example message to send */
-            data?: string;
+            data: string;
         };
         SendPaymentRequest: {
             /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
-            invoice?: string;
+            invoice: string;
             /** @example 3000000 */
-            amt_msat?: number;
+            amt_msat?: number | null;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id?: string;
+            asset_id?: string | null;
             /** @example 100 */
-            asset_amount?: number;
+            asset_amount?: number | null;
         };
         SendPaymentResponse: {
             /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
-            payment_hash?: string;
+            payment_id: string;
+            /** @example 3febfae1e68b190c15461f4c2a3290f9af1dae63fd7d620d2bd61601869026cd */
+            payment_hash?: string | null;
             /** @example 777a7756c620868199ed5fdc35bee4095b5709d543e5c2bf0494396bf27d2ea2 */
-            payment_secret?: string;
-            status?: components['schemas']['HTLCStatus'];
+            payment_secret?: string | null;
+            status: components['schemas']['HTLCStatus'];
         };
         SendRgbRequest: {
             /** @example false */
-            donation?: boolean;
+            donation: boolean;
             /** @example 5 */
-            fee_rate?: number;
+            fee_rate: number;
             /** @example 1 */
-            min_confirmations?: number;
+            min_confirmations: number;
             /**
              * @example {
              *       "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8": [
@@ -3161,62 +3163,62 @@ export type components = {
              *       ]
              *     }
              */
-            recipient_map?: {
+            recipient_map: {
                 [key: string]: components['schemas']['Recipient'][];
             };
             /** @example false */
-            skip_sync?: boolean;
+            skip_sync: boolean;
         };
         SendRgbResponse: {
             /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
-            txid?: string;
+            txid: string;
         };
         SignMessageRequest: {
             /** @example message to sign */
-            message?: string;
+            message: string;
         };
         SignMessageResponse: {
             /** @example signed message */
-            signed_message?: string;
+            signed_message: string;
         };
         Swap: {
             /** @example 30 */
-            qty_from?: number;
+            qty_from: number;
             /** @example 10 */
-            qty_to?: number;
+            qty_to: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            from_asset?: string;
+            from_asset?: string | null;
             /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
-            to_asset?: string;
+            to_asset?: string | null;
             /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
-            payment_hash?: string;
-            status?: components['schemas']['SwapStatus'];
+            payment_hash: string;
+            status: components['schemas']['SwapStatus'];
             /** @example 1691160765 */
-            requested_at?: number;
+            requested_at: number;
             /** @example 1691168512 */
-            initiated_at?: number;
+            initiated_at?: number | null;
             /** @example 1691172703 */
-            expires_at?: number;
+            expires_at: number;
             /** @example 1691171075 */
-            completed_at?: number;
+            completed_at?: number | null;
         };
         /** @enum {string} */
         SwapStatus: SwapStatus;
         TakerRequest: {
             /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
-            swapstring?: string;
+            swapstring: string;
         };
         Token: {
             /** @example 0 */
-            index?: number;
+            index: number;
             /** @example TKN */
-            ticker?: string;
+            ticker?: string | null;
             /** @example Token */
-            name?: string;
+            name?: string | null;
             /** @example token details */
-            details?: string;
-            embedded_media?: components['schemas']['EmbeddedMedia'];
-            media?: components['schemas']['Media'];
+            details?: string | null;
+            embedded_media?: components['schemas']['EmbeddedMedia'] | null;
+            media?: components['schemas']['Media'] | null;
             /**
              * @example {
              *       "0": {
@@ -3231,23 +3233,23 @@ export type components = {
              *       }
              *     }
              */
-            attachments?: {
+            attachments: {
                 [key: string]: components['schemas']['Media'];
             };
-            reserves?: components['schemas']['ProofOfReserves'];
+            reserves?: components['schemas']['ProofOfReserves'] | null;
         };
         TokenLight: {
             /** @example 0 */
-            index?: number;
+            index: number;
             /** @example TKN */
-            ticker?: string;
+            ticker?: string | null;
             /** @example Token */
-            name?: string;
+            name?: string | null;
             /** @example token details */
-            details?: string;
+            details?: string | null;
             /** @example true */
-            embedded_media?: boolean;
-            media?: components['schemas']['Media'];
+            embedded_media: boolean;
+            media?: components['schemas']['Media'] | null;
             /**
              * @example {
              *       "0": {
@@ -3262,48 +3264,48 @@ export type components = {
              *       }
              *     }
              */
-            attachments?: {
+            attachments: {
                 [key: string]: components['schemas']['Media'];
             };
             /** @example false */
-            reserves?: boolean;
+            reserves: boolean;
         };
         Transaction: {
-            transaction_type?: components['schemas']['TransactionType'];
+            transaction_type: components['schemas']['TransactionType'];
             /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
-            txid?: string;
+            txid: string;
             /** @example 650 */
-            received?: number;
+            received: number;
             /** @example 1050 */
-            sent?: number;
+            sent: number;
             /** @example 100 */
-            fee?: number;
-            confirmation_time?: components['schemas']['BlockTime'];
+            fee: number;
+            confirmation_time?: components['schemas']['BlockTime'] | null;
         };
         /** @enum {string} */
         TransactionType: TransactionType;
         Transfer: {
             /** @example 1 */
-            idx?: number;
+            idx: number;
             /** @example 1691160765 */
-            created_at?: number;
+            created_at: number;
             /** @example 1691162674 */
-            updated_at?: number;
-            status?: components['schemas']['TransferStatus'];
-            requested_assignment?: components['schemas']['AssignmentFungible'];
-            assignments?: components['schemas']['AssignmentFungible'][];
-            kind?: components['schemas']['TransferKind'];
+            updated_at: number;
+            status: components['schemas']['TransferStatus'];
+            requested_assignment?: components['schemas']['Assignment'] | null;
+            assignments: components['schemas']['Assignment'][];
+            kind: components['schemas']['TransferKind'];
             /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
-            txid?: string;
+            txid?: string | null;
             /** @example 61qsVbWtkNmU54F2i6qtB9uSmEGsPoaeypCi5uC5uctZ */
-            recipient_id?: string;
+            recipient_id?: string | null;
             /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
-            receive_utxo?: string;
+            receive_utxo?: string | null;
             /** @example null */
-            change_utxo?: string;
+            change_utxo?: string | null;
             /** @example 1691171612 */
-            expiration?: number;
-            transport_endpoints?: components['schemas']['TransferTransportEndpoint'][];
+            expiration?: number | null;
+            transport_endpoints: components['schemas']['TransferTransportEndpoint'][];
         };
         /**
          * @example ReceiveBlind
@@ -3314,49 +3316,49 @@ export type components = {
         TransferStatus: TransferStatus;
         TransferTransportEndpoint: {
             /** @example http://127.0.0.1:3000/json-rpc */
-            endpoint?: string;
-            transport_type?: components['schemas']['TransportType'];
+            endpoint: string;
+            transport_type: components['schemas']['TransportType'];
             /** @example false */
-            used?: boolean;
+            used: boolean;
         };
         /** @enum {string} */
         TransportType: TransportType;
         UnlockRequest: {
             /** @example nodepassword */
-            password?: string;
+            password: string;
             /** @example user */
-            bitcoind_rpc_username?: string;
+            bitcoind_rpc_username: string;
             /** @example password */
-            bitcoind_rpc_password?: string;
+            bitcoind_rpc_password: string;
             /** @example localhost */
-            bitcoind_rpc_host?: string;
+            bitcoind_rpc_host: string;
             /** @example 18443 */
-            bitcoind_rpc_port?: number;
+            bitcoind_rpc_port: number;
             /** @example 127.0.0.1:50001 */
-            indexer_url?: string;
+            indexer_url?: string | null;
             /** @example rpc://127.0.0.1:3000/json-rpc */
-            proxy_endpoint?: string;
-            announce_addresses?: string[];
+            proxy_endpoint?: string | null;
+            announce_addresses: string[];
             /** @example nodeAlias */
-            announce_alias?: string;
+            announce_alias?: string | null;
         };
         Unspent: {
-            utxo?: components['schemas']['Utxo'];
-            rgb_allocations?: components['schemas']['RgbAllocation'][];
+            utxo: components['schemas']['Utxo'];
+            rgb_allocations: components['schemas']['RgbAllocation'][];
         };
         Utxo: {
             /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
-            outpoint?: string;
+            outpoint: string;
             /** @example 1000 */
-            btc_amount?: number;
+            btc_amount: number;
             /** @example true */
-            colorable?: boolean;
+            colorable: boolean;
         };
         WitnessData: {
             /** @example 1000 */
-            amount_sat?: number;
+            amount_sat: number;
             /** @example 439017309 */
-            blinding?: number;
+            blinding?: number | null;
         };
     };
     responses: never;
