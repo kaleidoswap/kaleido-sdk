@@ -200,7 +200,6 @@ export type AssignmentInflationRight = components['schemas']['AssignmentInflatio
 export type AssignmentNonFungible = components['schemas']['AssignmentNonFungible'];
 export type AssignmentReplaceRight = components['schemas']['AssignmentReplaceRight'];
 
-
 // Core entity schemas
 export type BtcBalance = components['schemas']['BtcBalance'];
 export type BtcBalanceRequest = components['schemas']['BtcBalanceRequest'];
@@ -229,4 +228,3 @@ export type TransferTransportEndpoint = components['schemas']['TransferTransport
 export type Recipient = components['schemas']['Recipient'];
 export type Utxo = components['schemas']['Utxo'];
 export type WitnessData = components['schemas']['WitnessData'];
-

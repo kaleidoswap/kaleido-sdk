@@ -102,4 +102,3 @@ export interface KaleidoConfig {
      */
     logger?: SdkLogger;
 }
-

@@ -219,9 +219,7 @@ export class RlnClient {
     // RGB Asset Operations
     // ============================================================================
 
-    async listAssets(
-        filterAssetSchemas: AssetSchema[] = [],
-    ): Promise<ListAssetsResponse> {
+    async listAssets(filterAssetSchemas: AssetSchema[] = []): Promise<ListAssetsResponse> {
         this._log.debug('listAssets()');
         return assertResponse(
             await this.http.node.POST('/listassets', {

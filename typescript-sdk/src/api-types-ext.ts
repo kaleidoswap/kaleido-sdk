@@ -59,8 +59,7 @@ export type ReachabilityMatrixResponse =
 
 // Swap Orders
 export type CreateSwapOrderRequest = RequestBody<'create_swap_order_api_v1_swaps_orders_post'>;
-export type CreateSwapOrderResponse =
-    ResponseSuccess<'create_swap_order_api_v1_swaps_orders_post'>;
+export type CreateSwapOrderResponse = ResponseSuccess<'create_swap_order_api_v1_swaps_orders_post'>;
 export type SwapOrderStatusRequest =
     RequestBody<'get_swap_order_status_api_v1_swaps_orders_status_post'>;
 export type SwapOrderStatusResponse =
@@ -80,29 +79,24 @@ export type SwapResponse = ResponseSuccess<'initiate_swap_api_v1_swaps_init_post
 export type ConfirmSwapRequest = RequestBody<'confirm_swap_api_v1_swaps_execute_post'>;
 export type ConfirmSwapResponse = ResponseSuccess<'confirm_swap_api_v1_swaps_execute_post'>;
 export type SwapStatusRequest = RequestBody<'get_swap_status_api_v1_swaps_atomic_status_post'>;
-export type SwapStatusResponse =
-    ResponseSuccess<'get_swap_status_api_v1_swaps_atomic_status_post'>;
+export type SwapStatusResponse = ResponseSuccess<'get_swap_status_api_v1_swaps_atomic_status_post'>;
 export type SwapNodeInfoResponse = ResponseSuccess<'get_node_info_api_v1_swaps_nodeinfo_get'>;
 
 // LSPS1 - Liquidity Service
 export type GetInfoResponseModel = ResponseSuccess<'get_info_api_v1_lsps1_get_info_get'>;
-export type NetworkInfoResponse =
-    ResponseSuccess<'get_network_info_api_v1_lsps1_network_info_get'>;
+export type NetworkInfoResponse = ResponseSuccess<'get_network_info_api_v1_lsps1_network_info_get'>;
 export type CreateOrderRequest = RequestBody<'create_order_api_v1_lsps1_create_order_post'>;
-export type ChannelOrderResponse =
-    ResponseSuccess<'create_order_api_v1_lsps1_create_order_post'>;
+export type ChannelOrderResponse = ResponseSuccess<'create_order_api_v1_lsps1_create_order_post'>;
 export type GetOrderRequest = RequestBody<'get_order_api_v1_lsps1_get_order_post'>;
 export type GetLspOrderResponse = ResponseSuccess<'get_order_api_v1_lsps1_get_order_post'>;
-export type EstimateLspFeesRequest =
-    RequestBody<'estimate_fees_api_v1_lsps1_estimate_fees_post'>;
+export type EstimateLspFeesRequest = RequestBody<'estimate_fees_api_v1_lsps1_estimate_fees_post'>;
 export type EstimateLspFeesResponse =
     ResponseSuccess<'estimate_fees_api_v1_lsps1_estimate_fees_post'>;
 export type RateDecisionRequest =
     RequestBody<'handle_rate_decision_api_v1_lsps1_rate_decision_post'>;
 export type RateDecisionResponse =
     ResponseSuccess<'handle_rate_decision_api_v1_lsps1_rate_decision_post'>;
-export type RetryDeliveryRequest =
-    RequestBody<'retry_delivery_api_v1_lsps1_retry_delivery_post'>;
+export type RetryDeliveryRequest = RequestBody<'retry_delivery_api_v1_lsps1_retry_delivery_post'>;
 export type RetryDeliveryResponse =
     ResponseSuccess<'retry_delivery_api_v1_lsps1_retry_delivery_post'>;
 
@@ -115,7 +109,6 @@ export type Asset = components['schemas']['Asset'];
 export type TradingPair = components['schemas']['TradingPair'];
 export type Quote = components['schemas']['PairQuoteResponse'];
 export type SwapOrder = components['schemas']['SwapOrder'];
-
 
 // Sub-schema types
 export type Swap = components['schemas']['Swap'];
@@ -134,4 +127,3 @@ export type ChannelDetails = components['schemas']['ChannelDetails'];
 export type PaymentDetails = components['schemas']['PaymentDetails'];
 export type PaymentBolt11 = components['schemas']['PaymentBolt11'];
 export type PaymentOnchain = components['schemas']['PaymentOnchain'];
-
