@@ -65,7 +65,7 @@ PYTHON_SDK := python-sdk
 
 # OpenAPI spec sources and primary generated outputs (used for timestamp-based skipping)
 SPECS := specs/kaleidoswap.json specs/rgb-lightning-node.yaml
-PYTHON_GENERATED := python-sdk/kaleidoswap_sdk/_generated/api_types.py
+PYTHON_GENERATED := python-sdk/kaleido_sdk/_generated/api_types.py
 TS_GENERATED     := typescript-sdk/src/generated/api-types.ts
 
 # ============================================================================
@@ -102,15 +102,15 @@ test-python-sdk:
 
 check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
-	cd $(PYTHON_SDK) && uvx ruff format --check kaleidoswap_sdk tests examples
+	cd $(PYTHON_SDK) && uvx ruff format --check kaleido_sdk tests examples
 
 check-lint-python:
 	@echo "🔍 Checking Python SDK lint..."
-	cd $(PYTHON_SDK) && uvx ruff check kaleidoswap_sdk tests examples
+	cd $(PYTHON_SDK) && uvx ruff check kaleido_sdk tests examples
 
 typecheck-python:
 	@echo "📝 Type checking Python SDK..."
-	cd $(PYTHON_SDK) && uvx --with pydantic mypy kaleidoswap_sdk --ignore-missing-imports
+	cd $(PYTHON_SDK) && uvx --with pydantic mypy kaleido_sdk --ignore-missing-imports
 
 check-python: check-format-python check-lint-python typecheck-python
 	@echo "✅ Python SDK format, lint, and type checks passed!"
@@ -124,7 +124,7 @@ check: check-python check-typescript
 
 fix-python:
 	@echo "🔧 Auto-fixing Python SDK..."
-	cd $(PYTHON_SDK) && uvx ruff format kaleidoswap_sdk tests && uvx ruff check --fix kaleidoswap_sdk tests
+	cd $(PYTHON_SDK) && uvx ruff format kaleido_sdk tests && uvx ruff check --fix kaleido_sdk tests
 	@echo "✅ Python SDK fixed!"
 
 fix-typescript: $(TYPESCRIPT_SDK)/node_modules/.modules.yaml

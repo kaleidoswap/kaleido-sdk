@@ -60,7 +60,7 @@ jobs:
           name: generated-sdk-models
           path: |
             typescript-sdk/src/generated/
-            python-sdk/kaleidoswap_sdk/_generated/
+            python-sdk/kaleido_sdk/_generated/
           retention-days: 7
 
   # ── Check generated models are up-to-date (PR only) ─────────────────────────
@@ -89,10 +89,10 @@ jobs:
         run: bash scripts/generate_python_sdk_models.sh
       - name: Check for drift
         run: |
-          if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/; then
+          if ! git diff --quiet typescript-sdk/src/generated/ python-sdk/kaleido_sdk/_generated/; then
             echo "Generated models are out of date!"
             echo "Run 'make generate-models' locally and commit the changes."
-            git diff --stat typescript-sdk/src/generated/ python-sdk/kaleidoswap_sdk/_generated/
+            git diff --stat typescript-sdk/src/generated/ python-sdk/kaleido_sdk/_generated/
             exit 1
           fi
           echo "Generated models are up-to-date"
@@ -228,10 +228,10 @@ jobs:
         run: gh run download ${{ github.run_id }} --name generated-sdk-models 2>/dev/null || true
       - name: Format check
         working-directory: python-sdk
-        run: uvx ruff format --check kaleidoswap_sdk tests
+        run: uvx ruff format --check kaleido_sdk tests
       - name: Lint
         working-directory: python-sdk
-        run: uvx ruff check kaleidoswap_sdk tests
+        run: uvx ruff check kaleido_sdk tests
       - name: Type check
         working-directory: python-sdk
-        run: uvx --with pydantic mypy kaleidoswap_sdk --ignore-missing-imports
+        run: uvx --with pydantic mypy kaleido_sdk --ignore-missing-imports

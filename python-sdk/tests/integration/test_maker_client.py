@@ -1,6 +1,6 @@
 import pytest
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     ConfirmSwapRequest,
     CreateOrderRequest,
     CreateSwapOrderRequest,
@@ -14,7 +14,7 @@ from kaleidoswap_sdk import (
     SwapRequest,
     SwapStatusRequest,
 )
-from kaleidoswap_sdk.rln import TakerRequest
+from kaleido_sdk.rln import TakerRequest
 from tests.utils import get_fresh_quote, initiate_swap
 
 
@@ -408,7 +408,6 @@ class TestMakerClientIntegration:
             required_channel_confirmations=1,
             funding_confirms_within_blocks=6,
             channel_expiry_blocks=144,
-            token="",
             announce_channel=False,
             refund_onchain_address=address_response.address,
             client_pubkey=client_pubkey,

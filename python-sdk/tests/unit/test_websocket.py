@@ -2,7 +2,7 @@
 Tests for WebSocket client.
 """
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     WSAction,
     WSClient,
 )

@@ -6,8 +6,8 @@ Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidosw
 
 | Language | Status | Package | README |
 |----------|--------|---------|--------|
-| **Python** | ✅ Ready | `kaleidoswap-sdk` v0.5.4 | [python-sdk/README.md](./python-sdk/README.md) |
-| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` v0.5.4 | [typescript-sdk/README.md](./typescript-sdk/README.md) |
+| **Python** | ✅ Ready | `kaleido-sdk` v0.1.0 | [python-sdk/README.md](./python-sdk/README.md) |
+| **TypeScript** | ✅ Ready | `kaleido-sdk` v0.1.0 | [typescript-sdk/README.md](./typescript-sdk/README.md) |
 
 ## How It Works
 
@@ -15,7 +15,7 @@ Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidosw
 specs/kaleidoswap.json
 specs/rgb-lightning-node.yaml
           |
-          +--> scripts/generate_python_sdk_models.sh --> python-sdk/kaleidoswap_sdk/_generated/
+          +--> scripts/generate_python_sdk_models.sh --> python-sdk/kaleido_sdk/_generated/
           |
           +--> scripts/generate_typescript_types.sh  --> typescript-sdk/src/generated/
 ```
@@ -38,14 +38,14 @@ Each SDK is implemented natively in its language and consumes generated types/mo
 ### Python
 
 ```bash
-pip install kaleidoswap-sdk
+pip install kaleido-sdk
 ```
 
 ### TypeScript / Node.js
 
 ```bash
-pnpm add kaleidoswap-sdk
-# or: npm install kaleidoswap-sdk
+pnpm add kaleido-sdk
+# or: npm install kaleido-sdk
 ```
 
 ## Quick Start
@@ -54,7 +54,7 @@ pnpm add kaleidoswap-sdk
 
 ```python
 import asyncio
-from kaleidoswap_sdk import KaleidoClient
+from kaleido_sdk import KaleidoClient
 
 async def main() -> None:
     client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
@@ -74,7 +74,7 @@ See [python-sdk/README.md](./python-sdk/README.md) for the full usage guide.
 ### TypeScript
 
 ```typescript
-import { KaleidoClient } from 'kaleidoswap-sdk';
+import { KaleidoClient } from 'kaleido-sdk';
 
 const client = KaleidoClient.create({
   baseUrl: 'https://api.kaleidoswap.com',

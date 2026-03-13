@@ -1,6 +1,6 @@
 {
-    "name": "kaleidoswap-sdk",
-    "version": "0.5.4",
+    "name": "kaleido-sdk",
+    "version": "0.1.0",
     "description": "Kaleidoswap SDK for TypeScript and JavaScript - trade RGB assets on Lightning Network",
     "keywords": [
         "bitcoin",
@@ -29,23 +29,11 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
-        "./types": {
-            "import": "./dist/types/index.js",
-            "require": "./dist/types/index.js",
-            "types": "./dist/types/index.d.ts",
-            "default": "./dist/types/index.js"
-        },
-        "./types/market": {
-            "import": "./dist/types/market.js",
-            "require": "./dist/types/market.js",
-            "types": "./dist/types/market.d.ts",
-            "default": "./dist/types/market.js"
-        },
-        "./types/node": {
-            "import": "./dist/types/node.js",
-            "require": "./dist/types/node.js",
-            "types": "./dist/types/node.d.ts",
-            "default": "./dist/types/node.js"
+        "./rln": {
+            "import": "./dist/rln.js",
+            "require": "./dist/rln.js",
+            "types": "./dist/rln.d.ts",
+            "default": "./dist/rln.js"
         }
     },
     "files": [

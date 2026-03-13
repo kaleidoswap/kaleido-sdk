@@ -8,7 +8,7 @@ Example showing how to get a quote for a swap.
 import asyncio
 import logging
 
-from kaleidoswap_sdk import (
+from kaleido_sdk import (
     KaleidoClient,
     Layer,
     PairQuoteRequest,

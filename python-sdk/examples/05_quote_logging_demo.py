@@ -8,7 +8,7 @@ Shows SDK logging while requesting quotes.
 import asyncio
 import logging
 
-from kaleidoswap_sdk import KaleidoClient, Layer, PairQuoteRequest, SwapLegInput
+from kaleido_sdk import KaleidoClient, Layer, PairQuoteRequest, SwapLegInput
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 # Reduce HTTP noise while keeping maker and ws events visible.
-logging.getLogger("kaleidoswap_sdk.http").setLevel(logging.INFO)
+logging.getLogger("kaleido_sdk.http").setLevel(logging.INFO)
 
 
 async def main() -> None:

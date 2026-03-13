@@ -61,7 +61,7 @@ jobs:
           name: generated-sdk-models
           path: |
             typescript-sdk/src/generated/
-            python-sdk/kaleidoswap_sdk/_generated/
+            python-sdk/kaleido_sdk/_generated/
           retention-days: 7
 
   # ── TypeScript SDK ───────────────────────────────────────────────────────────
@@ -203,7 +203,7 @@ jobs:
     needs: build-python-sdk
     environment:
       name: pypi-sdk
-      url: https://pypi.org/project/kaleidoswap-sdk/
+      url: https://pypi.org/project/kaleido-sdk/
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -223,7 +223,7 @@ jobs:
     needs: build-typescript-sdk
     environment:
       name: npm
-      url: https://www.npmjs.com/package/kaleidoswap-sdk
+      url: https://www.npmjs.com/package/kaleido-sdk
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

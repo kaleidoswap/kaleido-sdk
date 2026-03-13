@@ -1,5 +1,5 @@
 /**
- * Logging support for kaleidoswap-sdk.
+ * Logging support for kaleido-sdk.
  *
  * Library logging policy:
  * - The SDK emits NO output by default (SILENT level — zero output unless you
@@ -12,14 +12,14 @@
  *   StreamLogger.
  *
  * Named sub-components (mirroring the Python SDK):
- *   kaleidoswap-sdk:http    HTTP requests, responses, latency
- *   kaleidoswap-sdk:ws      WebSocket lifecycle and messages
- *   kaleidoswap-sdk:maker   Quote, swap order, and atomic swap events
- *   kaleidoswap-sdk:rln     RGB Lightning Node operations
+ *   kaleido-sdk:http    HTTP requests, responses, latency
+ *   kaleido-sdk:ws      WebSocket lifecycle and messages
+ *   kaleido-sdk:maker   Quote, swap order, and atomic swap events
+ *   kaleido-sdk:rln     RGB Lightning Node operations
  *
  * Quick start (application code only — never inside the SDK itself):
  * ```typescript
- * import { KaleidoClient, LogLevel } from 'kaleidoswap-sdk';
+ * import { KaleidoClient, LogLevel } from 'kaleido-sdk';
  *
  * // Built-in stderr output at DEBUG level:
  * const client = KaleidoClient.create({
@@ -35,7 +35,7 @@
  * });
  *
  * // Silence the http sub-component while keeping everything else:
- * import { setComponentLogLevel } from 'kaleidoswap-sdk';
+ * import { setComponentLogLevel } from 'kaleido-sdk';
  * setComponentLogLevel('http', LogLevel.WARN);
  * ```
  */
@@ -199,7 +199,7 @@ function _defaultFormat(label: LogLabel, msg: string): string {
  * KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG });
  *
  * // Custom stream (e.g. stdout):
- * import { StreamLogger } from 'kaleidoswap-sdk';
+ * import { StreamLogger } from 'kaleido-sdk';
  * KaleidoClient.create({
  *   baseUrl: '…',
  *   logLevel: LogLevel.DEBUG,
@@ -319,7 +319,7 @@ export function _levelNumber(level: LogLevel | LogLevelName): number {
         case 'silent':
             return LogLevel.SILENT;
         default:
-            throw new Error(`[kaleidoswap-sdk] Unknown log level name: "${level}"`);
+            throw new Error(`[kaleido-sdk] Unknown log level name: "${level}"`);
     }
 }
 
@@ -361,7 +361,7 @@ export class ComponentLogger implements SdkLogger {
 
     constructor(component: string, state: LogState) {
         this._component = component;
-        this._prefix = `[kaleidoswap-sdk:${component}]`;
+        this._prefix = `[kaleido-sdk:${component}]`;
         this._state = state;
     }
 
@@ -427,7 +427,7 @@ export function createLogger(component: string, state: LogState): ComponentLogge
  * @param level - A `LogLevel` constant or its string name.
  *
  * @example
- * import { applyLogLevel, LogLevel } from 'kaleidoswap-sdk';
+ * import { applyLogLevel, LogLevel } from 'kaleido-sdk';
  *
  * applyLogLevel(client.logState, LogLevel.DEBUG);
  * applyLogLevel(client.logState, 'warn');
@@ -446,7 +446,7 @@ export function applyLogLevel(state: LogState, level: LogLevel | LogLevelName): 
  * @param level     - Level to apply, or `null` to inherit the root level.
  *
  * @example
- * import { setComponentLogLevel, LogLevel } from 'kaleidoswap-sdk';
+ * import { setComponentLogLevel, LogLevel } from 'kaleido-sdk';
  *
  * // Debug everything but silence the HTTP sub-component:
  * setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
@@ -473,7 +473,7 @@ export function setComponentLogLevel(
  *
  * @example
  * import winston from 'winston';
- * import { setLogger } from 'kaleidoswap-sdk';
+ * import { setLogger } from 'kaleido-sdk';
  *
  * const myLogger = winston.createLogger({ … });
  * setLogger(client.logState, myLogger);

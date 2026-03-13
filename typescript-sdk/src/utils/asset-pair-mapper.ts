@@ -5,8 +5,7 @@
  * Maps asset data from API responses for easy lookup and validation.
  */
 
-import type { TradingPair } from '../api-types-ext.js';
-import type { ListPairsResponse } from '../api-types-ext.js';
+import type { TradingPair, TradingPairsResponse } from '../api-types-ext.js';
 
 /**
  * Extended asset with trading information
@@ -69,7 +68,7 @@ export class AssetPairMapper {
     private tickerMap: Map<string, string> = new Map(); // ticker -> asset_id
     private pairs: TradingPair[];
 
-    constructor(pairsResponse: ListPairsResponse) {
+    constructor(pairsResponse: TradingPairsResponse) {
         this.pairs = pairsResponse.pairs;
         this.buildAssetMap();
     }
@@ -260,6 +259,6 @@ export class AssetPairMapper {
  * @param pairsResponse - Response from listPairs() API call
  * @returns New AssetPairMapper instance
  */
-export function createAssetPairMapper(pairsResponse: ListPairsResponse): AssetPairMapper {
+export function createAssetPairMapper(pairsResponse: TradingPairsResponse): AssetPairMapper {
     return new AssetPairMapper(pairsResponse);
 }

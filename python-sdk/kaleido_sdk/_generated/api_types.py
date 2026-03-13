@@ -1135,7 +1135,7 @@ class ChannelOrderResponse(BaseModel):
     required_channel_confirmations: Annotated[int, Field(title="Required Channel Confirmations")]
     funding_confirms_within_blocks: Annotated[int, Field(title="Funding Confirms Within Blocks")]
     channel_expiry_blocks: Annotated[int, Field(title="Channel Expiry Blocks")]
-    token: Annotated[str | None, Field(title="Token")] = ""
+    token: Annotated[str | None, Field(title="Token")] = None
     created_at: Annotated[AwareDatetime | None, Field(title="Created At")] = None
     announce_channel: Annotated[bool, Field(title="Announce Channel")]
     order_state: OrderState

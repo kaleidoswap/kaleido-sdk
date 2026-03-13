@@ -10,10 +10,11 @@ import { assertResponse } from './errors.js';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
 // ComponentLogger and LogState are imported above for use in the class body.
+import { AssetSchema } from './node-types-ext.js';
 import type {
-    InitWalletRequest,
+    InitRequest,
     InitResponse,
-    UnlockWalletRequest,
+    UnlockRequest,
     ChangePasswordRequest,
     BackupRequest,
     RestoreRequest,
@@ -33,8 +34,8 @@ import type {
     AssetBalanceResponse,
     AssetMetadataRequest,
     AssetMetadataResponse,
-    AssetMediaRequest,
-    AssetMediaResponse,
+    GetAssetMediaRequest,
+    GetAssetMediaResponse,
     IssueAssetNIARequest,
     IssueAssetNIAResponse,
     IssueAssetCFARequest,
@@ -45,7 +46,7 @@ import type {
     SendRgbResponse,
     ListTransfersRequest,
     ListTransfersResponse,
-    RefreshTransfersRequest,
+    RefreshRequest,
     FailTransfersRequest,
     // Lightning Network - Channels
     ListChannelsResponse,
@@ -60,16 +61,16 @@ import type {
     ConnectPeerResponse,
     DisconnectPeerRequest,
     // Lightning Network - Invoices & Payments
-    CreateLNInvoiceRequest,
+    LNInvoiceRequest,
     CreateLNInvoiceResponse,
-    CreateRgbInvoiceRequest,
-    CreateRgbInvoiceResponse,
+    RgbInvoiceRequest,
+    RgbInvoiceResponse,
     DecodeLNInvoiceRequest,
     DecodeLNInvoiceResponse,
-    DecodeRgbInvoiceRequest,
-    DecodeRgbInvoiceResponse,
-    GetInvoiceStatusRequest,
-    GetInvoiceStatusResponse,
+    DecodeRGBInvoiceRequest,
+    DecodeRGBInvoiceResponse,
+    InvoiceStatusRequest,
+    InvoiceStatusResponse,
     SendPaymentRequest,
     SendPaymentResponse,
     KeysendRequest,
@@ -78,7 +79,7 @@ import type {
     GetPaymentRequest,
     GetPaymentResponse,
     // Maker/Taker Swaps
-    WhitelistTradeRequest,
+    TakerRequest,
     MakerInitRequest,
     MakerInitResponse,
     MakerExecuteRequest,
@@ -120,14 +121,14 @@ export class RlnClient {
         return assertResponse(await this.http.node.GET('/networkinfo'));
     }
 
-    async initWallet(body: InitWalletRequest): Promise<InitResponse> {
+    async initWallet(body: InitRequest): Promise<InitResponse> {
         this._log.info('initWallet()');
         const result = assertResponse(await this.http.node.POST('/init', { body }));
         this._log.info('initWallet() -> ok');
         return result;
     }
 
-    async unlockWallet(body: UnlockWalletRequest): Promise<void> {
+    async unlockWallet(body: UnlockRequest): Promise<void> {
         this._log.info('unlockWallet()');
         assertResponse(await this.http.node.POST('/unlock', { body }));
         this._log.info('unlockWallet() -> ok');
@@ -219,7 +220,7 @@ export class RlnClient {
     // ============================================================================
 
     async listAssets(
-        filterAssetSchemas: ('Nia' | 'Uda' | 'Cfa')[] = [],
+        filterAssetSchemas: AssetSchema[] = [],
     ): Promise<ListAssetsResponse> {
         this._log.debug('listAssets()');
         return assertResponse(
@@ -239,7 +240,7 @@ export class RlnClient {
         return assertResponse(await this.http.node.POST('/assetmetadata', { body }));
     }
 
-    async getAssetMedia(body: AssetMediaRequest): Promise<AssetMediaResponse> {
+    async getAssetMedia(body: GetAssetMediaRequest): Promise<GetAssetMediaResponse> {
         this._log.debug('getAssetMedia(): digest=%s', body.digest);
         return assertResponse(await this.http.node.POST('/getassetmedia', { body }));
     }
@@ -277,7 +278,7 @@ export class RlnClient {
         return assertResponse(await this.http.node.POST('/listtransfers', { body }));
     }
 
-    async refreshTransfers(body?: RefreshTransfersRequest): Promise<void> {
+    async refreshTransfers(body?: RefreshRequest): Promise<void> {
         this._log.debug('refreshTransfers()');
         assertResponse(await this.http.node.POST('/refreshtransfers', { body: body || {} }));
     }
@@ -350,14 +351,14 @@ export class RlnClient {
     // Lightning Network - Invoices & Payments
     // ============================================================================
 
-    async createLNInvoice(body: CreateLNInvoiceRequest): Promise<CreateLNInvoiceResponse> {
+    async createLNInvoice(body: LNInvoiceRequest): Promise<CreateLNInvoiceResponse> {
         this._log.info('createLNInvoice(): amount_msat=%s', body.amt_msat);
         const result = assertResponse(await this.http.node.POST('/lninvoice', { body }));
         this._log.info('createLNInvoice() -> invoice=%s', result.invoice);
         return result;
     }
 
-    async createRgbInvoice(body: CreateRgbInvoiceRequest): Promise<CreateRgbInvoiceResponse> {
+    async createRgbInvoice(body: RgbInvoiceRequest): Promise<RgbInvoiceResponse> {
         this._log.info('createRgbInvoice(): asset_id=%s', body.asset_id);
         const result = assertResponse(await this.http.node.POST('/rgbinvoice', { body }));
         this._log.info('createRgbInvoice() -> invoice=%s', result.invoice);
@@ -370,12 +371,12 @@ export class RlnClient {
         return assertResponse(await this.http.node.POST('/decodelninvoice', { body: requestBody }));
     }
 
-    async decodeRgbInvoice(body: DecodeRgbInvoiceRequest): Promise<DecodeRgbInvoiceResponse> {
+    async decodeRgbInvoice(body: DecodeRGBInvoiceRequest): Promise<DecodeRGBInvoiceResponse> {
         this._log.debug('decodeRgbInvoice()');
         return assertResponse(await this.http.node.POST('/decodergbinvoice', { body }));
     }
 
-    async getInvoiceStatus(body: GetInvoiceStatusRequest): Promise<GetInvoiceStatusResponse> {
+    async getInvoiceStatus(body: InvoiceStatusRequest): Promise<InvoiceStatusResponse> {
         this._log.debug('getInvoiceStatus(): invoice=%s', body.invoice);
         return assertResponse(await this.http.node.POST('/invoicestatus', { body }));
     }
@@ -419,7 +420,7 @@ export class RlnClient {
         return data.pubkey!;
     }
 
-    async whitelistSwap(body: WhitelistTradeRequest | string): Promise<void> {
+    async whitelistSwap(body: TakerRequest | string): Promise<void> {
         this._log.info('whitelistSwap()');
         const requestBody = typeof body === 'string' ? { swapstring: body } : body;
         assertResponse(await this.http.node.POST('/taker', { body: requestBody }));

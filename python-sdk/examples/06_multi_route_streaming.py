@@ -8,7 +8,7 @@ Streams quotes across multiple available routes.
 import asyncio
 import logging
 
-from kaleidoswap_sdk import KaleidoClient, Layer
+from kaleido_sdk import KaleidoClient, Layer
 
 logging.basicConfig(
     level=logging.INFO,

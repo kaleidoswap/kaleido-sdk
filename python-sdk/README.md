@@ -5,7 +5,7 @@ Python SDK for trading RGB assets on the Lightning Network via the Kaleidoswap p
 ## Installation
 
 ```bash
-pip install kaleidoswap-sdk
+pip install kaleido-sdk
 ```
 
 ## Quick Start
@@ -18,7 +18,7 @@ The SDK exposes two sub-clients depending on what you need:
 | `client.rln` | `node_url` | Your RGB Lightning Node — wallet, channels, payments, RGB assets |
 
 ```python
-from kaleidoswap_sdk import KaleidoClient
+from kaleido_sdk import KaleidoClient
 
 # Zero-config — defaults to regtest
 client = KaleidoClient.create()
