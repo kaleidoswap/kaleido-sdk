@@ -1620,7 +1620,8 @@
                 "type": "null"
               }
             ],
-            "title": "Token"
+            "title": "Token",
+            "default": ""
           },
           "created_at": {
             "type": "string",

@@ -122,13 +122,15 @@ class TestUtilityFunctions:
 
 
 class TestCreateUtxosFeeRate:
-    """create_utxos must send fee_rate as int (node expects u64)."""
+    """create_utxos must serialize the current generated request shape."""
 
     async def test_fee_rate_sent_as_int(self, client_with_node: KaleidoClient) -> None:
         rln = client_with_node.rln
         with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
             mock.return_value = {}
-            await rln.create_utxos(CreateUtxosRequest(up_to=True, num=5, fee_rate=1.5))
+            await rln.create_utxos(
+                CreateUtxosRequest(up_to=True, num=5, fee_rate=1, skip_sync=False)
+            )
 
             sent = mock.call_args[0][1]
             assert isinstance(sent, dict)
@@ -139,16 +141,20 @@ class TestCreateUtxosFeeRate:
         rln = client_with_node.rln
         with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
             mock.return_value = {}
-            await rln.create_utxos(CreateUtxosRequest(up_to=True, num=5))
+            await rln.create_utxos(
+                CreateUtxosRequest(up_to=True, num=5, fee_rate=1, skip_sync=False)
+            )
 
             sent = mock.call_args[0][1]
-            assert "fee_rate" not in sent
+            assert "size" not in sent
+            assert sent["fee_rate"] == 1
+            assert sent["skip_sync"] is False
 
     async def test_fee_rate_whole_number(self, client_with_node: KaleidoClient) -> None:
         rln = client_with_node.rln
         with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
             mock.return_value = {}
-            await rln.create_utxos(CreateUtxosRequest(fee_rate=4.0))
+            await rln.create_utxos(CreateUtxosRequest(up_to=False, fee_rate=4, skip_sync=False))
 
             sent = mock.call_args[0][1]
             assert sent["fee_rate"] == 4
@@ -164,6 +170,7 @@ class TestDecodeRgbInvoiceType:
             "recipient_id": "utxob:abc",
             "recipient_type": "Witness",
             "asset_id": "rgb:2dk...",
+            "assignment": {"type": "Any"},
             "network": "Regtest",
             "expiration_timestamp": 1700000000,
             "transport_endpoints": ["rpc://proxy.example.com/json-rpc"],

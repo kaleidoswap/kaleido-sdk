@@ -931,9 +931,9 @@ class IssueAssetUDAResponse(BaseModel):
 
 
 class ListAssetsResponse(BaseModel):
-    nia: list[AssetNIA] | None = None
-    uda: list[AssetUDA] | None = None
-    cfa: list[AssetCFA] | None = None
+    nia: list[AssetNIA]
+    uda: list[AssetUDA]
+    cfa: list[AssetCFA]
 
 
 class ListChannelsResponse(BaseModel):

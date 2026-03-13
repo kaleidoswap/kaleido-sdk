@@ -306,6 +306,11 @@ class RlnClient:
         """
         body = ListAssetsRequest(filter_asset_schemas=filter_asset_schemas or [])
         data = await self._http.node_post("/listassets", body)
+        data = {
+            "nia": data.get("nia") or [],
+            "uda": data.get("uda") or [],
+            "cfa": data.get("cfa") or [],
+        }
         return ListAssetsResponse.model_validate(data)
 
     async def get_asset_balance(self, body: AssetBalanceRequest) -> AssetBalanceResponse:
