@@ -242,8 +242,10 @@ export function mapHttpError(error: {
             message = error.data;
         } else {
             // Check formatted error fields in order of preference
+            const detailMessage =
+                typeof error.data.detail === 'string' ? error.data.detail : undefined;
             message =
-                error.data.detail ||
+                detailMessage ||
                 error.data.message ||
                 error.data.error ||
                 (error.data.details ? JSON.stringify(error.data.details) : undefined) ||
