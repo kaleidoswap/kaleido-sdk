@@ -211,7 +211,7 @@ jobs:
     needs: build-python-sdk
     environment:
       name: pypi-sdk
-      url: https://pypi.org/project/kaleido-sdk/
+      url: https://pypi.org/project/kaleidoswap-sdk/
     steps:
       - uses: actions/setup-python@v5
         with:
@@ -231,7 +231,7 @@ jobs:
     needs: build-typescript-sdk
     environment:
       name: npm
-      url: https://www.npmjs.com/package/kaleido-sdk
+      url: https://www.npmjs.com/package/kaleidoswap-sdk
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

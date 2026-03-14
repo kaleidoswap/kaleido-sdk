@@ -1,6 +1,6 @@
 {
-    "name": "kaleido-sdk",
-    "version": "0.1.0",
+    "name": "kaleidoswap-sdk",
+    "version": "0.5.5",
     "description": "Kaleidoswap SDK for TypeScript and JavaScript - trade RGB assets on Lightning Network",
     "keywords": [
         "bitcoin",
@@ -15,7 +15,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kaleidoswap/kaleido-sdk"
+        "url": "https://github.com/kaleidoswap/kaleidoswap-sdk"
     },
     "type": "module",
     "packageManager": "pnpm@10.30.3",

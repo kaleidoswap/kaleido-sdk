@@ -185,7 +185,7 @@ check:typescript-sdk:
   allow_failure: true
 
 # ---------------------------------------------------------------------------
-# Python SDK (Pure Python - kaleido-sdk)
+# Python SDK (Pure Python - kaleidoswap-sdk)
 # ---------------------------------------------------------------------------
 
 test:python-sdk:
@@ -295,7 +295,7 @@ deploy:pypi-sdk:
       when: manual
   environment:
     name: pypi-sdk
-    url: https://pypi.org/project/kaleido-sdk/
+    url: https://pypi.org/project/kaleidoswap-sdk/
 
 deploy:npm:
   stage: deploy
@@ -329,4 +329,4 @@ deploy:npm:
       when: manual
   environment:
     name: npm
-    url: https://www.npmjs.com/package/kaleido-sdk
+    url: https://www.npmjs.com/package/kaleidoswap-sdk

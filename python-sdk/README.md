@@ -5,7 +5,7 @@ Python SDK for trading RGB assets on the Lightning Network via the Kaleidoswap p
 ## Installation
 
 ```bash
-pip install kaleido-sdk
+pip install kaleidoswap-sdk
 ```
 
 ## Quick Start

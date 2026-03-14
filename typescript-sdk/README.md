@@ -1,14 +1,14 @@
 # Kaleidoswap SDK — TypeScript / JavaScript
 
-[![npm version](https://badge.fury.io/js/kaleido-sdk.svg)](https://www.npmjs.com/package/kaleido-sdk)
+[![npm version](https://badge.fury.io/js/kaleidoswap-sdk.svg)](https://www.npmjs.com/package/kaleidoswap-sdk)
 
 TypeScript SDK for trading RGB assets on the Lightning Network via the Kaleidoswap protocol.
 
 ## Installation
 
 ```bash
-pnpm add kaleido-sdk
-# or: npm install kaleido-sdk
+pnpm add kaleidoswap-sdk
+# or: npm install kaleidoswap-sdk
 ```
 
 ## Quick Start
@@ -21,7 +21,7 @@ The SDK exposes two sub-clients depending on what you need:
 | `client.rln` | `nodeUrl` | Your RGB Lightning Node — wallet, channels, payments, RGB assets |
 
 ```typescript
-import { KaleidoClient } from 'kaleido-sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 // Zero-config — defaults to regtest
 const client = KaleidoClient.create();

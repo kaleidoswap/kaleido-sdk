@@ -113,7 +113,7 @@ class TestUtilityFunctions:
     def test_get_sdk_name(self) -> None:
         """Test get_sdk_name returns expected name."""
         name = get_sdk_name()
-        assert name == "kaleido-sdk"
+        assert name == "kaleidoswap-sdk"
 
 
 # =============================================================================

@@ -6,8 +6,8 @@
  *
  * @example
  * ```typescript
- * import { KaleidoClient } from 'kaleido-sdk';
- * import type { PairQuoteResponse, Asset } from 'kaleido-sdk';
+ * import { KaleidoClient } from 'kaleidoswap-sdk';
+ * import type { PairQuoteResponse, Asset } from 'kaleidoswap-sdk';
  *
  * const client = KaleidoClient.create({
  *   baseUrl: 'https://api.regtest.kaleidoswap.com',
@@ -43,7 +43,7 @@ export { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from './clien
 //   'rln'    RGB Lightning Node operations
 //
 // @example
-// import { KaleidoClient, LogLevel, setComponentLogLevel } from 'kaleido-sdk';
+// import { KaleidoClient, LogLevel, setComponentLogLevel } from 'kaleidoswap-sdk';
 //
 // // Full debug output via built-in console logger:
 // const client = KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG });
@@ -90,7 +90,7 @@ export {
      * Defaults to process.stderr. Configurable stream and format.
      *
      * @example
-     * import { StreamLogger } from 'kaleido-sdk';
+     * import { StreamLogger } from 'kaleidoswap-sdk';
      * KaleidoClient.create({
      *   baseUrl: '…',
      *   logLevel: LogLevel.DEBUG,
@@ -152,8 +152,8 @@ export {
 // ============================================================================
 // Type definitions
 //
-// Market/maker types are exported here so `import type { ... } from 'kaleido-sdk'` works.
-// RLN types are intentionally excluded — import from 'kaleido-sdk/rln'.
+// Market/maker types are exported here so `import type { ... } from 'kaleidoswap-sdk'` works.
+// RLN types are intentionally excluded — import from 'kaleidoswap-sdk/rln'.
 // ============================================================================
 
 // ---- Configuration ----

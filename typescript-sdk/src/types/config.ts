@@ -5,8 +5,8 @@
  * Import these when configuring a client or comparing layer/address values at runtime.
  *
  * @example
- * import type { KaleidoConfig } from 'kaleido-sdk';
- * import { Layer } from 'kaleido-sdk';
+ * import type { KaleidoConfig } from 'kaleidoswap-sdk';
+ * import { Layer } from 'kaleidoswap-sdk';
  */
 
 import type { LogLevel, LogLevelName, SdkLogger } from '../logging.js';
