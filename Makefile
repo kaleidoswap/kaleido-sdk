@@ -7,6 +7,7 @@
 	check-format-typescript check-lint-typescript typecheck-typescript \
 	fix fix-python fix-typescript \
 	pre-commit \
+	validate-release-version \
 	generate-models generate-python-sdk-models generate-ts-types regenerate update-specs \
 	versions sync-version \
 	deploy-python-sdk deploy-typescript \
@@ -53,6 +54,7 @@ help:
 	@echo "Versioning:"
 	@echo "  versions           - Show current SDK versions"
 	@echo "  sync-version       - Sync Python + TypeScript versions (make sync-version VERSION=X.Y.Z)"
+	@echo "  validate-release-version - Check that a release tag matches all SDK versions"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  clean              - Clean build artifacts"
@@ -206,6 +208,13 @@ versions:
 	@echo "  Python SDK:     $$(grep '^version = ' $(PYTHON_SDK)/pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')"
 	@echo "  TypeScript SDK: $$(grep '"version"' $(TYPESCRIPT_SDK)/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')"
 
+validate-release-version:
+	@if [ -z "$(TAG)" ]; then \
+		echo "Usage: make validate-release-version TAG=vX.Y.Z"; \
+		exit 1; \
+	fi
+	@bash scripts/validate_release_version.sh "$(TAG)"
+
 sync-version:
 	@if [ -z "$(VERSION)" ]; then \
 		echo "Usage: make sync-version VERSION=X.Y.Z"; \
@@ -214,6 +223,8 @@ sync-version:
 	@VER="$(VERSION)"; VER="$${VER#v}"; \
 	echo "Updating SDK versions to $$VER"; \
 	perl -i -pe "s/^version = \".*\"/version = \"$$VER\"/" $(PYTHON_SDK)/pyproject.toml; \
+	perl -i -pe "s/^__version__ = \".*\"/__version__ = \"$$VER\"/" $(PYTHON_SDK)/kaleido_sdk/__init__.py; \
+	perl -i -pe "s/^__version__ = \".*\"/__version__ = \"$$VER\"/" $(PYTHON_SDK)/kaleido_sdk/client.py; \
 	perl -i -pe "s/\"version\":\s*\"[^\"]+\"/\"version\": \"$$VER\"/" $(TYPESCRIPT_SDK)/package.json; \
 	echo "✅ Version synced across SDKs"; \
 	$(MAKE) versions
