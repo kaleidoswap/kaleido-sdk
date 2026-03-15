@@ -33,6 +33,17 @@ describe('WSClient', () => {
             expect(wsClient.isConnected()).toBe(false);
         });
 
+        it('should preserve a client ID already embedded in the URL', () => {
+            expect(wsClient.clientId).toBe('0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe');
+        });
+
+        it('should append a generated client ID when URL ends at /ws', () => {
+            const baseWsClient = new WSClient({ url: 'ws://localhost:8000/api/v1/market/ws' });
+
+            expect(baseWsClient.clientId).toBeDefined();
+            expect(baseWsClient.clientId.length).toBeGreaterThan(0);
+        });
+
         it('should have event emitter methods', () => {
             expect(typeof wsClient.on).toBe('function');
             expect(typeof wsClient.emit).toBe('function');
@@ -92,6 +103,53 @@ describe('WSClient', () => {
 
                 // Simulate receiving quote response
                 wsClient.emit('quoteResponse', mockQuote);
+            });
+        });
+
+        it('should preserve quote action when handling wire messages', () => {
+            return new Promise<void>((resolve) => {
+                const mockQuote = {
+                    action: 'quote_response',
+                    from_asset: {
+                        asset_id: 'BTC',
+                        name: 'Bitcoin',
+                        ticker: 'BTC',
+                        layer: 'BTC_LN',
+                        amount: 10000000,
+                        precision: 8,
+                    },
+                    to_asset: {
+                        asset_id: 'USDT',
+                        name: 'Tether USD',
+                        ticker: 'USDT',
+                        layer: 'RGB_LN',
+                        amount: 45000000000,
+                        precision: 6,
+                    },
+                    price: 45000,
+                    rfq_id: 'rfq_wire_123',
+                    timestamp: Date.now(),
+                    expires_at: Date.now() + 30000,
+                    fee: {
+                        fee_asset: 'usdt',
+                        fee_precision: 6,
+                        base_fee: 1000000,
+                        variable_fee: 500000,
+                        fee_rate: 0.001,
+                        final_fee: 1500000,
+                    },
+                };
+
+                wsClient.on('quoteResponse', (response: QuoteResponse) => {
+                    expect(response.action).toBe('quote_response');
+                    expect(response.rfq_id).toBe(mockQuote.rfq_id);
+                    resolve();
+                });
+
+                (wsClient as unknown as { handleMessage: (message: unknown) => void }).handleMessage({
+                    action: 'quote_response',
+                    data: mockQuote,
+                });
             });
         });
 

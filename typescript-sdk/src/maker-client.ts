@@ -142,13 +142,46 @@ export class MakerClient {
             await this.ws.connect();
         }
 
-        // Subscribe to quote updates
-        this.ws.on('quoteResponse', onUpdate);
+        const normalizedFromAsset = from_asset.toUpperCase();
+        const normalizedToAsset = to_asset.toUpperCase();
+        const matchesRequestedQuote = (quote: QuoteResponse): boolean => {
+            const fromLeg = quote.from_asset as
+                | { ticker?: string; layer?: string }
+                | string
+                | undefined;
+            const toLeg = quote.to_asset as
+                | { ticker?: string; layer?: string }
+                | string
+                | undefined;
+
+            const quoteFromTicker =
+                typeof fromLeg === 'string' ? fromLeg.toUpperCase() : fromLeg?.ticker?.toUpperCase();
+            const quoteToTicker =
+                typeof toLeg === 'string' ? toLeg.toUpperCase() : toLeg?.ticker?.toUpperCase();
+            const quoteFromLayer = typeof fromLeg === 'string' ? undefined : fromLeg?.layer;
+            const quoteToLayer = typeof toLeg === 'string' ? undefined : toLeg?.layer;
+
+            return (
+                quoteFromTicker === normalizedFromAsset &&
+                quoteToTicker === normalizedToAsset &&
+                (from_layer == null || quoteFromLayer === from_layer) &&
+                (to_layer == null || quoteToLayer === to_layer)
+            );
+        };
+
+        const onMatchingQuote = (quote: QuoteResponse) => {
+            if (matchesRequestedQuote(quote)) {
+                onUpdate(quote);
+            }
+        };
+
+        // Subscribe only to quotes matching this request.
+        this.ws.on('quoteResponse', onMatchingQuote);
 
         // Quote request parameters
         const quoteParams = {
-            from_asset,
-            to_asset,
+            from_asset: normalizedFromAsset,
+            to_asset: normalizedToAsset,
             from_amount,
             to_amount: null as null,
             from_layer,
@@ -157,8 +190,8 @@ export class MakerClient {
 
         this._log.info(
             'streamQuotes() started: %s -> %s pollInterval=%dms',
-            from_asset,
-            to_asset,
+            normalizedFromAsset,
+            normalizedToAsset,
             pollInterval,
         );
 
@@ -183,9 +216,13 @@ export class MakerClient {
                 pollingTimer = undefined;
             }
             if (this.ws) {
-                this.ws.off('quoteResponse', onUpdate);
+                this.ws.off('quoteResponse', onMatchingQuote);
             }
-            this._log.info('streamQuotes() stopped: %s -> %s', from_asset, to_asset);
+            this._log.info(
+                'streamQuotes() stopped: %s -> %s',
+                normalizedFromAsset,
+                normalizedToAsset,
+            );
         };
     }
 

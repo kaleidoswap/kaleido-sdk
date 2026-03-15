@@ -82,6 +82,31 @@ function _createLoggingMiddleware(state: LogState): Middleware {
     };
 }
 
+function _createFetchWithTimeout(timeoutMs?: number): typeof fetch | undefined {
+    if (!timeoutMs || timeoutMs <= 0) {
+        return undefined;
+    }
+
+    return async (input, init) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        const signal = init?.signal
+            ? AbortSignal.any([init.signal, controller.signal])
+            : controller.signal;
+
+        try {
+            return await fetch(input, { ...init, signal });
+        } catch (error) {
+            if (controller.signal.aborted && !init?.signal?.aborted) {
+                throw new Error(`Request timeout after ${timeoutMs}ms`);
+            }
+            throw error;
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    };
+}
+
 /**
  * Type-safe HTTP client using openapi-fetch
  */
@@ -93,12 +118,14 @@ export class HttpClient {
 
     constructor(config: HttpClientConfig, logState: LogState = new LogState()) {
         this.config = config;
+        const fetchWithTimeout = _createFetchWithTimeout(config.timeout);
 
         // Create type-safe Maker API client only if baseUrl is provided
         if (config.baseUrl) {
             this.makerClient = createClient<paths>({
                 baseUrl: config.baseUrl,
                 headers: config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : undefined,
+                fetch: fetchWithTimeout,
             });
             this.makerClient.use(_createLoggingMiddleware(logState));
         }
@@ -107,6 +134,7 @@ export class HttpClient {
         if (config.nodeUrl) {
             this.nodeClient = createClient<nodePaths>({
                 baseUrl: config.nodeUrl,
+                fetch: fetchWithTimeout,
             });
             this.nodeClient.use(_createLoggingMiddleware(logState));
         }
@@ -146,6 +174,7 @@ export class HttpClient {
     enableNodeClient(nodeUrl: string): void {
         this.nodeClient = createClient<nodePaths>({
             baseUrl: nodeUrl,
+            fetch: _createFetchWithTimeout(this.config.timeout),
         });
         this.nodeClient.use(_createLoggingMiddleware(this._logState));
     }
