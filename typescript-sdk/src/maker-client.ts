@@ -55,6 +55,7 @@ import type {
  * Options for waiting for swap completion
  */
 export interface SwapCompletionOptions {
+    accessToken: string;
     timeout?: number;
     pollInterval?: number;
     onStatusUpdate?: (status: string) => void;
@@ -558,8 +559,8 @@ export class MakerClient {
     // Convenience Methods
     // ============================================================================
 
-    async waitForSwapCompletion(orderId: string, options: SwapCompletionOptions = {}) {
-        const { timeout = 300000, pollInterval = 2000, onStatusUpdate } = options;
+    async waitForSwapCompletion(orderId: string, options: SwapCompletionOptions) {
+        const { accessToken, timeout = 300000, pollInterval = 2000, onStatusUpdate } = options;
         const startTime = Date.now();
 
         this._log.info(
@@ -570,7 +571,10 @@ export class MakerClient {
 
         while (Date.now() - startTime < timeout) {
             try {
-                const statusResponse = await this.getSwapOrderStatus({ order_id: orderId });
+                const statusResponse = await this.getSwapOrderStatus({
+                    order_id: orderId,
+                    access_token: accessToken,
+                });
                 const order = statusResponse.order;
 
                 if (order) {

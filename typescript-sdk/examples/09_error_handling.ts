@@ -36,7 +36,10 @@ async function main() {
 
     try {
         // Try to get status for non-existent order
-        await client.maker.getSwapOrderStatus({ order_id: 'non-existent-order-id' });
+        await client.maker.getSwapOrderStatus({
+            order_id: 'non-existent-order-id',
+            access_token: 'invalid-access-token',
+        });
     } catch (error) {
         if (error instanceof APIError) {
             console.log('  Caught APIError:');

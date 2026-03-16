@@ -220,7 +220,10 @@ async function swapDemo() {
 
         while (Date.now() - startTime < timeout) {
             try {
-                const statusResponse = await client.maker.getSwapOrderStatus({ order_id: order.id });
+                const statusResponse = await client.maker.getSwapOrderStatus({
+                    order_id: order.id,
+                    access_token: order.access_token,
+                });
                 const currentOrder = statusResponse.order;
 
                 if (currentOrder) {
