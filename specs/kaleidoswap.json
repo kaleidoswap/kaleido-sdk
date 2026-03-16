@@ -1,0 +1,6033 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kaleidoswap RGB-LSP API",
+    "summary": "Public KaleidoSwap Maker API contract",
+    "description": "Public Maker API for KaleidoSwap market data, quotes, swap orders, and RGB LSPS1\nchannel operations.\n\nPublic Maker endpoints are unauthenticated today. Admin and wallet-management\nroutes remain private and are intentionally excluded from this contract.\n\nUse the per-order `access_token` returned by LSPS1 and swap-order creation flows\nwhen polling protected order status endpoints or submitting a rate decision after\nthe maker requests client confirmation.",
+    "version": "0.2.0",
+    "termsOfService": "https://kaleidoswap.com/terms",
+    "contact": {
+      "name": "Kaleidoswap Team",
+      "email": "info@kaleidoswap.com",
+      "url": "https://kaleidoswap.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "x-support": {
+      "email": "contact@kaleidoswap.com",
+      "documentation": "https://docs.kaleidoswap.com/api-reference/introduction"
+    },
+    "x-build-info": {
+      "version": "v0.4.2",
+      "commit": "89711b3ca3e069639c3084762ec8f6f803655ba8",
+      "buildDate": "2026-03-19T10:54:37.760622+00:00"
+    }
+  },
+  "paths": {
+    "/api/v1/lsps1/get_info": {
+      "get": {
+        "tags": [
+          "lsps1"
+        ],
+        "summary": "Get LSPS1 capabilities",
+        "description": "Return the maker's RGB LSPS1 capabilities, supported assets, and channel limits. Safe to poll and cache.",
+        "operationId": "getLspInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LspInfoResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The backing LSP node is unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "LSPS1_NODE_UNREACHABLE",
+                  "message": "LSP node unreachable",
+                  "details": {
+                    "code": 102,
+                    "message": "LSP node is unreachable"
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lsps1/network_info": {
+      "get": {
+        "tags": [
+          "lsps1"
+        ],
+        "summary": "Get LSPS1 network info",
+        "description": "Return the maker's current blockchain height and network. Safe to poll and cache.",
+        "operationId": "getLspNetworkInfo",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkInfoResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The backing LSP node is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "LSPS1_NODE_UNREACHABLE",
+                  "message": "LSP node unreachable",
+                  "details": {
+                    "code": 102,
+                    "message": "LSP node is unreachable"
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lsps1/create_order": {
+      "post": {
+        "tags": [
+          "lsps1"
+        ],
+        "summary": "Create LSPS1 order",
+        "description": "Create an LSPS1 channel order. When the client is purchasing assets, a fresh `rfq_id` must be supplied and is extended to remain valid through the payment window. The response includes a per-order `access_token` for later polling or rate decisions. Treat this call as non-idempotent.",
+        "operationId": "createLspOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              },
+              "examples": {
+                "asset_purchase": {
+                  "summary": "Create LSPS1 order with asset purchase",
+                  "value": {
+                    "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+                    "lsp_balance_sat": 150000,
+                    "client_balance_sat": 50000,
+                    "required_channel_confirmations": 3,
+                    "funding_confirms_within_blocks": 144,
+                    "channel_expiry_blocks": 4032,
+                    "announce_channel": true,
+                    "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                    "client_asset_amount": 2500,
+                    "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
+                    "refund_onchain_address": "tb1qexampleaddress0000000000000000000000000",
+                    "email": "ops@kaleidoswap.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "LSPS1 order created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelOrderResponse"
+                },
+                "example": {
+                  "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+                  "lsp_balance_sat": 150000,
+                  "client_balance_sat": 50000,
+                  "required_channel_confirmations": 3,
+                  "funding_confirms_within_blocks": 144,
+                  "channel_expiry_blocks": 4032,
+                  "token": "",
+                  "created_at": "2026-03-11T12:00:00Z",
+                  "announce_channel": true,
+                  "order_state": "CREATED",
+                  "payment": {
+                    "bolt11": {
+                      "state": "EXPECT_PAYMENT",
+                      "expires_at": "2026-03-11T12:15:00Z",
+                      "fee_total_sat": 500,
+                      "order_total_sat": 50500,
+                      "invoice": "lnbc1example"
+                    },
+                    "onchain": {
+                      "state": "EXPECT_PAYMENT",
+                      "expires_at": "2026-03-11T12:15:00Z",
+                      "fee_total_sat": 500,
+                      "order_total_sat": 50500,
+                      "address": "tb1qmakerdeposit0000000000000000000000000",
+                      "min_fee_for_0conf": 253,
+                      "min_onchain_payment_confirmations": 0,
+                      "refund_onchain_address": "tb1qexampleaddress0000000000000000000000000"
+                    }
+                  },
+                  "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                  "client_asset_amount": 2500,
+                  "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
+                  "access_token": "ord_live_3rCkP9dG7mN4"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The LSPS1 parameters, quote, or access constraints are invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "LSPS1_INVALID_PARAMS",
+                  "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first.",
+                  "details": {
+                    "code": -32602,
+                    "property": "rfq_id",
+                    "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first."
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The referenced asset was not found.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "ASSET_NOT_FOUND",
+                  "message": "Asset not found: rgb:unknown",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The backing LSP node or required service is unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "LSPS1_NODE_UNREACHABLE",
+                  "message": "LSP node unreachable",
+                  "details": {
+                    "code": 102,
+                    "message": "LSP node is unreachable"
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lsps1/estimate_fees": {
+      "post": {
+        "tags": [
+          "lsps1"
+        ],
+        "summary": "Estimate LSPS1 fees",
+        "description": "Estimate LSPS1 channel fees without creating an order. When the client is purchasing assets, a fresh `rfq_id` is required so the asset price can be folded into the total fee calculation.",
+        "operationId": "estimateLspFees",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              },
+              "examples": {
+                "asset_purchase_fee_estimate": {
+                  "summary": "Estimate asset-backed channel order",
+                  "value": {
+                    "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+                    "lsp_balance_sat": 150000,
+                    "client_balance_sat": 50000,
+                    "required_channel_confirmations": 3,
+                    "funding_confirms_within_blocks": 144,
+                    "channel_expiry_blocks": 4032,
+                    "announce_channel": true,
+                    "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                    "client_asset_amount": 2500,
+                    "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelFees"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The LSPS1 parameters or quote reference are invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "LSPS1_INVALID_PARAMS",
+                  "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first.",
+                  "details": {
+                    "code": -32602,
+                    "property": "rfq_id",
+                    "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first."
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The backing LSP node or required service is unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "LSPS1_NODE_UNREACHABLE",
+                  "message": "LSP node unreachable",
+                  "details": {
+                    "code": 102,
+                    "message": "LSP node is unreachable"
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lsps1/get_order": {
+      "post": {
+        "tags": [
+          "lsps1"
+        ],
+        "summary": "Get LSPS1 order",
+        "description": "Fetch the current LSPS1 order state. Clients must provide the per-order `access_token` returned at creation time. This endpoint is safe to poll.",
+        "operationId": "getLspOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderRequest"
+              },
+              "examples": {
+                "poll_order": {
+                  "summary": "Poll LSPS1 order status",
+                  "value": {
+                    "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "access_token": "ord_live_3rCkP9dG7mN4"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelOrderResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The supplied access token is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "LSPS1_INVALID_PARAMS",
+                  "message": "Invalid order access token",
+                  "details": {
+                    "code": -32602,
+                    "property": "access_token",
+                    "message": "Invalid order access token"
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No LSPS1 order exists for the supplied order ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "LSPS1_ORDER_NOT_FOUND",
+                  "message": "Order Not found",
+                  "details": {
+                    "code": 101
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                },
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lsps1/rate_decision": {
+      "post": {
+        "tags": [
+          "lsps1"
+        ],
+        "summary": "Submit LSPS1 rate decision",
+        "description": "Resolve an LSPS1 repricing event after the maker has moved the order into `PENDING_RATE_DECISION`. Clients must supply the per-order `access_token`. Accepting a new rate resumes the order with fresh pricing; declining initiates refund handling.",
+        "operationId": "submitLspRateDecision",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateDecisionRequest"
+              },
+              "examples": {
+                "accept_repriced_order": {
+                  "summary": "Accept updated asset price",
+                  "value": {
+                    "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "access_token": "ord_live_3rCkP9dG7mN4",
+                    "accept_new_rate": true
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rate decision accepted and processed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateDecisionResponse"
+                },
+                "example": {
+                  "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "decision_accepted": true,
+                  "message": "Rate accepted. Order will proceed with current market rate."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The order is not awaiting a rate decision or the access token is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Order is not pending rate decision. Current state: COMPLETED",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No LSPS1 order exists for the supplied order ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "LSPS1_ORDER_NOT_FOUND",
+                  "message": "Order Not found",
+                  "details": {
+                    "code": 101
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                },
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Fresh market pricing is currently unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Current market price unavailable. Please try again.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/nodeinfo": {
+      "get": {
+        "tags": [
+          "swaps"
+        ],
+        "summary": "Get swap maker node info",
+        "description": "Return the public maker node identity, network, and current block height used by direct atomic-swap integrations. This endpoint is safe to poll.",
+        "operationId": "getSwapNodeInfo",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwapNodeInfoResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/init": {
+      "post": {
+        "tags": [
+          "swaps"
+        ],
+        "summary": "Initiate an atomic swap",
+        "description": "Create a maker-side atomic swap from a fresh RFQ. The response contains the `swapstring` and `payment_hash` the taker must whitelist before execution. Treat this as non-idempotent: creating a second swap requires a new request.",
+        "operationId": "initiateAtomicSwap",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapRequest"
+              },
+              "examples": {
+                "btc_to_rgb": {
+                  "summary": "BTC to RGB atomic swap",
+                  "value": {
+                    "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
+                    "from_asset": "BTC",
+                    "from_amount": 1500000,
+                    "to_asset": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                    "to_amount": 875000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Swap initialized successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwapResponse"
+                },
+                "example": {
+                  "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+                  "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The RFQ or swap parameters are invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Invalid swap request: missing payment_hash or swapstring",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The trading service is still starting or temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Trading service is starting up. Please try again in a few moments.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/execute": {
+      "post": {
+        "tags": [
+          "swaps"
+        ],
+        "summary": "Execute an atomic swap",
+        "description": "Execute a previously initialized atomic swap after the taker has whitelisted the returned `swapstring`. Retry only when the previous attempt is known to have failed before execution was accepted.",
+        "operationId": "executeAtomicSwap",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmSwapRequest"
+              },
+              "examples": {
+                "execute_swap": {
+                  "summary": "Execute previously initialized swap",
+                  "value": {
+                    "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+                    "taker_pubkey": "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706",
+                    "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Swap execution request accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmSwapResponse"
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Swap executed successfully."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The swapstring, taker pubkey, or payment hash is invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Invalid swap request: missing payment_hash or swapstring",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The trading service is still starting or temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Trading service is starting up. Please try again in a few moments.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/atomic/status": {
+      "post": {
+        "tags": [
+          "swaps"
+        ],
+        "summary": "Get atomic swap status",
+        "description": "Fetch the current maker-side status for an atomic swap using its `payment_hash`. This endpoint is safe to poll repeatedly.",
+        "operationId": "getAtomicSwapStatus",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapStatusRequest"
+              },
+              "examples": {
+                "status_lookup": {
+                  "summary": "Poll atomic swap status",
+                  "value": {
+                    "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwapStatusResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The supplied payment hash is invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Invalid payment hash, please make sure that you are requesting with the correct payment hash.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No swap exists for the supplied payment hash.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "NOT_FOUND",
+                  "message": "Swap not found",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The trading service is still starting or temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Trading service is starting up. Please try again in a few moments.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/assets": {
+      "get": {
+        "tags": [
+          "market"
+        ],
+        "summary": "List market assets",
+        "description": "List assets supported by the maker with optional filters and pagination. This endpoint is safe to poll and cache.",
+        "operationId": "getMarketAssets",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by asset UUID (e.g., 'rgb:2dkSTbr-...')",
+              "title": "Asset Id"
+            },
+            "description": "Filter by asset UUID (e.g., 'rgb:2dkSTbr-...')"
+          },
+          {
+            "name": "ticker",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by ticker (e.g., 'BTC', 'USDT')",
+              "title": "Ticker"
+            },
+            "description": "Filter by ticker (e.g., 'BTC', 'USDT')"
+          },
+          {
+            "name": "layer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by layer (e.g., 'BTC_LN', 'RGB_L1')",
+              "title": "Layer"
+            },
+            "description": "Filter by layer (e.g., 'BTC_LN', 'RGB_L1')"
+          },
+          {
+            "name": "network",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by network (e.g., 'LN', 'L1')",
+              "title": "Network"
+            },
+            "description": "Filter by network (e.g., 'LN', 'L1')"
+          },
+          {
+            "name": "protocol",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by protocol (e.g., 'BTC', 'RGB')",
+              "title": "Protocol"
+            },
+            "description": "Filter by protocol (e.g., 'BTC', 'RGB')"
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by active status",
+              "title": "Is Active"
+            },
+            "description": "Filter by active status"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Items per page (max 100)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Items per page (max 100)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetsResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "One of the supplied filters is invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Invalid layer: BTC_FAKE. Valid layers: BTC_LN, BTC_L1, RGB_LN, RGB_L1, etc.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested asset could not be found.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "ASSET_NOT_FOUND",
+                  "message": "Asset not found: BTCX",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/pairs": {
+      "get": {
+        "tags": [
+          "market"
+        ],
+        "summary": "List market pairs",
+        "description": "List supported trading pairs with filters for pair identifiers, asset tickers, layers, and pagination. This endpoint is safe to poll and cache.",
+        "operationId": "getMarketPairs",
+        "parameters": [
+          {
+            "name": "pair_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pair ID (UUID)",
+              "title": "Pair Id"
+            },
+            "description": "Pair ID (UUID)"
+          },
+          {
+            "name": "from_asset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Base asset ID",
+              "title": "From Asset Id"
+            },
+            "description": "Base asset ID"
+          },
+          {
+            "name": "quote_asset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Quote asset ID",
+              "title": "Quote Asset Id"
+            },
+            "description": "Quote asset ID"
+          },
+          {
+            "name": "pair_ticker",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pair ticker 'BASE/QUOTE'",
+              "title": "Pair Ticker"
+            },
+            "description": "Pair ticker 'BASE/QUOTE'"
+          },
+          {
+            "name": "base_ticker",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Base asset ticker",
+              "title": "Base Ticker"
+            },
+            "description": "Base asset ticker"
+          },
+          {
+            "name": "quote_ticker",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Quote asset ticker",
+              "title": "Quote Ticker"
+            },
+            "description": "Quote asset ticker"
+          },
+          {
+            "name": "layer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by layer (e.g., BTC_LN, RGB_LN, BTC_L1)",
+              "title": "Layer"
+            },
+            "description": "Filter by layer (e.g., BTC_LN, RGB_LN, BTC_L1)"
+          },
+          {
+            "name": "asset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by asset ticker or ID",
+              "title": "Asset"
+            },
+            "description": "Filter by asset ticker or ID"
+          },
+          {
+            "name": "active_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Only return active pairs",
+              "default": true,
+              "title": "Active Only"
+            },
+            "description": "Only return active pairs"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Items per page (max 100)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Items per page (max 100)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Offset for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TradingPairsResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The pair filter is malformed.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "pair_ticker must be in format 'BASE/QUOTE', got: BTC-USDT"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DetailOnlyErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/pairs/routes": {
+      "post": {
+        "tags": [
+          "market"
+        ],
+        "summary": "Get pair routes",
+        "description": "Return the supported execution routes for a specific trading pair. Exactly one identification method must be provided.",
+        "operationId": "getMarketPairRoutes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairRoutesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairRoutesResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The pair identifier payload is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailOnlyErrorResponse"
+                },
+                "example": {
+                  "detail": "Exactly one identification method must be provided: pair_id, (from_asset_id + quote_asset_id), pair_ticker, or (base_ticker + quote_ticker)"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No routes exist for the requested pair.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "NOT_FOUND",
+                  "message": "No routes found for: BTC/USDT",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                },
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/routes": {
+      "post": {
+        "tags": [
+          "market"
+        ],
+        "summary": "Discover market routes",
+        "description": "Discover direct and multi-hop routes between assets. The response is informational and does not reserve liquidity.",
+        "operationId": "discoverMarketRoutes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutesResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                },
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/routes/matrix": {
+      "get": {
+        "tags": [
+          "market"
+        ],
+        "summary": "Get route reachability matrix",
+        "description": "Return a matrix showing which assets can reach each other and the minimum hop count for each combination. Safe to poll and cache.",
+        "operationId": "getMarketRouteMatrix",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReachabilityMatrixResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/market/quote": {
+      "post": {
+        "tags": [
+          "market"
+        ],
+        "summary": "Request market quote",
+        "description": "Request an RFQ-backed quote for a route between two asset legs. A successful response returns an `rfq_id` that can be consumed by swap-init or swap-order creation flows until the quote expires.",
+        "operationId": "requestMarketQuote",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairQuoteRequest"
+              },
+              "examples": {
+                "btc_ln_to_rgb_ln": {
+                  "summary": "Quote BTC Lightning to RGB Lightning",
+                  "value": {
+                    "from_asset": {
+                      "asset_id": "BTC",
+                      "layer": "BTC_LN",
+                      "amount": 1500000
+                    },
+                    "to_asset": {
+                      "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                      "layer": "RGB_LN"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairQuoteResponse"
+                },
+                "example": {
+                  "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+                  "from_asset": {
+                    "asset_id": "BTC",
+                    "name": "Bitcoin",
+                    "ticker": "BTC",
+                    "layer": "BTC_LN",
+                    "amount": 1500000,
+                    "precision": 8
+                  },
+                  "to_asset": {
+                    "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                    "name": "Tether USD",
+                    "ticker": "USDT",
+                    "layer": "RGB_LN",
+                    "amount": 875000,
+                    "precision": 6
+                  },
+                  "price": 59507000000,
+                  "fee": {
+                    "base_fee": 1000,
+                    "variable_fee": 250,
+                    "fee_rate": 0.0001,
+                    "final_fee": 1250,
+                    "fee_asset": "BTC",
+                    "fee_asset_precision": 8
+                  },
+                  "timestamp": 1715896356,
+                  "expires_at": 1715896416
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The requested route or amount is invalid.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Route not supported for this pair. From: BTC_LN, To: RGB_LN"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DetailOnlyErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested pair does not exist.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "PAIR_NOT_FOUND",
+                  "message": "Trading pair not found: BTC/USDT",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The trading service is still starting or temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Trading service is starting up. Please try again in a few moments.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/orders": {
+      "post": {
+        "tags": [
+          "swap-orders"
+        ],
+        "summary": "Create a swap order",
+        "description": "Create an order from a fresh RFQ for the web-style swap flow. The response returns a deposit destination and a per-order `access_token` that must be stored by the client for later status polling or rate decisions. Treat this operation as non-idempotent.",
+        "operationId": "createSwapOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSwapOrderRequest"
+              },
+              "examples": {
+                "btc_to_rgb_order": {
+                  "summary": "Create BTC to RGB order",
+                  "value": {
+                    "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+                    "from_asset": {
+                      "asset_id": "BTC",
+                      "name": "Bitcoin",
+                      "ticker": "BTC",
+                      "layer": "BTC_L1",
+                      "amount": 100000,
+                      "precision": 8
+                    },
+                    "to_asset": {
+                      "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                      "name": "Tether USD",
+                      "ticker": "USDT",
+                      "layer": "RGB_LN",
+                      "amount": 587700,
+                      "precision": 6
+                    },
+                    "receiver_address": {
+                      "address": "rgb:invoice:example",
+                      "format": "RGB_INVOICE"
+                    },
+                    "min_onchain_conf": 1,
+                    "refund_address": "tb1qexampleaddress0000000000000000000000000",
+                    "email": "trader@kaleidoswap.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Swap order created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSwapOrderResponse"
+                },
+                "example": {
+                  "id": "550e8400-e29b-41d4-a716-446655440000",
+                  "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+                  "deposit_address": {
+                    "address": "tb1qmakerdeposit0000000000000000000000000",
+                    "format": "BTC_ADDRESS"
+                  },
+                  "status": "PENDING_PAYMENT",
+                  "access_token": "ord_live_3rCkP9dG7mN4"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The quote, payout details, access token, or liquidity checks failed.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "RFQ not found or expired",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested trading pair or referenced resource does not exist.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "PAIR_NOT_FOUND",
+                  "message": "Trading pair not found: BTC/USDT",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The trading service is still starting or temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Trading service is starting up. Please try again in a few moments.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/orders/status": {
+      "post": {
+        "tags": [
+          "swap-orders"
+        ],
+        "summary": "Get swap order status",
+        "description": "Fetch the current state of a previously created swap order. Clients must send the `access_token` returned at order creation. This endpoint is safe to poll repeatedly.",
+        "operationId": "getSwapOrderStatus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapOrderStatusRequest"
+              },
+              "examples": {
+                "status_lookup": {
+                  "summary": "Poll swap order status",
+                  "value": {
+                    "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "access_token": "ord_live_3rCkP9dG7mN4"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwapOrderStatusResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The supplied access token is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Invalid order access token",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No swap order exists for the supplied order ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "NOT_FOUND",
+                  "message": "Swap order not found",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                },
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/orders/history": {
+      "get": {
+        "tags": [
+          "swap-orders"
+        ],
+        "summary": "List swap order history",
+        "description": "Return paginated historical swap orders. When no status filter is supplied the API defaults to filled orders.",
+        "operationId": "listSwapOrderHistory",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/SwapOrderStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderHistoryResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/orders/analytics": {
+      "get": {
+        "tags": [
+          "swap-orders"
+        ],
+        "summary": "Get swap order analytics",
+        "description": "Return aggregated swap-order counts by status plus filled-order volume metrics. Safe to poll and cache.",
+        "operationId": "getSwapOrderAnalytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatsResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/swaps/orders/rate_decision": {
+      "post": {
+        "tags": [
+          "swap-orders"
+        ],
+        "summary": "Submit swap order rate decision",
+        "description": "Resolve a pending swap-order repricing decision. The client must provide the per-order `access_token`. Accepting the new rate resumes execution with fresh pricing; declining requests a refund or manual review.",
+        "operationId": "submitSwapOrderRateDecision",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapOrderRateDecisionRequest"
+              },
+              "examples": {
+                "request_refund": {
+                  "summary": "Reject repriced swap order",
+                  "value": {
+                    "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                    "access_token": "ord_live_3rCkP9dG7mN4",
+                    "accept_new_rate": false
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rate decision accepted and applied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwapOrderRateDecisionResponse"
+                },
+                "example": {
+                  "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "decision_accepted": false,
+                  "message": "Refund requested. Manual review may still be required."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests. Respect the rate-limit headers before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "RATE_LIMIT_EXCEEDED",
+                  "message": "Too many requests",
+                  "details": {
+                    "retry_after": 60
+                  },
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The order is not awaiting a rate decision or the access token is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Order is not pending rate decision. Current state: FILLED",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No swap order exists for the supplied order ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "NOT_FOUND",
+                  "message": "Swap order not found: 550e8400-e29b-41d4-a716-446655440000",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation failed before reaching application logic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
+                },
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "rfq_id"
+                      ],
+                      "msg": "Field required",
+                      "type": "missing"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unhandled server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "INTERNAL_ERROR",
+                  "message": "Internal Server Error",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Current market pricing is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KaleidoErrorResponse"
+                },
+                "example": {
+                  "error_code": "SERVICE_UNAVAILABLE",
+                  "message": "Current market price unavailable. Please try again.",
+                  "details": {},
+                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Asset": {
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "title": "Ticker",
+            "description": "Display ticker (e.g., 'BTC', 'USDT')"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Full name"
+          },
+          "precision": {
+            "type": "integer",
+            "maximum": 18.0,
+            "minimum": 0.0,
+            "title": "Precision",
+            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
+          },
+          "protocol_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Protocol Ids",
+            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
+          },
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Media"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Logo/media"
+          },
+          "issued_supply": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued Supply",
+            "description": "Total issued supply"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp",
+            "description": "Creation timestamp"
+          },
+          "endpoints": {
+            "items": {
+              "$ref": "#/components/schemas/TradingLimits"
+            },
+            "type": "array",
+            "title": "Endpoints",
+            "description": "Layer endpoints with trading limits"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "Active for trading",
+            "default": true
+          },
+          "added_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Added At",
+            "description": "When added to wallet"
+          },
+          "supported_layers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supported Layers",
+            "description": "Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticker",
+          "name",
+          "precision"
+        ],
+        "title": "Asset",
+        "description": "Extended asset definition for the trading system.\n\nExtends TradableAsset with:\n- Trading status (is_active)\n- Supported layers (protocol/network combinations as strings)\n- RGB-specific fields for node API compatibility\n- Methods to convert to TradableAsset for specific settlements\n\nSupported Layers Format: PROTOCOL/NETWORK\n- BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU\n- RGB_L1, RGB_LN\n- TAPASS_L1, TAPASS_LN\n- LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK"
+      },
+      "AssetsOptions": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": "US Dollar Notes"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id",
+            "default": "rgb:$i4cFKwt-2C5LZ3X-l$kOTGN-O6l1AOP-aP9COyn-7IeBkEM"
+          },
+          "ticker": {
+            "type": "string",
+            "title": "Ticker",
+            "default": "USDT"
+          },
+          "precision": {
+            "type": "integer",
+            "title": "Precision",
+            "default": 6
+          },
+          "issued_supply": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Issued Supply",
+            "default": 0
+          },
+          "min_initial_client_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Min Initial Client Amount",
+            "default": 0
+          },
+          "max_initial_client_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Max Initial Client Amount",
+            "default": 0
+          },
+          "min_initial_lsp_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Min Initial Lsp Amount",
+            "default": 0
+          },
+          "max_initial_lsp_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Max Initial Lsp Amount",
+            "default": 10000
+          },
+          "min_channel_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Min Channel Amount",
+            "default": 0
+          },
+          "max_channel_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Max Channel Amount",
+            "default": 10000
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AssetsOptions"
+      },
+      "AssetsResponse": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "network": {
+            "type": "string",
+            "title": "Network",
+            "default": "regtest"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assets",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "AssetsResponse",
+        "description": "Response model for asset listing endpoints with pagination support."
+      },
+      "BitcoinNetwork": {
+        "type": "string",
+        "enum": [
+          "Mainnet",
+          "Testnet",
+          "Testnet4",
+          "Signet",
+          "Regtest"
+        ],
+        "title": "BitcoinNetwork"
+      },
+      "ChannelDetails": {
+        "properties": {
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id"
+          },
+          "temporary_channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporary Channel Id"
+          },
+          "funded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funded At"
+          },
+          "funding_outpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funding Outpoint"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "title": "ChannelDetails"
+      },
+      "ChannelFees": {
+        "properties": {
+          "setup_fee": {
+            "type": "integer",
+            "title": "Setup Fee"
+          },
+          "capacity_fee": {
+            "type": "integer",
+            "title": "Capacity Fee"
+          },
+          "duration_fee": {
+            "type": "integer",
+            "title": "Duration Fee"
+          },
+          "total_fee": {
+            "type": "integer",
+            "title": "Total Fee"
+          },
+          "applied_discount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Discount"
+          },
+          "discount_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "setup_fee",
+          "capacity_fee",
+          "duration_fee",
+          "total_fee"
+        ],
+        "title": "ChannelFees"
+      },
+      "ChannelOrderResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "client_pubkey": {
+            "type": "string",
+            "title": "Client Pubkey"
+          },
+          "lsp_balance_sat": {
+            "type": "integer",
+            "title": "Lsp Balance Sat"
+          },
+          "client_balance_sat": {
+            "type": "integer",
+            "title": "Client Balance Sat"
+          },
+          "required_channel_confirmations": {
+            "type": "integer",
+            "title": "Required Channel Confirmations"
+          },
+          "funding_confirms_within_blocks": {
+            "type": "integer",
+            "title": "Funding Confirms Within Blocks"
+          },
+          "channel_expiry_blocks": {
+            "type": "integer",
+            "title": "Channel Expiry Blocks"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token",
+            "default": ""
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "announce_channel": {
+            "type": "boolean",
+            "title": "Announce Channel"
+          },
+          "order_state": {
+            "$ref": "#/components/schemas/OrderState"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/PaymentDetails"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChannelDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "lsp_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lsp Asset Amount"
+          },
+          "client_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Asset Amount"
+          },
+          "rfq_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rfq Id"
+          },
+          "asset_price_sat": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Price Sat"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason"
+          },
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "client_pubkey",
+          "lsp_balance_sat",
+          "client_balance_sat",
+          "required_channel_confirmations",
+          "funding_confirms_within_blocks",
+          "channel_expiry_blocks",
+          "announce_channel",
+          "order_state",
+          "payment"
+        ],
+        "title": "ChannelOrderResponse"
+      },
+      "ConfirmSwapRequest": {
+        "properties": {
+          "swapstring": {
+            "type": "string",
+            "title": "Swapstring",
+            "examples": [
+              "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+          },
+          "taker_pubkey": {
+            "type": "string",
+            "title": "Taker Pubkey",
+            "examples": [
+              "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
+            ]
+          },
+          "payment_hash": {
+            "type": "string",
+            "title": "Payment Hash",
+            "examples": [
+              "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "swapstring",
+          "taker_pubkey",
+          "payment_hash"
+        ],
+        "title": "ConfirmSwapRequest",
+        "example": {
+          "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+          "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+          "taker_pubkey": "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
+        }
+      },
+      "ConfirmSwapResponse": {
+        "properties": {
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "examples": [
+              200
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "examples": [
+              "Swap executed successfully."
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message"
+        ],
+        "title": "ConfirmSwapResponse",
+        "example": {
+          "message": "Swap executed successfully.",
+          "status": 200
+        }
+      },
+      "CreateOrderRequest": {
+        "properties": {
+          "client_pubkey": {
+            "type": "string",
+            "title": "Client Pubkey"
+          },
+          "lsp_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Lsp Balance Sat"
+          },
+          "client_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Client Balance Sat"
+          },
+          "required_channel_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Required Channel Confirmations"
+          },
+          "funding_confirms_within_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Funding Confirms Within Blocks"
+          },
+          "channel_expiry_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Channel Expiry Blocks"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "refund_onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Onchain Address"
+          },
+          "announce_channel": {
+            "type": "boolean",
+            "title": "Announce Channel",
+            "default": true
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "lsp_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lsp Asset Amount"
+          },
+          "client_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Asset Amount"
+          },
+          "rfq_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rfq Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "Optional email for notifications"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_pubkey",
+          "lsp_balance_sat",
+          "client_balance_sat",
+          "required_channel_confirmations",
+          "funding_confirms_within_blocks",
+          "channel_expiry_blocks"
+        ],
+        "title": "CreateOrderRequest",
+        "example": {
+          "announce_channel": true,
+          "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+          "channel_expiry_blocks": 4032,
+          "client_asset_amount": 2500,
+          "client_balance_sat": 50000,
+          "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+          "email": "ops@kaleidoswap.com",
+          "funding_confirms_within_blocks": 144,
+          "lsp_balance_sat": 150000,
+          "refund_onchain_address": "tb1qexampleaddress0000000000000000000000000",
+          "required_channel_confirmations": 3,
+          "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49"
+        }
+      },
+      "CreateSwapOrderRequest": {
+        "properties": {
+          "rfq_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rfq Id",
+            "description": "RFQ ID cannot be empty"
+          },
+          "from_asset": {
+            "$ref": "#/components/schemas/SwapLeg",
+            "description": "Complete input specification: asset, ticker, network, protocol, and amount"
+          },
+          "to_asset": {
+            "$ref": "#/components/schemas/SwapLeg",
+            "description": "Complete output specification: asset, ticker, network, protocol, and amount"
+          },
+          "receiver_address": {
+            "$ref": "#/components/schemas/ReceiverAddress",
+            "description": "Destination address/invoice for receiving the to_asset payout"
+          },
+          "min_onchain_conf": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Conf",
+            "default": 1
+          },
+          "refund_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Address"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "Optional email for notifications"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rfq_id",
+          "from_asset",
+          "to_asset",
+          "receiver_address"
+        ],
+        "title": "CreateSwapOrderRequest",
+        "example": {
+          "email": "trader@kaleidoswap.com",
+          "from_asset": {
+            "amount": 100000,
+            "asset_id": "BTC",
+            "layer": "BTC_L1",
+            "name": "Bitcoin",
+            "precision": 8,
+            "ticker": "BTC"
+          },
+          "min_onchain_conf": 1,
+          "receiver_address": {
+            "address": "rgb:invoice:example",
+            "format": "RGB_INVOICE"
+          },
+          "refund_address": "tb1qexampleaddress0000000000000000000000000",
+          "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+          "to_asset": {
+            "amount": 587700,
+            "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+            "layer": "RGB_LN",
+            "name": "Tether USD",
+            "precision": 6,
+            "ticker": "USDT"
+          }
+        }
+      },
+      "CreateSwapOrderResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "rfq_id": {
+            "type": "string",
+            "title": "Rfq Id"
+          },
+          "deposit_address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceiverAddress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/SwapOrderStatus"
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "rfq_id",
+          "status",
+          "access_token"
+        ],
+        "title": "CreateSwapOrderResponse",
+        "example": {
+          "access_token": "ord_live_3rCkP9dG7mN4",
+          "deposit_address": {
+            "address": "tb1qmakerdeposit0000000000000000000000000",
+            "format": "BTC_ADDRESS"
+          },
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+          "status": "PENDING_PAYMENT"
+        }
+      },
+      "DetailOnlyErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Human-readable error detail",
+            "examples": [
+              "pair_ticker must be in format 'BASE/QUOTE'"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "DetailOnlyErrorResponse"
+      },
+      "FastAPIValidationErrorResponse": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorDetail"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "FastAPIValidationErrorResponse"
+      },
+      "Fee": {
+        "properties": {
+          "base_fee": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Base Fee",
+            "examples": [
+              1000000
+            ]
+          },
+          "variable_fee": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Variable Fee",
+            "examples": [
+              1000000
+            ]
+          },
+          "fee_rate": {
+            "type": "number",
+            "title": "Fee Rate",
+            "examples": [
+              0.0001
+            ]
+          },
+          "final_fee": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Final Fee",
+            "examples": [
+              2000000
+            ]
+          },
+          "fee_asset": {
+            "type": "string",
+            "title": "Fee Asset",
+            "examples": [
+              "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+            ]
+          },
+          "fee_asset_precision": {
+            "type": "integer",
+            "title": "Fee Asset Precision",
+            "examples": [
+              6
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_fee",
+          "variable_fee",
+          "fee_rate",
+          "final_fee",
+          "fee_asset",
+          "fee_asset_precision"
+        ],
+        "title": "Fee"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KaleidoErrorResponse": {
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "title": "Error Code",
+            "description": "Stable machine-readable application error code",
+            "examples": [
+              "PAIR_NOT_FOUND"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human-readable error message",
+            "examples": [
+              "Trading pair not found: BTC/USDT"
+            ]
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details",
+            "description": "Optional structured error details"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id",
+            "description": "Request correlation identifier for support and debugging",
+            "examples": [
+              "req_01HV8Q9X7G0Q7Y3Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "error_code",
+          "message",
+          "request_id"
+        ],
+        "title": "KaleidoErrorResponse"
+      },
+      "Layer": {
+        "type": "string",
+        "enum": [
+          "BTC_L1",
+          "BTC_LN",
+          "BTC_SPARK",
+          "BTC_ARKADE",
+          "BTC_LIQUID",
+          "BTC_CASHU",
+          "RGB_L1",
+          "RGB_LN",
+          "TAPASS_L1",
+          "TAPASS_LN",
+          "LIQUID_LIQUID",
+          "ARKADE_ARKADE",
+          "SPARK_SPARK"
+        ],
+        "title": "Layer",
+        "description": "Settlement layer combining protocol and network as a single string.\n\nFormat: PROTOCOL/NETWORK\n\nEach layer represents a valid combination where assets can exist and be transacted.\nThe layer encodes both WHAT protocol the asset uses and WHERE it settles."
+      },
+      "LspInfoResponse": {
+        "properties": {
+          "lsp_connection_url": {
+            "type": "string",
+            "title": "Lsp Connection Url"
+          },
+          "options": {
+            "$ref": "#/components/schemas/OrderOptions"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AssetsOptions"
+            },
+            "type": "array",
+            "title": "Assets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lsp_connection_url",
+          "options",
+          "assets"
+        ],
+        "title": "LspInfoResponse"
+      },
+      "Media": {
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "title": "File Path",
+            "examples": [
+              "/path/to/media"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "title": "Digest",
+            "examples": [
+              "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
+            ]
+          },
+          "mime": {
+            "type": "string",
+            "title": "Mime",
+            "examples": [
+              "text/plain"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_path",
+          "digest",
+          "mime"
+        ],
+        "title": "Media"
+      },
+      "MultiHopRoute": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/RouteStep"
+            },
+            "type": "array",
+            "title": "Steps",
+            "description": "Ordered list of route steps"
+          },
+          "total_hops": {
+            "type": "integer",
+            "title": "Total Hops",
+            "description": "Number of hops in the route"
+          }
+        },
+        "type": "object",
+        "required": [
+          "steps",
+          "total_hops"
+        ],
+        "title": "MultiHopRoute",
+        "description": "Complete route with one or more steps."
+      },
+      "NetworkInfoResponse": {
+        "properties": {
+          "network": {
+            "$ref": "#/components/schemas/BitcoinNetwork"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height",
+            "examples": [
+              805434
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "network",
+          "height"
+        ],
+        "title": "NetworkInfoResponse"
+      },
+      "OrderHistoryResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OrderHistorySummary"
+            },
+            "type": "array",
+            "title": "Data",
+            "description": "List of orders"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "pagination"
+        ],
+        "title": "OrderHistoryResponse"
+      },
+      "OrderHistorySummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Order ID"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SwapOrderStatus",
+            "description": "Order status"
+          },
+          "from_asset": {
+            "type": "string",
+            "title": "From Asset",
+            "description": "Asset being swapped from"
+          },
+          "from_amount": {
+            "type": "integer",
+            "title": "From Amount",
+            "description": "Amount of from_asset"
+          },
+          "to_asset": {
+            "type": "string",
+            "title": "To Asset",
+            "description": "Asset being swapped to"
+          },
+          "to_amount": {
+            "type": "integer",
+            "title": "To Amount",
+            "description": "Amount of to_asset"
+          },
+          "created_at": {
+            "type": "integer",
+            "title": "Created At",
+            "description": "Order creation timestamp"
+          },
+          "filled_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filled At",
+            "description": "Order completion timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "from_asset",
+          "from_amount",
+          "to_asset",
+          "to_amount",
+          "created_at"
+        ],
+        "title": "OrderHistorySummary",
+        "description": "Simplified order information for history listing"
+      },
+      "OrderOptions": {
+        "properties": {
+          "min_required_channel_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Required Channel Confirmations",
+            "default": 0
+          },
+          "min_funding_confirms_within_blocks": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Min Funding Confirms Within Blocks",
+            "default": 0
+          },
+          "min_onchain_payment_confirmations": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Onchain Payment Confirmations"
+          },
+          "supports_zero_channel_reserve": {
+            "type": "boolean",
+            "title": "Supports Zero Channel Reserve",
+            "default": true
+          },
+          "min_onchain_payment_size_sat": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "int64",
+            "title": "Min Onchain Payment Size Sat"
+          },
+          "max_channel_expiry_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Max Channel Expiry Blocks",
+            "default": 20160
+          },
+          "min_initial_client_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Min Initial Client Balance Sat",
+            "default": 0
+          },
+          "max_initial_client_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Max Initial Client Balance Sat",
+            "default": 1000000
+          },
+          "min_initial_lsp_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Min Initial Lsp Balance Sat",
+            "default": 0
+          },
+          "max_initial_lsp_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Max Initial Lsp Balance Sat",
+            "default": 16777215
+          },
+          "min_channel_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Min Channel Balance Sat",
+            "default": 50000
+          },
+          "max_channel_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Max Channel Balance Sat",
+            "default": 16777215
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "OrderOptions"
+      },
+      "OrderRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id"
+        ],
+        "title": "OrderRequest"
+      },
+      "OrderState": {
+        "type": "string",
+        "enum": [
+          "CREATED",
+          "CHANNEL_OPENING",
+          "COMPLETED",
+          "FAILED",
+          "PENDING_RATE_DECISION"
+        ],
+        "title": "OrderState"
+      },
+      "OrderStatsResponse": {
+        "properties": {
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Status Counts",
+            "description": "Count of orders by status"
+          },
+          "filled_orders_volume": {
+            "type": "integer",
+            "title": "Filled Orders Volume",
+            "description": "Total volume of filled orders"
+          },
+          "filled_orders_count": {
+            "type": "integer",
+            "title": "Filled Orders Count",
+            "description": "Total count of filled orders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status_counts",
+          "filled_orders_volume",
+          "filled_orders_count"
+        ],
+        "title": "OrderStatsResponse"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of items matching the filter"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Number of items per page"
+          },
+          "skip": {
+            "type": "integer",
+            "title": "Skip",
+            "description": "Number of items skipped"
+          },
+          "current_page": {
+            "type": "integer",
+            "title": "Current Page",
+            "description": "Current page number (1-indexed)"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages",
+            "description": "Total number of pages"
+          },
+          "has_next": {
+            "type": "boolean",
+            "title": "Has Next",
+            "description": "Whether there is a next page"
+          },
+          "has_previous": {
+            "type": "boolean",
+            "title": "Has Previous",
+            "description": "Whether there is a previous page"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "skip",
+          "current_page",
+          "total_pages",
+          "has_next",
+          "has_previous"
+        ],
+        "title": "PaginationMeta",
+        "description": "Pagination metadata"
+      },
+      "PairQuoteRequest": {
+        "properties": {
+          "from_asset": {
+            "$ref": "#/components/schemas/SwapLegInput",
+            "description": "Source leg specification (asset_id, layer, amount)"
+          },
+          "to_asset": {
+            "$ref": "#/components/schemas/SwapLegInput",
+            "description": "Destination leg specification (asset_id, layer, amount)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_asset",
+          "to_asset"
+        ],
+        "title": "PairQuoteRequest",
+        "description": "Request for a quote on a trading pair using SwapLegInput.",
+        "example": {
+          "from_asset": {
+            "amount": 1500000,
+            "asset_id": "BTC",
+            "layer": "BTC_LN"
+          },
+          "to_asset": {
+            "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+            "layer": "RGB_LN"
+          }
+        }
+      },
+      "PairQuoteResponse": {
+        "properties": {
+          "rfq_id": {
+            "type": "string",
+            "title": "Rfq Id",
+            "examples": [
+              "1234567890"
+            ]
+          },
+          "from_asset": {
+            "$ref": "#/components/schemas/SwapLeg",
+            "description": "Complete source leg specification with amount and details"
+          },
+          "to_asset": {
+            "$ref": "#/components/schemas/SwapLeg",
+            "description": "Complete destination leg specification with amount and details"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Price",
+            "description": "Price of 1 whole unit of from_asset (e.g., 1 BTC) in terms of the smallest unit of to_asset (e.g., USDT with precision 6). Matches PriceData.price for the given rfq_id.",
+            "examples": [
+              50000123456
+            ]
+          },
+          "fee": {
+            "$ref": "#/components/schemas/Fee"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp",
+            "description": "Quote creation timestamp (seconds since epoch)"
+          },
+          "expires_at": {
+            "type": "integer",
+            "title": "Expires At",
+            "description": "Quote expiry timestamp (seconds since epoch)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rfq_id",
+          "from_asset",
+          "to_asset",
+          "price",
+          "fee",
+          "timestamp",
+          "expires_at"
+        ],
+        "title": "PairQuoteResponse",
+        "description": "Response containing a quote for a trading pair.\n\nUses full SwapLeg for both sides, providing complete asset details\nincluding ticker, name, precision, layer, and amount."
+      },
+      "PairRoutesRequest": {
+        "properties": {
+          "pair_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pair Id"
+          },
+          "from_asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Asset Id"
+          },
+          "quote_asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Asset Id"
+          },
+          "pair_ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pair Ticker"
+          },
+          "base_ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Ticker"
+          },
+          "quote_ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Ticker"
+          }
+        },
+        "type": "object",
+        "title": "PairRoutesRequest"
+      },
+      "PairRoutesResponse": {
+        "properties": {
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/SwapRoute"
+            },
+            "type": "array",
+            "title": "Routes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "routes"
+        ],
+        "title": "PairRoutesResponse"
+      },
+      "PaymentBolt11": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/PaymentState"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "fee_total_sat": {
+            "type": "integer",
+            "title": "Fee Total Sat"
+          },
+          "order_total_sat": {
+            "type": "integer",
+            "title": "Order Total Sat"
+          },
+          "invoice": {
+            "type": "string",
+            "title": "Invoice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "expires_at",
+          "fee_total_sat",
+          "order_total_sat",
+          "invoice"
+        ],
+        "title": "PaymentBolt11"
+      },
+      "PaymentDetails": {
+        "properties": {
+          "bolt11": {
+            "$ref": "#/components/schemas/PaymentBolt11"
+          },
+          "onchain": {
+            "$ref": "#/components/schemas/PaymentOnchain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bolt11",
+          "onchain"
+        ],
+        "title": "PaymentDetails"
+      },
+      "PaymentOnchain": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/PaymentState"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "fee_total_sat": {
+            "type": "integer",
+            "title": "Fee Total Sat"
+          },
+          "order_total_sat": {
+            "type": "integer",
+            "title": "Order Total Sat"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "min_fee_for_0conf": {
+            "type": "integer",
+            "title": "Min Fee For 0Conf"
+          },
+          "min_onchain_payment_confirmations": {
+            "type": "integer",
+            "title": "Min Onchain Payment Confirmations"
+          },
+          "refund_onchain_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Onchain Address"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
+          },
+          "payment_difference": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Difference",
+            "description": "Payment difference in satoshis. Positive for overpayment, negative for underpayment, zero for exact payment"
+          },
+          "last_payment_check": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Payment Check"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "expires_at",
+          "fee_total_sat",
+          "order_total_sat",
+          "address",
+          "min_fee_for_0conf",
+          "min_onchain_payment_confirmations"
+        ],
+        "title": "PaymentOnchain"
+      },
+      "PaymentState": {
+        "type": "string",
+        "enum": [
+          "EXPECT_PAYMENT",
+          "HOLD",
+          "PAID",
+          "REFUNDED",
+          "TO_REFUND"
+        ],
+        "title": "PaymentState"
+      },
+      "PaymentStatus": {
+        "type": "string",
+        "enum": [
+          "NOT_PAID",
+          "UNDERPAID",
+          "PAID",
+          "OVERPAID"
+        ],
+        "title": "PaymentStatus",
+        "description": "Payment status for onchain payments with support for partial payments."
+      },
+      "RateDecisionRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "default": ""
+          },
+          "accept_new_rate": {
+            "type": "boolean",
+            "title": "Accept New Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "accept_new_rate"
+        ],
+        "title": "RateDecisionRequest",
+        "description": "Request for user to accept new rate or request refund",
+        "example": {
+          "accept_new_rate": true,
+          "access_token": "ord_live_3rCkP9dG7mN4",
+          "order_id": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "RateDecisionResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "decision_accepted": {
+            "type": "boolean",
+            "title": "Decision Accepted"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "refund_txid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Txid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "decision_accepted",
+          "message"
+        ],
+        "title": "RateDecisionResponse",
+        "description": "Response after user makes rate decision",
+        "example": {
+          "message": "Order queued for immediate asset-delivery retry.",
+          "status": "processing"
+        }
+      },
+      "ReachabilityCell": {
+        "properties": {
+          "from_asset": {
+            "type": "string",
+            "title": "From Asset",
+            "description": "Source asset ticker"
+          },
+          "to_asset": {
+            "type": "string",
+            "title": "To Asset",
+            "description": "Destination asset ticker"
+          },
+          "layers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Layers",
+            "description": "Available layer combinations (e.g., 'RGB_LN->BTC_SPARK')"
+          },
+          "min_hops": {
+            "type": "integer",
+            "title": "Min Hops",
+            "description": "Minimum number of hops required"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_asset",
+          "to_asset",
+          "layers",
+          "min_hops"
+        ],
+        "title": "ReachabilityCell",
+        "description": "Single cell in reachability matrix."
+      },
+      "ReachabilityMatrixResponse": {
+        "properties": {
+          "matrix": {
+            "items": {
+              "$ref": "#/components/schemas/ReachabilityCell"
+            },
+            "type": "array",
+            "title": "Matrix",
+            "description": "Reachability cells"
+          },
+          "assets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assets",
+            "description": "All assets in the matrix"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp",
+            "description": "Response timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "matrix",
+          "assets",
+          "timestamp"
+        ],
+        "title": "ReachabilityMatrixResponse",
+        "description": "Full reachability matrix response."
+      },
+      "ReceiverAddress": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address",
+            "description": "The actual address, invoice, or token string"
+          },
+          "format": {
+            "$ref": "#/components/schemas/ReceiverAddressFormat",
+            "description": "Format of the receiver address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "address",
+          "format"
+        ],
+        "title": "ReceiverAddress",
+        "description": "Receiver address or invoice with its format.\n\nEncapsulates the destination for receiving funds along with\nmetadata about what format it uses."
+      },
+      "ReceiverAddressFormat": {
+        "type": "string",
+        "enum": [
+          "BTC_ADDRESS",
+          "BOLT11",
+          "BOLT12",
+          "LN_ADDRESS",
+          "RGB_INVOICE",
+          "LIQUID_ADDRESS",
+          "LIQUID_INVOICE",
+          "SPARK_ADDRESS",
+          "SPARK_INVOICE",
+          "ARKADE_ADDRESS",
+          "ARKADE_INVOICE",
+          "CASHU_TOKEN"
+        ],
+        "title": "ReceiverAddressFormat",
+        "description": "Supported receiver address and invoice formats.\n\nDifferent networks and protocols use different address/invoice formats\nfor receiving payments."
+      },
+      "RouteStep": {
+        "properties": {
+          "from_asset": {
+            "type": "string",
+            "title": "From Asset",
+            "description": "Source asset ticker"
+          },
+          "from_layer": {
+            "$ref": "#/components/schemas/Layer",
+            "description": "Source layer"
+          },
+          "to_asset": {
+            "type": "string",
+            "title": "To Asset",
+            "description": "Destination asset ticker"
+          },
+          "to_layer": {
+            "$ref": "#/components/schemas/Layer",
+            "description": "Destination layer"
+          },
+          "pair_ticker": {
+            "type": "string",
+            "title": "Pair Ticker",
+            "description": "Trading pair ticker (e.g., 'USDT/BTC')"
+          },
+          "indicative_price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indicative Price",
+            "description": "Indicative price from cached pair data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_asset",
+          "from_layer",
+          "to_asset",
+          "to_layer",
+          "pair_ticker"
+        ],
+        "title": "RouteStep",
+        "description": "Single step in a route (one swap within a trading pair)."
+      },
+      "RoutesRequest": {
+        "properties": {
+          "from_asset": {
+            "type": "string",
+            "title": "From Asset",
+            "description": "Source asset ticker or ID"
+          },
+          "from_layer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Layer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter by source layer (optional)"
+          },
+          "to_asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Asset",
+            "description": "Destination asset (if None, returns all reachable assets)"
+          },
+          "to_layer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Layer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Filter by destination layer (optional)"
+          },
+          "max_hops": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Max Hops",
+            "description": "Maximum number of hops (1-5)",
+            "default": 2
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_asset"
+        ],
+        "title": "RoutesRequest",
+        "description": "Request for route discovery."
+      },
+      "RoutesResponse": {
+        "properties": {
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/MultiHopRoute"
+            },
+            "type": "array",
+            "title": "Routes",
+            "description": "List of discovered routes"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp",
+            "description": "Response timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "routes",
+          "timestamp"
+        ],
+        "title": "RoutesResponse",
+        "description": "Response with discovered routes."
+      },
+      "Swap": {
+        "properties": {
+          "qty_from": {
+            "type": "integer",
+            "title": "Qty From",
+            "examples": [
+              30
+            ]
+          },
+          "qty_to": {
+            "type": "integer",
+            "title": "Qty To",
+            "examples": [
+              10
+            ]
+          },
+          "from_asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Asset",
+            "examples": [
+              "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"
+            ]
+          },
+          "to_asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Asset",
+            "examples": [
+              "rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"
+            ]
+          },
+          "payment_hash": {
+            "type": "string",
+            "title": "Payment Hash",
+            "examples": [
+              "7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/SwapStatus"
+          },
+          "requested_at": {
+            "type": "integer",
+            "title": "Requested At",
+            "examples": [
+              1691160765
+            ]
+          },
+          "initiated_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initiated At",
+            "examples": [
+              1691168512
+            ]
+          },
+          "expires_at": {
+            "type": "integer",
+            "title": "Expires At",
+            "examples": [
+              1691172703
+            ]
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At",
+            "examples": [
+              1691171075
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "qty_from",
+          "qty_to",
+          "payment_hash",
+          "status",
+          "requested_at",
+          "expires_at"
+        ],
+        "title": "Swap"
+      },
+      "SwapLeg": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id",
+            "description": "Unique identifier for the asset (e.g., 'BTC', RGB contract ID, etc.)"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Full name of the asset",
+            "examples": [
+              "Bitcoin"
+            ]
+          },
+          "ticker": {
+            "type": "string",
+            "title": "Ticker",
+            "description": "Asset ticker symbol for display (e.g., 'BTC', 'USDT', 'EURX')",
+            "examples": [
+              "BTC"
+            ]
+          },
+          "layer": {
+            "$ref": "#/components/schemas/Layer",
+            "description": "Settlement layer (e.g., 'BTC_LN', 'RGB_L1')"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "format": "int64",
+            "title": "Amount",
+            "description": "Amount of the asset in smallest unit. Must be greater than or equal to zero.",
+            "examples": [
+              100000
+            ]
+          },
+          "precision": {
+            "type": "integer",
+            "maximum": 18.0,
+            "minimum": 0.0,
+            "title": "Precision",
+            "description": "Number of decimal places for this asset (e.g., 8 for BTC, 6 or 8 for stablecoins)",
+            "examples": [
+              8
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "name",
+          "ticker",
+          "layer",
+          "amount",
+          "precision"
+        ],
+        "title": "SwapLeg",
+        "description": "Swap Leg: Complete asset specification for one side of a swap.\n\nRepresents a specific asset on a specific settlement layer with an amount.\nThis is the fundamental unit for swap orders - each side (leg) of a swap\nspecifies an asset on a particular network with a specific amount."
+      },
+      "SwapLegInput": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id",
+            "description": "Asset identifier (e.g., 'BTC', RGB contract ID)",
+            "examples": [
+              "BTC"
+            ]
+          },
+          "layer": {
+            "$ref": "#/components/schemas/Layer",
+            "description": "Settlement layer (e.g., 'BTC_LN', 'RGB_L1')",
+            "examples": [
+              "BTC_LN"
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "Amount in smallest unit (optional - one side must have amount)",
+            "examples": [
+              1000000
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "layer"
+        ],
+        "title": "SwapLegInput",
+        "description": "Lightweight input model for specifying one leg of a swap request.\n\nOnly contains the fields the client needs to provide. The service will\nlook up additional details (name, ticker, precision) from the asset registry."
+      },
+      "SwapNodeInfoResponse": {
+        "properties": {
+          "pubkey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pubkey",
+            "examples": [
+              "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
+            ]
+          },
+          "network": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network",
+            "examples": [
+              "Signet"
+            ]
+          },
+          "block_height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block Height",
+            "examples": [
+              805434
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "pubkey",
+          "network",
+          "block_height"
+        ],
+        "title": "SwapNodeInfoResponse"
+      },
+      "SwapOrder": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Order identifier"
+          },
+          "rfq_id": {
+            "type": "string",
+            "title": "Rfq Id",
+            "description": "Quote identifier used to create the order"
+          },
+          "maker_pubkey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maker Pubkey",
+            "description": "Maker node public key"
+          },
+          "from_asset": {
+            "$ref": "#/components/schemas/SwapLeg",
+            "description": "Complete specification for input: asset, ticker, network, protocol, and amount"
+          },
+          "to_asset": {
+            "$ref": "#/components/schemas/SwapLeg",
+            "description": "Complete specification for output: asset, ticker, network, protocol, and amount"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
+          "deposit_address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceiverAddress"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Address/Invoice for the user to deposit funds into"
+          },
+          "payout_address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReceiverAddress"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Destination address/invoice for receiving the to_asset payout"
+          },
+          "refund_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Address",
+            "description": "Onchain refund address if provided"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SwapOrderStatus",
+            "description": "Current order status",
+            "default": "OPEN"
+          },
+          "created_at": {
+            "type": "integer",
+            "title": "Created At",
+            "description": "Creation timestamp (seconds since epoch)",
+            "examples": [
+              1715896356
+            ]
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At",
+            "description": "Expiry timestamp (seconds since epoch)"
+          },
+          "filled_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filled At",
+            "description": "Timestamp when the order was filled"
+          },
+          "refund_txid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Txid",
+            "description": "Transaction ID of any refund sent"
+          },
+          "requires_manual_refund": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requires Manual Refund",
+            "description": "Whether the order requires manual refund handling",
+            "default": false,
+            "examples": [
+              false
+            ]
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Status of onchain payment verification"
+          },
+          "payment_difference": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Difference",
+            "description": "Payment difference in satoshis (positive for overpayment, negative for underpayment)"
+          },
+          "last_payment_check": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Payment Check",
+            "description": "Timestamp of the last payment verification"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "Notification email address",
+            "examples": [
+              "swap@example.com"
+            ]
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason",
+            "description": "Reason the order failed, if applicable"
+          },
+          "fee": {
+            "$ref": "#/components/schemas/Fee",
+            "description": "Fee information from the quote"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "rfq_id",
+          "from_asset",
+          "to_asset",
+          "price",
+          "fee"
+        ],
+        "title": "SwapOrder"
+      },
+      "SwapOrderRateDecisionRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id",
+            "description": "Swap order ID"
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "Per-order access token",
+            "default": ""
+          },
+          "accept_new_rate": {
+            "type": "boolean",
+            "title": "Accept New Rate",
+            "description": "True to accept new rate, False to request refund"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "accept_new_rate"
+        ],
+        "title": "SwapOrderRateDecisionRequest",
+        "description": "Request for user to accept new rate or request refund for a swap order",
+        "example": {
+          "accept_new_rate": false,
+          "access_token": "ord_live_3rCkP9dG7mN4",
+          "order_id": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "SwapOrderRateDecisionResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "decision_accepted": {
+            "type": "boolean",
+            "title": "Decision Accepted"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "refund_txid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refund Txid",
+            "description": "Present if refund was requested and processed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "decision_accepted",
+          "message"
+        ],
+        "title": "SwapOrderRateDecisionResponse",
+        "description": "Response after user makes rate decision for a swap order",
+        "example": {
+          "decision_accepted": false,
+          "message": "Refund requested. Manual review may still be required.",
+          "order_id": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "SwapOrderStatus": {
+        "type": "string",
+        "enum": [
+          "OPEN",
+          "PENDING_PAYMENT",
+          "PAID",
+          "EXECUTING",
+          "FILLED",
+          "CANCELLED",
+          "EXPIRED",
+          "FAILED",
+          "PENDING_RATE_DECISION"
+        ],
+        "title": "SwapOrderStatus"
+      },
+      "SwapOrderStatusRequest": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id"
+        ],
+        "title": "SwapOrderStatusRequest"
+      },
+      "SwapOrderStatusResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SwapOrderStatus"
+          },
+          "order": {
+            "$ref": "#/components/schemas/SwapOrder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "status",
+          "order"
+        ],
+        "title": "SwapOrderStatusResponse"
+      },
+      "SwapRequest": {
+        "properties": {
+          "rfq_id": {
+            "type": "string",
+            "title": "Rfq Id",
+            "examples": [
+              "1234567890"
+            ]
+          },
+          "from_asset": {
+            "type": "string",
+            "title": "From Asset",
+            "examples": [
+              "BTC"
+            ]
+          },
+          "from_amount": {
+            "type": "integer",
+            "format": "int64",
+            "title": "From Amount",
+            "examples": [
+              1000000
+            ]
+          },
+          "to_asset": {
+            "type": "string",
+            "title": "To Asset",
+            "examples": [
+              "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+            ]
+          },
+          "to_amount": {
+            "type": "integer",
+            "format": "int64",
+            "title": "To Amount",
+            "examples": [
+              1000000
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "rfq_id",
+          "from_asset",
+          "from_amount",
+          "to_asset",
+          "to_amount"
+        ],
+        "title": "SwapRequest",
+        "example": {
+          "from_amount": 1500000,
+          "from_asset": "BTC",
+          "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
+          "to_amount": 875000,
+          "to_asset": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB"
+        }
+      },
+      "SwapResponse": {
+        "properties": {
+          "swapstring": {
+            "type": "string",
+            "title": "Swapstring",
+            "examples": [
+              "30/rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd/10/rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+          },
+          "payment_hash": {
+            "type": "string",
+            "title": "Payment Hash",
+            "examples": [
+              "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "swapstring",
+          "payment_hash"
+        ],
+        "title": "SwapResponse",
+        "example": {
+          "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+          "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+        }
+      },
+      "SwapRoute": {
+        "properties": {
+          "from_layer": {
+            "type": "string"
+          },
+          "to_layer": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_layer",
+          "to_layer"
+        ],
+        "title": "SwapRoute",
+        "description": "Pre-computed valid swap route between two layers.\n\nRepresents a specific path for swapping: from_layer -> to_layer.\nFrozen for immutability and hashability (enables use in sets, dict keys)."
+      },
+      "SwapStatus": {
+        "type": "string",
+        "enum": [
+          "Waiting",
+          "Pending",
+          "Succeeded",
+          "Expired",
+          "Failed"
+        ],
+        "title": "SwapStatus"
+      },
+      "SwapStatusRequest": {
+        "properties": {
+          "payment_hash": {
+            "type": "string",
+            "title": "Payment Hash",
+            "examples": [
+              "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_hash"
+        ],
+        "title": "SwapStatusRequest",
+        "example": {
+          "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+        }
+      },
+      "SwapStatusResponse": {
+        "properties": {
+          "swap": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Swap"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "SwapStatusResponse"
+      },
+      "TradableAsset": {
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "title": "Ticker",
+            "description": "Display ticker (e.g., 'BTC', 'USDT')"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Full name"
+          },
+          "precision": {
+            "type": "integer",
+            "maximum": 18.0,
+            "minimum": 0.0,
+            "title": "Precision",
+            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
+          },
+          "protocol_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Protocol Ids",
+            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
+          },
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Media"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Logo/media"
+          },
+          "issued_supply": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued Supply",
+            "description": "Total issued supply"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp",
+            "description": "Creation timestamp"
+          },
+          "endpoints": {
+            "items": {
+              "$ref": "#/components/schemas/TradingLimits"
+            },
+            "type": "array",
+            "title": "Endpoints",
+            "description": "Layer endpoints with trading limits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticker",
+          "name",
+          "precision"
+        ],
+        "title": "TradableAsset",
+        "description": "Asset with layer context(s) for trading operations.\n\nSupports both:\n- Single-layer use cases (swap execution): use layer property\n- Multi-layer use cases (trading pairs): use endpoints list"
+      },
+      "TradingLimits": {
+        "properties": {
+          "layer": {
+            "type": "string",
+            "description": "Settlement layer (e.g., 'BTC_LN', 'RGB_LN')"
+          },
+          "min_amount": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Min Amount",
+            "description": "Minimum amount for trading (in smallest unit)"
+          },
+          "max_amount": {
+            "type": "integer",
+            "format": "int64",
+            "title": "Max Amount",
+            "description": "Maximum amount for trading (in smallest unit)"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "Whether this layer is active for trading",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "layer",
+          "min_amount",
+          "max_amount"
+        ],
+        "title": "TradingLimits",
+        "description": "Trading limits for a layer.\n\nCombines a Layer (protocol/network) with min/max amount limits for trading."
+      },
+      "TradingPair": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "base": {
+            "$ref": "#/components/schemas/TradableAsset"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/TradableAsset"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/SwapRoute"
+            },
+            "type": "array",
+            "title": "Routes"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "base",
+          "quote"
+        ],
+        "title": "TradingPair",
+        "description": "Complete trading pair with full asset details, routes, and price.\n\nThis is the unified model used for both:\n- API responses (Pairs API)\n- Database storage\n\nContains all pre-computed information needed to display and validate swaps."
+      },
+      "TradingPairsResponse": {
+        "properties": {
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/TradingPair"
+            },
+            "type": "array",
+            "title": "Pairs"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pairs",
+          "total",
+          "limit",
+          "offset",
+          "timestamp"
+        ],
+        "title": "TradingPairsResponse",
+        "description": "Response containing list of trading pairs with pagination support."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationErrorDetail": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Loc",
+            "description": "Location of the validation failure",
+            "examples": [
+              [
+                "body",
+                "rfq_id"
+              ]
+            ]
+          },
+          "msg": {
+            "type": "string",
+            "title": "Msg",
+            "description": "Validation error message",
+            "examples": [
+              "Field required"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "FastAPI/Pydantic validation error type",
+            "examples": [
+              "missing"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationErrorDetail"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.signet.kaleidoswap.com",
+      "description": "Signet"
+    },
+    {
+      "url": "https://api.regtest.kaleidoswap.com",
+      "description": "Regtest"
+    },
+    {
+      "url": "https://api.staging.kaleidoswap.com",
+      "description": "Staging"
+    },
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "lsps1",
+      "description": "RGB LSPS1 liquidity endpoints for capability discovery, channel-order creation, fee estimation, order tracking, rate decisions, and asset delivery retries."
+    },
+    {
+      "name": "market",
+      "description": "Public market discovery APIs for assets, trading pairs, routes, and RFQ-based quote requests."
+    },
+    {
+      "name": "swaps",
+      "description": "Atomic swap APIs used by direct RLN integrations to initialize, execute, and track swaps."
+    },
+    {
+      "name": "swap-orders",
+      "description": "Order-based swap APIs for web and service integrations that do not manage the atomic swap protocol directly."
+    }
+  ]
+}

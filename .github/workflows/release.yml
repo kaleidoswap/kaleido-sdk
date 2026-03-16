@@ -1,0 +1,265 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+jobs:
+  validate-release-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate tag matches SDK versions
+        run: bash scripts/validate_release_version.sh "${GITHUB_REF_NAME}"
+
+  # ── Download latest OpenAPI specs ───────────────────────────────────────────
+  update-specs:
+    runs-on: ubuntu-latest
+    needs: validate-release-version
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download OpenAPI specs
+        run: |
+          chmod +x scripts/update-openapi-specs.sh
+          ./scripts/update-openapi-specs.sh
+      - name: Upload specs
+        uses: actions/upload-artifact@v6
+        with:
+          name: openapi-specs
+          path: specs/
+          retention-days: 7
+
+  # ── Generate SDK models from updated specs ───────────────────────────────────
+  generate-sdk-models:
+    runs-on: ubuntu-latest
+    needs: update-specs
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download updated specs
+        uses: actions/download-artifact@v7
+        with:
+          name: openapi-specs
+          path: specs/
+      - uses: pnpm/action-setup@v4.4.0
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - uses: astral-sh/setup-uv@v7.5.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install TypeScript generation dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
+      - name: Generate TypeScript types
+        run: bash scripts/generate_typescript_types.sh
+      - name: Generate Python SDK models
+        run: bash scripts/generate_python_sdk_models.sh
+      - name: Upload generated models
+        uses: actions/upload-artifact@v6
+        with:
+          name: generated-sdk-models
+          path: |
+            typescript-sdk/src/generated/
+            python-sdk/kaleido_sdk/_generated/
+          retention-days: 7
+
+  # ── TypeScript SDK ───────────────────────────────────────────────────────────
+  test-typescript-sdk:
+    runs-on: ubuntu-latest
+    needs: generate-sdk-models
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - name: Download generated models
+        uses: actions/download-artifact@v7
+        with:
+          name: generated-sdk-models
+      - name: Install dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
+      - name: Test
+        working-directory: typescript-sdk
+        run: pnpm test:unit
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: typescript-test-results
+          path: typescript-sdk/test-results.xml
+      - name: Report test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: TypeScript SDK Tests
+          path: typescript-sdk/test-results.xml
+          reporter: jest-junit
+          fail-on-error: false
+
+  build-typescript-sdk:
+    runs-on: ubuntu-latest
+    needs: [generate-sdk-models, test-typescript-sdk]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - name: Download generated models
+        uses: actions/download-artifact@v7
+        with:
+          name: generated-sdk-models
+      - name: Install dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        working-directory: typescript-sdk
+        run: pnpm run build
+      - name: Upload dist
+        uses: actions/upload-artifact@v6
+        with:
+          name: typescript-sdk-dist
+          path: typescript-sdk/dist/
+          retention-days: 7
+
+  # ── Python SDK ───────────────────────────────────────────────────────────────
+  test-python-sdk:
+    runs-on: ubuntu-latest
+    needs: generate-sdk-models
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7.5.0
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Download generated models
+        uses: actions/download-artifact@v7
+        with:
+          name: generated-sdk-models
+      - name: Install dependencies
+        working-directory: python-sdk
+        run: uv sync --frozen --extra dev
+      - name: Test
+        working-directory: python-sdk
+        run: uv run pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: python-test-results
+          path: python-sdk/test-results.xml
+      - name: Report test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Python SDK Tests
+          path: python-sdk/test-results.xml
+          reporter: java-junit
+          fail-on-error: false
+
+  build-python-sdk:
+    runs-on: ubuntu-latest
+    needs: [generate-sdk-models, test-python-sdk]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7.5.0
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Download generated models
+        uses: actions/download-artifact@v7
+        with:
+          name: generated-sdk-models
+      - name: Build
+        working-directory: python-sdk
+        run: uv build
+      - name: Upload dist
+        uses: actions/upload-artifact@v6
+        with:
+          name: python-sdk-dist
+          path: python-sdk/dist/
+          retention-days: 7
+
+  # ── Deploy (manual approval via environment protection rules) ────────────────
+  deploy-pypi:
+    runs-on: ubuntu-latest
+    needs: build-python-sdk
+    environment:
+      name: pypi-sdk
+      url: https://pypi.org/project/kaleido-sdk/
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Download dist
+        uses: actions/download-artifact@v7
+        with:
+          name: python-sdk-dist
+          path: python-sdk/dist/
+      - name: Publish to PyPI
+        run: |
+          pip install twine
+          twine upload --skip-existing -u __token__ -p ${{ secrets.PYPI_TOKEN }} python-sdk/dist/*
+
+  deploy-npm:
+    runs-on: ubuntu-latest
+    needs: build-typescript-sdk
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/kaleido-sdk
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
+        with:
+          version: 10.30.3
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: typescript-sdk/pnpm-lock.yaml
+      - name: Download dist
+        uses: actions/download-artifact@v7
+        with:
+          name: typescript-sdk-dist
+          path: typescript-sdk/dist/
+      - name: Install dependencies
+        working-directory: typescript-sdk
+        run: pnpm install --frozen-lockfile
+      - name: Publish to npm
+        working-directory: typescript-sdk
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Detected version: $VERSION"
+          if [[ "$VERSION" =~ - ]]; then
+            TAG="beta"
+          else
+            TAG="latest"
+          fi
+          echo "Publishing with tag: $TAG"
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          pnpm publish --tag $TAG --access public --no-git-checks
