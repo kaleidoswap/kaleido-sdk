@@ -19,8 +19,11 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Get Info */
-        get: operations['get_info_api_v1_lsps1_get_info_get'];
+        /**
+         * Get LSPS1 capabilities
+         * @description Return the maker's RGB LSPS1 capabilities, supported assets, and channel limits. Safe to poll and cache.
+         */
+        get: operations['getLspInfo'];
         put?: never;
         post?: never;
         delete?: never;
@@ -37,10 +40,10 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Get Network Info
-         * @description Get network information including current blockchain height and network type.
+         * Get LSPS1 network info
+         * @description Return the maker's current blockchain height and network. Safe to poll and cache.
          */
-        get: operations['get_network_info_api_v1_lsps1_network_info_get'];
+        get: operations['getLspNetworkInfo'];
         put?: never;
         post?: never;
         delete?: never;
@@ -58,8 +61,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Create Order */
-        post: operations['create_order_api_v1_lsps1_create_order_post'];
+        /**
+         * Create LSPS1 order
+         * @description Create an LSPS1 channel order. When the client is purchasing assets, a fresh `rfq_id` must be supplied and is extended to remain valid through the payment window. The response includes a per-order `access_token` for later polling or rate decisions. Treat this call as non-idempotent.
+         */
+        post: operations['createLspOrder'];
         delete?: never;
         options?: never;
         head?: never;
@@ -76,11 +82,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Estimate Fees
-         * @description Estimate channel fees based on the provided parameters without creating an order.
-         *     For asset purchases (client_asset_amount > 0), rfq_id must be provided to calculate accurate fees.
+         * Estimate LSPS1 fees
+         * @description Estimate LSPS1 channel fees without creating an order. When the client is purchasing assets, a fresh `rfq_id` is required so the asset price can be folded into the total fee calculation.
          */
-        post: operations['estimate_fees_api_v1_lsps1_estimate_fees_post'];
+        post: operations['estimateLspFees'];
         delete?: never;
         options?: never;
         head?: never;
@@ -96,8 +101,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Get Order */
-        post: operations['get_order_api_v1_lsps1_get_order_post'];
+        /**
+         * Get LSPS1 order
+         * @description Fetch the current LSPS1 order state. Clients must provide the per-order `access_token` returned at creation time. This endpoint is safe to poll.
+         */
+        post: operations['getLspOrder'];
         delete?: never;
         options?: never;
         head?: never;
@@ -114,11 +122,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Handle Rate Decision
-         * @description Handle user decision on rate change for LSPS1 orders.
-         *     User can either accept the new market rate or request a refund.
+         * Submit LSPS1 rate decision
+         * @description Resolve an LSPS1 repricing event after the maker has moved the order into `PENDING_RATE_DECISION`. Clients must supply the per-order `access_token`. Accepting a new rate resumes the order with fresh pricing; declining initiates refund handling.
          */
-        post: operations['handle_rate_decision_api_v1_lsps1_rate_decision_post'];
+        post: operations['submitLspRateDecision'];
         delete?: never;
         options?: never;
         head?: never;
@@ -135,15 +142,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Retry Delivery
-         * @description Endpoint for clients to queue their order for immediate retry of asset delivery.
-         *     Args:
-         *         request: Contains the order_id
-         *
-         *     Returns:
-         *         RetryDeliveryResponse with status and message
+         * Retry LSPS1 asset delivery
+         * @description Request an immediate retry for LSPS1 asset delivery after a client returns online. This bypasses the normal backoff schedule and queues the order for priority processing. Repeating the call is safe but does not guarantee delivery success.
          */
-        post: operations['retry_delivery_api_v1_lsps1_retry_delivery_post'];
+        post: operations['retryLspAssetDelivery'];
         delete?: never;
         options?: never;
         head?: never;
@@ -157,8 +159,11 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Get Node Info */
-        get: operations['get_node_info_api_v1_swaps_nodeinfo_get'];
+        /**
+         * Get swap maker node info
+         * @description Return the public maker node identity, network, and current block height used by direct atomic-swap integrations. This endpoint is safe to poll.
+         */
+        get: operations['getSwapNodeInfo'];
         put?: never;
         post?: never;
         delete?: never;
@@ -176,8 +181,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Initiate Swap */
-        post: operations['initiate_swap_api_v1_swaps_init_post'];
+        /**
+         * Initiate an atomic swap
+         * @description Create a maker-side atomic swap from a fresh RFQ. The response contains the `swapstring` and `payment_hash` the taker must whitelist before execution. Treat this as non-idempotent: creating a second swap requires a new request.
+         */
+        post: operations['initiateAtomicSwap'];
         delete?: never;
         options?: never;
         head?: never;
@@ -193,8 +201,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Confirm Swap */
-        post: operations['confirm_swap_api_v1_swaps_execute_post'];
+        /**
+         * Execute an atomic swap
+         * @description Execute a previously initialized atomic swap after the taker has whitelisted the returned `swapstring`. Retry only when the previous attempt is known to have failed before execution was accepted.
+         */
+        post: operations['executeAtomicSwap'];
         delete?: never;
         options?: never;
         head?: never;
@@ -210,8 +221,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Get Swap Status */
-        post: operations['get_swap_status_api_v1_swaps_atomic_status_post'];
+        /**
+         * Get atomic swap status
+         * @description Fetch the current maker-side status for an atomic swap using its `payment_hash`. This endpoint is safe to poll repeatedly.
+         */
+        post: operations['getAtomicSwapStatus'];
         delete?: never;
         options?: never;
         head?: never;
@@ -226,21 +240,10 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * List Assets
-         * @description List assets with optional filters and pagination.
-         *
-         *     All filters are AND-combined. Examples:
-         *     - GET /assets                           → All active assets (paginated)
-         *     - GET /assets?asset_id=rgb:2dkSTbr-...  → Single asset by ID
-         *     - GET /assets?ticker=BTC                → Single asset by ticker
-         *     - GET /assets?layer=BTC_LN              → Assets supporting BTC on Lightning
-         *     - GET /assets?network=LN                → Assets on Lightning Network
-         *     - GET /assets?protocol=RGB              → All RGB assets
-         *     - GET /assets?is_active=true            → Only active assets (default behavior)
-         *     - GET /assets?protocol=RGB&network=LN   → RGB assets on Lightning
-         *     - GET /assets?limit=10&offset=20        → Pagination (page 3, 10 items per page)
+         * List market assets
+         * @description List assets supported by the maker with optional filters and pagination. This endpoint is safe to poll and cache.
          */
-        get: operations['list_assets_api_v1_market_assets_get'];
+        get: operations['getMarketAssets'];
         put?: never;
         post?: never;
         delete?: never;
@@ -257,27 +260,10 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Get Pairs
-         * @description Get trading pairs with optional filters and pagination.
-         *
-         *     **Single Pair Filters** (returns list with 0-1 items):
-         *     - pair_id: Filter by pair UUID
-         *     - pair_ticker: Filter by pair ticker (e.g., "BTC/USDT")
-         *     - base_ticker + quote_ticker: Filter by asset tickers
-         *     - from_asset_id + quote_asset_id: Filter by asset IDs
-         *
-         *     **List Filters**:
-         *     - layer: Filter by layer (e.g., BTC_LN, RGB_LN)
-         *     - asset: Filter by asset ticker or ID
-         *     - active_only: Only return active pairs (default: true)
-         *
-         *     **Pagination**:
-         *     - limit: Items per page (default: 50, max: 100)
-         *     - offset: Offset for pagination (default: 0)
-         *
-         *     Always returns TradingPairsResponse with pagination metadata.
+         * List market pairs
+         * @description List supported trading pairs with filters for pair identifiers, asset tickers, layers, and pagination. This endpoint is safe to poll and cache.
          */
-        get: operations['get_pairs_api_v1_market_pairs_get'];
+        get: operations['getMarketPairs'];
         put?: never;
         post?: never;
         delete?: never;
@@ -296,23 +282,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Get Pair Routes
-         * @description Get available swap routes for a trading pair.
-         *
-         *     Supports multiple identification methods:
-         *     1. By pair_id: {"pair_id": "2c188c7b-a823-4e5b-a82f-4d9fcb5e80ba"}
-         *     2. By asset IDs: {"from_asset_id": "BTC", "quote_asset_id": "rgb:..."}
-         *     3. By pair ticker: {"pair_ticker": "BTC/USDT"}
-         *     4. By separate tickers: {"base_ticker": "BTC", "quote_ticker": "USDT"}
-         *
-         *     Exactly one identification method must be provided.
-         *
-         *     Returns list of pre-computed routes with:
-         *     - Source network and protocol
-         *     - Destination network and protocol
-         *     - Submarine swap indicator (same asset, different networks)
+         * Get pair routes
+         * @description Return the supported execution routes for a specific trading pair. Exactly one identification method must be provided.
          */
-        post: operations['get_pair_routes_api_v1_market_pairs_routes_post'];
+        post: operations['getMarketPairRoutes'];
         delete?: never;
         options?: never;
         head?: never;
@@ -329,23 +302,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Discover Routes
-         * @description Discover all possible routes from source to destination.
-         *
-         *     Supports multi-hop routing up to max_hops (default: 2).
-         *
-         *     Request body:
-         *     - from_asset: Source asset ticker (required)
-         *     - from_layer: Filter by source layer (optional)
-         *     - to_asset: Destination asset ticker (if None, returns all reachable assets)
-         *     - to_layer: Filter by destination layer (optional)
-         *     - max_hops: Maximum number of hops (1-5, default: 2)
-         *
-         *     Returns list of routes, each with:
-         *     - steps: List of RouteStep objects with asset, layer, and indicative price
-         *     - total_hops: Number of hops in the route
+         * Discover market routes
+         * @description Discover direct and multi-hop routes between assets. The response is informational and does not reserve liquidity.
          */
-        post: operations['discover_routes_api_v1_market_routes_post'];
+        post: operations['discoverMarketRoutes'];
         delete?: never;
         options?: never;
         head?: never;
@@ -360,13 +320,10 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Get Route Matrix
-         * @description Get full reachability matrix for all assets.
-         *
-         *     Returns a matrix showing which assets can reach which,
-         *     with available layer combinations and minimum hops required.
+         * Get route reachability matrix
+         * @description Return a matrix showing which assets can reach each other and the minimum hop count for each combination. Safe to poll and cache.
          */
-        get: operations['get_route_matrix_api_v1_market_routes_matrix_get'];
+        get: operations['getMarketRouteMatrix'];
         put?: never;
         post?: never;
         delete?: never;
@@ -385,19 +342,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Get Quote
-         * @description Get a quote for a swap between two assets.
-         *
-         *     Request body contains SwapLegInput for both from_asset and to_asset,
-         *     specifying asset_id, layer, and amount (on one side).
-         *
-         *     Returns a quote with full SwapLeg details including:
-         *     - Complete asset information (ticker, name, precision)
-         *     - Layer configuration
-         *     - Calculated amounts and fees
-         *     - Submarine swap indicator (if same asset on different networks)
+         * Request market quote
+         * @description Request an RFQ-backed quote for a route between two asset legs. A successful response returns an `rfq_id` that can be consumed by swap-init or swap-order creation flows until the quote expires.
          */
-        post: operations['get_quote_api_v1_market_quote_post'];
+        post: operations['requestMarketQuote'];
         delete?: never;
         options?: never;
         head?: never;
@@ -413,8 +361,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Create Swap Order */
-        post: operations['create_swap_order_api_v1_swaps_orders_post'];
+        /**
+         * Create a swap order
+         * @description Create an order from a fresh RFQ for the web-style swap flow. The response returns a deposit destination and a per-order `access_token` that must be stored by the client for later status polling or rate decisions. Treat this operation as non-idempotent.
+         */
+        post: operations['createSwapOrder'];
         delete?: never;
         options?: never;
         head?: never;
@@ -430,8 +381,11 @@ export type paths = {
         };
         get?: never;
         put?: never;
-        /** Get Swap Order Status */
-        post: operations['get_swap_order_status_api_v1_swaps_orders_status_post'];
+        /**
+         * Get swap order status
+         * @description Fetch the current state of a previously created swap order. Clients must send the `access_token` returned at order creation. This endpoint is safe to poll repeatedly.
+         */
+        post: operations['getSwapOrderStatus'];
         delete?: never;
         options?: never;
         head?: never;
@@ -446,10 +400,10 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Get Order History
-         * @description Get order history with optional status filtering and pagination
+         * List swap order history
+         * @description Return paginated historical swap orders. When no status filter is supplied the API defaults to filled orders.
          */
-        get: operations['get_order_history_api_v1_swaps_orders_history_get'];
+        get: operations['listSwapOrderHistory'];
         put?: never;
         post?: never;
         delete?: never;
@@ -466,10 +420,10 @@ export type paths = {
             cookie?: never;
         };
         /**
-         * Get Order Stats
-         * @description Get order statistics including counts by status and volume information
+         * Get swap order analytics
+         * @description Return aggregated swap-order counts by status plus filled-order volume metrics. Safe to poll and cache.
          */
-        get: operations['get_order_stats_api_v1_swaps_orders_analytics_get'];
+        get: operations['getSwapOrderAnalytics'];
         put?: never;
         post?: never;
         delete?: never;
@@ -488,11 +442,10 @@ export type paths = {
         get?: never;
         put?: never;
         /**
-         * Handle Swap Order Rate Decision
-         * @description Handle user decision on rate change for swap orders.
-         *     User can either accept the new market rate or request a refund.
+         * Submit swap order rate decision
+         * @description Resolve a pending swap-order repricing decision. The client must provide the per-order `access_token`. Accepting the new rate resumes execution with fresh pricing; declining requests a refund or manual review.
          */
-        post: operations['handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post'];
+        post: operations['submitSwapOrderRateDecision'];
         delete?: never;
         options?: never;
         head?: never;
@@ -751,8 +704,17 @@ export type components = {
             asset_delivery_error?: string | null;
             /** Failure Reason */
             failure_reason?: string | null;
+            /** Access Token */
+            access_token?: string | null;
         };
-        /** ConfirmSwapRequest */
+        /**
+         * ConfirmSwapRequest
+         * @example {
+         *       "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+         *       "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+         *       "taker_pubkey": "034eedc97802d7e2766704bd06d6bfded8aa2d35a1a007e277fd7278f3dc962706"
+         *     }
+         */
         ConfirmSwapRequest: {
             /**
              * Swapstring
@@ -770,7 +732,13 @@ export type components = {
              */
             payment_hash: string;
         };
-        /** ConfirmSwapResponse */
+        /**
+         * ConfirmSwapResponse
+         * @example {
+         *       "message": "Swap executed successfully.",
+         *       "status": 200
+         *     }
+         */
         ConfirmSwapResponse: {
             /**
              * Status
@@ -783,7 +751,23 @@ export type components = {
              */
             message: string;
         };
-        /** CreateOrderRequest */
+        /**
+         * CreateOrderRequest
+         * @example {
+         *       "announce_channel": true,
+         *       "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+         *       "channel_expiry_blocks": 4032,
+         *       "client_asset_amount": 2500,
+         *       "client_balance_sat": 50000,
+         *       "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+         *       "email": "ops@kaleidoswap.com",
+         *       "funding_confirms_within_blocks": 144,
+         *       "lsp_balance_sat": 150000,
+         *       "refund_onchain_address": "tb1qexampleaddress0000000000000000000000000",
+         *       "required_channel_confirmations": 3,
+         *       "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49"
+         *     }
+         */
         CreateOrderRequest: {
             /** Client Pubkey */
             client_pubkey: string;
@@ -820,7 +804,35 @@ export type components = {
              */
             email?: string | null;
         };
-        /** CreateSwapOrderRequest */
+        /**
+         * CreateSwapOrderRequest
+         * @example {
+         *       "email": "trader@kaleidoswap.com",
+         *       "from_asset": {
+         *         "amount": 100000,
+         *         "asset_id": "BTC",
+         *         "layer": "BTC_L1",
+         *         "name": "Bitcoin",
+         *         "precision": 8,
+         *         "ticker": "BTC"
+         *       },
+         *       "min_onchain_conf": 1,
+         *       "receiver_address": {
+         *         "address": "rgb:invoice:example",
+         *         "format": "RGB_INVOICE"
+         *       },
+         *       "refund_address": "tb1qexampleaddress0000000000000000000000000",
+         *       "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+         *       "to_asset": {
+         *         "amount": 587700,
+         *         "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+         *         "layer": "RGB_LN",
+         *         "name": "Tether USD",
+         *         "precision": 6,
+         *         "ticker": "USDT"
+         *       }
+         *     }
+         */
         CreateSwapOrderRequest: {
             /**
              * Rfq Id
@@ -846,7 +858,19 @@ export type components = {
              */
             email?: string | null;
         };
-        /** CreateSwapOrderResponse */
+        /**
+         * CreateSwapOrderResponse
+         * @example {
+         *       "access_token": "ord_live_3rCkP9dG7mN4",
+         *       "deposit_address": {
+         *         "address": "tb1qmakerdeposit0000000000000000000000000",
+         *         "format": "BTC_ADDRESS"
+         *       },
+         *       "id": "550e8400-e29b-41d4-a716-446655440000",
+         *       "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+         *       "status": "PENDING_PAYMENT"
+         *     }
+         */
         CreateSwapOrderResponse: {
             /** Id */
             id: string;
@@ -854,6 +878,22 @@ export type components = {
             rfq_id: string;
             deposit_address?: components['schemas']['ReceiverAddress'] | null;
             status: components['schemas']['SwapOrderStatus'];
+            /** Access Token */
+            access_token: string;
+        };
+        /** DetailOnlyErrorResponse */
+        DetailOnlyErrorResponse: {
+            /**
+             * Detail
+             * @description Human-readable error detail
+             * @example pair_ticker must be in format 'BASE/QUOTE'
+             */
+            detail: string;
+        };
+        /** FastAPIValidationErrorResponse */
+        FastAPIValidationErrorResponse: {
+            /** Detail */
+            detail: components['schemas']['ValidationErrorDetail'][];
         };
         /** Fee */
         Fee: {
@@ -891,23 +931,38 @@ export type components = {
              */
             fee_asset_precision: number;
         };
-        /** GetInfoResponseModel */
-        GetInfoResponseModel: {
-            /** Lsp Connection Url */
-            lsp_connection_url: string;
-            options: components['schemas']['OrderOptions'];
-            /** Assets */
-            assets: components['schemas']['AssetsOptions'][];
-        };
-        /** GetOrderRequest */
-        GetOrderRequest: {
-            /** Order Id */
-            order_id: string;
-        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components['schemas']['ValidationError'][];
+        };
+        /** KaleidoErrorResponse */
+        KaleidoErrorResponse: {
+            /**
+             * Error Code
+             * @description Stable machine-readable application error code
+             * @example PAIR_NOT_FOUND
+             */
+            error_code: string;
+            /**
+             * Message
+             * @description Human-readable error message
+             * @example Trading pair not found: BTC/USDT
+             */
+            message: string;
+            /**
+             * Details
+             * @description Optional structured error details
+             */
+            details?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Request Id
+             * @description Request correlation identifier for support and debugging
+             * @example req_01HV8Q9X7G0Q7Y3Z
+             */
+            request_id: string;
         };
         /**
          * Layer
@@ -920,6 +975,14 @@ export type components = {
          * @enum {string}
          */
         Layer: Layer;
+        /** LspInfoResponse */
+        LspInfoResponse: {
+            /** Lsp Connection Url */
+            lsp_connection_url: string;
+            options: components['schemas']['OrderOptions'];
+            /** Assets */
+            assets: components['schemas']['AssetsOptions'][];
+        };
         /** Media */
         Media: {
             /**
@@ -1081,6 +1144,16 @@ export type components = {
              */
             max_channel_balance_sat: number;
         };
+        /** OrderRequest */
+        OrderRequest: {
+            /** Order Id */
+            order_id: string;
+            /**
+             * Access Token
+             * @default
+             */
+            access_token: string;
+        };
         /**
          * OrderState
          * @enum {string}
@@ -1150,6 +1223,17 @@ export type components = {
         /**
          * PairQuoteRequest
          * @description Request for a quote on a trading pair using SwapLegInput.
+         * @example {
+         *       "from_asset": {
+         *         "amount": 1500000,
+         *         "asset_id": "BTC",
+         *         "layer": "BTC_LN"
+         *       },
+         *       "to_asset": {
+         *         "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+         *         "layer": "RGB_LN"
+         *       }
+         *     }
          */
         PairQuoteRequest: {
             /** @description Source leg specification (asset_id, layer, amount) */
@@ -1192,6 +1276,26 @@ export type components = {
              * @description Quote expiry timestamp (seconds since epoch)
              */
             expires_at: number;
+        };
+        /** PairRoutesRequest */
+        PairRoutesRequest: {
+            /** Pair Id */
+            pair_id?: string | null;
+            /** From Asset Id */
+            from_asset_id?: string | null;
+            /** Quote Asset Id */
+            quote_asset_id?: string | null;
+            /** Pair Ticker */
+            pair_ticker?: string | null;
+            /** Base Ticker */
+            base_ticker?: string | null;
+            /** Quote Ticker */
+            quote_ticker?: string | null;
+        };
+        /** PairRoutesResponse */
+        PairRoutesResponse: {
+            /** Routes */
+            routes: components['schemas']['SwapRoute'][];
         };
         /** PaymentBolt11 */
         PaymentBolt11: {
@@ -1257,16 +1361,31 @@ export type components = {
         /**
          * RateDecisionRequest
          * @description Request for user to accept new rate or request refund
+         * @example {
+         *       "accept_new_rate": true,
+         *       "access_token": "ord_live_3rCkP9dG7mN4",
+         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
+         *     }
          */
         RateDecisionRequest: {
             /** Order Id */
             order_id: string;
+            /**
+             * Access Token
+             * @default
+             */
+            access_token: string;
             /** Accept New Rate */
             accept_new_rate: boolean;
         };
         /**
          * RateDecisionResponse
          * @description Response after user makes rate decision
+         * @example {
+         *       "decision_accepted": true,
+         *       "message": "Rate accepted. Order will proceed with current market rate.",
+         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
+         *     }
          */
         RateDecisionResponse: {
             /** Order Id */
@@ -1353,6 +1472,9 @@ export type components = {
         /**
          * RetryDeliveryRequest
          * @description Request model for /retry_delivery endpoint to trigger immediate keysend retry
+         * @example {
+         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
+         *     }
          */
         RetryDeliveryRequest: {
             /**
@@ -1364,6 +1486,10 @@ export type components = {
         /**
          * RetryDeliveryResponse
          * @description Response model for /retry_delivery endpoint
+         * @example {
+         *       "message": "Order queued for immediate asset-delivery retry.",
+         *       "status": "processing"
+         *     }
          */
         RetryDeliveryResponse: {
             /** @description Status of the request */
@@ -1627,7 +1753,7 @@ export type components = {
             /**
              * Created At
              * @description Creation timestamp (seconds since epoch)
-             * @example 1772663937
+             * @example 1715896356
              */
             created_at?: number;
             /**
@@ -1681,6 +1807,11 @@ export type components = {
         /**
          * SwapOrderRateDecisionRequest
          * @description Request for user to accept new rate or request refund for a swap order
+         * @example {
+         *       "accept_new_rate": false,
+         *       "access_token": "ord_live_3rCkP9dG7mN4",
+         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
+         *     }
          */
         SwapOrderRateDecisionRequest: {
             /**
@@ -1688,6 +1819,12 @@ export type components = {
              * @description Swap order ID
              */
             order_id: string;
+            /**
+             * Access Token
+             * @description Per-order access token
+             * @default
+             */
+            access_token: string;
             /**
              * Accept New Rate
              * @description True to accept new rate, False to request refund
@@ -1697,6 +1834,11 @@ export type components = {
         /**
          * SwapOrderRateDecisionResponse
          * @description Response after user makes rate decision for a swap order
+         * @example {
+         *       "decision_accepted": false,
+         *       "message": "Refund requested. Manual review may still be required.",
+         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
+         *     }
          */
         SwapOrderRateDecisionResponse: {
             /** Order Id */
@@ -1720,6 +1862,11 @@ export type components = {
         SwapOrderStatusRequest: {
             /** Order Id */
             order_id: string;
+            /**
+             * Access Token
+             * @default
+             */
+            access_token: string;
         };
         /** SwapOrderStatusResponse */
         SwapOrderStatusResponse: {
@@ -1728,7 +1875,16 @@ export type components = {
             status: components['schemas']['SwapOrderStatus'];
             order: components['schemas']['SwapOrder'];
         };
-        /** SwapRequest */
+        /**
+         * SwapRequest
+         * @example {
+         *       "from_amount": 1500000,
+         *       "from_asset": "BTC",
+         *       "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
+         *       "to_amount": 875000,
+         *       "to_asset": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB"
+         *     }
+         */
         SwapRequest: {
             /**
              * Rfq Id
@@ -1758,7 +1914,13 @@ export type components = {
              */
             to_amount: number;
         };
-        /** SwapResponse */
+        /**
+         * SwapResponse
+         * @example {
+         *       "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+         *       "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+         *     }
+         */
         SwapResponse: {
             /**
              * Swapstring
@@ -1787,7 +1949,12 @@ export type components = {
          * @enum {string}
          */
         SwapStatus: SwapStatus;
-        /** SwapStatusRequest */
+        /**
+         * SwapStatusRequest
+         * @example {
+         *       "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+         *     }
+         */
         SwapStatusRequest: {
             /**
              * Payment Hash
@@ -1925,6 +2092,34 @@ export type components = {
             msg: string;
             /** Error Type */
             type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /** ValidationErrorDetail */
+        ValidationErrorDetail: {
+            /**
+             * Loc
+             * @description Location of the validation failure
+             * @example [
+             *       "body",
+             *       "rfq_id"
+             *     ]
+             */
+            loc: (string | number)[];
+            /**
+             * Msg
+             * @description Validation error message
+             * @example Field required
+             */
+            msg: string;
+            /**
+             * Type
+             * @description FastAPI/Pydantic validation error type
+             * @example missing
+             */
+            type: string;
         };
     };
     responses: never;
@@ -1935,7 +2130,7 @@ export type components = {
 };
 export type $defs = Record<string, never>;
 export interface operations {
-    get_info_api_v1_lsps1_get_info_get: {
+    getLspInfo: {
         parameters: {
             query?: never;
             header?: never;
@@ -1950,7 +2145,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['GetInfoResponseModel'];
+                    'application/json': components['schemas']['LspInfoResponse'];
                 };
             };
             /** @description Validation Error */
@@ -1962,9 +2157,65 @@ export interface operations {
                     'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The backing LSP node is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_NODE_UNREACHABLE",
+                     *       "message": "LSP node unreachable",
+                     *       "details": {
+                     *         "code": 102,
+                     *         "message": "LSP node is unreachable"
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
         };
     };
-    get_network_info_api_v1_lsps1_network_info_get: {
+    getLspNetworkInfo: {
         parameters: {
             query?: never;
             header?: never;
@@ -1982,9 +2233,65 @@ export interface operations {
                     'application/json': components['schemas']['NetworkInfoResponse'];
                 };
             };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The backing LSP node is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_NODE_UNREACHABLE",
+                     *       "message": "LSP node unreachable",
+                     *       "details": {
+                     *         "code": 102,
+                     *         "message": "LSP node is unreachable"
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
         };
     };
-    create_order_api_v1_lsps1_create_order_post: {
+    createLspOrder: {
         parameters: {
             query?: never;
             header?: never;
@@ -1997,27 +2304,174 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description LSPS1 order created successfully. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                     *       "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
+                     *       "lsp_balance_sat": 150000,
+                     *       "client_balance_sat": 50000,
+                     *       "required_channel_confirmations": 3,
+                     *       "funding_confirms_within_blocks": 144,
+                     *       "channel_expiry_blocks": 4032,
+                     *       "token": "",
+                     *       "created_at": "2026-03-11T12:00:00Z",
+                     *       "announce_channel": true,
+                     *       "order_state": "CREATED",
+                     *       "payment": {
+                     *         "bolt11": {
+                     *           "state": "EXPECT_PAYMENT",
+                     *           "expires_at": "2026-03-11T12:15:00Z",
+                     *           "fee_total_sat": 500,
+                     *           "order_total_sat": 50500,
+                     *           "invoice": "lnbc1example"
+                     *         },
+                     *         "onchain": {
+                     *           "state": "EXPECT_PAYMENT",
+                     *           "expires_at": "2026-03-11T12:15:00Z",
+                     *           "fee_total_sat": 500,
+                     *           "order_total_sat": 50500,
+                     *           "address": "tb1qmakerdeposit0000000000000000000000000",
+                     *           "min_fee_for_0conf": 253,
+                     *           "min_onchain_payment_confirmations": 0,
+                     *           "refund_onchain_address": "tb1qexampleaddress0000000000000000000000000"
+                     *         }
+                     *       },
+                     *       "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                     *       "client_asset_amount": 2500,
+                     *       "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
+                     *       "asset_delivery_status": "PENDING",
+                     *       "access_token": "ord_live_3rCkP9dG7mN4"
+                     *     }
+                     */
                     'application/json': components['schemas']['ChannelOrderResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The LSPS1 parameters, quote, or access constraints are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_INVALID_PARAMS",
+                     *       "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first.",
+                     *       "details": {
+                     *         "code": -32602,
+                     *         "property": "rfq_id",
+                     *         "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first."
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The referenced asset was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "ASSET_NOT_FOUND",
+                     *       "message": "Asset not found: rgb:unknown",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The backing LSP node or required service is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_NODE_UNREACHABLE",
+                     *       "message": "LSP node unreachable",
+                     *       "details": {
+                     *         "code": 102,
+                     *         "message": "LSP node is unreachable"
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    estimate_fees_api_v1_lsps1_estimate_fees_post: {
+    estimateLspFees: {
         parameters: {
             query?: never;
             header?: never;
@@ -2039,18 +2493,109 @@ export interface operations {
                     'application/json': components['schemas']['ChannelFees'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The LSPS1 parameters or quote reference are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_INVALID_PARAMS",
+                     *       "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first.",
+                     *       "details": {
+                     *         "code": -32602,
+                     *         "property": "rfq_id",
+                     *         "message": "RFQ ID is required when purchasing assets (client_asset_amount > 0). Please request a quote first."
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The backing LSP node or required service is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_NODE_UNREACHABLE",
+                     *       "message": "LSP node unreachable",
+                     *       "details": {
+                     *         "code": 102,
+                     *         "message": "LSP node is unreachable"
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_order_api_v1_lsps1_get_order_post: {
+    getLspOrder: {
         parameters: {
             query?: never;
             header?: never;
@@ -2059,7 +2604,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                'application/json': components['schemas']['GetOrderRequest'];
+                'application/json': components['schemas']['OrderRequest'];
             };
         };
         responses: {
@@ -2072,18 +2617,108 @@ export interface operations {
                     'application/json': components['schemas']['ChannelOrderResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The supplied access token is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_INVALID_PARAMS",
+                     *       "message": "Invalid order access token",
+                     *       "details": {
+                     *         "code": -32602,
+                     *         "property": "access_token",
+                     *         "message": "Invalid order access token"
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description No LSPS1 order exists for the supplied order ID. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_ORDER_NOT_FOUND",
+                     *       "message": "Order Not found",
+                     *       "details": {
+                     *         "code": 101
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    handle_rate_decision_api_v1_lsps1_rate_decision_post: {
+    submitLspRateDecision: {
         parameters: {
             query?: never;
             header?: never;
@@ -2096,27 +2731,137 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Rate decision accepted and processed. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                     *       "decision_accepted": true,
+                     *       "message": "Rate accepted. Order will proceed with current market rate."
+                     *     }
+                     */
                     'application/json': components['schemas']['RateDecisionResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The order is not awaiting a rate decision or the access token is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Order is not pending rate decision. Current state: COMPLETED",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description No LSPS1 order exists for the supplied order ID. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_ORDER_NOT_FOUND",
+                     *       "message": "Order Not found",
+                     *       "details": {
+                     *         "code": 101
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Fresh market pricing is currently unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Current market price unavailable. Please try again.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    retry_delivery_api_v1_lsps1_retry_delivery_post: {
+    retryLspAssetDelivery: {
         parameters: {
             query?: never;
             header?: never;
@@ -2138,18 +2883,89 @@ export interface operations {
                     'application/json': components['schemas']['RetryDeliveryResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The supplied order ID is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "LSPS1_INVALID_PARAMS",
+                     *       "message": "order_id must be a valid UUID format",
+                     *       "details": {
+                     *         "code": -32602,
+                     *         "property": "order_id",
+                     *         "message": "order_id must be a valid UUID format"
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_node_info_api_v1_swaps_nodeinfo_get: {
+    getSwapNodeInfo: {
         parameters: {
             query?: never;
             header?: never;
@@ -2167,9 +2983,45 @@ export interface operations {
                     'application/json': components['schemas']['SwapNodeInfoResponse'];
                 };
             };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
         };
     };
-    initiate_swap_api_v1_swaps_init_post: {
+    initiateAtomicSwap: {
         parameters: {
             query?: never;
             header?: never;
@@ -2182,27 +3034,117 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Swap initialized successfully. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
+                     *       "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+                     *     }
+                     */
                     'application/json': components['schemas']['SwapResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The RFQ or swap parameters are invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Invalid swap request: missing payment_hash or swapstring",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The trading service is still starting or temporarily unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Trading service is starting up. Please try again in a few moments.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    confirm_swap_api_v1_swaps_execute_post: {
+    executeAtomicSwap: {
         parameters: {
             query?: never;
             header?: never;
@@ -2215,27 +3157,117 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Swap execution request accepted. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "status": 200,
+                     *       "message": "Swap executed successfully."
+                     *     }
+                     */
                     'application/json': components['schemas']['ConfirmSwapResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The swapstring, taker pubkey, or payment hash is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Invalid swap request: missing payment_hash or swapstring",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The trading service is still starting or temporarily unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Trading service is starting up. Please try again in a few moments.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_swap_status_api_v1_swaps_atomic_status_post: {
+    getAtomicSwapStatus: {
         parameters: {
             query?: never;
             header?: never;
@@ -2257,18 +3289,119 @@ export interface operations {
                     'application/json': components['schemas']['SwapStatusResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The supplied payment hash is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Invalid payment hash, please make sure that you are requesting with the correct payment hash.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description No swap exists for the supplied payment hash. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "NOT_FOUND",
+                     *       "message": "Swap not found",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The trading service is still starting or temporarily unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Trading service is starting up. Please try again in a few moments.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    list_assets_api_v1_market_assets_get: {
+    getMarketAssets: {
         parameters: {
             query?: {
                 /** @description Filter by asset UUID (e.g., 'rgb:2dkSTbr-...') */
@@ -2303,18 +3436,102 @@ export interface operations {
                     'application/json': components['schemas']['AssetsResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description One of the supplied filters is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Invalid layer: BTC_FAKE. Valid layers: BTC_LN, BTC_L1, RGB_LN, RGB_L1, etc.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The requested asset could not be found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "ASSET_NOT_FOUND",
+                     *       "message": "Asset not found: BTCX",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_pairs_api_v1_market_pairs_get: {
+    getMarketPairs: {
         parameters: {
             query?: {
                 /** @description Pair ID (UUID) */
@@ -2355,18 +3572,82 @@ export interface operations {
                     'application/json': components['schemas']['TradingPairsResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The pair filter is malformed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": "pair_ticker must be in format 'BASE/QUOTE', got: BTC-USDT"
+                     *     }
+                     */
+                    'application/json': components['schemas']['DetailOnlyErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_pair_routes_api_v1_market_pairs_routes_post: {
+    getMarketPairRoutes: {
         parameters: {
             query?: never;
             header?: never;
@@ -2375,9 +3656,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                'application/json': {
-                    [key: string]: unknown;
-                };
+                'application/json': components['schemas']['PairRoutesRequest'];
             };
         };
         responses: {
@@ -2387,21 +3666,102 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['SwapRoute'][];
+                    'application/json': components['schemas']['PairRoutesResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The pair identifier payload is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": "Exactly one identification method must be provided: pair_id, (from_asset_id + quote_asset_id), pair_ticker, or (base_ticker + quote_ticker)"
+                     *     }
+                     */
+                    'application/json': components['schemas']['DetailOnlyErrorResponse'];
+                };
+            };
+            /** @description No routes exist for the requested pair. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "NOT_FOUND",
+                     *       "message": "No routes found for: BTC/USDT",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    discover_routes_api_v1_market_routes_post: {
+    discoverMarketRoutes: {
         parameters: {
             query?: never;
             header?: never;
@@ -2423,18 +3783,68 @@ export interface operations {
                     'application/json': components['schemas']['RoutesResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_route_matrix_api_v1_market_routes_matrix_get: {
+    getMarketRouteMatrix: {
         parameters: {
             query?: never;
             header?: never;
@@ -2452,9 +3862,45 @@ export interface operations {
                     'application/json': components['schemas']['ReachabilityMatrixResponse'];
                 };
             };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
         };
     };
-    get_quote_api_v1_market_quote_post: {
+    requestMarketQuote: {
         parameters: {
             query?: never;
             header?: never;
@@ -2467,27 +3913,157 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Quote created successfully. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+                     *       "from_asset": {
+                     *         "asset_id": "BTC",
+                     *         "name": "Bitcoin",
+                     *         "ticker": "BTC",
+                     *         "layer": "BTC_LN",
+                     *         "amount": 1500000,
+                     *         "precision": 8
+                     *       },
+                     *       "to_asset": {
+                     *         "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
+                     *         "name": "Tether USD",
+                     *         "ticker": "USDT",
+                     *         "layer": "RGB_LN",
+                     *         "amount": 875000,
+                     *         "precision": 6
+                     *       },
+                     *       "price": 59507000000,
+                     *       "fee": {
+                     *         "base_fee": 1000,
+                     *         "variable_fee": 250,
+                     *         "fee_rate": 0.0001,
+                     *         "final_fee": 1250,
+                     *         "fee_asset": "BTC",
+                     *         "fee_asset_precision": 8
+                     *       },
+                     *       "timestamp": 1715896356,
+                     *       "expires_at": 1715896416
+                     *     }
+                     */
                     'application/json': components['schemas']['PairQuoteResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The requested route or amount is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": "Route not supported for this pair. From: BTC_LN, To: RGB_LN"
+                     *     }
+                     */
+                    'application/json': components['schemas']['DetailOnlyErrorResponse'];
+                };
+            };
+            /** @description The requested pair does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "PAIR_NOT_FOUND",
+                     *       "message": "Trading pair not found: BTC/USDT",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The trading service is still starting or temporarily unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Trading service is starting up. Please try again in a few moments.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    create_swap_order_api_v1_swaps_orders_post: {
+    createSwapOrder: {
         parameters: {
             query?: never;
             header?: never;
@@ -2500,27 +4076,140 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Swap order created successfully. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "id": "550e8400-e29b-41d4-a716-446655440000",
+                     *       "rfq_id": "13d4777c-ae96-4858-9c7c-3ca730c5039a",
+                     *       "deposit_address": {
+                     *         "address": "tb1qmakerdeposit0000000000000000000000000",
+                     *         "format": "BTC_ADDRESS"
+                     *       },
+                     *       "status": "PENDING_PAYMENT",
+                     *       "access_token": "ord_live_3rCkP9dG7mN4"
+                     *     }
+                     */
                     'application/json': components['schemas']['CreateSwapOrderResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The quote, payout details, access token, or liquidity checks failed. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "RFQ not found or expired",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The requested trading pair or referenced resource does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "PAIR_NOT_FOUND",
+                     *       "message": "Trading pair not found: BTC/USDT",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description The trading service is still starting or temporarily unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Trading service is starting up. Please try again in a few moments.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_swap_order_status_api_v1_swaps_orders_status_post: {
+    getSwapOrderStatus: {
         parameters: {
             query?: never;
             header?: never;
@@ -2542,18 +4231,102 @@ export interface operations {
                     'application/json': components['schemas']['SwapOrderStatusResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The supplied access token is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Invalid order access token",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description No swap order exists for the supplied order ID. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "NOT_FOUND",
+                     *       "message": "Swap order not found",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };
     };
-    get_order_history_api_v1_swaps_orders_history_get: {
+    listSwapOrderHistory: {
         parameters: {
             query?: {
                 status?: components['schemas']['SwapOrderStatus'] | null;
@@ -2584,9 +4357,45 @@ export interface operations {
                     'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
         };
     };
-    get_order_stats_api_v1_swaps_orders_analytics_get: {
+    getSwapOrderAnalytics: {
         parameters: {
             query?: never;
             header?: never;
@@ -2613,9 +4422,45 @@ export interface operations {
                     'application/json': components['schemas']['HTTPValidationError'];
                 };
             };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
         };
     };
-    handle_swap_order_rate_decision_api_v1_swaps_orders_rate_decision_post: {
+    submitSwapOrderRateDecision: {
         parameters: {
             query?: never;
             header?: never;
@@ -2628,22 +4473,130 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Rate decision accepted and applied. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "order_id": "550e8400-e29b-41d4-a716-446655440000",
+                     *       "decision_accepted": false,
+                     *       "message": "Refund requested. Manual review may still be required."
+                     *     }
+                     */
                     'application/json': components['schemas']['SwapOrderRateDecisionResponse'];
                 };
             };
-            /** @description Validation Error */
+            /** @description The order is not awaiting a rate decision or the access token is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "VALIDATION_ERROR",
+                     *       "message": "Order is not pending rate decision. Current state: FILLED",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description No swap order exists for the supplied order ID. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "NOT_FOUND",
+                     *       "message": "Swap order not found: 550e8400-e29b-41d4-a716-446655440000",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['HTTPValidationError'];
+                    /**
+                     * @example {
+                     *       "detail": [
+                     *         {
+                     *           "loc": [
+                     *             "body",
+                     *             "rfq_id"
+                     *           ],
+                     *           "msg": "Field required",
+                     *           "type": "missing"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
+                };
+            };
+            /** @description Too many requests. Respect the rate-limit headers before retrying. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "RATE_LIMIT_EXCEEDED",
+                     *       "message": "Too many requests",
+                     *       "details": {
+                     *         "retry_after": 60
+                     *       },
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Unhandled server error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "INTERNAL_ERROR",
+                     *       "message": "Internal Server Error",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Current market pricing is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error_code": "SERVICE_UNAVAILABLE",
+                     *       "message": "Current market price unavailable. Please try again.",
+                     *       "details": {},
+                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
+                     *     }
+                     */
+                    'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
         };

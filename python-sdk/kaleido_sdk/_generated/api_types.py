@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Any
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field, RootModel
 
@@ -119,6 +119,17 @@ class CreateOrderRequest(BaseModel):
     ] = None
 
 
+class DetailOnlyErrorResponse(BaseModel):
+    detail: Annotated[
+        str,
+        Field(
+            description="Human-readable error detail",
+            examples=["pair_ticker must be in format 'BASE/QUOTE'"],
+            title="Detail",
+        ),
+    ]
+
+
 class Fee(BaseModel):
     base_fee: Annotated[int, Field(examples=[1000000], title="Base Fee")]
     variable_fee: Annotated[int, Field(examples=[1000000], title="Variable Fee")]
@@ -134,8 +145,35 @@ class Fee(BaseModel):
     fee_asset_precision: Annotated[int, Field(examples=[6], title="Fee Asset Precision")]
 
 
-class GetOrderRequest(BaseModel):
-    order_id: Annotated[str, Field(title="Order Id")]
+class KaleidoErrorResponse(BaseModel):
+    error_code: Annotated[
+        str,
+        Field(
+            description="Stable machine-readable application error code",
+            examples=["PAIR_NOT_FOUND"],
+            title="Error Code",
+        ),
+    ]
+    message: Annotated[
+        str,
+        Field(
+            description="Human-readable error message",
+            examples=["Trading pair not found: BTC/USDT"],
+            title="Message",
+        ),
+    ]
+    details: Annotated[
+        dict[str, Any] | None,
+        Field(description="Optional structured error details", title="Details"),
+    ] = None
+    request_id: Annotated[
+        str,
+        Field(
+            description="Request correlation identifier for support and debugging",
+            examples=["req_01HV8Q9X7G0Q7Y3Z"],
+            title="Request Id",
+        ),
+    ]
 
 
 class Layer(StrEnum):
@@ -226,6 +264,11 @@ class OrderOptions(BaseModel):
     max_channel_balance_sat: Annotated[int, Field(ge=0, title="Max Channel Balance Sat")] = 16777215
 
 
+class OrderRequest(BaseModel):
+    order_id: Annotated[str, Field(title="Order Id")]
+    access_token: Annotated[str, Field(title="Access Token")] = ""
+
+
 class OrderState(StrEnum):
     CREATED = "CREATED"
     CHANNEL_OPENING = "CHANNEL_OPENING"
@@ -266,6 +309,15 @@ class PaginationMeta(BaseModel):
     ]
 
 
+class PairRoutesRequest(BaseModel):
+    pair_id: Annotated[str | None, Field(title="Pair Id")] = None
+    from_asset_id: Annotated[str | None, Field(title="From Asset Id")] = None
+    quote_asset_id: Annotated[str | None, Field(title="Quote Asset Id")] = None
+    pair_ticker: Annotated[str | None, Field(title="Pair Ticker")] = None
+    base_ticker: Annotated[str | None, Field(title="Base Ticker")] = None
+    quote_ticker: Annotated[str | None, Field(title="Quote Ticker")] = None
+
+
 class PaymentState(StrEnum):
     EXPECT_PAYMENT = "EXPECT_PAYMENT"
     HOLD = "HOLD"
@@ -291,6 +343,7 @@ class RateDecisionRequest(BaseModel):
     """
 
     order_id: Annotated[str, Field(title="Order Id")]
+    access_token: Annotated[str, Field(title="Access Token")] = ""
     accept_new_rate: Annotated[bool, Field(title="Accept New Rate")]
 
 
@@ -528,6 +581,9 @@ class SwapOrderRateDecisionRequest(BaseModel):
     """
 
     order_id: Annotated[str, Field(description="Swap order ID", title="Order Id")]
+    access_token: Annotated[
+        str, Field(description="Per-order access token", title="Access Token")
+    ] = ""
     accept_new_rate: Annotated[
         bool,
         Field(
@@ -564,6 +620,7 @@ class SwapOrderStatus(StrEnum):
 
 class SwapOrderStatusRequest(BaseModel):
     order_id: Annotated[str, Field(title="Order Id")]
+    access_token: Annotated[str, Field(title="Access Token")] = ""
 
 
 class SwapRequest(BaseModel):
@@ -659,6 +716,28 @@ class ValidationError(BaseModel):
     loc: Annotated[list[str | int], Field(title="Location")]
     msg: Annotated[str, Field(title="Message")]
     type: Annotated[str, Field(title="Error Type")]
+    input: Annotated[Any | None, Field(title="Input")] = None
+    ctx: Annotated[dict[str, Any] | None, Field(title="Context")] = None
+
+
+class ValidationErrorDetail(BaseModel):
+    loc: Annotated[
+        list[str | int],
+        Field(
+            description="Location of the validation failure",
+            examples=[["body", "rfq_id"]],
+            title="Loc",
+        ),
+    ]
+    msg: Annotated[
+        str, Field(description="Validation error message", examples=["Field required"], title="Msg")
+    ]
+    type: Annotated[
+        str,
+        Field(
+            description="FastAPI/Pydantic validation error type", examples=["missing"], title="Type"
+        ),
+    ]
 
 
 class Asset(BaseModel):
@@ -735,14 +814,18 @@ class AssetsResponse(BaseModel):
     timestamp: Annotated[int | None, Field(title="Timestamp")] = None
 
 
-class GetInfoResponseModel(BaseModel):
-    lsp_connection_url: Annotated[str, Field(title="Lsp Connection Url")]
-    options: OrderOptions
-    assets: Annotated[list[AssetsOptions], Field(title="Assets")]
+class FastAPIValidationErrorResponse(BaseModel):
+    detail: Annotated[list[ValidationErrorDetail], Field(title="Detail")]
 
 
 class HTTPValidationError(BaseModel):
     detail: Annotated[list[ValidationError] | None, Field(title="Detail")] = None
+
+
+class LspInfoResponse(BaseModel):
+    lsp_connection_url: Annotated[str, Field(title="Lsp Connection Url")]
+    options: OrderOptions
+    assets: Annotated[list[AssetsOptions], Field(title="Assets")]
 
 
 class MultiHopRoute(BaseModel):
@@ -816,6 +899,10 @@ class PairQuoteResponse(BaseModel):
     expires_at: Annotated[
         int, Field(description="Quote expiry timestamp (seconds since epoch)", title="Expires At")
     ]
+
+
+class PairRoutesResponse(BaseModel):
+    routes: Annotated[list[SwapRoute], Field(title="Routes")]
 
 
 class PaymentBolt11(BaseModel):
@@ -952,7 +1039,7 @@ class SwapOrder(BaseModel):
         int | None,
         Field(
             description="Creation timestamp (seconds since epoch)",
-            examples=[1772663937],
+            examples=[1715896356],
             title="Created At",
         ),
     ] = None
@@ -1115,6 +1202,7 @@ class CreateSwapOrderResponse(BaseModel):
     rfq_id: Annotated[str, Field(title="Rfq Id")]
     deposit_address: ReceiverAddress | None = None
     status: SwapOrderStatus
+    access_token: Annotated[str, Field(title="Access Token")]
 
 
 class OrderHistoryResponse(BaseModel):
@@ -1155,3 +1243,4 @@ class ChannelOrderResponse(BaseModel):
     ] = None
     asset_delivery_error: Annotated[str | None, Field(title="Asset Delivery Error")] = None
     failure_reason: Annotated[str | None, Field(title="Failure Reason")] = None
+    access_token: Annotated[str | None, Field(title="Access Token")] = None

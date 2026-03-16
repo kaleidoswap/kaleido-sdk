@@ -22,9 +22,9 @@ from ._generated.api_types import (
     CreateOrderRequest,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
-    GetInfoResponseModel,
-    GetOrderRequest,
+    LspInfoResponse,
     NetworkInfoResponse,
+    OrderRequest,
     OrderHistoryResponse,
     OrderStatsResponse,
     PairQuoteRequest,
@@ -571,10 +571,10 @@ class MakerClient:
     # LSPS1 API - /api/v1/lsps1/*
     # =========================================================================
 
-    async def get_lsp_info(self) -> GetInfoResponseModel:
+    async def get_lsp_info(self) -> LspInfoResponse:
         """Get LSP information and options."""
         data = await self._http.maker_get("/api/v1/lsps1/get_info")
-        return GetInfoResponseModel.model_validate(data)
+        return LspInfoResponse.model_validate(data)
 
     async def get_lsp_network_info(self) -> NetworkInfoResponse:
         """Get LSP network information."""
@@ -591,7 +591,7 @@ class MakerClient:
         data = await self._http.maker_post("/api/v1/lsps1/create_order", data=body)
         return ChannelOrderResponse.model_validate(data)
 
-    async def get_lsp_order(self, body: GetOrderRequest) -> ChannelOrderResponse:
+    async def get_lsp_order(self, body: OrderRequest) -> ChannelOrderResponse:
         """
         Get LSP order details.
 

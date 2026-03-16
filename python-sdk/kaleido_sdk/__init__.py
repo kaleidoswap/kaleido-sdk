@@ -105,14 +105,14 @@ from .types import (
     # API Types - Quotes & Routes
     Fee,
     # API Types - LSP
-    GetInfoResponseModel,
-    GetOrderRequest,
     # Config
     KaleidoConfig,
     # Enums (API)
     Layer,
+    LspInfoResponse,
     MultiHopRoute,
     NetworkInfoResponse,
+    OrderRequest,
     OrderHistoryResponse,
     OrderHistorySummary,
     OrderState,
@@ -251,7 +251,7 @@ __all__ = [
     "Swap",
     "SwapNodeInfoResponse",
     # API Types - LSP
-    "GetInfoResponseModel",
+    "LspInfoResponse",
     "NetworkInfoResponse",
     "ChannelFees",
     "ChannelDetails",
@@ -260,7 +260,7 @@ __all__ = [
     "PaymentOnchain",
     "CreateOrderRequest",
     "ChannelOrderResponse",
-    "GetOrderRequest",
+    "OrderRequest",
     "RateDecisionRequest",
     "RateDecisionResponse",
     "RetryDeliveryRequest",

@@ -37,14 +37,14 @@ import type {
     SwapStatusRequest,
     SwapStatusResponse,
     SwapNodeInfoResponse,
-    GetInfoResponseModel,
     NetworkInfoResponse,
     CreateOrderRequest,
     ChannelOrderResponse,
-    GetOrderRequest,
     GetLspOrderResponse,
     EstimateLspFeesRequest,
     EstimateLspFeesResponse,
+    LspInfoResponse,
+    OrderRequest,
     RateDecisionRequest,
     RateDecisionResponse,
     RetryDeliveryRequest,
@@ -487,7 +487,7 @@ export class MakerClient {
     // LSPS1 API - /api/v1/lsps1/*
     // ============================================================================
 
-    async getLspInfo(): Promise<GetInfoResponseModel> {
+    async getLspInfo(): Promise<LspInfoResponse> {
         return assertResponse(await this.http.maker.GET('/api/v1/lsps1/get_info'));
     }
 
@@ -499,7 +499,7 @@ export class MakerClient {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/create_order', { body }));
     }
 
-    async getLspOrder(body: GetOrderRequest): Promise<GetLspOrderResponse> {
+    async getLspOrder(body: OrderRequest): Promise<GetLspOrderResponse> {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/get_order', { body }));
     }
 
