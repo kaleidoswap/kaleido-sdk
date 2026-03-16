@@ -5,9 +5,11 @@
  * Requires a running maker server (set KALEIDO_API_URL / KALEIDO_WS_URL).
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { KaleidoClient } from '../../src/index.js';
 import type { QuoteResponse } from '../../src/types/ws.js';
+import type { WSClient } from '../../src/ws-client.js';
+import { connectWebSocketOrSkip, skipIfBackendUnavailable } from './helpers.js';
 
 const TEST_API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 const TEST_WS_URL =
@@ -16,6 +18,7 @@ const TEST_WS_URL =
 
 describe('WebSocket Integration', () => {
     let client: KaleidoClient;
+    let currentWs: WSClient | undefined;
 
     beforeAll(() => {
         client = KaleidoClient.create({
@@ -23,15 +26,21 @@ describe('WebSocket Integration', () => {
         });
     });
 
+    afterEach(() => {
+        currentWs?.disconnect();
+        currentWs = undefined;
+    });
+
     describe('WebSocket Client Integration', () => {
         it('should enable WebSocket', () => {
             const ws = client.maker.enableWebSocket(TEST_WS_URL);
+            currentWs = ws;
             expect(ws).toBeDefined();
             expect(ws.isConnected()).toBe(false);
         });
 
         it('should have streaming methods', () => {
-            client.maker.enableWebSocket(TEST_WS_URL);
+            currentWs = client.maker.enableWebSocket(TEST_WS_URL);
             expect(typeof client.maker.streamQuotes).toBe('function');
         });
 
@@ -61,9 +70,12 @@ describe('WebSocket Integration', () => {
 
     describe('Quote Streaming', () => {
         it('should return unsubscribe function', async () => {
-            try {
-                client.maker.enableWebSocket(TEST_WS_URL);
+            currentWs = client.maker.enableWebSocket(TEST_WS_URL);
+            if (!(await connectWebSocketOrSkip(currentWs, 'WebSocket server not available'))) {
+                return;
+            }
 
+            try {
                 const unsubscribe = await client.maker.streamQuotes(
                     'btc',
                     'usdt',
@@ -76,7 +88,10 @@ describe('WebSocket Integration', () => {
                 expect(typeof unsubscribe).toBe('function');
                 unsubscribe();
             } catch (error) {
-                console.warn('Skipping - WebSocket server not available:', error);
+                if (skipIfBackendUnavailable('WebSocket server not available', error)) {
+                    return;
+                }
+                throw error;
             }
         });
 

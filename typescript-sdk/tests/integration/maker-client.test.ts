@@ -15,6 +15,7 @@ describe('MakerClient Integration', () => {
     beforeAll(() => {
         client = KaleidoClient.create({
             baseUrl: TEST_API_URL,
+            timeout: 5,
         });
     });
 

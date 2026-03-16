@@ -45,8 +45,9 @@ export class WSClient extends EventEmitter {
 
     constructor(config: WSClientConfig, logState: LogState = new LogState()) {
         super();
-        this._clientId = config.userId ?? randomUUID();
-        this.url = WSClient.buildUrlWithClientId(config.url, this._clientId);
+        const resolvedTarget = WSClient.resolveConnectionTarget(config.url, config.userId);
+        this._clientId = resolvedTarget.clientId;
+        this.url = resolvedTarget.url;
         this.maxReconnectAttempts = config.maxReconnectAttempts ?? 5;
         this.reconnectDelay = config.reconnectDelay ?? 1000;
         this.pingInterval = config.pingInterval ?? 30000; // 30 seconds
@@ -61,11 +62,44 @@ export class WSClient extends EventEmitter {
     }
 
     /**
-     * Append clientId as path segment: .../ws/{clientId}
+     * Resolve a WebSocket URL and clientId.
+     *
+     * Accepts either:
+     * - a base endpoint ending in `/ws`, in which case a clientId is appended
+     * - a fully qualified endpoint ending in `/ws/{clientId}`, in which case the
+     *   trailing segment is treated as the clientId when `userId` is omitted
      */
-    private static buildUrlWithClientId(url: string, clientId: string): string {
-        // Remove trailing slash, then append clientId
-        return url.replace(/\/$/, '') + '/' + clientId;
+    private static resolveConnectionTarget(
+        url: string,
+        userId?: string,
+    ): { url: string; clientId: string } {
+        const parsed = new URL(url);
+        const segments = parsed.pathname.split('/').filter(Boolean);
+        const lastSegment = segments.at(-1);
+        const hasEmbeddedClientId = lastSegment !== undefined && lastSegment !== 'ws';
+
+        if (userId) {
+            if (hasEmbeddedClientId) {
+                segments[segments.length - 1] = userId;
+            } else {
+                segments.push(userId);
+            }
+
+            parsed.pathname = '/' + segments.join('/');
+            return { url: parsed.toString(), clientId: userId };
+        }
+
+        if (hasEmbeddedClientId) {
+            return {
+                url: parsed.toString(),
+                clientId: lastSegment,
+            };
+        }
+
+        const generatedClientId = randomUUID();
+        segments.push(generatedClientId);
+        parsed.pathname = '/' + segments.join('/');
+        return { url: parsed.toString(), clientId: generatedClientId };
     }
 
     /**
@@ -82,16 +116,40 @@ export class WSClient extends EventEmitter {
         this._log.debug('Connecting to %s (clientId=%s)', this.url, this._clientId);
 
         return new Promise((resolve, reject) => {
+            let settled = false;
+            let opened = false;
+
+            const settle = (handler: () => void) => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                this.isConnecting = false;
+                clearTimeout(connectionTimer);
+                handler();
+            };
+
+            const connectionTimer = setTimeout(() => {
+                if (!opened) {
+                    this.ws?.close();
+                    this._log.error('Connection timeout: %s', this.url);
+                    settle(() => reject(new Error('Connection timeout')));
+                }
+            }, 10000);
+
             try {
                 this.ws = new WebSocket(this.url);
 
                 this.ws.onopen = () => {
-                    this.isConnecting = false;
+                    opened = true;
                     this.reconnectAttempts = 0;
                     this.startPing();
                     this._log.info('Connected to %s (clientId=%s)', this.url, this._clientId);
-                    this.emit('connected');
-                    resolve();
+                    settle(() => {
+                        this.emit('connected');
+                        resolve();
+                    });
                 };
 
                 this.ws.onmessage = (event) => {
@@ -104,39 +162,39 @@ export class WSClient extends EventEmitter {
                         this.handleMessage(message);
                     } catch (error) {
                         this._log.warn('Message parse error (raw: %s)', event.data);
-                        this.emit('error', new Error('Failed to parse message'));
+                        this.emitError(new Error('Failed to parse message'));
                     }
                 };
 
                 this.ws.onerror = (_error) => {
-                    this.isConnecting = false;
-                    // Don't emit error here - let it be handled by onclose
+                    if (!opened) {
+                        this._log.warn('Connection error before open: %s', this.url);
+                    }
                 };
 
-                this.ws.onclose = () => {
-                    this.isConnecting = false;
+                this.ws.onclose = (event) => {
                     this.stopPing();
                     this._log.info('Disconnected from %s (clientId=%s)', this.url, this._clientId);
                     this.emit('disconnected');
+
+                    if (!opened) {
+                        const reason =
+                            typeof event.reason === 'string' && event.reason
+                                ? `: ${event.reason}`
+                                : '';
+                        settle(() =>
+                            reject(new Error(`Connection closed before opening${reason}`)),
+                        );
+                        return;
+                    }
 
                     if (!this.isClosed) {
                         this.attemptReconnect();
                     }
                 };
-
-                // Timeout for connection
-                setTimeout(() => {
-                    if (this.isConnecting) {
-                        this.isConnecting = false;
-                        this.ws?.close();
-                        this._log.error('Connection timeout: %s', this.url);
-                        reject(new Error('Connection timeout'));
-                    }
-                }, 10000);
             } catch (error) {
-                this.isConnecting = false;
                 this._log.error('Connection failed: %s — %s', this.url, error);
-                reject(error);
+                settle(() => reject(error));
             }
         });
     }
@@ -146,9 +204,23 @@ export class WSClient extends EventEmitter {
      */
     private handleMessage(message: WebSocketResponse): void {
         switch (message.action) {
-            case 'quote_response':
-                this.emit('quoteResponse', message.data as QuoteResponse);
+            case 'quote_response': {
+                const payload = (message.data ?? message) as Partial<QuoteResponse>;
+                const fee = payload.fee as
+                    | (QuoteResponse['fee'] & { fee_asset_precision?: number })
+                    | undefined;
+                this.emit('quoteResponse', {
+                    action: 'quote_response',
+                    ...payload,
+                    fee: fee
+                        ? {
+                              ...fee,
+                              fee_precision: fee.fee_precision ?? fee.fee_asset_precision ?? 0,
+                          }
+                        : payload.fee,
+                } as QuoteResponse);
                 break;
+            }
             case 'connection_established':
                 this.emit('connectionEstablished', message.data);
                 break;
@@ -159,7 +231,7 @@ export class WSClient extends EventEmitter {
             case 'error': {
                 const errMsg = message.error || 'Unknown error';
                 this._log.warn('Server error: %s', errMsg);
-                this.emit('error', new Error(errMsg));
+                this.emitError(new Error(errMsg));
                 break;
             }
             default:
@@ -209,8 +281,21 @@ export class WSClient extends EventEmitter {
                 (message as { action?: string }).action,
                 this._clientId,
             );
-            this.emit('error', new Error('WebSocket not connected'));
+            this.emitError(new Error('WebSocket not connected'));
         }
+    }
+
+    /**
+     * Avoid unhandled EventEmitter 'error' exceptions when callers did not
+     * explicitly subscribe to WebSocket errors.
+     */
+    private emitError(error: Error): void {
+        if (this.listenerCount('error') > 0) {
+            this.emit('error', error);
+            return;
+        }
+
+        this._log.warn('Unhandled WebSocket error without listener: %s', error.message);
     }
 
     /**
