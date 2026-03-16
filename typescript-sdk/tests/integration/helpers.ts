@@ -13,7 +13,11 @@ const BACKEND_UNAVAILABLE_PATTERNS = [
     'network error',
 ];
 
-function collectErrorDetails(error: unknown, details: string[] = [], seen = new Set<unknown>()): string[] {
+function collectErrorDetails(
+    error: unknown,
+    details: string[] = [],
+    seen = new Set<unknown>(),
+): string[] {
     if (error == null || seen.has(error)) {
         return details;
     }
@@ -51,9 +55,7 @@ function collectErrorDetails(error: unknown, details: string[] = [], seen = new 
 }
 
 export function isBackendUnavailable(error: unknown): boolean {
-    const detailText = collectErrorDetails(error)
-        .join(' ')
-        .toLowerCase();
+    const detailText = collectErrorDetails(error).join(' ').toLowerCase();
 
     return BACKEND_UNAVAILABLE_PATTERNS.some((pattern) => detailText.includes(pattern));
 }

@@ -155,7 +155,9 @@ export class MakerClient {
                 | undefined;
 
             const quoteFromTicker =
-                typeof fromLeg === 'string' ? fromLeg.toUpperCase() : fromLeg?.ticker?.toUpperCase();
+                typeof fromLeg === 'string'
+                    ? fromLeg.toUpperCase()
+                    : fromLeg?.ticker?.toUpperCase();
             const quoteToTicker =
                 typeof toLeg === 'string' ? toLeg.toUpperCase() : toLeg?.ticker?.toUpperCase();
             const quoteFromLayer = typeof fromLeg === 'string' ? undefined : fromLeg?.layer;

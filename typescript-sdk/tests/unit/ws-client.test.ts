@@ -146,7 +146,9 @@ describe('WSClient', () => {
                     resolve();
                 });
 
-                (wsClient as unknown as { handleMessage: (message: unknown) => void }).handleMessage({
+                (
+                    wsClient as unknown as { handleMessage: (message: unknown) => void }
+                ).handleMessage({
                     action: 'quote_response',
                     data: mockQuote,
                 });

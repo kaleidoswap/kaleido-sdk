@@ -182,7 +182,9 @@ export class WSClient extends EventEmitter {
                             typeof event.reason === 'string' && event.reason
                                 ? `: ${event.reason}`
                                 : '';
-                        settle(() => reject(new Error(`Connection closed before opening${reason}`)));
+                        settle(() =>
+                            reject(new Error(`Connection closed before opening${reason}`)),
+                        );
                         return;
                     }
 

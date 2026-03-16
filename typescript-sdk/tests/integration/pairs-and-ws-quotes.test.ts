@@ -289,8 +289,14 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
 
                     // Verify quote structure
                     const quote = quotes[0];
-                    const fromLeg = getQuoteLeg(quote as QuoteResponse & Record<string, unknown>, 'from');
-                    const toLeg = getQuoteLeg(quote as QuoteResponse & Record<string, unknown>, 'to');
+                    const fromLeg = getQuoteLeg(
+                        quote as QuoteResponse & Record<string, unknown>,
+                        'from',
+                    );
+                    const toLeg = getQuoteLeg(
+                        quote as QuoteResponse & Record<string, unknown>,
+                        'to',
+                    );
                     expect(quote.action).toBe('quote_response');
                     expect(quote.from_asset).toBeDefined();
                     expect(quote.to_asset).toBeDefined();
@@ -309,7 +315,12 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
 
                     unsubscribe();
                 } catch (error) {
-                    if (skipIfBackendUnavailable(`WebSocket server not available for ${name}`, error)) {
+                    if (
+                        skipIfBackendUnavailable(
+                            `WebSocket server not available for ${name}`,
+                            error,
+                        )
+                    ) {
                         return;
                     }
                     throw error;
