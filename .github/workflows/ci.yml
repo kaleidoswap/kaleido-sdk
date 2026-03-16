@@ -20,7 +20,7 @@ jobs:
     outputs:
       specs-changed: ${{ steps.filter.outputs.specs }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -35,16 +35,16 @@ jobs:
     needs: detect-changes
     if: github.event_name == 'push' && needs.detect-changes.outputs.specs-changed == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
         with:
           version: 10.30.3
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: typescript-sdk/pnpm-lock.yaml
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7.5.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install TypeScript generation dependencies
@@ -55,7 +55,7 @@ jobs:
       - name: Generate Python SDK models
         run: bash scripts/generate_python_sdk_models.sh
       - name: Upload generated models
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: generated-sdk-models
           path: |
@@ -68,16 +68,16 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
         with:
           version: 10.30.3
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: typescript-sdk/pnpm-lock.yaml
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v7.5.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install TypeScript generation dependencies
@@ -106,11 +106,11 @@ jobs:
       checks: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
         with:
           version: 10.30.3
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -126,7 +126,7 @@ jobs:
         working-directory: typescript-sdk
         run: pnpm test:unit
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: typescript-test-results
@@ -146,11 +146,11 @@ jobs:
     if: always() && !failure() && !cancelled()
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4.4.0
         with:
           version: 10.30.3
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -181,8 +181,8 @@ jobs:
       checks: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7.5.0
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
@@ -197,7 +197,7 @@ jobs:
         working-directory: python-sdk
         run: uv run pytest tests/ -v --junitxml=test-results.xml --ignore=tests/integration -m "not integration"
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: python-test-results
@@ -217,8 +217,8 @@ jobs:
     if: always() && !failure() && !cancelled()
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7.5.0
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
