@@ -1,15 +1,37 @@
 # Kaleidoswap SDK
 
-A multi-language SDK for interacting with the Kaleidoswap protocol, supporting Python, TypeScript, and Rust.
+Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidoswap.com), a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
+
+## SDKs
+
+| Language | Status | Package | README |
+|----------|--------|---------|--------|
+| **Python** | ✅ Ready | `kaleidoswap-sdk` v0.5.5 | [python-sdk/README.md](./python-sdk/README.md) |
+| **TypeScript** | ✅ Ready | `kaleidoswap-sdk` v0.5.5 | [typescript-sdk/README.md](./typescript-sdk/README.md) |
+
+## How It Works
+
+```text
+specs/kaleidoswap.json
+specs/rgb-lightning-node.yaml
+          |
+          +--> scripts/generate_python_sdk_models.sh --> python-sdk/kaleido_sdk/_generated/
+          |
+          +--> scripts/generate_typescript_types.sh  --> typescript-sdk/src/generated/
+```
+
+Each SDK is implemented natively in its language and consumes generated types/models from the same OpenAPI source of truth.
 
 ## Features
 
-- REST API integration
-- WebSocket real-time updates
-- Swap operations (maker/taker)
-- Asset management
-- Channel management
-- Payment handling
+- Typed models generated from OpenAPI specs
+- Market operations: assets, pairs, quotes
+- Swap operations and order lifecycle
+- LSP (Lightning Service Provider) channel ordering
+- RGB Lightning Node control (wallet, channels, assets, payments)
+- WebSocket real-time quote streaming with auto-reconnect
+- Precision and unit conversion utilities
+- Typed error hierarchy with retryability hints
 
 ## Installation
 
@@ -19,17 +41,11 @@ A multi-language SDK for interacting with the Kaleidoswap protocol, supporting P
 pip install kaleidoswap-sdk
 ```
 
-### TypeScript
+### TypeScript / Node.js
 
 ```bash
-npm install @kaleidoswap/sdk
-```
-
-### Rust
-
-```toml
-[dependencies]
-kaleidoswap-sdk = "0.1.0"
+pnpm add kaleidoswap-sdk
+# or: npm install kaleidoswap-sdk
 ```
 
 ## Quick Start
@@ -37,146 +53,122 @@ kaleidoswap-sdk = "0.1.0"
 ### Python
 
 ```python
-from kaleidoswap_sdk import KaleidoClient
+import asyncio
+from kaleido_sdk import KaleidoClient
 
-async def main():
-    # Initialize client
-    client = KaleidoClient(
-        base_url="https://api.kaleidoswap.com",
-        api_key="your-api-key"
-    )
-    
-    # Connect to WebSocket
-    await client.connect()
-    
-    # Get quote
-    quote = await client.get_quote(
-        from_asset="BTC",
-        to_asset="USDT",
-        amount=1.0,
-        is_exact_input=True
-    )
-    
-    # Initialize taker swap
-    taker_init = await client.taker_init(
-        swapstring="your-swap-string",
-        taker_pubkey="your-pubkey"
-    )
-    
-    # Execute taker swap
-    taker_execute = await client.taker_execute(
-        swapstring="your-swap-string",
-        payment_hash=taker_init["payment_hash"],
-        payment_secret=taker_init["payment_secret"]
-    )
-    
-    # Clean up
-    await client.disconnect()
+async def main() -> None:
+    client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
 
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    async with client:
+        assets = await client.maker.list_assets()
+        print(f"Found {len(assets.assets)} assets")
+
+        pairs = await client.maker.list_pairs()
+        print(f"Found {len(pairs.pairs)} pairs")
+
+asyncio.run(main())
 ```
+
+See [python-sdk/README.md](./python-sdk/README.md) for the full usage guide.
 
 ### TypeScript
 
 ```typescript
-import { KaleidoClient } from '@kaleidoswap/sdk';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
-async function main() {
-    // Initialize client
-    const client = new KaleidoClient({
-        baseUrl: 'https://api.kaleidoswap.com',
-        apiKey: 'your-api-key'
-    });
-    
-    // Connect to WebSocket
-    await client.connect();
-    
-    // Get quote
-    const quote = await client.getQuote({
-        fromAsset: 'BTC',
-        toAsset: 'USDT',
-        amount: 1.0,
-        isExactInput: true
-    });
-    
-    // Initialize taker swap
-    const takerInit = await client.takerInit({
-        swapstring: 'your-swap-string',
-        takerPubkey: 'your-pubkey'
-    });
-    
-    // Execute taker swap
-    const takerExecute = await client.takerExecute({
-        swapstring: 'your-swap-string',
-        paymentHash: takerInit.paymentHash,
-        paymentSecret: takerInit.paymentSecret
-    });
-    
-    // Clean up
-    await client.disconnect();
-}
+const client = KaleidoClient.create({
+  baseUrl: 'https://api.kaleidoswap.com',
+});
 
-main().catch(console.error);
+const assets = await client.maker.listAssets();
+console.log(`Found ${assets.assets.length} assets`);
+
+const pairs = await client.maker.listPairs();
+console.log(`Found ${pairs.pairs.length} pairs`);
 ```
 
-### Rust
+See [typescript-sdk/README.md](./typescript-sdk/README.md) for the full usage guide.
 
-```rust
-use kaleidoswap_sdk::KaleidoClient;
+## API Coverage
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize client
-    let client = KaleidoClient::new(
-        "https://api.kaleidoswap.com",
-        Some("your-api-key")
-    );
-    
-    // Connect to WebSocket
-    client.connect().await?;
-    
-    // Get quote
-    let quote = client.get_quote(
-        "BTC",
-        "USDT",
-        1.0,
-        true
-    ).await?;
-    
-    // Initialize taker swap
-    let taker_init = client.taker_init(
-        "your-swap-string",
-        "your-pubkey"
-    ).await?;
-    
-    // Execute taker swap
-    let taker_execute = client.taker_execute(
-        "your-swap-string",
-        &taker_init.payment_hash,
-        &taker_init.payment_secret
-    ).await?;
-    
-    // Clean up
-    client.disconnect().await?;
-    
-    Ok(())
-}
+| API | Description | Status |
+|-----|-------------|--------|
+| Market | Assets, pairs, quotes | ✅ |
+| Swaps | Atomic swap operations | ✅ |
+| Swap Orders | Order creation, status, history | ✅ |
+| LSPS1 | Lightning channel service | ✅ |
+| RGB Node | Node, wallet, channels, payments | ✅ |
+
+## Development
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- pnpm
+- uv
+
+### Build
+
+```bash
+# Build both SDKs
+make build
+
+# Build individually
+make build-python-sdk
+make build-typescript
 ```
 
-## Documentation
+### Test
 
-For detailed documentation, please visit our [documentation site](https://docs.kaleidoswap.com).
+```bash
+# Run all tests
+make test
 
-## Contributing
+# Run per SDK
+make test-python-sdk
+make test-typescript
+```
 
-We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for more information.
+### Regenerate Models
 
-## License
+```bash
+# Regenerate both SDK model/type outputs
+make generate-models
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+# Regenerate individually
+make generate-python-sdk-models
+make generate-ts-types
+
+# Full refresh (download latest specs + regenerate)
+make regenerate
+```
 
 ## Roadmap
 
-See our [ROADMAP.md](ROADMAP.md) for planned features and development timeline. 
+- [x] Python SDK
+- [x] TypeScript SDK
+- [x] OpenAPI-driven model generation
+- [x] WebSocket support
+- [ ] Swift SDK for iOS/macOS
+- [ ] Kotlin SDK for Android
+- [ ] CLI tool
+
+## Contributing
+
+We welcome contributions. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+Key points:
+- Never edit generated model files directly — regenerate from OpenAPI specs.
+- Include tests for behavior changes.
+- Run format/lint checks before pushing.
+
+## License
+
+MIT License. See [LICENSE](./LICENSE).
+
+## Resources
+
+- Specs: [specs/kaleidoswap.json](./specs/kaleidoswap.json), [specs/rgb-lightning-node.yaml](./specs/rgb-lightning-node.yaml)
+- RGB Lightning Node: [RGB-Tools/rgb-lightning-node](https://github.com/RGB-Tools/rgb-lightning-node)
+- Website: [kaleidoswap.com](https://kaleidoswap.com)

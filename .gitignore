@@ -1,0 +1,119 @@
+target/
+
+# Node.js
+node_modules/
+
+# TypeScript SDK build artifacts
+typescript-sdk/dist/
+typescript-sdk/coverage/
+typescript-sdk/*.js
+typescript-sdk/*.js.map
+typescript-sdk/*.d.ts
+!typescript-sdk/jest.config.js
+!typescript-sdk/.eslintrc.js
+
+# NAPI-RS build artifacts (Node.js native modules)
+*.node
+!node_modules/**/*.node
+
+# Lock files - only pnpm is used
+package-lock.json
+npm-shrinkwrap.json
+
+
+# Package.json filtering
+package-lock.json
+!crates/*/package.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+!typescript/packages/*/src/lib/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Sphinx documentation
+docs/_build/
+
+# pyenv
+.python-version 
+
+# Log files
+*.log
+*.log.*
+logs/
+log/ 
+
+*.pyc
+__pycache__/
+*.DS_Store
+
+# Generated spec snapshots
+specs/backup/
