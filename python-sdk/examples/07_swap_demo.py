@@ -2,81 +2,75 @@
 """
 Example 07: Swap Demo
 
-Full swap-order lifecycle demo: quote -> create order -> wait for terminal state.
+Atomic-swap flow following the integration tests:
+1. Get a fresh quote
+2. Initialize the swap
+3. Print the generated swapstring and payment hash
 """
 
 import asyncio
 import logging
+import os
 
-from kaleido_sdk import (
-    CreateSwapOrderRequest,
-    KaleidoClient,
-    Layer,
-    PairQuoteRequest,
-    ReceiverAddress,
-    ReceiverAddressFormat,
-    SwapCompletionOptions,
-    SwapLegInput,
-)
+from kaleido_sdk import KaleidoClient, Layer, PairQuoteRequest, SwapLegInput, SwapRequest
 
+API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
+
+# ---------------------------------------------------------------------------
+# Logging setup (application's responsibility — the SDK never does this)
+# ---------------------------------------------------------------------------
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)-8s] %(name)s - %(message)s",
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)-8s] %(name)s — %(message)s",
     datefmt="%H:%M:%S",
 )
 
 
 async def main() -> None:
-    client = KaleidoClient.create(base_url="https://api.staging.kaleidoswap.com")
+    """Main entry point."""
+    client = KaleidoClient.create(
+        base_url=API_URL,
+        log_level=logging.DEBUG,
+    )
 
-    pairs = await client.maker.list_pairs()
-    pair = next((p for p in pairs.pairs if p.routes), None)
-    if pair is None:
-        print("No suitable pair found")
-        return
+    print(f"Maker API: {API_URL}")
+    print("-" * 40)
 
-    route = pair.routes[0]
-
+    print("\nRequesting a fresh BTC -> USDT quote...")
     quote = await client.maker.get_quote(
         PairQuoteRequest(
             from_asset=SwapLegInput(
-                asset_id=pair.base.ticker,
-                layer=Layer(route.from_layer),
-                amount=100000,
+                asset_id="BTC",
+                layer=Layer.BTC_LN,
+                amount=4_100_000,
             ),
             to_asset=SwapLegInput(
-                asset_id=pair.quote.ticker,
-                layer=Layer(route.to_layer),
+                asset_id="USDT",
+                layer=Layer.RGB_LN,
             ),
         )
     )
 
-    create_req = CreateSwapOrderRequest(
-        rfq_id=quote.rfq_id,
-        from_asset=quote.from_asset,
-        to_asset=quote.to_asset,
-        receiver_address=ReceiverAddress(
-            address="bc1qexampledestinationaddress0000000000000000",
-            format=ReceiverAddressFormat.BTC_ADDRESS,
-        ),
+    print(f"RFQ ID: {quote.rfq_id}")
+    print(f"From: {quote.from_asset.amount} {quote.from_asset.ticker}")
+    print(f"To: {quote.to_asset.amount} {quote.to_asset.ticker}")
+    print(f"Price: {quote.price}")
+
+    print("\nInitializing atomic swap...")
+    swap = await client.maker.init_swap(
+        SwapRequest(
+            rfq_id=quote.rfq_id,
+            from_asset=quote.from_asset.asset_id,
+            from_amount=quote.from_asset.amount,
+            to_asset=quote.to_asset.asset_id,
+            to_amount=quote.to_asset.amount,
+        )
     )
 
-    try:
-        created = await client.maker.create_swap_order(create_req)
-        print(f"Order created: {created.id}")
-
-        final_order = await client.maker.wait_for_swap_completion(
-            created.id,
-            SwapCompletionOptions(
-                timeout=60,
-                poll_interval=5.0,
-                on_status_update=lambda status: print(f"status -> {status}"),
-            ),
-        )
-        print(f"Final status: {final_order.status}")
-    except Exception as exc:
-        print("Swap demo could not complete in this environment:")
-        print(f"  {exc}")
+    print("\nSwap initialized:")
+    print(f"  Payment hash: {swap.payment_hash}")
+    print(f"  Swapstring length: {len(swap.swapstring)}")
+    print(f"  Swapstring preview: {swap.swapstring[:80]}...")
 
 
 if __name__ == "__main__":

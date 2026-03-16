@@ -8,8 +8,12 @@ The SDK automatically requests quotes at a configurable interval.
 
 import asyncio
 import logging
+import os
 
 from kaleido_sdk import KaleidoClient, Layer
+
+API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
+WS_URL = os.getenv("KALEIDO_WS_URL", "wss://api.staging.kaleidoswap.com/api/v1/market/ws")
 
 # ---------------------------------------------------------------------------
 # Logging setup (application's responsibility — the SDK never does this)
@@ -26,12 +30,12 @@ logging.basicConfig(
 async def main() -> None:
     """Main entry point."""
     client = KaleidoClient.create(
-        base_url="https://api.staging.kaleidoswap.com",
+        base_url=API_URL,
         log_level=logging.DEBUG,
     )
 
     # Enable WebSocket
-    ws = client.maker.enable_websocket("wss://api.staging.kaleidoswap.com/api/v1/market/ws")
+    ws = client.maker.enable_websocket(WS_URL)
 
     quotes_received = 0
     max_quotes = 5

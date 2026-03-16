@@ -7,8 +7,11 @@ Basic example showing how to create a client and list assets.
 
 import asyncio
 import logging
+import os
 
 from kaleido_sdk import KaleidoClient, get_sdk_name, get_version
+
+API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
 
 # ---------------------------------------------------------------------------
 # Logging setup (application's responsibility — the SDK never does this)
@@ -31,7 +34,7 @@ async def main() -> None:
 
     # Create client — log_level tells the SDK which records to emit
     client = KaleidoClient.create(
-        base_url="https://api.staging.kaleidoswap.com",
+        base_url=API_URL,
         log_level=logging.DEBUG,
     )
 
