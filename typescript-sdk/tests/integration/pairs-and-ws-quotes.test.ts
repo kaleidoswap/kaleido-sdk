@@ -258,24 +258,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                         amount,
                         fromLayer,
                         toLayer,
-                        (quote) => {
-                            const fromLeg = getQuoteLeg(
-                                quote as QuoteResponse & Record<string, unknown>,
-                                'from',
-                            );
-                            const toLeg = getQuoteLeg(
-                                quote as QuoteResponse & Record<string, unknown>,
-                                'to',
-                            );
-                            quotes.push(quote);
-                            console.log(`\n📊 Received quote for ${name}:`);
-                            console.log(`   From: ${fromLeg.amount} ${fromLeg.ticker}`);
-                            console.log(`   To: ${toLeg.amount} ${toLeg.ticker}`);
-                            console.log(`   Price: ${quote.price}`);
-                            console.log(`   Fee: ${quote.fee.final_fee} ${quote.fee.fee_asset}`);
-                            console.log(`   RFQ ID: ${quote.rfq_id}`);
-                            console.log(`   Expires in: ${quote.expires_at - quote.timestamp}s`);
-                        },
+                        (quote) => quotes.push(quote),
                     );
 
                     // Wait for at least one quote
@@ -349,23 +332,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     10000000,
                     'BTC_LN',
                     'RGB_LN',
-                    (quote) => {
-                        const fromLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'from',
-                        );
-                        const toLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'to',
-                        );
-                        stream1Quotes.push(quote);
-                        console.log('\n📊 Stream 1 Quote:', {
-                            from: `${fromLeg.amount} ${fromLeg.ticker}`,
-                            to: `${toLeg.amount} ${toLeg.ticker}`,
-                            price: quote.price,
-                            fee: quote.fee.final_fee,
-                        });
-                    },
+                    (quote) => stream1Quotes.push(quote),
                 );
 
                 unsubscribe2 = await client.maker.streamQuotes(
@@ -374,23 +341,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     10000000000,
                     'RGB_LN',
                     'BTC_LN',
-                    (quote) => {
-                        const fromLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'from',
-                        );
-                        const toLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'to',
-                        );
-                        stream2Quotes.push(quote);
-                        console.log('\n📊 Stream 2 Quote:', {
-                            from: `${fromLeg.amount} ${fromLeg.ticker}`,
-                            to: `${toLeg.amount} ${toLeg.ticker}`,
-                            price: quote.price,
-                            fee: quote.fee.final_fee,
-                        });
-                    },
+                    (quote) => stream2Quotes.push(quote),
                 );
 
                 // Wait for quotes
@@ -455,22 +406,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     10000000,
                     'BTC_LN',
                     'RGB_LN',
-                    (quote) => {
-                        const fromLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'from',
-                        );
-                        const toLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'to',
-                        );
-                        quotes.push(quote);
-                        console.log('📊 Quote received (testing unsubscribe):', {
-                            count: quotes.length,
-                            from: `${fromLeg.amount} ${fromLeg.ticker}`,
-                            to: `${toLeg.amount} ${toLeg.ticker}`,
-                        });
-                    },
+                    (quote) => quotes.push(quote),
                 );
 
                 // Wait for initial quotes
@@ -549,26 +485,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     10000000, // Test amount
                     route.from_layer as Layer,
                     route.to_layer as Layer,
-                    (quote) => {
-                        const fromLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'from',
-                        );
-                        const toLeg = getQuoteLeg(
-                            quote as QuoteResponse & Record<string, unknown>,
-                            'to',
-                        );
-                        quotes.push(quote);
-                        console.log(
-                            `\n📊 Quote for ${pairWithRoutes.base.ticker}/${pairWithRoutes.quote.ticker}:`,
-                            {
-                                route: `${route.from_layer} → ${route.to_layer}`,
-                                from: `${fromLeg.amount} ${fromLeg.ticker}`,
-                                to: `${toLeg.amount} ${toLeg.ticker}`,
-                                price: quote.price,
-                            },
-                        );
-                    },
+                    (quote) => quotes.push(quote),
                 );
 
                 // Wait for quotes
@@ -602,7 +519,6 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     });
                 });
 
-                console.log('Available layer combinations:', Array.from(layerCombinations));
                 expect(layerCombinations.size).toBeGreaterThan(0);
 
                 const expectedCombinations = [
@@ -611,11 +527,9 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     'RGB_LN->BTC_LN',
                     'RGB_L1->BTC_L1',
                 ];
-                expectedCombinations.forEach((combo) => {
-                    if (layerCombinations.has(combo)) {
-                        console.log(`✓ Found expected combination: ${combo}`);
-                    }
-                });
+                expect(expectedCombinations.some((combo) => layerCombinations.has(combo))).toBe(
+                    true,
+                );
             } catch (error) {
                 console.warn('Skipping - API not available:', error);
             }
@@ -671,10 +585,7 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                     'BTC',
                     'USDT',
                     10000000,
-                    (quote) => {
-                        console.log('📊 Quote received via streamQuotesByTicker');
-                        quotes.push(quote);
-                    },
+                    (quote) => quotes.push(quote),
                 );
 
                 // Wait for quotes
@@ -773,7 +684,6 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
                             quotesByRoute.set(route, []);
                         }
                         quotesByRoute.get(route)?.push(quote);
-                        console.log(`📊 Quote received for route: ${route}`);
                     },
                 );
 
@@ -788,7 +698,6 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
 
                 // Verify each route received quotes
                 quotesByRoute.forEach((quotes, route) => {
-                    console.log(`Route ${route}: ${quotes.length} quotes`);
                     expect(quotes.length).toBeGreaterThan(0);
                 });
 
