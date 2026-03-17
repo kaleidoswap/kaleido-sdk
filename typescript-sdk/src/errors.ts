@@ -1,13 +1,3 @@
-/**
- * Kaleidoswap SDK Error Classes
- *
- * Structured exception hierarchy for proper error handling.
- * Errors from HTTP responses are automatically mapped to these classes.
- */
-
-/**
- * Base error class for all Kaleidoswap SDK errors
- */
 export class KaleidoError extends Error {
     /** Error code for programmatic handling */
     readonly code: string;
@@ -23,13 +13,11 @@ export class KaleidoError extends Error {
         this.statusCode = statusCode;
         this.details = details;
 
-        // Maintains proper stack trace for where error was thrown
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, this.constructor);
         }
     }
 
-    /** Check if this error is retryable */
     isRetryable(): boolean {
         return (
             this.code === 'NETWORK_ERROR' ||
@@ -39,9 +27,6 @@ export class KaleidoError extends Error {
     }
 }
 
-/**
- * API request failed with an error response
- */
 export class APIError extends KaleidoError {
     constructor(message: string, statusCode: number, details?: string) {
         super('API_ERROR', `API Error (${statusCode}): ${message}`, statusCode, details);
@@ -49,9 +34,6 @@ export class APIError extends KaleidoError {
     }
 }
 
-/**
- * Network connectivity error
- */
 export class NetworkError extends KaleidoError {
     constructor(message: string) {
         super('NETWORK_ERROR', message);
@@ -59,9 +41,6 @@ export class NetworkError extends KaleidoError {
     }
 }
 
-/**
- * Request or input validation failed
- */
 export class ValidationError extends KaleidoError {
     constructor(message: string, statusCode: number = 400) {
         super('VALIDATION_ERROR', message, statusCode);
@@ -69,9 +48,6 @@ export class ValidationError extends KaleidoError {
     }
 }
 
-/**
- * Request timed out
- */
 export class TimeoutError extends KaleidoError {
     constructor(message: string) {
         super('TIMEOUT_ERROR', message);
@@ -79,9 +55,6 @@ export class TimeoutError extends KaleidoError {
     }
 }
 
-/**
- * WebSocket connection or communication error
- */
 export class WebSocketError extends KaleidoError {
     constructor(message: string) {
         super('WEBSOCKET_ERROR', message);
@@ -89,9 +62,6 @@ export class WebSocketError extends KaleidoError {
     }
 }
 
-/**
- * Resource not found (404)
- */
 export class NotFoundError extends KaleidoError {
     constructor(message: string) {
         super('NOT_FOUND', message, 404);
@@ -99,9 +69,6 @@ export class NotFoundError extends KaleidoError {
     }
 }
 
-/**
- * Configuration error
- */
 export class ConfigError extends KaleidoError {
     constructor(message: string) {
         super('CONFIG_ERROR', message);
@@ -109,9 +76,6 @@ export class ConfigError extends KaleidoError {
     }
 }
 
-/**
- * Swap operation failed
- */
 export class SwapError extends KaleidoError {
     readonly swapId?: string;
 
@@ -122,9 +86,6 @@ export class SwapError extends KaleidoError {
     }
 }
 
-/**
- * RGB Node not configured but required for operation
- */
 export class NodeNotConfiguredError extends KaleidoError {
     constructor() {
         super(
@@ -135,9 +96,6 @@ export class NodeNotConfiguredError extends KaleidoError {
     }
 }
 
-/**
- * Quote has expired
- */
 export class QuoteExpiredError extends KaleidoError {
     constructor() {
         super('QUOTE_EXPIRED', 'Quote has expired');
@@ -145,9 +103,6 @@ export class QuoteExpiredError extends KaleidoError {
     }
 }
 
-/**
- * Insufficient balance for operation
- */
 export class InsufficientBalanceError extends KaleidoError {
     readonly requiredAmount: number;
     readonly availableAmount: number;
@@ -165,9 +120,6 @@ export class InsufficientBalanceError extends KaleidoError {
     }
 }
 
-/**
- * Rate limit exceeded
- */
 export class RateLimitError extends APIError {
     readonly retryAfter?: number;
 
@@ -180,25 +132,6 @@ export class RateLimitError extends APIError {
         this.retryAfter = retryAfter;
     }
 }
-
-/**
- * Assert that an openapi-fetch response is successful and return its data.
- * Throws a typed SDK error if the response contains an error.
- *
- * This is the single shared error-handling utility used by all API clients.
- * It replaces both the inline `unwrapResponse` in MakerClient and the
- * `checkError` helper in RlnClient with one consistent implementation.
- *
- * For void methods, call without capturing the return value:
- *   assertResponse(await this.http.node.POST('/unlock', { body }));
- *
- * For data methods, capture and return:
- *   return assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
- *
- * @example
- * const assets = assertResponse(await this.http.maker.GET('/api/v1/market/assets'));
- * assertResponse(await this.http.node.POST('/unlock', { body }));
- */
 
 export function assertResponse<T>(result: { data?: T; error?: unknown; response?: Response }): T {
     if (result.error != null) {
@@ -226,10 +159,6 @@ type HttpErrorData =
           details?: unknown;
       };
 
-/**
- * Map HTTP errors to typed SDK errors
- * @param error - HTTP error data from fetch
- */
 export function mapHttpError(error: {
     status: number;
     statusText: string;
@@ -241,7 +170,6 @@ export function mapHttpError(error: {
         if (typeof error.data === 'string') {
             message = error.data;
         } else {
-            // Check formatted error fields in order of preference
             const detailMessage =
                 typeof error.data.detail === 'string' ? error.data.detail : undefined;
             message =
@@ -251,7 +179,6 @@ export function mapHttpError(error: {
                 (error.data.details ? JSON.stringify(error.data.details) : undefined) ||
                 error.statusText;
 
-            // Handle FastAPI validation errors which return detail as array
             if (Array.isArray(error.data.detail)) {
                 message = error.data.detail
                     .map((err) => `${err.loc.join('.')}: ${err.msg}`)
@@ -260,10 +187,9 @@ export function mapHttpError(error: {
         }
     }
 
-    // Map HTTP status codes to specific error types
     switch (error.status) {
         case 400:
-        case 422: // Unprocessable Entity - FastAPI validation errors
+        case 422:
             return new ValidationError(message, error.status);
         case 404:
             return new NotFoundError(message);
