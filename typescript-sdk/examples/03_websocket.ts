@@ -5,7 +5,6 @@
  */
 
 import { KaleidoClient } from '../src/index.js';
-import { randomUUID } from 'crypto';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -14,7 +13,7 @@ async function main() {
 
     const client = KaleidoClient.create({ baseUrl: API_URL });
 
-    const clientId = randomUUID();
+    const clientId = globalThis.crypto.randomUUID();
     const wsUrl = API_URL.replace('http', 'ws') + `/api/v1/market/ws/${clientId}`;
 
     console.log(`🔌 Connecting to WebSocket: ${wsUrl}\n`);
