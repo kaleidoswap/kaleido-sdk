@@ -32,7 +32,6 @@ describe('MakerClient Error Handling Reproduction', () => {
             await client.createSwapOrder({} as any);
             expect(true).toBe(false); // Should not reach here
         } catch (error: any) {
-            console.log('Caught error (fallback check):', error);
             // When response is missing, we default to 500 status
             expect(error).toBeInstanceOf(APIError);
             expect(error.statusCode).toBe(500);
@@ -56,7 +55,6 @@ describe('MakerClient Error Handling Reproduction', () => {
             await client.createSwapOrder({} as any);
             expect(true).toBe(false); // Should not reach here
         } catch (error: any) {
-            console.log('Caught error (with response):', error);
             expect(error).toBeInstanceOf(ValidationError);
         }
     });

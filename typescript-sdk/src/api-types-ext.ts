@@ -1,14 +1,10 @@
 /**
- * Extended API Types
- *
- * Re-exports types from generated API types for easier consumption.
- * This file extracts operation types (request/response) from the generated
- * OpenAPI types and exports them with simpler names matching the Python SDK.
+ * Re-exports from generated API types with simplified names matching the Python SDK.
  */
 
 import type { operations, components } from './generated/api-types.js';
 
-// Re-export enums as values (type + runtime) — mirrors Python StrEnum exports
+// Re-export enums as values (type + runtime)
 export {
     AssetDeliveryStatus,
     BitcoinNetwork,

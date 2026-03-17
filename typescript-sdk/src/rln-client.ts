@@ -1,15 +1,11 @@
 /**
  * RLN Client - RGB Lightning Node Operations
- *
- * Type-safe client matching the exact OpenAPI specification.
- * All Node API endpoints use POST method.
  */
 
 import { HttpClient } from './http-client.js';
 import { APIError, assertResponse } from './errors.js';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
-// ComponentLogger and LogState are imported above for use in the class body.
 import { AssetSchema } from './node-types-ext.js';
 import type {
     InitRequest,

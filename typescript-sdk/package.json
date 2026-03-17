@@ -59,6 +59,7 @@
     },
     "devDependencies": {
         "@types/node": "^20.19.33",
+        "@types/ws": "^8.18.1",
         "@typescript-eslint/eslint-plugin": "^7.18.0",
         "@typescript-eslint/parser": "^7.18.0",
         "eslint": "^8.57.1",
@@ -72,9 +73,7 @@
         "node": ">=18.0.0"
     },
     "dependencies": {
-        "@types/ws": "^8.18.1",
-        "openapi-fetch": "^0.15.2",
-        "ws": "^8.19.0"
+        "openapi-fetch": "^0.15.2"
     },
     "pnpm": {
         "overrides": {

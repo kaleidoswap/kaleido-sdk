@@ -51,9 +51,6 @@ import type {
     RetryDeliveryResponse,
 } from './api-types-ext.js';
 
-/**
- * Options for waiting for swap completion
- */
 export interface SwapCompletionOptions {
     accessToken: string;
     timeout?: number;
@@ -178,10 +175,8 @@ export class MakerClient {
             }
         };
 
-        // Subscribe only to quotes matching this request.
         this.ws.on('quoteResponse', onMatchingQuote);
 
-        // Quote request parameters
         const quoteParams = {
             from_asset: normalizedFromAsset,
             to_asset: normalizedToAsset,
@@ -198,10 +193,8 @@ export class MakerClient {
             pollInterval,
         );
 
-        // Send initial quote request
         this.ws.requestQuote(quoteParams);
 
-        // Set up periodic polling for continuous quote updates
         let pollingTimer: ReturnType<typeof setInterval> | undefined;
         let stopped = false;
 
@@ -211,7 +204,6 @@ export class MakerClient {
             }
         }, pollInterval);
 
-        // Return stop function
         return () => {
             stopped = true;
             if (pollingTimer !== undefined) {
@@ -245,14 +237,12 @@ export class MakerClient {
     ): Promise<Array<{ from_layer: string; to_layer: string }>> {
         const pairsResponse = await this.listPairs();
 
-        // Find matching pair (case-insensitive) - try direct match first
         const pair = pairsResponse.pairs.find(
             (p) =>
                 p.base.ticker.toUpperCase() === fromTicker.toUpperCase() &&
                 p.quote.ticker.toUpperCase() === toTicker.toUpperCase(),
         );
 
-        // If not found, try inverse pair
         if (!pair) {
             const inversePair = pairsResponse.pairs.find(
                 (p) =>
@@ -260,7 +250,6 @@ export class MakerClient {
                     p.quote.ticker.toUpperCase() === fromTicker.toUpperCase(),
             );
 
-            // If inverse pair found, swap the layers in the routes
             if (inversePair && inversePair.routes) {
                 return inversePair.routes.map((route) => ({
                     from_layer: route.to_layer,
@@ -325,7 +314,6 @@ export class MakerClient {
             );
         }
 
-        // Find preferred route or use first available
         let selectedRoute = routes[0];
         if (options?.preferredFromLayer && options?.preferredToLayer) {
             const preferredRoute = routes.find(
@@ -338,7 +326,6 @@ export class MakerClient {
             }
         }
 
-        // Stream quotes using the selected route
         return this.streamQuotes(
             fromTicker.toUpperCase(),
             toTicker.toUpperCase(),
@@ -392,7 +379,6 @@ export class MakerClient {
 
         const stoppers = new Map<string, () => void>();
 
-        // Subscribe to each route
         for (const route of routes) {
             const routeKey = `${route.from_layer}->${route.to_layer}`;
 

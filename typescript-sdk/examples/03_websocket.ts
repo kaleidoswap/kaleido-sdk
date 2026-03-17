@@ -5,7 +5,6 @@
  */
 
 import { KaleidoClient } from '../src/index.js';
-import { randomUUID } from 'crypto';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -14,16 +13,13 @@ async function main() {
 
     const client = KaleidoClient.create({ baseUrl: API_URL });
 
-    // Generate client ID for WebSocket
-    const clientId = randomUUID();
+    const clientId = globalThis.crypto.randomUUID();
     const wsUrl = API_URL.replace('http', 'ws') + `/api/v1/market/ws/${clientId}`;
 
     console.log(`🔌 Connecting to WebSocket: ${wsUrl}\n`);
 
-    // Enable WebSocket
     const ws = client.maker.enableWebSocket(wsUrl);
 
-    // Set up event handlers
     ws.on('connected', () => {
         console.log('✅ WebSocket connected!');
     });
@@ -43,15 +39,11 @@ async function main() {
         console.log('🔌 WebSocket disconnected');
     });
 
-    // Connect
     try {
         await ws.connect();
 
-        // Stream quotes for 30 seconds
-        console.log('\n⏳ Streaming quotes for 30 seconds...');
-        console.log('   (You can also request quotes manually)\n');
+        console.log('\n⏳ Streaming quotes for 30 seconds...\n');
 
-        // Request a quote
         ws.requestQuote({
             from_asset: 'btc',
             to_asset: 'usdt',
@@ -60,10 +52,8 @@ async function main() {
             to_layer: 'RGB_LN',
         });
 
-        // Keep alive for 30 seconds
         await new Promise((resolve) => setTimeout(resolve, 30000));
 
-        // Disconnect
         ws.disconnect();
         console.log('\n✅ Done!');
     } catch (error) {

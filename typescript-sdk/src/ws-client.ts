@@ -1,14 +1,7 @@
 /**
- * WebSocket Client for Real-time Updates
- *
- * Provides WebSocket connectivity with automatic reconnection
- * and event-based message handling.
- *
- * Protocol matches kaleidoswap-maker WebSocket implementation
+ * WebSocket Client
  */
 
-import { EventEmitter } from 'events';
-import { randomUUID } from 'crypto';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
 import type {
@@ -17,6 +10,53 @@ import type {
     QuoteRequest,
     QuoteResponse,
 } from './types/ws.js';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Listener = (...args: any[]) => void;
+
+/** Minimal cross-platform event emitter – no Node.js 'events' module required. */
+class MiniEmitter {
+    private _events: Map<string, Listener[]> = new Map();
+
+    on(event: string, listener: Listener): this {
+        const list = this._events.get(event);
+        if (list) {
+            list.push(listener);
+        } else {
+            this._events.set(event, [listener]);
+        }
+        return this;
+    }
+
+    off(event: string, listener: Listener): this {
+        const list = this._events.get(event);
+        if (list) {
+            const idx = list.indexOf(listener);
+            if (idx !== -1) list.splice(idx, 1);
+        }
+        return this;
+    }
+
+    emit(event: string, ...args: unknown[]): boolean {
+        const list = this._events.get(event);
+        if (!list || list.length === 0) return false;
+        for (const fn of list.slice()) fn(...args);
+        return true;
+    }
+
+    listenerCount(event: string): number {
+        return this._events.get(event)?.length ?? 0;
+    }
+
+    removeAllListeners(event?: string): this {
+        if (event !== undefined) {
+            this._events.delete(event);
+        } else {
+            this._events.clear();
+        }
+        return this;
+    }
+}
 
 export interface WSClientConfig {
     url: string;
@@ -30,13 +70,13 @@ export interface WSClientConfig {
     userId?: string;
 }
 
-export class WSClient extends EventEmitter {
+export class WSClient extends MiniEmitter {
     private ws?: WebSocket;
     private reconnectAttempts = 0;
     private maxReconnectAttempts: number;
     private reconnectDelay: number;
     private pingInterval: number;
-    private pingTimer?: NodeJS.Timeout;
+    private pingTimer?: ReturnType<typeof setInterval>;
     private url: string;
     private _clientId: string;
     private isConnecting = false;
@@ -54,9 +94,6 @@ export class WSClient extends EventEmitter {
         this._log = createLogger('ws', logState);
     }
 
-    /**
-     * Client UUID used for the WebSocket path (user-provided or auto-generated).
-     */
     get clientId(): string {
         return this._clientId;
     }
@@ -96,15 +133,12 @@ export class WSClient extends EventEmitter {
             };
         }
 
-        const generatedClientId = randomUUID();
+        const generatedClientId = globalThis.crypto.randomUUID();
         segments.push(generatedClientId);
         parsed.pathname = '/' + segments.join('/');
         return { url: parsed.toString(), clientId: generatedClientId };
     }
 
-    /**
-     * Connect to WebSocket server
-     */
     async connect(): Promise<void> {
         if (this.isConnecting || this.ws?.readyState === 1 /* WebSocket.OPEN */) {
             return;
@@ -199,9 +233,6 @@ export class WSClient extends EventEmitter {
         });
     }
 
-    /**
-     * Handle incoming WebSocket messages
-     */
     private handleMessage(message: WebSocketResponse): void {
         switch (message.action) {
             case 'quote_response': {
@@ -240,9 +271,6 @@ export class WSClient extends EventEmitter {
         }
     }
 
-    /**
-     * Request a quote
-     */
     requestQuote(request: Omit<QuoteRequest, 'action'>): void {
         this._log.debug(
             'quote_request: from=%s to=%s from_amount=%s (clientId=%s)',
@@ -258,9 +286,6 @@ export class WSClient extends EventEmitter {
         } as WebSocketMessage);
     }
 
-    /**
-     * Send ping to keep connection alive
-     */
     ping(): void {
         this._log.debug('Ping sent (clientId=%s)', this._clientId);
         this.send({
@@ -269,9 +294,6 @@ export class WSClient extends EventEmitter {
         } as WebSocketMessage);
     }
 
-    /**
-     * Send message to WebSocket server
-     */
     private send(message: WebSocketMessage): void {
         if (this.ws?.readyState === 1 /* WebSocket.OPEN */) {
             this.ws.send(JSON.stringify(message));
@@ -298,9 +320,6 @@ export class WSClient extends EventEmitter {
         this._log.warn('Unhandled WebSocket error without listener: %s', error.message);
     }
 
-    /**
-     * Start ping/pong to keep connection alive
-     */
     private startPing(): void {
         this.stopPing();
         this.pingTimer = setInterval(() => {
@@ -308,9 +327,6 @@ export class WSClient extends EventEmitter {
         }, this.pingInterval);
     }
 
-    /**
-     * Stop ping timer
-     */
     private stopPing(): void {
         if (this.pingTimer) {
             clearInterval(this.pingTimer);
@@ -318,9 +334,6 @@ export class WSClient extends EventEmitter {
         }
     }
 
-    /**
-     * Attempt to reconnect after disconnect
-     */
     private attemptReconnect(): void {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
@@ -337,7 +350,6 @@ export class WSClient extends EventEmitter {
                 this.emit('reconnecting', this.reconnectAttempts);
                 this.connect().catch((err) => {
                     this._log.warn('Reconnect attempt %d failed: %s', this.reconnectAttempts, err);
-                    // Will retry in next attempt
                 });
             }, delay);
         } else {
@@ -350,9 +362,6 @@ export class WSClient extends EventEmitter {
         }
     }
 
-    /**
-     * Disconnect from WebSocket server
-     */
     disconnect(): void {
         this._log.info('Disconnecting from %s (clientId=%s)', this.url, this._clientId);
         this.isClosed = true;
@@ -361,9 +370,6 @@ export class WSClient extends EventEmitter {
         this.ws = undefined;
     }
 
-    /**
-     * Check if connected
-     */
     isConnected(): boolean {
         return this.ws?.readyState === 1 /* WebSocket.OPEN */;
     }
