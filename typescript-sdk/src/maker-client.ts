@@ -78,11 +78,10 @@ export class MakerClient {
      * Enable WebSocket for real-time updates
      *
      * @param wsUrl - WebSocket server URL (e.g. ws://localhost:8000/ws)
-     * @param userId - Optional client/user UUID for the path .../ws/<userId>. If not provided, the client generates one.
      * @returns WSClient instance (use ws.clientId to read the UUID used)
      */
-    enableWebSocket(wsUrl: string, userId?: string): WSClient {
-        this.ws = new WSClient({ url: wsUrl, userId }, this._logState);
+    enableWebSocket(wsUrl: string): WSClient {
+        this.ws = new WSClient({ url: wsUrl }, this._logState);
         return this.ws;
     }
 
@@ -609,5 +608,10 @@ export class MakerClient {
 
     toDisplay(rawAmount: number, precision: number): number {
         return toDisplayAmount(rawAmount, precision);
+    }
+
+    async close(): Promise<void> {
+        this.ws?.disconnect();
+        this.ws = undefined;
     }
 }

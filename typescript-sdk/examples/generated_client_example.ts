@@ -4,7 +4,8 @@
  * Demonstrates calling the Maker API directly using the generated OpenAPI types.
  */
 import createClient from 'openapi-fetch';
-import type { paths } from '../src/generated/api-types.js';
+import { Layer } from 'kaleidoswap-sdk';
+import type { paths } from 'kaleidoswap-sdk/generated/api-types';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -35,12 +36,12 @@ async function getQuote(client: ReturnType<typeof createClient<paths>>) {
         body: {
             from_asset: {
                 asset_id: 'BTC',
-                layer: 'BTC_LN',
+                layer: Layer.BTC_LN,
                 amount: 100000, // 0.001 BTC in sats
             },
             to_asset: {
                 asset_id: 'USDT',
-                layer: 'RGB_LN',
+                layer: Layer.RGB_LN,
             },
         },
     });

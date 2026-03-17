@@ -147,4 +147,9 @@ export class HttpClient {
     hasNodeClient(): boolean {
         return this.nodeClient !== undefined;
     }
+
+    async close(): Promise<void> {
+        // openapi-fetch uses the global fetch implementation, so there are no
+        // per-client sockets or handles to dispose here.
+    }
 }

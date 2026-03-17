@@ -12,6 +12,7 @@
 import {
     KaleidoClient,
     createAssetPairMapper,
+    Layer,
     KaleidoError,
     APIError,
     ValidationError,
@@ -19,7 +20,7 @@ import {
     TimeoutError,
     NotFoundError,
     QuoteExpiredError,
-} from '../src/index.js';
+} from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -65,12 +66,12 @@ async function main() {
         await client.maker.getQuote({
             from_asset: {
                 asset_id: '',  // Invalid empty asset ID
-                layer: 'BTC_LN',
+                layer: Layer.BTC_LN,
                 amount: -100,  // Invalid negative amount
             },
             to_asset: {
                 asset_id: 'usdt',
-                layer: 'RGB_LN',
+                layer: Layer.RGB_LN,
             },
         });
     } catch (error) {
@@ -139,7 +140,7 @@ async function main() {
 
     const assets = await safeApiCall(
         () => client.maker.listAssets(),
-        { assets: [], timestamp: 0 },
+        { assets: [], network: 'unknown', total: 0, limit: 0, offset: 0 },
         'listAssets',
     );
     console.log(`  Retrieved ${assets.assets.length} assets safely`);
@@ -181,12 +182,12 @@ async function main() {
         const quote = await client.maker.getQuote({
             from_asset: {
                 asset_id: btc.asset_id,
-                layer: route.from_layer as 'BTC_LN',
+                layer: route.from_layer as Layer,
                 amount: 10000000,
             },
             to_asset: {
                 asset_id: usdt.asset_id,
-                layer: route.to_layer as 'RGB_LN',
+                layer: route.to_layer as Layer,
             },
         });
 
@@ -197,7 +198,7 @@ async function main() {
         const now = Date.now();
         const expiresAt = quote.expires_at * 1000; // Convert to ms if needed
         if (now > expiresAt) {
-            throw new QuoteExpiredError('Quote has expired');
+            throw new QuoteExpiredError();
         }
 
         console.log('  ✓ Quote is still valid');
@@ -254,7 +255,7 @@ async function main() {
 
     // Test the handler
     console.log('  Testing error handler:');
-    console.log(`    ${handleError(new QuoteExpiredError('Test'))}`);
+    console.log(`    ${handleError(new QuoteExpiredError())}`);
     console.log(`    ${handleError(new ValidationError('Invalid amount'))}`);
     console.log(`    ${handleError(new NetworkError('Connection refused'))}`);
     console.log(`    ${handleError(new Error('Generic error'))}`);

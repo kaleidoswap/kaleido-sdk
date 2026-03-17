@@ -429,7 +429,7 @@ export class RlnClient {
     }
 
     async close(): Promise<void> {
-        await this.shutdown();
+        await this.http.close();
     }
 
     async makerInit(body: MakerInitRequest): Promise<MakerInitResponse> {

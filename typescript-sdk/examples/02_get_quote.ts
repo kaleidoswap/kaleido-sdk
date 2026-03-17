@@ -4,8 +4,8 @@
  * Fetching a swap quote from the Kaleidoswap API.
  */
 
-import { KaleidoClient, toDisplayAmount } from '../src/index.js';
-import type { Layer } from '../src/types.js';
+import { KaleidoClient, toDisplayAmount } from 'kaleidoswap-sdk';
+import type { Layer } from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
