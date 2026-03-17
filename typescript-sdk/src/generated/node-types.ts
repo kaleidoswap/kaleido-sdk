@@ -2969,6 +2969,8 @@ export type components = {
             asset_amount?: number | null;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string | null;
+            /** @example 100 */
+            push_asset_amount?: number;
             /** @example true */
             public: boolean;
             /** @example true */
