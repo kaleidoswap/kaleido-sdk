@@ -115,7 +115,8 @@ export class KaleidoClient {
     }
 
     async close(): Promise<void> {
-        await this._rln.close();
+        await this._maker.close();
+        await this.http.close();
     }
 }
 
@@ -135,7 +136,7 @@ export function toDisplayUnits(amount: number, precision: number): number {
 }
 
 export function getVersion(): string {
-    return '0.5.5';
+    return '0.5.6';
 }
 
 export function getSdkName(): string {
