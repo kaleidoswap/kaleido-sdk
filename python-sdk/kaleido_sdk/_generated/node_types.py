@@ -516,6 +516,7 @@ class OpenChannelRequest(BaseModel):
     asset_id: Annotated[
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
     ] = None
+    push_asset_amount: Annotated[int | None, Field(examples=[100])] = None
     public: Annotated[bool, Field(examples=[True])]
     with_anchors: Annotated[bool, Field(examples=[True])]
     fee_base_msat: Annotated[int | None, Field(examples=[1000])] = None
