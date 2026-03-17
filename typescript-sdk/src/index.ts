@@ -24,9 +24,23 @@ export { HttpClient } from './http-client.js';
 export { WSClient } from './ws-client.js';
 export { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from './client.js';
 
-export { LogLevel, applyLogLevel, setComponentLogLevel, setLogger, logLevelName, StreamLogger } from './logging.js';
+export {
+    LogLevel,
+    applyLogLevel,
+    setComponentLogLevel,
+    setLogger,
+    logLevelName,
+    StreamLogger,
+} from './logging.js';
 
-export type { LogLevel as LogLevelValue, LogLevelName, SdkLogger, StreamLogFormatter, LogState } from './logging.js';
+export type {
+    LogLevel as LogLevelValue,
+    LogLevelName,
+    SdkLogger,
+    StreamLogFormatter,
+    WritableStream,
+    LogState,
+} from './logging.js';
 export {
     toRawAmount,
     toDisplayAmount,
