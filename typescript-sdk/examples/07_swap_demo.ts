@@ -15,8 +15,9 @@ import {
     KaleidoClient,
     createAssetPairMapper,
     createPrecisionHandler,
-} from '../src/index.js';
-import type { Layer, ReceiverAddressFormat } from '../src/types.js';
+    Layer,
+    ReceiverAddressFormat,
+} from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -78,8 +79,8 @@ async function swapDemo() {
     if (!fromAsset || !toAsset || !assetMapper.canTrade(fromAsset.asset_id, toAsset.asset_id)) {
         // Fall back to first available pair
         const firstPair = pairsResponse.pairs[0];
-        fromAsset = assetMapper.findById(firstPair.base.asset_id);
-        toAsset = assetMapper.findById(firstPair.quote.asset_id);
+        fromAsset = assetMapper.findByTicker(firstPair.base.ticker);
+        toAsset = assetMapper.findByTicker(firstPair.quote.ticker);
 
         if (!fromAsset || !toAsset) {
             console.log('❌ Could not find suitable trading pair\n');
@@ -157,18 +158,18 @@ async function swapDemo() {
     // Determine receiver address format based on layer
     let receiverFormat: ReceiverAddressFormat;
     switch (route.to_layer) {
-        case 'BTC_LN':
-            receiverFormat = 'BOLT11';
+        case Layer.BTC_LN:
+            receiverFormat = ReceiverAddressFormat.BOLT11;
             break;
-        case 'BTC_L1':
-            receiverFormat = 'BTC_ADDRESS';
+        case Layer.BTC_L1:
+            receiverFormat = ReceiverAddressFormat.BTC_ADDRESS;
             break;
-        case 'RGB_LN':
-        case 'RGB_L1':
-            receiverFormat = 'RGB_INVOICE';
+        case Layer.RGB_LN:
+        case Layer.RGB_L1:
+            receiverFormat = ReceiverAddressFormat.RGB_INVOICE;
             break;
         default:
-            receiverFormat = 'BOLT11';
+            receiverFormat = ReceiverAddressFormat.BOLT11;
     }
 
     try {

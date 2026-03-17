@@ -5,10 +5,10 @@
  * Run this against a live maker to see detailed quote information
  */
 
-import { KaleidoClient } from '../src/index.js';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
-const WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/ws/test-client';
+const WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/ws';
 
 async function main() {
     console.log('🚀 Starting Quote Logging Demo\n');
@@ -46,10 +46,12 @@ async function main() {
                 console.log('\n' + '='.repeat(60));
                 console.log('📊 QUOTE RECEIVED');
                 console.log('='.repeat(60));
-                console.log(`From Asset:    ${quote.from_asset.toUpperCase()}`);
-                console.log(`From Amount:   ${quote.from_amount} (${(quote.from_amount / 100000000).toFixed(8)} BTC)`);
-                console.log(`To Asset:      ${quote.to_asset.toUpperCase()}`);
-                console.log(`To Amount:     ${quote.to_amount}`);
+                console.log(`From Asset:    ${quote.from_asset.ticker}`);
+                console.log(
+                    `From Amount:   ${quote.from_asset.amount} (${(quote.from_asset.amount / 100000000).toFixed(8)} BTC)`,
+                );
+                console.log(`To Asset:      ${quote.to_asset.ticker}`);
+                console.log(`To Amount:     ${quote.to_asset.amount}`);
                 console.log(`Price:         ${quote.price}`);
                 console.log(`Fee Asset:     ${quote.fee.fee_asset}`);
                 console.log(`Fee Amount:    ${quote.fee.final_fee}`);
@@ -64,7 +66,7 @@ async function main() {
 
         // Wait for 10 seconds to receive quotes
         console.log('⏳ Listening for quotes (10 seconds)...\n');
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        await new Promise((resolve) => setTimeout(resolve, 10000));
 
         // Unsubscribe
         console.log('\n✅ Unsubscribing from quotes\n');
