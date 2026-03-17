@@ -23,7 +23,7 @@ import {
     applyLogLevel,
     setComponentLogLevel,
     setLogger,
-} from '../src/index.js';
+} from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com';
 

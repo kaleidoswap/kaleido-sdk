@@ -5,10 +5,10 @@
  * Run this against a live maker to see quotes from multiple routes simultaneously
  */
 
-import { KaleidoClient } from '../src/index.js';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
-const WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/ws/multi-route-demo';
+const WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/ws';
 
 async function main() {
     console.log('🚀 Starting Multi-Route Quote Streaming Demo\n');
@@ -50,8 +50,10 @@ async function main() {
                 quoteCounters.set(route, count);
 
                 console.log(`\n📊 Quote #${count} for route: ${route}`);
-                console.log(`   From: ${(quote.from_amount / 100000000).toFixed(8)} ${quote.from_asset.toUpperCase()}`);
-                console.log(`   To:   ${quote.to_amount} ${quote.to_asset.toUpperCase()}`);
+                console.log(
+                    `   From: ${(quote.from_asset.amount / 100000000).toFixed(8)} ${quote.from_asset.ticker}`,
+                );
+                console.log(`   To:   ${quote.to_asset.amount} ${quote.to_asset.ticker}`);
                 console.log(`   Price: ${quote.price}`);
                 console.log(`   Fee:   ${quote.fee.final_fee} ${quote.fee.fee_asset}`);
                 console.log(`   Valid for: ${quote.expires_at - quote.timestamp}s`);
@@ -62,7 +64,7 @@ async function main() {
 
         // Wait for 15 seconds to receive quotes from all routes
         console.log('⏳ Listening for quotes from all routes (15 seconds)...\n');
-        await new Promise(resolve => setTimeout(resolve, 15000));
+        await new Promise((resolve) => setTimeout(resolve, 15000));
 
         // Show summary
         console.log('\n' + '='.repeat(60));

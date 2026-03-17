@@ -34,6 +34,12 @@
             "require": "./dist/rln.js",
             "types": "./dist/rln.d.ts",
             "default": "./dist/rln.js"
+        },
+        "./generated/api-types": {
+            "import": "./dist/generated/api-types.js",
+            "require": "./dist/generated/api-types.js",
+            "types": "./dist/generated/api-types.d.ts",
+            "default": "./dist/generated/api-types.js"
         }
     },
     "files": [

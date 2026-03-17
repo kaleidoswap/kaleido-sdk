@@ -4,7 +4,7 @@
  * Stream real-time quotes using WebSocket connection.
  */
 
-import { KaleidoClient } from '../src/index.js';
+import { KaleidoClient } from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -13,8 +13,7 @@ async function main() {
 
     const client = KaleidoClient.create({ baseUrl: API_URL });
 
-    const clientId = globalThis.crypto.randomUUID();
-    const wsUrl = API_URL.replace('http', 'ws') + `/api/v1/market/ws/${clientId}`;
+    const wsUrl = API_URL.replace(/^http/, 'ws') + '/api/v1/market/ws';
 
     console.log(`🔌 Connecting to WebSocket: ${wsUrl}\n`);
 
@@ -26,8 +25,8 @@ async function main() {
 
     ws.on('quoteResponse', (quote) => {
         console.log('\n📊 Quote update:');
-        console.log(`  From: ${quote.from_amount}`);
-        console.log(`  To: ${quote.to_amount}`);
+        console.log(`  From: ${quote.from_asset.amount} ${quote.from_asset.ticker}`);
+        console.log(`  To: ${quote.to_asset.amount} ${quote.to_asset.ticker}`);
         console.log(`  Price: ${quote.price}`);
     });
 

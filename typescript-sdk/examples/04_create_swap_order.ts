@@ -10,8 +10,9 @@ import {
     createAssetPairMapper,
     createPrecisionHandler,
     toDisplayAmount,
-} from '../src/index.js';
-import type { Layer, ReceiverAddressFormat } from '../src/types.js';
+    Layer,
+    ReceiverAddressFormat,
+} from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
@@ -105,7 +106,10 @@ async function main() {
     console.log('📝 Creating swap order...');
 
     // Determine receiver address format based on layer
-    const receiverFormat: ReceiverAddressFormat = route.to_layer === 'BTC_LN' ? 'BOLT11' : 'RGB_INVOICE';
+    const receiverFormat: ReceiverAddressFormat =
+        route.to_layer === Layer.BTC_LN
+            ? ReceiverAddressFormat.BOLT11
+            : ReceiverAddressFormat.RGB_INVOICE;
 
     try {
         const order = await client.maker.createSwapOrder({

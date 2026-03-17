@@ -15,7 +15,7 @@ import {
     createPrecisionHandler,
     toRawAmount,
     toDisplayAmount,
-} from '../src/index.js';
+} from 'kaleidoswap-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 
