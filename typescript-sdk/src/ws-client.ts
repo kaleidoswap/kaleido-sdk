@@ -2,8 +2,6 @@
  * WebSocket Client
  */
 
-import { EventEmitter } from 'events';
-import { randomUUID } from 'crypto';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
 import type {
@@ -12,6 +10,53 @@ import type {
     QuoteRequest,
     QuoteResponse,
 } from './types/ws.js';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Listener = (...args: any[]) => void;
+
+/** Minimal cross-platform event emitter – no Node.js 'events' module required. */
+class MiniEmitter {
+    private _events: Map<string, Listener[]> = new Map();
+
+    on(event: string, listener: Listener): this {
+        const list = this._events.get(event);
+        if (list) {
+            list.push(listener);
+        } else {
+            this._events.set(event, [listener]);
+        }
+        return this;
+    }
+
+    off(event: string, listener: Listener): this {
+        const list = this._events.get(event);
+        if (list) {
+            const idx = list.indexOf(listener);
+            if (idx !== -1) list.splice(idx, 1);
+        }
+        return this;
+    }
+
+    emit(event: string, ...args: unknown[]): boolean {
+        const list = this._events.get(event);
+        if (!list || list.length === 0) return false;
+        for (const fn of list.slice()) fn(...args);
+        return true;
+    }
+
+    listenerCount(event: string): number {
+        return this._events.get(event)?.length ?? 0;
+    }
+
+    removeAllListeners(event?: string): this {
+        if (event !== undefined) {
+            this._events.delete(event);
+        } else {
+            this._events.clear();
+        }
+        return this;
+    }
+}
 
 export interface WSClientConfig {
     url: string;
@@ -25,13 +70,13 @@ export interface WSClientConfig {
     userId?: string;
 }
 
-export class WSClient extends EventEmitter {
+export class WSClient extends MiniEmitter {
     private ws?: WebSocket;
     private reconnectAttempts = 0;
     private maxReconnectAttempts: number;
     private reconnectDelay: number;
     private pingInterval: number;
-    private pingTimer?: NodeJS.Timeout;
+    private pingTimer?: ReturnType<typeof setInterval>;
     private url: string;
     private _clientId: string;
     private isConnecting = false;
@@ -88,7 +133,7 @@ export class WSClient extends EventEmitter {
             };
         }
 
-        const generatedClientId = randomUUID();
+        const generatedClientId = globalThis.crypto.randomUUID();
         segments.push(generatedClientId);
         parsed.pathname = '/' + segments.join('/');
         return { url: parsed.toString(), clientId: generatedClientId };

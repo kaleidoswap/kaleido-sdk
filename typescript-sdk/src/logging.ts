@@ -93,21 +93,33 @@ function _defaultFormat(label: LogLabel, msg: string): string {
     return `${new Date().toISOString()} [${label}] ${msg}`;
 }
 
-/** Built-in logger writing formatted lines to a Node.js Writable stream (stderr by default). */
+/** Minimal write interface – compatible with Node.js Writable streams and browser alternatives. */
+export interface WritableStream {
+    write(chunk: string): void;
+}
+
+function _defaultStream(): WritableStream {
+    if (typeof process !== 'undefined' && typeof process.stderr?.write === 'function') {
+        return process.stderr as WritableStream;
+    }
+    return { write: (s: string) => console.error(s.replace(/\n$/, '')) };
+}
+
+/** Built-in logger writing formatted lines to a writable stream (stderr by default in Node, console.error in browsers). */
 export class StreamLogger implements SdkLogger {
-    private readonly _stream: NodeJS.WritableStream;
+    private readonly _stream: WritableStream;
     private readonly _format: StreamLogFormatter;
 
     constructor(options?: {
-        /** Target writable stream. Defaults to `process.stderr`. */
-        stream?: NodeJS.WritableStream;
+        /** Target writable stream. Defaults to `process.stderr` in Node, `console.error` in browsers. */
+        stream?: WritableStream;
         /**
          * Custom line formatter.
          * Defaults to `"<ISO timestamp> [LEVEL] <msg>"`.
          */
         format?: StreamLogFormatter;
     }) {
-        this._stream = options?.stream ?? process.stderr;
+        this._stream = options?.stream ?? _defaultStream();
         this._format = options?.format ?? _defaultFormat;
     }
 
