@@ -19,29 +19,8 @@ export interface HttpClientConfig {
     maxRetries?: number;
 }
 
-// LogState is passed separately so HttpClientConfig stays a plain data bag.
-
-// ============================================================================
-// Logging middleware factory
-// ============================================================================
-
-/**
- * Build an openapi-fetch middleware that logs every request and response
- * through the SDK's named 'http' logger bound to a specific `LogState`.
- *
- * The same `Request` object flows from `onRequest` through to `onResponse`,
- * so we use a WeakMap to associate a start timestamp with each in-flight
- * request and compute latency on the response side.
- *
- * Records emitted:
- *   DEBUG  →  outgoing request:  "GET /api/v1/market/assets"
- *   INFO   →  successful reply:  "GET /api/v1/market/assets → 200 (45ms)"
- *   WARN   →  error reply:       "POST /api/v1/swaps/orders → 422 (12ms)"
- */
 function _createLoggingMiddleware(state: LogState): Middleware {
     const log = createLogger('http', state);
-    // WeakMap is GC-safe: entries are automatically removed when the Request
-    // object is collected, so there is no risk of unbounded memory growth.
     const _startTimes = new WeakMap<Request, number>();
 
     return {
@@ -53,7 +32,6 @@ function _createLoggingMiddleware(state: LogState): Middleware {
             } catch {
                 log.debug('%s %s', request.method, request.url);
             }
-            // Return undefined to leave the request unmodified.
             return undefined;
         },
 
@@ -76,7 +54,6 @@ function _createLoggingMiddleware(state: LogState): Middleware {
             } else {
                 log.warn('%s %s', summary, response.statusText);
             }
-            // Return undefined to leave the response unmodified.
             return undefined;
         },
     };
@@ -107,9 +84,6 @@ function _createFetchWithTimeout(timeoutMs?: number): typeof fetch | undefined {
     };
 }
 
-/**
- * Type-safe HTTP client using openapi-fetch
- */
 export class HttpClient {
     private makerClient?: ReturnType<typeof createClient<paths>>;
     private nodeClient?: ReturnType<typeof createClient<nodePaths>>;
@@ -120,7 +94,6 @@ export class HttpClient {
         this.config = config;
         const fetchWithTimeout = _createFetchWithTimeout(config.timeout);
 
-        // Create type-safe Maker API client only if baseUrl is provided
         if (config.baseUrl) {
             this.makerClient = createClient<paths>({
                 baseUrl: config.baseUrl,
@@ -130,7 +103,6 @@ export class HttpClient {
             this.makerClient.use(_createLoggingMiddleware(logState));
         }
 
-        // Create Node API client only if nodeUrl is provided
         if (config.nodeUrl) {
             this.nodeClient = createClient<nodePaths>({
                 baseUrl: config.nodeUrl,
@@ -142,10 +114,6 @@ export class HttpClient {
         this._logState = logState;
     }
 
-    /**
-     * Get the type-safe Maker API client.
-     * Throws a ConfigError if no baseUrl was provided at construction time.
-     */
     get maker() {
         if (!this.makerClient) {
             throw new ConfigError(
@@ -155,10 +123,6 @@ export class HttpClient {
         return this.makerClient;
     }
 
-    /**
-     * Get the type-safe Node API client.
-     * Throws a ConfigError if no nodeUrl was provided at construction time.
-     */
     get node() {
         if (!this.nodeClient) {
             throw new ConfigError(
@@ -168,9 +132,6 @@ export class HttpClient {
         return this.nodeClient;
     }
 
-    /**
-     * Enable Node API client with a URL
-     */
     enableNodeClient(nodeUrl: string): void {
         this.nodeClient = createClient<nodePaths>({
             baseUrl: nodeUrl,
@@ -179,16 +140,10 @@ export class HttpClient {
         this.nodeClient.use(_createLoggingMiddleware(this._logState));
     }
 
-    /**
-     * Check if the Maker API client is configured
-     */
     hasMakerClient(): boolean {
         return this.makerClient !== undefined;
     }
 
-    /**
-     * Check if the Node API client is configured
-     */
     hasNodeClient(): boolean {
         return this.nodeClient !== undefined;
     }

@@ -47,39 +47,17 @@ export class KaleidoClient {
     private _maker: MakerClient;
     private _rln: RlnClient;
 
-    /**
-     * Per-instance log state.
-     *
-     * Use this to adjust log levels or swap loggers at runtime without
-     * affecting other `KaleidoClient` instances in the same process:
-     *
-     * ```typescript
-     * import { applyLogLevel, setComponentLogLevel, setLogger, LogLevel } from 'kaleidoswap-sdk';
-     *
-     * // Raise root level to INFO after creation:
-     * applyLogLevel(client.logState, LogLevel.INFO);
-     *
-     * // Silence HTTP noise while keeping maker events:
-     * setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
-     *
-     * // Swap in a Winston logger at runtime:
-     * setLogger(client.logState, myWinstonLogger);
-     * ```
-     */
     readonly logState: LogState;
 
     private constructor(config: KaleidoConfig) {
         this.config = config;
-        // Build the per-instance LogState before constructing any sub-clients
-        // so that the very first log calls (e.g. HTTP middleware) already
-        // respect the configuration.
         this.logState = new LogState(config.logLevel, config.logger);
         this.http = new HttpClient(
             {
                 baseUrl: config.baseUrl,
                 nodeUrl: config.nodeUrl,
                 apiKey: config.apiKey,
-                timeout: (config.timeout ?? 30) * 1000, // Convert to milliseconds
+                timeout: (config.timeout ?? 30) * 1000,
                 maxRetries: config.maxRetries ?? 3,
             },
             this.logState,
@@ -120,46 +98,27 @@ export class KaleidoClient {
         });
     }
 
-    /**
-     * Check if the Maker API is configured (baseUrl was provided)
-     */
     hasMaker(): boolean {
         return !!this.config.baseUrl;
     }
 
-    /**
-     * Check if the RGB Lightning Node is configured (nodeUrl was provided)
-     */
     hasNode(): boolean {
         return !!this.config.nodeUrl;
     }
 
-    /**
-     * Access Market (Maker) Operations.
-     * Requires `baseUrl` to have been set in the config.
-     */
     get maker(): MakerClient {
         return this._maker;
     }
 
-    /**
-     * Access RGB/Lightning Node Operations.
-     * Requires `nodeUrl` to have been set in the config.
-     */
     get rln(): RlnClient {
         return this._rln;
     }
 
-    /**
-     * Close client resources and active connections
-     */
     async close(): Promise<void> {
         await this._rln.close();
     }
 }
 
-// Re-export LogState helpers bound to the per-instance pattern for
-// convenience — users import these alongside KaleidoClient.
 export { applyLogLevel, setComponentLogLevel, setLogger };
 export type { LogLevel, LogLevelName, SdkLogger };
 
@@ -167,38 +126,18 @@ export type { LogLevel, LogLevelName, SdkLogger };
 // Utility Functions
 // ============================================================================
 
-/**
- * Convert display units to smallest units (e.g., BTC to satoshis)
- *
- * @param amount - Amount in display units
- * @param precision - Decimal precision (e.g., 8 for BTC)
- * @returns Amount in smallest units as number
- */
 export function toSmallestUnits(amount: number, precision: number): number {
     return Math.round(amount * Math.pow(10, precision));
 }
 
-/**
- * Convert smallest units to display units (e.g., satoshis to BTC)
- *
- * @param amount - Amount in smallest units
- * @param precision - Decimal precision (e.g., 8 for BTC)
- * @returns Amount in display units
- */
 export function toDisplayUnits(amount: number, precision: number): number {
     return amount / Math.pow(10, precision);
 }
 
-/**
- * Get SDK version
- */
 export function getVersion(): string {
     return '0.5.5';
 }
 
-/**
- * Get SDK name
- */
 export function getSdkName(): string {
     return 'kaleidoswap-sdk';
 }
