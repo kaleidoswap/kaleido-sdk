@@ -63,11 +63,6 @@ export interface WSClientConfig {
     maxReconnectAttempts?: number;
     reconnectDelay?: number;
     pingInterval?: number;
-    /**
-     * Optional client/user UUID for the WebSocket path (.../ws/<userId>).
-     * If not provided, a UUID is generated automatically.
-     */
-    userId?: string;
 }
 
 export class WSClient extends MiniEmitter {
@@ -85,7 +80,7 @@ export class WSClient extends MiniEmitter {
 
     constructor(config: WSClientConfig, logState: LogState = new LogState()) {
         super();
-        const resolvedTarget = WSClient.resolveConnectionTarget(config.url, config.userId);
+        const resolvedTarget = WSClient.resolveConnectionTarget(config.url);
         this._clientId = resolvedTarget.clientId;
         this.url = resolvedTarget.url;
         this.maxReconnectAttempts = config.maxReconnectAttempts ?? 5;
@@ -104,27 +99,13 @@ export class WSClient extends MiniEmitter {
      * Accepts either:
      * - a base endpoint ending in `/ws`, in which case a clientId is appended
      * - a fully qualified endpoint ending in `/ws/{clientId}`, in which case the
-     *   trailing segment is treated as the clientId when `userId` is omitted
+     *   trailing segment is treated as the clientId
      */
-    private static resolveConnectionTarget(
-        url: string,
-        userId?: string,
-    ): { url: string; clientId: string } {
+    private static resolveConnectionTarget(url: string): { url: string; clientId: string } {
         const parsed = new URL(url);
         const segments = parsed.pathname.split('/').filter(Boolean);
         const lastSegment = segments.at(-1);
         const hasEmbeddedClientId = lastSegment !== undefined && lastSegment !== 'ws';
-
-        if (userId) {
-            if (hasEmbeddedClientId) {
-                segments[segments.length - 1] = userId;
-            } else {
-                segments.push(userId);
-            }
-
-            parsed.pathname = '/' + segments.join('/');
-            return { url: parsed.toString(), clientId: userId };
-        }
 
         if (hasEmbeddedClientId) {
             return {
