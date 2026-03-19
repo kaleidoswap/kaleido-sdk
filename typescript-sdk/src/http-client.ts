@@ -16,7 +16,6 @@ export interface HttpClientConfig {
     nodeUrl?: string;
     apiKey?: string;
     timeout?: number;
-    maxRetries?: number;
 }
 
 function _createLoggingMiddleware(state: LogState): Middleware {
