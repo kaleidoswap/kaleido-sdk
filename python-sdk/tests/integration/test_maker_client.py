@@ -437,9 +437,3 @@ class TestMakerClientIntegration:
     async def test_submit_lsp_rate_decision(self, client: KaleidoClient) -> None:
         """Test POST /lsps1/rate_decision - Handle LSPS1 rate decision."""
         pass
-
-    @pytest.mark.integration
-    @pytest.mark.skip(reason="Requires order failed in asset delivery")
-    async def test_retry_asset_delivery(self, client: KaleidoClient) -> None:
-        """Test POST /lsps1/retry_delivery - Retry asset delivery."""
-        pass

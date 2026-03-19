@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING
 # Re-export all generated API types (from maker.json OpenAPI spec)
 from ._generated.api_types import (
     Asset,
-    AssetDeliveryStatus,
     AssetsResponse,
     BitcoinNetwork,
     ChannelDetails,
@@ -49,9 +48,6 @@ from ._generated.api_types import (
     ReachabilityMatrixResponse,
     ReceiverAddress,
     ReceiverAddressFormat,
-    RetryDeliveryRequest,
-    RetryDeliveryResponse,
-    RetryDeliveryStatus,
     RoutesRequest,
     RoutesResponse,
     RouteStep,
@@ -126,9 +122,7 @@ __all__ = [
     "OrderState",
     "PaymentState",
     "PaymentStatus",
-    "AssetDeliveryStatus",
     "SwapStatus",
-    "RetryDeliveryStatus",
     # API Types - Assets & Pairs
     "Asset",
     "AssetsResponse",
@@ -184,6 +178,4 @@ __all__ = [
     "OrderRequest",
     "RateDecisionRequest",
     "RateDecisionResponse",
-    "RetryDeliveryRequest",
-    "RetryDeliveryResponse",
 ]

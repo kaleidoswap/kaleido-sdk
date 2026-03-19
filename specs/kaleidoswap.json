@@ -20,9 +20,9 @@
       "documentation": "https://docs.kaleidoswap.com/api-reference/introduction"
     },
     "x-build-info": {
-      "version": "v0.4.1",
-      "commit": "8991c60b88f2fc3840e1d96c896a23a8fd35e5bb",
-      "buildDate": "2026-03-16T11:06:44.785260+00:00"
+      "version": "v0.4.2",
+      "commit": "89711b3ca3e069639c3084762ec8f6f803655ba8",
+      "buildDate": "2026-03-19T10:54:37.760622+00:00"
     }
   },
   "paths": {
@@ -267,7 +267,6 @@
                   "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
                   "client_asset_amount": 2500,
                   "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
-                  "asset_delivery_status": "PENDING",
                   "access_token": "ord_live_3rCkP9dG7mN4"
                 }
               }
@@ -811,122 +810,6 @@
                 "example": {
                   "error_code": "SERVICE_UNAVAILABLE",
                   "message": "Current market price unavailable. Please try again.",
-                  "details": {},
-                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/lsps1/retry_delivery": {
-      "post": {
-        "tags": [
-          "lsps1"
-        ],
-        "summary": "Retry LSPS1 asset delivery",
-        "description": "Request an immediate retry for LSPS1 asset delivery after a client returns online. This bypasses the normal backoff schedule and queues the order for priority processing. Repeating the call is safe but does not guarantee delivery success.",
-        "operationId": "retryLspAssetDelivery",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RetryDeliveryRequest"
-              },
-              "examples": {
-                "retry_delivery": {
-                  "summary": "Queue immediate asset-delivery retry",
-                  "value": {
-                    "order_id": "550e8400-e29b-41d4-a716-446655440000"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RetryDeliveryResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too many requests. Respect the rate-limit headers before retrying.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KaleidoErrorResponse"
-                },
-                "example": {
-                  "error_code": "RATE_LIMIT_EXCEEDED",
-                  "message": "Too many requests",
-                  "details": {
-                    "retry_after": 60
-                  },
-                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "The supplied order ID is invalid.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KaleidoErrorResponse"
-                },
-                "example": {
-                  "error_code": "LSPS1_INVALID_PARAMS",
-                  "message": "order_id must be a valid UUID format",
-                  "details": {
-                    "code": -32602,
-                    "property": "order_id",
-                    "message": "order_id must be a valid UUID format"
-                  },
-                  "request_id": "req_01HV8Q9X7G0Q7Y3Z"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Request validation failed before reaching application logic.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FastAPIValidationErrorResponse"
-                },
-                "example": {
-                  "detail": [
-                    {
-                      "loc": [
-                        "body",
-                        "rfq_id"
-                      ],
-                      "msg": "Field required",
-                      "type": "missing"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Unhandled server error.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/KaleidoErrorResponse"
-                },
-                "example": {
-                  "error_code": "INTERNAL_ERROR",
-                  "message": "Internal Server Error",
                   "details": {},
                   "request_id": "req_01HV8Q9X7G0Q7Y3Z"
                 }
@@ -3122,19 +3005,6 @@
         "title": "Asset",
         "description": "Extended asset definition for the trading system.\n\nExtends TradableAsset with:\n- Trading status (is_active)\n- Supported layers (protocol/network combinations as strings)\n- RGB-specific fields for node API compatibility\n- Methods to convert to TradableAsset for specific settlements\n\nSupported Layers Format: PROTOCOL/NETWORK\n- BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU\n- RGB_L1, RGB_LN\n- TAPASS_L1, TAPASS_LN\n- LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK"
       },
-      "AssetDeliveryStatus": {
-        "type": "string",
-        "enum": [
-          "NOT_REQUIRED",
-          "PENDING",
-          "IN_PROGRESS",
-          "COMPLETED",
-          "FAILED",
-          "RATE_CHANGED"
-        ],
-        "title": "AssetDeliveryStatus",
-        "description": "Status of asset delivery via keysend after channel opening"
-      },
       "AssetsOptions": {
         "properties": {
           "name": {
@@ -3270,6 +3140,7 @@
         "enum": [
           "Mainnet",
           "Testnet",
+          "Testnet4",
           "Signet",
           "Regtest"
         ],
@@ -3509,50 +3380,6 @@
               }
             ],
             "title": "Asset Price Sat"
-          },
-          "asset_delivery_status": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/AssetDeliveryStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "asset_delivery_payment_hash": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Asset Delivery Payment Hash"
-          },
-          "asset_delivery_completed_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Asset Delivery Completed At"
-          },
-          "asset_delivery_error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Asset Delivery Error"
           },
           "failure_reason": {
             "anyOf": [
@@ -4886,9 +4713,8 @@
         "title": "RateDecisionResponse",
         "description": "Response after user makes rate decision",
         "example": {
-          "decision_accepted": true,
-          "message": "Rate accepted. Order will proceed with current market rate.",
-          "order_id": "550e8400-e29b-41d4-a716-446655440000"
+          "message": "Order queued for immediate asset-delivery retry.",
+          "status": "processing"
         }
       },
       "ReachabilityCell": {
@@ -4998,59 +4824,6 @@
         ],
         "title": "ReceiverAddressFormat",
         "description": "Supported receiver address and invoice formats.\n\nDifferent networks and protocols use different address/invoice formats\nfor receiving payments."
-      },
-      "RetryDeliveryRequest": {
-        "properties": {
-          "order_id": {
-            "type": "string",
-            "title": "Order Id",
-            "description": "Order ID to retry asset delivery for"
-          }
-        },
-        "type": "object",
-        "required": [
-          "order_id"
-        ],
-        "title": "RetryDeliveryRequest",
-        "description": "Request model for /retry_delivery endpoint to trigger immediate keysend retry",
-        "example": {
-          "order_id": "550e8400-e29b-41d4-a716-446655440000"
-        }
-      },
-      "RetryDeliveryResponse": {
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/RetryDeliveryStatus",
-            "description": "Status of the request"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "description": "Human-readable message about the result"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status",
-          "message"
-        ],
-        "title": "RetryDeliveryResponse",
-        "description": "Response model for /retry_delivery endpoint",
-        "example": {
-          "message": "Order queued for immediate asset-delivery retry.",
-          "status": "processing"
-        }
-      },
-      "RetryDeliveryStatus": {
-        "type": "string",
-        "enum": [
-          "processing",
-          "not_found",
-          "no_pending_delivery",
-          "error"
-        ],
-        "title": "RetryDeliveryStatus",
-        "description": "Status codes for /retry_delivery endpoint responses"
       },
       "RouteStep": {
         "properties": {
@@ -5210,7 +4983,7 @@
             ],
             "title": "From Asset",
             "examples": [
-              "rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"
+              "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"
             ]
           },
           "to_asset": {
@@ -5224,7 +4997,7 @@
             ],
             "title": "To Asset",
             "examples": [
-              "rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"
+              "rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"
             ]
           },
           "payment_hash": {
