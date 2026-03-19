@@ -15,7 +15,7 @@ Requires Node.js 18+. The package ships as ES modules with full TypeScript decla
 
 ## Quick Start
 
-The SDK exposes two sub-clients that can be used **independently or together**:
+`KaleidoClient` organizes its functionality into two sub-clients that can be used **independently or together**:
 
 | Sub-client | Config key | What it covers | Requires |
 |---|---|---|---|

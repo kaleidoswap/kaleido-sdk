@@ -10,7 +10,7 @@ pip install kaleidoswap-sdk
 
 ## Quick Start
 
-The SDK exposes two sub-clients that can be used **independently or together**:
+`KaleidoClient` organizes its functionality into two sub-clients that can be used **independently or together**:
 
 | Sub-client | Config key | What it covers | Requires |
 |---|---|---|---|
@@ -24,10 +24,9 @@ import asyncio
 from kaleido_sdk import KaleidoClient
 
 async def main() -> None:
-    async with KaleidoClient.create(base_url="https://api.signet.kaleidoswap.com") as client:
-        assets = await client.maker.list_assets()
-        pairs  = await client.maker.list_pairs()
-        quote  = await client.maker.get_quote({ ... })
+    client = KaleidoClient.create(base_url="https://api.signet.kaleidoswap.com")
+    assets = await client.maker.list_assets()
+    pairs  = await client.maker.list_pairs()
 
 asyncio.run(main())
 ```
@@ -35,29 +34,31 @@ asyncio.run(main())
 ### RLN node only — no KaleidoSwap API required
 
 ```python
-async with KaleidoClient.create(node_url="http://localhost:3001") as client:
-    info     = await client.rln.get_node_info()
-    balance  = await client.rln.get_btc_balance()
-    channels = await client.rln.list_channels()
+client = KaleidoClient.create(node_url="http://localhost:3001")
+info     = await client.rln.get_node_info()
+balance  = await client.rln.get_btc_balance()
+channels = await client.rln.list_channels()
 ```
 
 ### Both together — full swap flow
 
 ```python
-async with KaleidoClient.create(
+client = KaleidoClient.create(
     base_url="https://api.signet.kaleidoswap.com",
     node_url="http://localhost:3001",
-) as client:
-    pairs    = await client.maker.list_pairs()
-    channels = await client.rln.list_channels()
+)
+pairs    = await client.maker.list_pairs()
+channels = await client.rln.list_channels()
 ```
 
 ### Zero-config — defaults to regtest, no node
 
 ```python
-async with KaleidoClient.create() as client:
-    assets = await client.maker.list_assets()
+client = KaleidoClient.create()
+assets = await client.maker.list_assets()
 ```
+
+> **Tip:** `KaleidoClient` also works as an async context manager (`async with KaleidoClient.create(...) as client`) for automatic HTTP connection cleanup in long-running applications.
 
 ## Documentation
 

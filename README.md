@@ -24,7 +24,7 @@ Each SDK is implemented natively in its language and consumes generated types/mo
 
 ## Two independent clients
 
-The SDK is split into two sub-clients that can be used **independently or together**:
+`KaleidoClient` organizes its functionality into two sub-clients that can be used **independently or together**:
 
 | Sub-client | Config key | What it covers | Requires |
 |---|---|---|---|
