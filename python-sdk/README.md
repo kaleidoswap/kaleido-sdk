@@ -10,35 +10,53 @@ pip install kaleidoswap-sdk
 
 ## Quick Start
 
-The SDK exposes two sub-clients depending on what you need:
+The SDK exposes two sub-clients that can be used **independently or together**:
 
-| Sub-client | Config key | What it does |
-|---|---|---|
-| `client.maker` | `base_url` | Kaleidoswap market API — assets, quotes, swap orders, LSP |
-| `client.rln` | `node_url` | Your RGB Lightning Node — wallet, channels, payments, RGB assets |
+| Sub-client | Config key | What it covers | Requires |
+|---|---|---|---|
+| `client.maker` | `base_url` | KaleidoSwap market API — assets, quotes, swap orders, atomic swaps, LSP | Public API URL |
+| `client.rln` | `node_url` | Your RGB Lightning Node — wallet, channels, payments, RGB assets | Running RLN daemon |
+
+### KaleidoSwap API only — no RLN node required
 
 ```python
+import asyncio
 from kaleido_sdk import KaleidoClient
 
-# Zero-config — defaults to regtest
-client = KaleidoClient.create()
-assets = await client.maker.list_assets()
+async def main() -> None:
+    async with KaleidoClient.create(base_url="https://api.signet.kaleidoswap.com") as client:
+        assets = await client.maker.list_assets()
+        pairs  = await client.maker.list_pairs()
+        quote  = await client.maker.get_quote({ ... })
 
-# Maker API only
-client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
-assets = await client.maker.list_assets()
+asyncio.run(main())
+```
 
-# Node only (base_url still defaults to regtest)
-client = KaleidoClient.create(node_url="http://localhost:3001")
-info = await client.rln.get_node_info()
+### RLN node only — no KaleidoSwap API required
 
-# Both together
-client = KaleidoClient.create(
-    base_url="https://api.kaleidoswap.com",
+```python
+async with KaleidoClient.create(node_url="http://localhost:3001") as client:
+    info     = await client.rln.get_node_info()
+    balance  = await client.rln.get_btc_balance()
+    channels = await client.rln.list_channels()
+```
+
+### Both together — full swap flow
+
+```python
+async with KaleidoClient.create(
+    base_url="https://api.signet.kaleidoswap.com",
     node_url="http://localhost:3001",
-)
-pairs    = await client.maker.list_pairs()
-channels = await client.rln.list_channels()
+) as client:
+    pairs    = await client.maker.list_pairs()
+    channels = await client.rln.list_channels()
+```
+
+### Zero-config — defaults to regtest, no node
+
+```python
+async with KaleidoClient.create() as client:
+    assets = await client.maker.list_assets()
 ```
 
 ## Documentation

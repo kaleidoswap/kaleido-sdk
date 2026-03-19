@@ -9,10 +9,6 @@ export interface KaleidoConfig {
     apiKey?: string;
     /** Request timeout in seconds (default: 30) */
     timeout?: number;
-    /** Maximum retry attempts (default: 3) */
-    maxRetries?: number;
-    /** Cache TTL in seconds (default: 60) */
-    cacheTtl?: number;
     /** Log level. Defaults to `LogLevel.SILENT`. */
     logLevel?: LogLevel | LogLevelName;
     /** Custom logger (console, Winston, Pino, etc.). */
