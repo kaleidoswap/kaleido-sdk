@@ -47,8 +47,6 @@ import type {
     OrderRequest,
     RateDecisionRequest,
     RateDecisionResponse,
-    RetryDeliveryRequest,
-    RetryDeliveryResponse,
 } from './api-types-ext.js';
 
 export interface SwapCompletionOptions {
@@ -534,10 +532,6 @@ export class MakerClient {
 
     async submitLspRateDecision(body: RateDecisionRequest): Promise<RateDecisionResponse> {
         return assertResponse(await this.http.maker.POST('/api/v1/lsps1/rate_decision', { body }));
-    }
-
-    async retryAssetDelivery(body: RetryDeliveryRequest): Promise<RetryDeliveryResponse> {
-        return assertResponse(await this.http.maker.POST('/api/v1/lsps1/retry_delivery', { body }));
     }
 
     // ============================================================================

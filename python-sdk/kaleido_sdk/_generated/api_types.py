@@ -9,19 +9,6 @@ from typing import Annotated, Any
 from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field, RootModel
 
 
-class AssetDeliveryStatus(StrEnum):
-    """
-    Status of asset delivery via keysend after channel opening
-    """
-
-    NOT_REQUIRED = "NOT_REQUIRED"
-    PENDING = "PENDING"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    RATE_CHANGED = "RATE_CHANGED"
-
-
 class AssetsOptions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -44,6 +31,7 @@ class AssetsOptions(BaseModel):
 class BitcoinNetwork(StrEnum):
     MAINNET = "Mainnet"
     TESTNET = "Testnet"
+    TESTNET4 = "Testnet4"
     SIGNET = "Signet"
     REGTEST = "Regtest"
 
@@ -406,27 +394,6 @@ class ReceiverAddressFormat(StrEnum):
     ARKADE_ADDRESS = "ARKADE_ADDRESS"
     ARKADE_INVOICE = "ARKADE_INVOICE"
     CASHU_TOKEN = "CASHU_TOKEN"
-
-
-class RetryDeliveryRequest(BaseModel):
-    """
-    Request model for /retry_delivery endpoint to trigger immediate keysend retry
-    """
-
-    order_id: Annotated[
-        str, Field(description="Order ID to retry asset delivery for", title="Order Id")
-    ]
-
-
-class RetryDeliveryStatus(StrEnum):
-    """
-    Status codes for /retry_delivery endpoint responses
-    """
-
-    PROCESSING = "processing"
-    NOT_FOUND = "not_found"
-    NO_PENDING_DELIVERY = "no_pending_delivery"
-    ERROR = "error"
 
 
 class IndicativePrice(RootModel[str]):
@@ -949,17 +916,6 @@ class ReceiverAddress(BaseModel):
     format: Annotated[ReceiverAddressFormat, Field(description="Format of the receiver address")]
 
 
-class RetryDeliveryResponse(BaseModel):
-    """
-    Response model for /retry_delivery endpoint
-    """
-
-    status: Annotated[RetryDeliveryStatus, Field(description="Status of the request")]
-    message: Annotated[
-        str, Field(description="Human-readable message about the result", title="Message")
-    ]
-
-
 class RoutesResponse(BaseModel):
     """
     Response with discovered routes.
@@ -977,16 +933,12 @@ class Swap(BaseModel):
     from_asset: Annotated[
         str | None,
         Field(
-            examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"],
-            title="From Asset",
+            examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"], title="From Asset"
         ),
     ] = None
     to_asset: Annotated[
         str | None,
-        Field(
-            examples=["rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc"],
-            title="To Asset",
-        ),
+        Field(examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"], title="To Asset"),
     ] = None
     payment_hash: Annotated[
         str,
@@ -1234,13 +1186,5 @@ class ChannelOrderResponse(BaseModel):
     client_asset_amount: Annotated[int | None, Field(title="Client Asset Amount")] = None
     rfq_id: Annotated[str | None, Field(title="Rfq Id")] = None
     asset_price_sat: Annotated[int | None, Field(title="Asset Price Sat")] = None
-    asset_delivery_status: AssetDeliveryStatus | None = None
-    asset_delivery_payment_hash: Annotated[
-        str | None, Field(title="Asset Delivery Payment Hash")
-    ] = None
-    asset_delivery_completed_at: Annotated[
-        AwareDatetime | None, Field(title="Asset Delivery Completed At")
-    ] = None
-    asset_delivery_error: Annotated[str | None, Field(title="Asset Delivery Error")] = None
     failure_reason: Annotated[str | None, Field(title="Failure Reason")] = None
     access_token: Annotated[str | None, Field(title="Access Token")] = None
