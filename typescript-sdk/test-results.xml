@@ -1,0 +1,1202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="188" failures="0" errors="0" time="2.24">
+    <testsuite name="tests/client.test.ts" timestamp="2026-03-19T12:21:56.641Z" hostname="Mac.lan" tests="31" failures="0" errors="0" skipped="0" time="0.021">
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; KaleidoError &gt; should be the base error class" time="0.001">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; APIError &gt; should extend KaleidoError" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; APIError &gt; should include status code" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; NetworkError &gt; should extend KaleidoError" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; ValidationError &gt; should have correct code" time="0.001">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; NotFoundError &gt; should have 404 status" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; TimeoutError &gt; should have correct code" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; ConfigError &gt; should have correct code" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Error Classes &gt; SwapError &gt; should include swap ID" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should map 404 errors to NotFoundError" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should map 400 errors to ValidationError" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should map 500 errors to APIError" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should map 429 errors to RateLimitError" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should map timeout errors (408, 504)" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should use error message from data" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="mapHttpError &gt; should fallback to statusText if no data" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Type Definitions &gt; Layer type &gt; should include BTC layers" time="0.001">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Type Definitions &gt; Layer type &gt; should include RGB layers" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Type Definitions &gt; KaleidoConfig type &gt; should accept minimal config" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Type Definitions &gt; KaleidoConfig type &gt; should accept full config" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Integration Tests (Local API) &gt; should list assets from real API" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Integration Tests (Local API) &gt; should list pairs from real API" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Integration Tests (Local API) &gt; should get quote from real API" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Utility Functions &gt; Amount Conversion &gt; should convert BTC to satoshis correctly" time="0.001">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Utility Functions &gt; Amount Conversion &gt; should convert satoshis to BTC correctly" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Utility Functions &gt; Amount Conversion &gt; should handle USDT precision (6 decimals)" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Utility Functions &gt; BigInt handling &gt; should handle large amounts as BigInt" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Utility Functions &gt; BigInt handling &gt; should convert BigInt to number for display" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Configuration &gt; should validate required baseUrl" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Configuration &gt; should allow optional nodeUrl" time="0">
+        </testcase>
+        <testcase classname="tests/client.test.ts" name="Configuration &gt; should use number types for timeout/retries" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/integration/maker-client.test.ts" timestamp="2026-03-19T12:21:56.643Z" hostname="Mac.lan" tests="13" failures="0" errors="0" skipped="0" time="0.101">
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Market Data &gt; should list assets" time="0.031">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Market Data &gt; should list trading pairs" time="0.01">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Quote Operations &gt; should get quote by pair" time="0.018">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Pair Routes &gt; should get routes for a pair by ticker" time="0.007">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Pair Routes &gt; should discover market routes" time="0.005">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Atomic Swap Operations &gt; should get swap node info" time="0.002">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Atomic Swap Operations &gt; should init a swap" time="0.005">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Atomic Swap Operations &gt; should get atomic swap status" time="0.002">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Order History &amp; Analytics &gt; should get order history with pagination" time="0.008">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Order History &amp; Analytics &gt; should get order analytics" time="0.003">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; LSP Operations &gt; should get LSP info" time="0.004">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: SocketError: other side closed
+      at Socket.onHttpSocketEnd (node:internal/deps/undici/undici:7635:26)
+      at Socket.emit (node:events:520:35)
+      at endReadableNT (node:internal/streams/readable:1729:12)
+      at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+    code: &apos;UND_ERR_SOCKET&apos;,
+    socket: {
+      localAddress: &apos;::1&apos;,
+      localPort: 52919,
+      remoteAddress: undefined,
+      remotePort: undefined,
+      remoteFamily: undefined,
+      timeout: undefined,
+      bytesWritten: 190,
+      bytesRead: 0
+    }
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; LSP Operations &gt; should get LSP network info" time="0.005">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/maker-client.test.ts" name="MakerClient Integration &gt; Convenience Methods &gt; should convert raw and display amounts" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/integration/pairs-and-ws-quotes.test.ts" timestamp="2026-03-19T12:21:56.645Z" hostname="Mac.lan" tests="23" failures="0" errors="0" skipped="0" time="0.134">
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Fetching Trading Pairs &gt; should fetch all trading pairs" time="0.038">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Fetching Trading Pairs &gt; should fetch pairs with BTC as base asset" time="0.009">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Fetching Trading Pairs &gt; should fetch pairs with RGB assets" time="0.004">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Fetching Trading Pairs &gt; should verify pairs have layer information in routes" time="0.004">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Fetching Trading Pairs &gt; should filter pairs by layer" time="0.004">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should stream quotes for BTC_LN to RGB_LN" time="0.006">
+            <system-err>
+Skipping - WebSocket server not available for BTC_LN to RGB_LN: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should stream quotes for BTC_L1 to RGB_L1" time="0.007">
+            <system-err>
+Skipping - WebSocket server not available for BTC_L1 to RGB_L1: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should stream quotes for RGB_LN to BTC_LN" time="0.002">
+            <system-err>
+Skipping - WebSocket server not available for RGB_LN to BTC_LN: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should stream quotes for RGB_L1 to BTC_L1" time="0.002">
+            <system-err>
+Skipping - WebSocket server not available for RGB_L1 to BTC_L1: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should stream quotes for BTC_L1 to BTC_LN (submarine swap)" time="0.005">
+            <system-err>
+Skipping - WebSocket server not available for BTC_L1 to BTC_LN (submarine swap): Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should stream quotes for RGB_L1 to RGB_LN (submarine swap)" time="0.003">
+            <system-err>
+Skipping - WebSocket server not available for RGB_L1 to RGB_LN (submarine swap): Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should handle multiple simultaneous quote streams" time="0.003">
+            <system-err>
+Skipping - WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should properly unsubscribe from quote stream" time="0.003">
+            <system-err>
+Skipping - WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; WebSocket Quote Streaming &gt; should throw error if WebSocket not enabled before streaming" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Combined Pairs and WebSocket Tests &gt; should fetch pairs and stream quotes for available routes" time="0.003">
+            <system-err>
+Skipping - WebSocket server not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Combined Pairs and WebSocket Tests &gt; should verify all layer combinations are supported" time="0.005">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should get available routes for a trading pair" time="0.003">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should return empty array for non-existent pair" time="0.003">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should stream quotes by ticker using first available route" time="0.004">
+            <system-err>
+Skipping - WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should stream quotes by ticker with preferred layers" time="0.007">
+            <system-err>
+Skipping - WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should throw error when streaming non-existent pair" time="0.009">
+            <system-err>
+Skipping - API or WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should stream quotes for all routes simultaneously" time="0.003">
+            <system-err>
+Skipping - WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/pairs-and-ws-quotes.test.ts" name="Trading Pairs and WebSocket Quotes Integration &gt; Convenience Methods for Ticker-Based Streaming &gt; should handle case-insensitive ticker matching" time="0.004">
+            <system-err>
+Skipping - API not available: [TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -54,
+    code: &apos;ECONNRESET&apos;,
+    syscall: &apos;read&apos;
+  }
+}
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/integration/rln.test.ts" timestamp="2026-03-19T12:21:56.647Z" hostname="Mac.lan" tests="51" failures="0" errors="0" skipped="0" time="1.799">
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Node Information &amp; Identity &gt; should get RGB node info" time="0.098">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Node Information &amp; Identity &gt; should get taker pubkey" time="0.006">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Node Information &amp; Identity &gt; should return consistent pubkey from both methods" time="0.007">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Channel Management &gt; should list channels" time="0.021">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Channel Management &gt; should handle empty channel list" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Channel Management &gt; should open a channel" time="0.055">
+            <system-err>
+Skipping openChannel test - requires test setup: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.openChannel (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:310:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:105:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Channel Management &gt; should close a channel" time="0.011">
+            <system-err>
+Skipping closeChannel test - requires test setup: ValidationError: Invalid channel ID
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.closeChannel (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:317:9)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:122:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Peer Management &gt; should list peers" time="0.004">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Peer Management &gt; should handle empty peer list" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Peer Management &gt; should connect to a peer" time="0.009">
+            <system-err>
+Skipping connectPeer test - requires test setup: ValidationError: Invalid peer info: unable to parse given pubkey for node
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.connectPeer (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:337:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:166:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Peer Management &gt; should fail to connect with invalid peer string" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Asset Management &gt; should list node assets" time="0.111">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Asset Management &gt; should get BTC balance" time="0.178">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Asset Management &gt; should get asset balance for valid asset" time="0.004">
+            <system-err>
+No assets available to test getAssetBalance
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Asset Management &gt; should fail to get balance for invalid asset" time="0.011">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Asset Management &gt; should sync RGB wallet" time="0.057">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Asset Management &gt; should attempt sendRgb with recipient map" time="0.004">
+            <system-err>
+No RGB assets available to test sendRgb
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Address Management &gt; should get onchain address" time="0.024">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Address Management &gt; should return valid Bitcoin address format" time="0.006">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create lightning invoice without parameters" time="0.035">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create lightning invoice with amount" time="0.003">
+            <system-err>
+Skipping createLnInvoice with amount test - node unavailable: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:338:33
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create lightning invoice with expiry" time="0.005">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create RGB lightning invoice" time="0.003">
+            <system-err>
+Skipping RGB invoice test - asset not available: ValidationError: Invalid asset ID: test_asset_id
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:370:33
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create witness lightning invoice" time="0.002">
+            <system-err>
+Skipping witness invoice test - node unavailable: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:382:33
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create witness invoice with expiry" time="0.004">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should create RGB witness invoice" time="0.002">
+            <system-err>
+Skipping RGB witness invoice test - asset not available: ValidationError: Invalid asset ID: test_asset_id
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:421:33
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should decode lightning invoice" time="0.002">
+            <system-err>
+Skipping decodeLnInvoice test - node unavailable: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:433:33
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should decode witness invoice" time="0.001">
+            <system-err>
+Skipping witness invoice decode test - node unavailable: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:462:33
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should fail to decode invalid invoice" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should list payments" time="0.007">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should distinguish keysend response from sendpayment" time="0.003">
+            <system-err>
+Skipping keysend response validation - node unavailable: ValidationError: Invalid amount: amt_msat cannot be less than 3000000
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.keysend (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:395:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:534:41
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should send keysend with RGB asset" time="0.001">
+            <system-err>
+Skipping RGB keysend test - asset/channel unavailable: ValidationError: Invalid amount: amt_msat cannot be less than 3000000
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.keysend (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:395:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:561:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should send payment via invoice (different from keysend)" time="0">
+            <system-err>
+Skipping sendPayment test - requires channels: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:575:41
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should fail keysend with invalid pubkey" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Lightning Operations &gt; should fail sendpayment with invalid invoice" time="0.002">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; RGB Invoice Operations &gt; should create RGB invoice" time="0.003">
+            <system-err>
+No RGB assets available to create invoice
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; RGB Invoice Operations &gt; should create RGB invoice with witness" time="0.002">
+            <system-err>
+No RGB assets available to create witness invoice
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; RGB Invoice Operations &gt; should decode RGB invoice" time="0.002">
+            <system-err>
+No RGB assets available to create invoice for decoding
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; RGB Invoice Operations &gt; should fail to decode invalid RGB invoice" time="0.006">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Wallet Operations &gt; should initialize wallet" time="0.001">
+            <system-err>
+Skipping initWallet test - wallet may already exist: APIError: API Error (403): Node is unlocked (hint: call lock)
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:207:24)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.initWallet (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:122:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:730:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;API_ERROR&apos;,
+  statusCode: 403,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Wallet Operations &gt; should unlock wallet" time="0.001">
+            <system-err>
+Skipping unlockWallet test - wallet state unknown: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.unlockWallet (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:129:9)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:744:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Wallet Operations &gt; should fail to unlock with wrong password" time="0">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Wallet Operations &gt; should lock wallet" time="1.073">
+            <system-err>
+Skipping lockWallet test - wallet state unknown: AssertionError: expected undefined not to be undefined
+    at Proxy.&lt;anonymous&gt; (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+expect@1.6.1/node_modules/@vitest/expect/dist/index.js:1102:24)
+    at Proxy.&lt;anonymous&gt; (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+expect@1.6.1/node_modules/@vitest/expect/dist/index.js:800:17)
+    at Proxy.methodWrapper (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/chai@4.5.0/node_modules/chai/lib/chai/utils/addMethod.js:57:25)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:770:34
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  showDiff: false,
+  actual: undefined,
+  expected: undefined,
+  operator: &apos;notStrictEqual&apos;
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Wallet Operations &gt; should handle wallet lifecycle" time="0.001">
+            <system-err>
+Skipping wallet lifecycle test: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.unlockWallet (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:129:9)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:783:17
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Trade Operations &gt; should whitelist swap" time="0.003">
+            <system-err>
+Skipping whitelistSwap test - requires valid swap: APIError: API Error (403): Node is locked (hint: call unlock)
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:207:24)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.whitelistSwap (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:427:9)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:799:17
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;API_ERROR&apos;,
+  statusCode: 403,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Trade Operations &gt; should fail to whitelist invalid swap string" time="0.001">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Error Handling &gt; should handle node not configured error" time="0">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Error Handling &gt; should handle network errors gracefully" time="0.016">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Error Handling &gt; should preserve error details" time="0.001">
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Type Safety &gt; should return properly typed responses" time="0.001">
+            <system-err>
+Skipping type safety test - node unavailable: APIError: API Error (403): Node is locked (hint: call unlock)
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:207:24)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.listChannels (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:301:16)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:876:35
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;API_ERROR&apos;,
+  statusCode: 403,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/rln.test.ts" name="RLN Client Integration &gt; Type Safety &gt; should handle optional parameters correctly" time="0.001">
+            <system-err>
+Skipping optional parameters test - node unavailable: ValidationError: Invalid request: Failed to deserialize the JSON body into the target type
+    at mapHttpError (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:193:20)
+    at Module.assertResponse (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/errors.ts:138:15)
+    at RlnClient.createLNInvoice (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/rln-client.ts:354:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/tests/integration/rln.test.ts:895:34
+    at runTest (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/node_modules/.pnpm/@vitest+runner@1.6.1/node_modules/@vitest/runner/dist/index.js:958:5) {
+  code: &apos;VALIDATION_ERROR&apos;,
+  statusCode: 400,
+  details: undefined
+}
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/integration/ws-maker.test.ts" timestamp="2026-03-19T12:21:56.650Z" hostname="Mac.lan" tests="5" failures="0" errors="0" skipped="1" time="0.043">
+        <testcase classname="tests/integration/ws-maker.test.ts" name="WebSocket Integration &gt; WebSocket Client Integration &gt; should enable WebSocket" time="0.001">
+        </testcase>
+        <testcase classname="tests/integration/ws-maker.test.ts" name="WebSocket Integration &gt; WebSocket Client Integration &gt; should have streaming methods" time="0">
+        </testcase>
+        <testcase classname="tests/integration/ws-maker.test.ts" name="WebSocket Integration &gt; WebSocket Client Integration &gt; should stream real-time quotes" time="0">
+            <skipped/>
+        </testcase>
+        <testcase classname="tests/integration/ws-maker.test.ts" name="WebSocket Integration &gt; Quote Streaming &gt; should return unsubscribe function" time="0.039">
+            <system-err>
+Skipping - WebSocket server not available: Error: Connection closed before opening
+    at /Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:201:36
+    at settle (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:145:17)
+    at WebSocket.ws.onclose (/Users/unico/Dev/Kaleido/kaleidosdk/typescript-sdk/src/ws-client.ts:200:25)
+    at WebSocket.[nodejs.internal.kHybridDispatch] (node:internal/event_target:843:20)
+    at WebSocket.dispatchEvent (node:internal/event_target:776:26)
+    at fireEvent (node:internal/deps/undici/undici:13343:14)
+    at WebSocket.#onSocketClose (node:internal/deps/undici/undici:14601:9)
+    at Object.onSocketClose (node:internal/deps/undici/undici:14301:72)
+    at failWebsocketConnection (node:internal/deps/undici/undici:13761:17)
+    at Object.processResponse (node:internal/deps/undici/undici:13664:15)
+
+            </system-err>
+        </testcase>
+        <testcase classname="tests/integration/ws-maker.test.ts" name="WebSocket Integration &gt; Quote Streaming &gt; should throw error if WebSocket not enabled" time="0.001">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/type-safety/types.test.ts" timestamp="2026-03-19T12:21:56.650Z" hostname="Mac.lan" tests="4" failures="0" errors="0" skipped="0" time="0.002">
+        <testcase classname="tests/type-safety/types.test.ts" name="Type Safety &gt; Client Types &gt; should have properly typed client" time="0.001">
+        </testcase>
+        <testcase classname="tests/type-safety/types.test.ts" name="Type Safety &gt; Response Types &gt; should properly type API responses" time="0">
+        </testcase>
+        <testcase classname="tests/type-safety/types.test.ts" name="Type Safety &gt; Layer Enum &gt; should accept valid layer values" time="0.001">
+        </testcase>
+        <testcase classname="tests/type-safety/types.test.ts" name="Type Safety &gt; openapi-fetch Type Integration &gt; should have type-safe HTTP client" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/unit/error-fallback.test.ts" timestamp="2026-03-19T12:21:56.651Z" hostname="Mac.lan" tests="2" failures="0" errors="0" skipped="0" time="0.001">
+        <testcase classname="tests/unit/error-fallback.test.ts" name="MakerClient Error Handling Reproduction &gt; should default to APIError (500) if response is missing" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/error-fallback.test.ts" name="MakerClient Error Handling Reproduction &gt; should throw 400 if response object is present with status 400" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/unit/errors.test.ts" timestamp="2026-03-19T12:21:56.651Z" hostname="Mac.lan" tests="9" failures="0" errors="0" skipped="0" time="0.002">
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; KaleidoError should extend Error" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; should identify retryable errors" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should map 400 to ValidationError" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should map 404 to NotFoundError" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should map 429 to RateLimitError" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should map 408/504 to TimeoutError" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should map 500-503 to APIError" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should use error message from data" time="0">
+        </testcase>
+        <testcase classname="tests/unit/errors.test.ts" name="Error Classes &gt; mapHttpError &gt; should fallback to statusText if no data" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/unit/http-client.test.ts" timestamp="2026-03-19T12:21:56.651Z" hostname="Mac.lan" tests="5" failures="0" errors="0" skipped="0" time="0.002">
+        <testcase classname="tests/unit/http-client.test.ts" name="HttpClient &gt; Constructor &gt; should create client with maker API" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/http-client.test.ts" name="HttpClient &gt; Constructor &gt; should create client with node API when nodeUrl provided" time="0">
+        </testcase>
+        <testcase classname="tests/unit/http-client.test.ts" name="HttpClient &gt; Constructor &gt; should not have node client without nodeUrl" time="0">
+        </testcase>
+        <testcase classname="tests/unit/http-client.test.ts" name="HttpClient &gt; Node Client &gt; should throw error when accessing node without configuration" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/http-client.test.ts" name="HttpClient &gt; Node Client &gt; should allow enabling node client later" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/unit/maker-client.test.ts" timestamp="2026-03-19T12:21:56.651Z" hostname="Mac.lan" tests="19" failures="0" errors="0" skipped="0" time="0.005">
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; getQuote &gt; should successfully get quote with from_amount specified" time="0.002">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; getQuote &gt; should successfully get quote with to_amount specified (reverse quote)" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; getQuote &gt; should handle API errors correctly" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; getQuote &gt; should handle different layer combinations" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Quote Validation &gt; should throw ValidationError when amount is below minimum" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Quote Validation &gt; should throw ValidationError when amount is above maximum" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Quote Validation &gt; should throw ValidationError when both amounts are provided" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Quote Validation &gt; should throw ValidationError when neither amount is provided" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Quote Validation &gt; should throw ValidationError for invalid asset/layer combination" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Error Type Mapping &gt; should map 400 status to ValidationError with correct properties" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Error Type Mapping &gt; should map 404 status to NotFoundError" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Error Type Mapping &gt; should map 422 status to ValidationError for missing fields" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Error Type Mapping &gt; should map 503 status to APIError for service unavailable" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Message Extraction &gt; should extract detail field from error response" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Message Extraction &gt; should extract message field from error response" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Message Extraction &gt; should handle FastAPI validation array format" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Error Handling - Message Extraction &gt; should fall back to statusText when no error details available" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Precision Methods &gt; should convert raw amounts to display amounts" time="0">
+        </testcase>
+        <testcase classname="tests/unit/maker-client.test.ts" name="MakerClient - Quote Methods &gt; Precision Methods &gt; should convert display amounts to raw amounts" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/unit/precision.test.ts" timestamp="2026-03-19T12:21:56.652Z" hostname="Mac.lan" tests="12" failures="0" errors="0" skipped="0" time="0.005">
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; toRawAmount &gt; should convert BTC to satoshis (8 decimals)" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; toRawAmount &gt; should convert USDT to atomic units (6 decimals)" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; toRawAmount &gt; should handle precision 0" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; toDisplayAmount &gt; should convert satoshis to BTC" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; toDisplayAmount &gt; should convert USDT atomic to display" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should create handler from assets" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should throw error with empty assets array" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should convert amounts correctly" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should throw error for unknown asset" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should validate order sizes" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should format display amounts" time="0">
+        </testcase>
+        <testcase classname="tests/unit/precision.test.ts" name="Precision Utilities &gt; PrecisionHandler &gt; should get order size limits" time="0">
+        </testcase>
+    </testsuite>
+    <testsuite name="tests/unit/ws-client.test.ts" timestamp="2026-03-19T12:21:56.653Z" hostname="Mac.lan" tests="14" failures="0" errors="0" skipped="0" time="0.004">
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Connection Management &gt; should create WSClient instance" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Connection Management &gt; should preserve a client ID already embedded in the URL" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Connection Management &gt; should append a generated client ID when URL ends at /ws" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Connection Management &gt; should have event emitter methods" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Connection Management &gt; should have requestQuote method" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Connection Management &gt; should have ping method" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Message Handling &gt; should handle quote response events" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Message Handling &gt; should preserve quote action when handling wire messages" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Message Handling &gt; should handle connection established event" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Message Handling &gt; should handle pong events" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Error Handling &gt; should emit error events" time="0.001">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Error Handling &gt; should handle disconnection" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Error Handling &gt; should emit reconnecting event" time="0">
+        </testcase>
+        <testcase classname="tests/unit/ws-client.test.ts" name="WSClient &gt; Disconnection &gt; should disconnect cleanly" time="0">
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -29,7 +29,7 @@ const assets = await client.maker.listAssets();
 
 // Maker API only
 const client = KaleidoClient.create({
-  baseUrl: 'https://api.kaleidoswap.com',
+  baseUrl: 'https://api.signet.kaleidoswap.com',
 });
 const assets = await client.maker.listAssets();
 
@@ -41,7 +41,7 @@ const info = await client.rln.getNodeInfo();
 
 // Both together
 const client = KaleidoClient.create({
-  baseUrl: 'https://api.kaleidoswap.com',
+  baseUrl: 'https://api.signet.kaleidoswap.com',
   nodeUrl: 'http://localhost:3001',
 });
 const pairs    = await client.maker.listPairs();
