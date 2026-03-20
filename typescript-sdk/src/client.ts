@@ -115,8 +115,7 @@ export class KaleidoClient {
     }
 
     async close(): Promise<void> {
-        await this._maker.close();
-        await this.http.close();
+        await Promise.all([this._maker.close(), this.http.close()]);
     }
 }
 

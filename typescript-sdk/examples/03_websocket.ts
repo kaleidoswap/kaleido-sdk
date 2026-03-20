@@ -13,7 +13,7 @@ async function main() {
 
     const client = KaleidoClient.create({ baseUrl: API_URL });
 
-    const wsUrl = API_URL.replace(/^http/, 'ws') + '/api/v1/market/ws';
+    const wsUrl = API_URL.replace(/^http(s?)/, (_, s) => `ws${s}`) + '/api/v1/market/ws';
 
     console.log(`🔌 Connecting to WebSocket: ${wsUrl}\n`);
 

@@ -169,7 +169,7 @@ async function swapDemo() {
             receiverFormat = ReceiverAddressFormat.RGB_INVOICE;
             break;
         default:
-            receiverFormat = ReceiverAddressFormat.BOLT11;
+            throw new Error(`Unhandled layer: ${route.to_layer}`);
     }
 
     try {
