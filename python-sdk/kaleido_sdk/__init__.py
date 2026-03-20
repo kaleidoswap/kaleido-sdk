@@ -90,7 +90,6 @@ from .errors import (
 from .types import (
     # API Types - Assets & Pairs
     Asset,
-    AssetDeliveryStatus,
     AssetsResponse,
     BitcoinNetwork,
     ChannelDetails,
@@ -131,9 +130,6 @@ from .types import (
     ReachabilityMatrixResponse,
     ReceiverAddress,
     ReceiverAddressFormat,
-    RetryDeliveryRequest,
-    RetryDeliveryResponse,
-    RetryDeliveryStatus,
     RoutesRequest,
     RoutesResponse,
     RouteStep,
@@ -205,9 +201,7 @@ __all__ = [
     "OrderState",
     "PaymentState",
     "PaymentStatus",
-    "AssetDeliveryStatus",
     "SwapStatus",
-    "RetryDeliveryStatus",
     # API Types - Assets & Pairs
     "Asset",
     "AssetsResponse",
@@ -263,6 +257,4 @@ __all__ = [
     "OrderRequest",
     "RateDecisionRequest",
     "RateDecisionResponse",
-    "RetryDeliveryRequest",
-    "RetryDeliveryResponse",
 ]

@@ -132,26 +132,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    '/api/v1/lsps1/retry_delivery': {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Retry LSPS1 asset delivery
-         * @description Request an immediate retry for LSPS1 asset delivery after a client returns online. This bypasses the normal backoff schedule and queues the order for priority processing. Repeating the call is safe but does not guarantee delivery success.
-         */
-        post: operations['retryLspAssetDelivery'];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     '/api/v1/swaps/nodeinfo': {
         parameters: {
             query?: never;
@@ -529,12 +509,6 @@ export type components = {
              */
             supported_layers?: string[] | null;
         };
-        /**
-         * AssetDeliveryStatus
-         * @description Status of asset delivery via keysend after channel opening
-         * @enum {string}
-         */
-        AssetDeliveryStatus: AssetDeliveryStatus;
         /** AssetsOptions */
         AssetsOptions: {
             /**
@@ -695,13 +669,6 @@ export type components = {
             rfq_id?: string | null;
             /** Asset Price Sat */
             asset_price_sat?: number | null;
-            asset_delivery_status?: components['schemas']['AssetDeliveryStatus'] | null;
-            /** Asset Delivery Payment Hash */
-            asset_delivery_payment_hash?: string | null;
-            /** Asset Delivery Completed At */
-            asset_delivery_completed_at?: string | null;
-            /** Asset Delivery Error */
-            asset_delivery_error?: string | null;
             /** Failure Reason */
             failure_reason?: string | null;
             /** Access Token */
@@ -1382,9 +1349,8 @@ export type components = {
          * RateDecisionResponse
          * @description Response after user makes rate decision
          * @example {
-         *       "decision_accepted": true,
-         *       "message": "Rate accepted. Order will proceed with current market rate.",
-         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
+         *       "message": "Order queued for immediate asset-delivery retry.",
+         *       "status": "processing"
          *     }
          */
         RateDecisionResponse: {
@@ -1469,43 +1435,6 @@ export type components = {
          * @enum {string}
          */
         ReceiverAddressFormat: ReceiverAddressFormat;
-        /**
-         * RetryDeliveryRequest
-         * @description Request model for /retry_delivery endpoint to trigger immediate keysend retry
-         * @example {
-         *       "order_id": "550e8400-e29b-41d4-a716-446655440000"
-         *     }
-         */
-        RetryDeliveryRequest: {
-            /**
-             * Order Id
-             * @description Order ID to retry asset delivery for
-             */
-            order_id: string;
-        };
-        /**
-         * RetryDeliveryResponse
-         * @description Response model for /retry_delivery endpoint
-         * @example {
-         *       "message": "Order queued for immediate asset-delivery retry.",
-         *       "status": "processing"
-         *     }
-         */
-        RetryDeliveryResponse: {
-            /** @description Status of the request */
-            status: components['schemas']['RetryDeliveryStatus'];
-            /**
-             * Message
-             * @description Human-readable message about the result
-             */
-            message: string;
-        };
-        /**
-         * RetryDeliveryStatus
-         * @description Status codes for /retry_delivery endpoint responses
-         * @enum {string}
-         */
-        RetryDeliveryStatus: RetryDeliveryStatus;
         /**
          * RouteStep
          * @description Single step in a route (one swap within a trading pair).
@@ -1592,12 +1521,12 @@ export type components = {
             qty_to: number;
             /**
              * From Asset
-             * @example rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd
+             * @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8
              */
             from_asset?: string | null;
             /**
              * To Asset
-             * @example rgb:2eVw8uw-8G88LQ2tQ-kexM12SoD-nCX8DmQrw-yLMu6JDfK-xx1SCfc
+             * @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE
              */
             to_asset?: string | null;
             /**
@@ -2345,7 +2274,6 @@ export interface operations {
                      *       "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
                      *       "client_asset_amount": 2500,
                      *       "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
-                     *       "asset_delivery_status": "PENDING",
                      *       "access_token": "ord_live_3rCkP9dG7mN4"
                      *     }
                      */
@@ -2852,110 +2780,6 @@ export interface operations {
                      * @example {
                      *       "error_code": "SERVICE_UNAVAILABLE",
                      *       "message": "Current market price unavailable. Please try again.",
-                     *       "details": {},
-                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
-                     *     }
-                     */
-                    'application/json': components['schemas']['KaleidoErrorResponse'];
-                };
-            };
-        };
-    };
-    retryLspAssetDelivery: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                'application/json': components['schemas']['RetryDeliveryRequest'];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': components['schemas']['RetryDeliveryResponse'];
-                };
-            };
-            /** @description The supplied order ID is invalid. */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "error_code": "LSPS1_INVALID_PARAMS",
-                     *       "message": "order_id must be a valid UUID format",
-                     *       "details": {
-                     *         "code": -32602,
-                     *         "property": "order_id",
-                     *         "message": "order_id must be a valid UUID format"
-                     *       },
-                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
-                     *     }
-                     */
-                    'application/json': components['schemas']['KaleidoErrorResponse'];
-                };
-            };
-            /** @description Request validation failed before reaching application logic. */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "detail": [
-                     *         {
-                     *           "loc": [
-                     *             "body",
-                     *             "rfq_id"
-                     *           ],
-                     *           "msg": "Field required",
-                     *           "type": "missing"
-                     *         }
-                     *       ]
-                     *     }
-                     */
-                    'application/json': components['schemas']['FastAPIValidationErrorResponse'];
-                };
-            };
-            /** @description Too many requests. Respect the rate-limit headers before retrying. */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "error_code": "RATE_LIMIT_EXCEEDED",
-                     *       "message": "Too many requests",
-                     *       "details": {
-                     *         "retry_after": 60
-                     *       },
-                     *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
-                     *     }
-                     */
-                    'application/json': components['schemas']['KaleidoErrorResponse'];
-                };
-            };
-            /** @description Unhandled server error. */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "error_code": "INTERNAL_ERROR",
-                     *       "message": "Internal Server Error",
                      *       "details": {},
                      *       "request_id": "req_01HV8Q9X7G0Q7Y3Z"
                      *     }
@@ -4602,17 +4426,10 @@ export interface operations {
         };
     };
 }
-export enum AssetDeliveryStatus {
-    NOT_REQUIRED = 'NOT_REQUIRED',
-    PENDING = 'PENDING',
-    IN_PROGRESS = 'IN_PROGRESS',
-    COMPLETED = 'COMPLETED',
-    FAILED = 'FAILED',
-    RATE_CHANGED = 'RATE_CHANGED',
-}
 export enum BitcoinNetwork {
     Mainnet = 'Mainnet',
     Testnet = 'Testnet',
+    Testnet4 = 'Testnet4',
     Signet = 'Signet',
     Regtest = 'Regtest',
 }
@@ -4664,12 +4481,6 @@ export enum ReceiverAddressFormat {
     ARKADE_ADDRESS = 'ARKADE_ADDRESS',
     ARKADE_INVOICE = 'ARKADE_INVOICE',
     CASHU_TOKEN = 'CASHU_TOKEN',
-}
-export enum RetryDeliveryStatus {
-    processing = 'processing',
-    not_found = 'not_found',
-    no_pending_delivery = 'no_pending_delivery',
-    error = 'error',
 }
 export enum SwapOrderStatus {
     OPEN = 'OPEN',

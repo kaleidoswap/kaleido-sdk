@@ -6,14 +6,12 @@ import type { operations, components } from './generated/api-types.js';
 
 // Re-export enums as values (type + runtime)
 export {
-    AssetDeliveryStatus,
     BitcoinNetwork,
     Layer,
     OrderState,
     PaymentState,
     PaymentStatus,
     ReceiverAddressFormat,
-    RetryDeliveryStatus,
     SwapOrderStatus,
     SwapStatus,
 } from './generated/api-types.js';
@@ -82,8 +80,6 @@ export type EstimateLspFeesRequest = RequestBody<'estimateLspFees'>;
 export type EstimateLspFeesResponse = ResponseSuccess<'estimateLspFees'>;
 export type RateDecisionRequest = RequestBody<'submitLspRateDecision'>;
 export type RateDecisionResponse = ResponseSuccess<'submitLspRateDecision'>;
-export type RetryDeliveryRequest = RequestBody<'retryLspAssetDelivery'>;
-export type RetryDeliveryResponse = ResponseSuccess<'retryLspAssetDelivery'>;
 
 // ============================================================================
 // Schema types (matching Python SDK exports)

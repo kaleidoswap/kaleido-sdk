@@ -31,8 +31,6 @@ from ._generated.api_types import (
     PairQuoteResponse,
     RateDecisionRequest,
     RateDecisionResponse,
-    RetryDeliveryRequest,
-    RetryDeliveryResponse,
     RoutesRequest,
     RoutesResponse,
     SwapNodeInfoResponse,
@@ -620,16 +618,6 @@ class MakerClient:
         """
         data = await self._http.maker_post("/api/v1/lsps1/rate_decision", data=body)
         return RateDecisionResponse.model_validate(data)
-
-    async def retry_asset_delivery(self, body: RetryDeliveryRequest) -> RetryDeliveryResponse:
-        """
-        Retry asset delivery for a failed order.
-
-        Args:
-            body: Retry delivery request
-        """
-        data = await self._http.maker_post("/api/v1/lsps1/retry_delivery", data=body)
-        return RetryDeliveryResponse.model_validate(data)
 
     # =========================================================================
     # Convenience Methods
