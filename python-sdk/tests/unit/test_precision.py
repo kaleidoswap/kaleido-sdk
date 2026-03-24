@@ -7,6 +7,7 @@ import pytest
 from kaleido_sdk import (
     MappedAsset,
     PrecisionHandler,
+    ValidationError,
     create_precision_handler,
     to_display_amount,
     to_raw_amount,
@@ -37,6 +38,19 @@ class TestStandaloneFunctions:
         # USDT precision 6
         assert to_display_amount(1_000_000, 6) == 1.0
         assert to_display_amount(100_500_000, 6) == 100.5
+
+    def test_to_raw_amount_rejects_too_many_decimal_places(self) -> None:
+        """Amounts beyond asset precision must be rejected, not truncated."""
+        with pytest.raises(ValidationError, match="more than 8 decimal places"):
+            to_raw_amount(0.000000001, 8)
+
+    def test_to_raw_amount_rejects_non_finite_values(self) -> None:
+        """NaN and infinity are invalid display amounts."""
+        with pytest.raises(ValidationError, match="must be finite"):
+            to_raw_amount(float("nan"), 8)
+
+        with pytest.raises(ValidationError, match="must be finite"):
+            to_raw_amount(float("inf"), 8)
 
 
 class TestPrecisionHandler:
@@ -89,6 +103,13 @@ class TestPrecisionHandler:
         raw = handler.to_raw_amount(1.5, btc_asset["asset_id"])
         assert raw == 150_000_000
 
+    def test_to_raw_amount_rejects_extra_precision(
+        self, handler: PrecisionHandler, btc_asset: MappedAsset
+    ) -> None:
+        """Handler conversion must reject values beyond configured precision."""
+        with pytest.raises(ValidationError, match="more than 8 decimal places"):
+            handler.to_raw_amount(0.000000001, btc_asset["asset_id"])
+
     def test_to_display_amount(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test handler to_display_amount method."""
         display = handler.to_display_amount(150_000_000, btc_asset["asset_id"])
@@ -137,6 +158,15 @@ class TestPrecisionHandler:
         assert result.valid is False
         assert result.error is not None
         assert "above maximum" in result.error
+
+    def test_validate_order_size_rejects_invalid_precision(
+        self, handler: PrecisionHandler, btc_asset: MappedAsset
+    ) -> None:
+        """Validation should surface precision errors instead of silently flooring."""
+        result = handler.validate_order_size(0.000000001, btc_asset)
+        assert result.valid is False
+        assert result.error is not None
+        assert "more than 8 decimal places" in result.error
 
     def test_get_order_size_limits(self, handler: PrecisionHandler, btc_asset: MappedAsset) -> None:
         """Test getting order size limits."""
