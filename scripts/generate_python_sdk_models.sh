@@ -50,6 +50,7 @@ generate_model() {
         --collapse-root-models
         --formatters ruff-format ruff-check
         --disable-timestamp
+        --custom-file-header "# pyright: reportAssignmentType=false"
     )
 
     # Append any additional options, if provided
