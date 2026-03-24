@@ -112,7 +112,7 @@ check-lint-python:
 
 typecheck-python:
 	@echo "📝 Type checking Python SDK..."
-	cd $(PYTHON_SDK) && uvx --with pydantic mypy kaleido_sdk --ignore-missing-imports
+	cd $(PYTHON_SDK) && uvx --with . pyright kaleido_sdk
 
 check-python: check-format-python check-lint-python typecheck-python
 	@echo "✅ Python SDK format, lint, and type checks passed!"
@@ -244,7 +244,6 @@ clean-cache:
 	@echo "🧹 Cleaning Python cache artifacts..."
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
 
 distclean: clean clean-cache

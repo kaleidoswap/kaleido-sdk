@@ -3004,6 +3004,8 @@ export type components = {
             updated_at: number;
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
             payee_pubkey: string;
+            /** @example 89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578 */
+            preimage?: string;
         };
         Peer: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */

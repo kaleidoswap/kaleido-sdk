@@ -54,28 +54,8 @@ markers = [
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
 ]
 
-[tool.mypy]
-python_version = "3.11"
-strict = false
-warn_return_any = false
-warn_unused_ignores = true
-disallow_untyped_defs = false
-plugins = ["pydantic.mypy"]
-exclude = [
-    "kaleido_sdk/_generated/",
-]
-
-[[tool.mypy.overrides]]
-module = "kaleido_sdk._generated.*"
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = "websockets.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "dateutil.*"
-ignore_missing_imports = true
+[tool.pyright]
+pythonVersion = "3.11"
 
 [tool.ruff]
 line-length = 100
