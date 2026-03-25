@@ -4,6 +4,7 @@
 
 // Import types for testing
 import type { KaleidoConfig, /* Asset, TradingPair, Quote, */ Layer } from '../src/types.js';
+import { toSmallestUnits, toDisplayUnits } from '../src/client.js';
 
 // Import error classes and HTTP error mapper
 import {
@@ -321,27 +322,20 @@ describe('Integration Tests (Local API)', () => {
 
 describe('Utility Functions', () => {
     describe('Amount Conversion', () => {
-        // These would test the WASM utility functions if available in test env
         it('should convert BTC to satoshis correctly', () => {
-            // 1 BTC = 100,000,000 satoshis
-            const btcAmount = 1.5;
-            const precision = 8;
-            const satoshis = Math.round(btcAmount * Math.pow(10, precision));
-            expect(satoshis).toBe(150000000);
+            expect(toSmallestUnits(1.5, 8)).toBe(150000000);
         });
 
         it('should convert satoshis to BTC correctly', () => {
-            const satoshis = 150000000;
-            const precision = 8;
-            const btc = satoshis / Math.pow(10, precision);
-            expect(btc).toBe(1.5);
+            expect(toDisplayUnits(150000000, 8)).toBe(1.5);
         });
 
         it('should handle USDT precision (6 decimals)', () => {
-            const usdtAmount = 100.5;
-            const precision = 6;
-            const smallest = Math.round(usdtAmount * Math.pow(10, precision));
-            expect(smallest).toBe(100500000);
+            expect(toSmallestUnits(100.5, 6)).toBe(100500000);
+        });
+
+        it('should reject excess decimal places', () => {
+            expect(() => toSmallestUnits(1.234567891, 8)).toThrow(ValidationError);
         });
     });
 

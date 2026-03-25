@@ -11,6 +11,7 @@ from kaleido_sdk import (
     KaleidoConfig,
     NetworkError,
     NodeNotConfiguredError,
+    ValidationError,
     get_sdk_name,
     get_version,
     to_display_units,
@@ -91,6 +92,11 @@ class TestUtilityFunctions:
         # USDT smallest units to display
         assert to_display_units(1_000_000, 6) == 1.0
         assert to_display_units(100_500_000, 6) == 100.5
+
+    def test_to_smallest_units_rejects_extra_precision(self) -> None:
+        """Public helper must reject values that would otherwise be rounded."""
+        with pytest.raises(ValidationError, match="more than 8 decimal places"):
+            to_smallest_units(1.234567891, 8)
 
     def test_conversion_roundtrip(self) -> None:
         """Test that conversion roundtrips correctly."""

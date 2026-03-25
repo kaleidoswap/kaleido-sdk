@@ -1,3 +1,5 @@
+import { ValidationError } from '../errors.js';
+
 export interface MappedAsset {
     asset_id: string;
     ticker: string;
@@ -22,6 +24,72 @@ export interface OrderSizeLimits {
     precision: number;
 }
 
+function expandExponentialNumber(value: number): string {
+    const str = value.toString();
+    if (!/[eE]/.test(str)) {
+        return str;
+    }
+
+    const match = str.match(/^([+-]?)(\d+)(?:\.(\d+))?[eE]([+-]?\d+)$/);
+    if (!match) {
+        throw new ValidationError(`Invalid amount: ${str}`);
+    }
+
+    const [, sign, integerPart, fractionalPart = '', exponentText] = match;
+    const exponent = Number.parseInt(exponentText, 10);
+    const digits = integerPart + fractionalPart;
+    const decimalIndex = integerPart.length + exponent;
+
+    if (decimalIndex <= 0) {
+        return `${sign}0.${'0'.repeat(Math.abs(decimalIndex))}${digits}`;
+    }
+
+    if (decimalIndex >= digits.length) {
+        return `${sign}${digits}${'0'.repeat(decimalIndex - digits.length)}`;
+    }
+
+    return `${sign}${digits.slice(0, decimalIndex)}.${digits.slice(decimalIndex)}`;
+}
+
+function normalizeDisplayAmount(displayAmount: number, precision: number): string {
+    if (!Number.isInteger(precision) || precision < 0) {
+        throw new ValidationError(`Precision must be a non-negative integer, got ${precision}`);
+    }
+
+    if (!Number.isFinite(displayAmount)) {
+        throw new ValidationError(`Amount must be finite, got ${displayAmount}`);
+    }
+
+    const normalized = expandExponentialNumber(displayAmount);
+    const unsigned =
+        normalized.startsWith('-') || normalized.startsWith('+') ? normalized.slice(1) : normalized;
+    const [, fractional = ''] = unsigned.split('.');
+
+    if (fractional.length > precision) {
+        throw new ValidationError(
+            `Amount ${displayAmount} has more than ${precision} decimal places`,
+        );
+    }
+
+    return normalized;
+}
+
+function toRawInteger(displayAmount: number, precision: number): number {
+    const normalized = normalizeDisplayAmount(displayAmount, precision);
+    const sign = normalized.startsWith('-') ? -1 : 1;
+    const unsigned =
+        normalized.startsWith('-') || normalized.startsWith('+') ? normalized.slice(1) : normalized;
+    const [integerPart, fractionalPart = ''] = unsigned.split('.');
+    const rawDigits = `${integerPart}${fractionalPart.padEnd(precision, '0')}`;
+    const rawAmount = Number(rawDigits || '0') * sign;
+
+    if (!Number.isSafeInteger(rawAmount)) {
+        throw new ValidationError(`Raw amount exceeds JavaScript safe integer range`);
+    }
+
+    return rawAmount;
+}
+
 export class PrecisionHandler {
     private assetPrecisionMap: Map<string, number> = new Map();
 
@@ -40,7 +108,7 @@ export class PrecisionHandler {
             throw new Error(`Asset ${assetId} not found in precision handler`);
         }
 
-        return Math.floor(displayAmount * Math.pow(10, assetPrecision));
+        return toRawAmount(displayAmount, assetPrecision);
     }
 
     toDisplayAmount(rawAmount: number, assetId: string): number {
@@ -62,11 +130,30 @@ export class PrecisionHandler {
 
     formatDisplayAmount(displayAmount: number, assetId: string): string {
         const assetPrecision = this.getAssetPrecision(assetId);
-        return displayAmount.toFixed(assetPrecision);
+        const normalized = normalizeDisplayAmount(displayAmount, assetPrecision);
+        const sign = normalized.startsWith('-') ? '-' : '';
+        const unsigned =
+            normalized.startsWith('-') || normalized.startsWith('+')
+                ? normalized.slice(1)
+                : normalized;
+        const [integerPart, fractionalPart = ''] = unsigned.split('.');
+
+        return `${sign}${integerPart}.${fractionalPart.padEnd(assetPrecision, '0')}`;
     }
 
     validateOrderSize(displayAmount: number, asset: MappedAsset): ValidationResult {
-        const rawAmount = this.toRawAmount(displayAmount, asset.asset_id);
+        let rawAmount: number;
+        try {
+            rawAmount = this.toRawAmount(displayAmount, asset.asset_id);
+        } catch (error) {
+            return {
+                valid: false,
+                error: error instanceof Error ? error.message : 'Invalid amount',
+                rawAmount: 0,
+                minRawAmount: asset.min_order_size,
+                maxRawAmount: asset.max_order_size,
+            };
+        }
         const minDisplayAmount = this.toDisplayAmount(asset.min_order_size, asset.asset_id);
         const maxDisplayAmount = this.toDisplayAmount(asset.max_order_size, asset.asset_id);
 
@@ -114,9 +201,13 @@ export function createPrecisionHandler(assets: MappedAsset[]): PrecisionHandler 
 }
 
 export function toRawAmount(displayAmount: number, precision: number): number {
-    return Math.floor(displayAmount * Math.pow(10, precision));
+    return toRawInteger(displayAmount, precision);
 }
 
 export function toDisplayAmount(rawAmount: number, precision: number): number {
+    if (!Number.isInteger(precision) || precision < 0) {
+        throw new ValidationError(`Precision must be a non-negative integer, got ${precision}`);
+    }
+
     return rawAmount / Math.pow(10, precision);
 }

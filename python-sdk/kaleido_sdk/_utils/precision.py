@@ -7,9 +7,11 @@ For example: 1.5 BTC (display) <-> 150000000 satoshis (raw, precision=8)
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
+from decimal import ROUND_DOWN, Decimal, InvalidOperation
 from typing import TypedDict
+
+from ..errors import ValidationError
 
 
 class MappedAsset(TypedDict):
@@ -87,7 +89,7 @@ class PrecisionHandler:
         if precision is None:
             raise KeyError(f"Asset {asset_id} not found in precision handler")
 
-        return math.floor(display_amount * (10**precision))
+        return to_raw_amount(display_amount, precision)
 
     def to_display_amount(self, raw_amount: int, asset_id: str) -> float:
         """
@@ -107,7 +109,7 @@ class PrecisionHandler:
         if precision is None:
             raise KeyError(f"Asset {asset_id} not found in precision handler")
 
-        return raw_amount / (10**precision)
+        return to_display_amount(raw_amount, precision)
 
     def get_asset_precision(self, asset_id: str) -> int:
         """
@@ -139,7 +141,8 @@ class PrecisionHandler:
             Formatted string with correct decimal places
         """
         precision = self.get_asset_precision(asset_id)
-        return f"{display_amount:.{precision}f}"
+        decimal_amount = _normalize_display_amount(display_amount, precision)
+        return f"{decimal_amount:.{precision}f}"
 
     def validate_order_size(self, display_amount: float, asset: MappedAsset) -> ValidationResult:
         """
@@ -152,7 +155,16 @@ class PrecisionHandler:
         Returns:
             Validation result with error message if invalid
         """
-        raw_amount = self.to_raw_amount(display_amount, asset["asset_id"])
+        try:
+            raw_amount = self.to_raw_amount(display_amount, asset["asset_id"])
+        except ValidationError as exc:
+            return ValidationResult(
+                valid=False,
+                error=str(exc),
+                raw_amount=0,
+                min_raw_amount=asset["min_order_size"],
+                max_raw_amount=asset["max_order_size"],
+            )
         min_display = self.to_display_amount(asset["min_order_size"], asset["asset_id"])
         max_display = self.to_display_amount(asset["max_order_size"], asset["asset_id"])
 
@@ -213,6 +225,26 @@ def create_precision_handler(assets: list[MappedAsset]) -> PrecisionHandler:
     return PrecisionHandler(assets)
 
 
+def _normalize_display_amount(display_amount: float | Decimal | str, precision: int) -> Decimal:
+    if precision < 0:
+        raise ValidationError(f"Precision must be non-negative, got {precision}")
+
+    try:
+        amount = Decimal(str(display_amount))
+    except (InvalidOperation, ValueError) as exc:
+        raise ValidationError(f"Invalid amount: {display_amount!r}") from exc
+
+    if not amount.is_finite():
+        raise ValidationError(f"Amount must be finite, got {display_amount!r}")
+
+    quantum = Decimal(1).scaleb(-precision)
+    normalized = amount.quantize(quantum, rounding=ROUND_DOWN)
+    if normalized != amount:
+        raise ValidationError(f"Amount {display_amount!r} has more than {precision} decimal places")
+
+    return normalized
+
+
 def to_raw_amount(display_amount: float, precision: int) -> int:
     """
     Standalone function to convert display amount to raw amount.
@@ -224,7 +256,8 @@ def to_raw_amount(display_amount: float, precision: int) -> int:
     Returns:
         Raw amount in atomic units
     """
-    return math.floor(display_amount * (10**precision))
+    normalized = _normalize_display_amount(display_amount, precision)
+    return int(normalized.scaleb(precision))
 
 
 def to_display_amount(raw_amount: int, precision: int) -> float:
@@ -238,4 +271,7 @@ def to_display_amount(raw_amount: int, precision: int) -> float:
     Returns:
         Human-readable amount
     """
-    return raw_amount / (10**precision)
+    if precision < 0:
+        raise ValidationError(f"Precision must be non-negative, got {precision}")
+
+    return float(Decimal(raw_amount).scaleb(-precision))
