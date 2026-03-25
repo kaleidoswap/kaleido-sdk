@@ -95,6 +95,7 @@ from ._generated.node_types import (
 )
 from ._generated.node_types import NetworkInfoResponse as NodeNetworkInfoResponse
 from ._logging import get_logger
+from .errors import TimeoutError
 
 if TYPE_CHECKING:
     from ._http_client import HttpClient
@@ -163,8 +164,14 @@ class RlnClient:
             body: Unlock request with password
         """
         _log.info("rln.unlock_wallet()")
-        await self._http.node_post("/unlock", body)
-        _log.debug("rln.unlock_wallet() -> ok")
+        try:
+            await self._http.node_post("/unlock", body)
+            _log.debug("rln.unlock_wallet() -> ok")
+        except TimeoutError as exc:
+            raise TimeoutError(
+                "Unlock request timed out. If the node has been offline or locked for a long "
+                "time, it may still be syncing. Wait a few minutes and check the node state again."
+            ) from exc
 
     async def lock_wallet(self) -> None:
         """Lock the wallet."""

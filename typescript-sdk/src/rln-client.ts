@@ -3,7 +3,7 @@
  */
 
 import { HttpClient } from './http-client.js';
-import { APIError, assertResponse } from './errors.js';
+import { APIError, TimeoutError, assertResponse } from './errors.js';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
 import { AssetSchema } from './node-types-ext.js';
@@ -126,8 +126,17 @@ export class RlnClient {
 
     async unlockWallet(body: UnlockRequest): Promise<void> {
         this._log.info('unlockWallet()');
-        assertResponse(await this.http.node.POST('/unlock', { body }));
-        this._log.info('unlockWallet() -> ok');
+        try {
+            assertResponse(await this.http.node.POST('/unlock', { body }));
+            this._log.info('unlockWallet() -> ok');
+        } catch (error) {
+            if (error instanceof TimeoutError) {
+                throw new TimeoutError(
+                    'Unlock request timed out. If the node has been offline or locked for a long time, it may still be syncing. Wait a few minutes and check the node state again.',
+                );
+            }
+            throw error;
+        }
     }
 
     async lockWallet(): Promise<void> {

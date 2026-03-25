@@ -11,6 +11,7 @@ from kaleido_sdk import (
     KaleidoConfig,
     NetworkError,
     NodeNotConfiguredError,
+    TimeoutError,
     ValidationError,
     get_sdk_name,
     get_version,
@@ -262,3 +263,17 @@ class TestConnectionErrorHandling:
 
         error_msg = str(exc_info.value)
         assert "Failed to connect" in error_msg or "Network error" in error_msg
+
+
+class TestUnlockWalletTimeoutHandling:
+    """unlock_wallet should surface a clear hint on timeout."""
+
+    async def test_unlock_timeout_contains_resync_hint(
+        self, client_with_node: KaleidoClient
+    ) -> None:
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.side_effect = TimeoutError("Request timed out")
+
+            with pytest.raises(TimeoutError, match="it may still be syncing"):
+                await rln.unlock_wallet({"password": "secret"})

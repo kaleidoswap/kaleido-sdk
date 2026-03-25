@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { HttpClient } from '../../src/http-client.js';
+import { TimeoutError } from '../../src/errors.js';
 
 describe('HttpClient', () => {
     describe('Constructor', () => {
@@ -59,6 +60,29 @@ describe('HttpClient', () => {
 
             expect(client.hasNodeClient()).toBe(true);
             expect(client.node).toBeDefined();
+        });
+
+        it('should raise TimeoutError when fetch exceeds the configured timeout', async () => {
+            const originalFetch = globalThis.fetch;
+            globalThis.fetch = async (_input, init) =>
+                await new Promise<Response>((_resolve, reject) => {
+                    init?.signal?.addEventListener('abort', () =>
+                        reject(new DOMException('Aborted', 'AbortError')),
+                    );
+                });
+
+            try {
+                const client = new HttpClient({
+                    nodeUrl: 'https://node.example.com',
+                    timeout: 5,
+                });
+
+                await expect(
+                    client.node.POST('/unlock', { body: { password: 'secret' } }),
+                ).rejects.toBeInstanceOf(TimeoutError);
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
         });
     });
 });
