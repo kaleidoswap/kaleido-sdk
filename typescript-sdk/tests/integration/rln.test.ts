@@ -1,8 +1,25 @@
 import { KaleidoClient } from '../../src/index.js';
+import type { UnlockRequest } from '../../src/node-types-ext.js';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const TEST_API_URL = process.env.TEST_API_URL || 'http://localhost:8000';
 const TEST_NODE_URL = process.env.TEST_NODE_URL || 'http://localhost:3001';
+const TEST_BITCOIND_RPC_USERNAME = process.env.TEST_BITCOIND_RPC_USERNAME || 'user';
+const TEST_BITCOIND_RPC_PASSWORD = process.env.TEST_BITCOIND_RPC_PASSWORD || 'password';
+const TEST_BITCOIND_RPC_HOST = process.env.TEST_BITCOIND_RPC_HOST || 'localhost';
+const TEST_BITCOIND_RPC_PORT = Number(process.env.TEST_BITCOIND_RPC_PORT || '18443');
+const TEST_ANNOUNCE_ADDRESS = process.env.TEST_ANNOUNCE_ADDRESS || '127.0.0.1:9735';
+
+function buildUnlockRequest(password: string): UnlockRequest {
+    return {
+        password,
+        bitcoind_rpc_username: TEST_BITCOIND_RPC_USERNAME,
+        bitcoind_rpc_password: TEST_BITCOIND_RPC_PASSWORD,
+        bitcoind_rpc_host: TEST_BITCOIND_RPC_HOST,
+        bitcoind_rpc_port: TEST_BITCOIND_RPC_PORT,
+        announce_addresses: [TEST_ANNOUNCE_ADDRESS],
+    };
+}
 
 describe('RLN Client Integration', () => {
     let client: KaleidoClient;
@@ -738,9 +755,7 @@ describe('RLN Client Integration', () => {
 
         it('should unlock wallet', async () => {
             try {
-                const request = {
-                    password: 'test_password_123',
-                };
+                const request = buildUnlockRequest('test_password_123');
                 const response = await client.rln.unlockWallet(request);
 
                 expect(response).toBeDefined();
@@ -751,9 +766,7 @@ describe('RLN Client Integration', () => {
 
         it('should fail to unlock with wrong password', async () => {
             try {
-                const request = {
-                    password: 'wrong_password',
-                };
+                const request = buildUnlockRequest('wrong_password');
                 await client.rln.unlockWallet(request);
                 throw new Error('Should have thrown');
             } catch (e: unknown) {
@@ -775,9 +788,7 @@ describe('RLN Client Integration', () => {
 
         it('should handle wallet lifecycle', async () => {
             try {
-                const request = {
-                    password: 'test_password_lifecycle',
-                };
+                const request = buildUnlockRequest('test_password_lifecycle');
 
                 // Unlock -> Lock -> Unlock again
                 await client.rln.unlockWallet(request);
