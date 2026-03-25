@@ -12,6 +12,7 @@ import {
     createPrecisionHandler,
     type MappedAsset,
 } from '../../src/utils/index.js';
+import { ValidationError } from '../../src/errors.js';
 
 describe('Precision Utilities', () => {
     describe('toRawAmount', () => {
@@ -28,6 +29,16 @@ describe('Precision Utilities', () => {
 
         it('should handle precision 0', () => {
             expect(toRawAmount(100, 0)).toBe(100);
+        });
+
+        it('should reject values with too many decimal places', () => {
+            expect(() => toRawAmount(0.000000001, 8)).toThrow(ValidationError);
+            expect(() => toRawAmount(1.234567891, 8)).toThrow('more than 8 decimal places');
+        });
+
+        it('should reject non-finite values', () => {
+            expect(() => toRawAmount(Number.NaN, 8)).toThrow('must be finite');
+            expect(() => toRawAmount(Number.POSITIVE_INFINITY, 8)).toThrow('must be finite');
         });
     });
 
@@ -77,6 +88,14 @@ describe('Precision Utilities', () => {
             expect(handler.toDisplayAmount(100000000, 'btc')).toBe(1);
         });
 
+        it('should reject extra precision in handler conversion', () => {
+            const handler = new PrecisionHandler(mockAssets);
+
+            expect(() => handler.toRawAmount(0.000000001, 'btc')).toThrow(
+                'more than 8 decimal places',
+            );
+        });
+
         it('should throw error for unknown asset', () => {
             const handler = new PrecisionHandler(mockAssets);
 
@@ -102,11 +121,28 @@ describe('Precision Utilities', () => {
             expect(tooLargeResult.error).toContain('above maximum');
         });
 
+        it('should surface invalid precision in order size validation', () => {
+            const handler = new PrecisionHandler(mockAssets);
+            const btc = mockAssets[0];
+
+            const invalidPrecisionResult = handler.validateOrderSize(0.000000001, btc);
+            expect(invalidPrecisionResult.valid).toBe(false);
+            expect(invalidPrecisionResult.error).toContain('more than 8 decimal places');
+        });
+
         it('should format display amounts', () => {
             const handler = new PrecisionHandler(mockAssets);
 
-            expect(handler.formatDisplayAmount(1.123456789, 'btc')).toBe('1.12345679');
+            expect(handler.formatDisplayAmount(1.12345678, 'btc')).toBe('1.12345678');
             expect(handler.formatDisplayAmount(100.5, 'usdt')).toBe('100.500000');
+        });
+
+        it('should reject extra precision while formatting', () => {
+            const handler = new PrecisionHandler(mockAssets);
+
+            expect(() => handler.formatDisplayAmount(1.123456789, 'btc')).toThrow(
+                'more than 8 decimal places',
+            );
         });
 
         it('should get order size limits', () => {

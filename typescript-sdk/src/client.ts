@@ -10,6 +10,7 @@ import { RlnClient } from './rln-client.js';
 import { LogState, applyLogLevel, setComponentLogLevel, setLogger } from './logging.js';
 import type { LogLevel, LogLevelName, SdkLogger } from './logging.js';
 import type { KaleidoConfig } from './types/config.js';
+import { toRawAmount, toDisplayAmount } from './utils/precision.js';
 
 /**
  * Kaleidoswap SDK Client
@@ -126,11 +127,11 @@ export type { LogLevel, LogLevelName, SdkLogger };
 // ============================================================================
 
 export function toSmallestUnits(amount: number, precision: number): number {
-    return Math.round(amount * Math.pow(10, precision));
+    return toRawAmount(amount, precision);
 }
 
 export function toDisplayUnits(amount: number, precision: number): number {
-    return amount / Math.pow(10, precision);
+    return toDisplayAmount(amount, precision);
 }
 
 export function getVersion(): string {

@@ -12,6 +12,7 @@ from ._http_client import HttpClient
 from ._logging import apply_log_level
 from ._maker_client import MakerClient
 from ._rln_client import RlnClient
+from ._utils.precision import to_display_amount, to_raw_amount
 from .errors import NodeNotConfiguredError
 from .types import KaleidoConfig
 
@@ -192,7 +193,7 @@ def to_smallest_units(amount: float, precision: int) -> int:
         sats = to_smallest_units(1.5, 8)  # 150000000
         ```
     """
-    return round(amount * (10**precision))
+    return to_raw_amount(amount, precision)
 
 
 def to_display_units(amount: int, precision: int) -> float:
@@ -211,7 +212,7 @@ def to_display_units(amount: int, precision: int) -> float:
         btc = to_display_units(150000000, 8)  # 1.5
         ```
     """
-    return amount / (10**precision)
+    return to_display_amount(amount, precision)
 
 
 def get_version() -> str:
