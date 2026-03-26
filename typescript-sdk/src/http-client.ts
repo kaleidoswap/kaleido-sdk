@@ -8,7 +8,7 @@ import createClient from 'openapi-fetch';
 import type { Middleware } from 'openapi-fetch';
 import type { paths } from './generated/api-types.js';
 import type { paths as nodePaths } from './generated/node-types.js';
-import { ConfigError } from './errors.js';
+import { ConfigError, TimeoutError } from './errors.js';
 import { createLogger, LogState } from './logging.js';
 
 export interface HttpClientConfig {
@@ -74,7 +74,7 @@ function _createFetchWithTimeout(timeoutMs?: number): typeof fetch | undefined {
             return await fetch(input, { ...init, signal });
         } catch (error) {
             if (controller.signal.aborted && !init?.signal?.aborted) {
-                throw new Error(`Request timeout after ${timeoutMs}ms`);
+                throw new TimeoutError(`Request timeout after ${timeoutMs}ms`);
             }
             throw error;
         } finally {

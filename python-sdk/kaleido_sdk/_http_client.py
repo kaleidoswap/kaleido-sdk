@@ -224,7 +224,10 @@ class HttpClient:
     ) -> dict[str, Any]:
         """Make POST request to Maker API."""
         return await self._request(
-            "POST", self._maker_url(path), json=self._serialize_body(data), params=params
+            "POST",
+            self._maker_url(path),
+            json=self._serialize_body(data),
+            params=params,
         )
 
     # =========================================================================
@@ -247,7 +250,10 @@ class HttpClient:
     ) -> dict[str, Any]:
         """Make POST request to Node API."""
         return await self._request(
-            "POST", self._node_url(path), json=self._serialize_body(data), params=params
+            "POST",
+            self._node_url(path),
+            json=self._serialize_body(data),
+            params=params,
         )
 
     # =========================================================================
