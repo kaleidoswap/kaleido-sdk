@@ -89,7 +89,7 @@ class PrecisionHandler:
         if precision is None:
             raise KeyError(f"Asset {asset_id} not found in precision handler")
 
-        return to_raw_amount(display_amount, precision)
+        return parse_raw_amount(display_amount, precision)
 
     def to_display_amount(self, raw_amount: int, asset_id: str) -> float:
         """
@@ -245,12 +245,12 @@ def _normalize_display_amount(display_amount: float | Decimal | str, precision: 
     return normalized
 
 
-def to_raw_amount(display_amount: float, precision: int) -> int:
+def parse_raw_amount(display_amount: str | Decimal | int | float, precision: int) -> int:
     """
-    Standalone function to convert display amount to raw amount.
+    Convert an exact decimal input to raw amount without relying on float parsing.
 
     Args:
-        display_amount: Human-readable amount
+        display_amount: Human-readable amount as a string, Decimal, integer, or float
         precision: Number of decimal places
 
     Returns:

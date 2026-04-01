@@ -6,7 +6,7 @@
  */
 
 import { HttpClient } from './http-client.js';
-import { toRawAmount, toDisplayAmount } from './utils/index.js';
+import { parseRawAmount, toDisplayAmount } from './utils/precision.js';
 import { assertResponse } from './errors.js';
 import { WSClient } from './ws-client.js';
 import { createLogger, LogState } from './logging.js';
@@ -597,7 +597,7 @@ export class MakerClient {
     }
 
     toRaw(amount: number, precision: number): number {
-        return toRawAmount(amount, precision);
+        return parseRawAmount(amount, precision);
     }
 
     toDisplay(rawAmount: number, precision: number): number {

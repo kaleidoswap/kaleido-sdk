@@ -51,6 +51,35 @@ function expandExponentialNumber(value: number): string {
     return `${sign}${digits.slice(0, decimalIndex)}.${digits.slice(decimalIndex)}`;
 }
 
+function expandExponentialString(value: string): string {
+    const trimmed = value.trim();
+    const match = trimmed.match(/^([+-]?)(?:(\d+)(?:\.(\d*))?|\.(\d+))(?:[eE]([+-]?\d+))?$/);
+    if (!match) {
+        throw new ValidationError(`Invalid amount: ${value}`);
+    }
+
+    const [, sign, integerPartRaw, fractionalPartRaw, leadingFractionRaw, exponentText] = match;
+    const integerPart = integerPartRaw ?? '0';
+    const fractionalPart = fractionalPartRaw ?? leadingFractionRaw ?? '';
+    const digits = `${integerPart}${fractionalPart}`;
+    const exponent = exponentText ? Number.parseInt(exponentText, 10) : 0;
+    const decimalIndex = integerPart.length + exponent;
+
+    if (/^0+$/.test(digits)) {
+        return '0';
+    }
+
+    if (decimalIndex <= 0) {
+        return `${sign}0.${'0'.repeat(Math.abs(decimalIndex))}${digits}`;
+    }
+
+    if (decimalIndex >= digits.length) {
+        return `${sign}${digits}${'0'.repeat(decimalIndex - digits.length)}`;
+    }
+
+    return `${sign}${digits.slice(0, decimalIndex)}.${digits.slice(decimalIndex)}`;
+}
+
 function normalizeDisplayAmount(displayAmount: number, precision: number): string {
     if (!Number.isInteger(precision) || precision < 0) {
         throw new ValidationError(`Precision must be a non-negative integer, got ${precision}`);
@@ -74,8 +103,32 @@ function normalizeDisplayAmount(displayAmount: number, precision: number): strin
     return normalized;
 }
 
-function toRawInteger(displayAmount: number, precision: number): number {
-    const normalized = normalizeDisplayAmount(displayAmount, precision);
+function parseNormalizedDisplayAmount(displayAmount: string | number, precision: number): number {
+    const normalized =
+        typeof displayAmount === 'number'
+            ? normalizeDisplayAmount(displayAmount, precision)
+            : (() => {
+                  if (!Number.isInteger(precision) || precision < 0) {
+                      throw new ValidationError(
+                          `Precision must be a non-negative integer, got ${precision}`,
+                      );
+                  }
+
+                  const exactNormalized = expandExponentialString(displayAmount);
+                  const unsigned =
+                      exactNormalized.startsWith('-') || exactNormalized.startsWith('+')
+                          ? exactNormalized.slice(1)
+                          : exactNormalized;
+                  const [, fractional = ''] = unsigned.split('.');
+
+                  if (fractional.length > precision) {
+                      throw new ValidationError(
+                          `Amount ${displayAmount} has more than ${precision} decimal places`,
+                      );
+                  }
+
+                  return exactNormalized;
+              })();
     const sign = normalized.startsWith('-') ? -1 : 1;
     const unsigned =
         normalized.startsWith('-') || normalized.startsWith('+') ? normalized.slice(1) : normalized;
@@ -108,7 +161,7 @@ export class PrecisionHandler {
             throw new Error(`Asset ${assetId} not found in precision handler`);
         }
 
-        return toRawAmount(displayAmount, assetPrecision);
+        return parseRawAmount(displayAmount, assetPrecision);
     }
 
     toDisplayAmount(rawAmount: number, assetId: string): number {
@@ -200,8 +253,8 @@ export function createPrecisionHandler(assets: MappedAsset[]): PrecisionHandler 
     return new PrecisionHandler(assets);
 }
 
-export function toRawAmount(displayAmount: number, precision: number): number {
-    return toRawInteger(displayAmount, precision);
+export function parseRawAmount(displayAmount: string | number, precision: number): number {
+    return parseNormalizedDisplayAmount(displayAmount, precision);
 }
 
 export function toDisplayAmount(rawAmount: number, precision: number): number {

@@ -14,8 +14,8 @@ from kaleido_sdk import (
     Layer,
     PairQuoteRequest,
     SwapLegInput,
-    to_display_units,
-    to_smallest_units,
+    parse_raw_amount,
+    to_display_amount,
 )
 
 API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
@@ -57,7 +57,7 @@ async def main() -> None:
 
     # Get a quote for 0.001 BTC
     amount = 0.001
-    amount_raw = to_smallest_units(amount, pair.base.precision)
+    amount_raw = parse_raw_amount(amount, pair.base.precision)
 
     print(f"\nGetting quote for {amount} {pair.base.ticker}...")
     print(f"  (raw amount: {amount_raw})")
@@ -84,8 +84,8 @@ async def main() -> None:
     try:
         quote = await client.maker.get_quote(quote_request)
 
-        from_display = to_display_units(quote.from_asset.amount, quote.from_asset.precision)
-        to_display = to_display_units(quote.to_asset.amount, quote.to_asset.precision)
+        from_display = to_display_amount(quote.from_asset.amount, quote.from_asset.precision)
+        to_display = to_display_amount(quote.to_asset.amount, quote.to_asset.precision)
 
         print("\nQuote received:")
         print(f"  RFQ ID: {quote.rfq_id}")

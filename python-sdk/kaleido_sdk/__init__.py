@@ -55,10 +55,12 @@ from ._maker_client import MakerClient, SwapCompletionOptions
 from ._rln_client import RlnClient
 from ._utils import (
     MappedAsset,
+    OrderSizeLimits,
     PrecisionHandler,
+    ValidationResult,
     create_precision_handler,
+    parse_raw_amount,
     to_display_amount,
-    to_raw_amount,
 )
 from ._ws_client import (
     WebSocketMessage,
@@ -69,8 +71,6 @@ from .client import (
     KaleidoClient,
     get_sdk_name,
     get_version,
-    to_display_units,
-    to_smallest_units,
 )
 from .errors import (
     APIError,
@@ -164,15 +164,15 @@ __all__ = [
     "RlnClient",
     "SwapCompletionOptions",
     # Utility functions
-    "to_smallest_units",
-    "to_display_units",
-    "to_raw_amount",
+    "parse_raw_amount",
     "to_display_amount",
     "get_version",
     "get_sdk_name",
     "PrecisionHandler",
     "MappedAsset",
     "create_precision_handler",
+    "ValidationResult",
+    "OrderSizeLimits",
     # WebSocket
     "WSAction",
     "WSClient",

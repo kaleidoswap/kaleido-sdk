@@ -13,7 +13,7 @@ import {
     KaleidoClient,
     createAssetPairMapper,
     createPrecisionHandler,
-    toRawAmount,
+    parseRawAmount,
     toDisplayAmount,
 } from 'kaleido-sdk';
 
@@ -70,7 +70,7 @@ async function main() {
 
     if (btc) {
         // Using standalone functions (when you know precision)
-        const rawAmount = toRawAmount(1.5, btc.precision);
+        const rawAmount = parseRawAmount(1.5, btc.precision);
         console.log(`  1.5 BTC = ${rawAmount} atomic units (precision: ${btc.precision})`);
 
         const displayAmount = toDisplayAmount(rawAmount, btc.precision);

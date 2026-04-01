@@ -2,31 +2,35 @@
 Tests for precision utilities.
 """
 
+from decimal import Decimal
+
 import pytest
 
 from kaleido_sdk import (
     MappedAsset,
+    OrderSizeLimits,
     PrecisionHandler,
     ValidationError,
+    ValidationResult,
     create_precision_handler,
+    parse_raw_amount,
     to_display_amount,
-    to_raw_amount,
 )
 
 
 class TestStandaloneFunctions:
     """Tests for standalone precision functions."""
 
-    def test_to_raw_amount(self) -> None:
+    def test_parse_raw_amount(self) -> None:
         """Test converting display to raw amount."""
         # BTC precision 8
-        assert to_raw_amount(1.0, 8) == 100_000_000
-        assert to_raw_amount(0.5, 8) == 50_000_000
-        assert to_raw_amount(0.00000001, 8) == 1
+        assert parse_raw_amount(1.0, 8) == 100_000_000
+        assert parse_raw_amount(0.5, 8) == 50_000_000
+        assert parse_raw_amount(0.00000001, 8) == 1
 
         # USDT precision 6
-        assert to_raw_amount(1.0, 6) == 1_000_000
-        assert to_raw_amount(100.5, 6) == 100_500_000
+        assert parse_raw_amount(1.0, 6) == 1_000_000
+        assert parse_raw_amount(100.5, 6) == 100_500_000
 
     def test_to_display_amount(self) -> None:
         """Test converting raw to display amount."""
@@ -39,18 +43,38 @@ class TestStandaloneFunctions:
         assert to_display_amount(1_000_000, 6) == 1.0
         assert to_display_amount(100_500_000, 6) == 100.5
 
-    def test_to_raw_amount_rejects_too_many_decimal_places(self) -> None:
+    def test_parse_raw_amount_rejects_too_many_decimal_places(self) -> None:
         """Amounts beyond asset precision must be rejected, not truncated."""
         with pytest.raises(ValidationError, match="more than 8 decimal places"):
-            to_raw_amount(0.000000001, 8)
+            parse_raw_amount(0.000000001, 8)
 
-    def test_to_raw_amount_rejects_non_finite_values(self) -> None:
+    def test_parse_raw_amount_rejects_non_finite_values(self) -> None:
         """NaN and infinity are invalid display amounts."""
         with pytest.raises(ValidationError, match="must be finite"):
-            to_raw_amount(float("nan"), 8)
+            parse_raw_amount(float("nan"), 8)
 
         with pytest.raises(ValidationError, match="must be finite"):
-            to_raw_amount(float("inf"), 8)
+            parse_raw_amount(float("inf"), 8)
+
+    def test_parse_raw_amount_from_string(self) -> None:
+        """Exact string inputs should convert without float round-tripping."""
+        assert parse_raw_amount("1.0", 8) == 100_000_000
+        assert parse_raw_amount("0.00000001", 8) == 1
+        assert parse_raw_amount("100.5", 6) == 100_500_000
+
+    def test_parse_raw_amount_from_decimal_and_int(self) -> None:
+        """Decimal and integer inputs should be supported by the exact helper."""
+        assert parse_raw_amount(Decimal("1.5"), 8) == 150_000_000
+        assert parse_raw_amount(2, 8) == 200_000_000
+
+    def test_parse_raw_amount_rejects_extra_precision(self) -> None:
+        """Parse helper must reject amounts beyond asset precision."""
+        with pytest.raises(ValidationError, match="more than 8 decimal places"):
+            parse_raw_amount("0.000000001", 8)
+
+    def test_parse_raw_amount_exported_from_package_root(self) -> None:
+        """Package root should export the parse-oriented name."""
+        assert parse_raw_amount("2", 8) == 200_000_000
 
 
 class TestPrecisionHandler:
@@ -176,3 +200,25 @@ class TestPrecisionHandler:
         assert limits.precision == 8
         assert limits.min_display_amount == 0.0001
         assert limits.max_display_amount == 1.0
+
+
+class TestPublicExports:
+    """Tests for utility symbols exported from the package root."""
+
+    def test_precision_result_types_are_importable(self) -> None:
+        validation = ValidationResult(
+            valid=True,
+            raw_amount=10,
+            min_raw_amount=1,
+            max_raw_amount=100,
+        )
+        limits = OrderSizeLimits(
+            min_display_amount=0.1,
+            max_display_amount=1.0,
+            min_raw_amount=1,
+            max_raw_amount=100,
+            precision=8,
+        )
+
+        assert validation.valid is True
+        assert limits.precision == 8

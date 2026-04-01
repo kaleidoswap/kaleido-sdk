@@ -12,7 +12,6 @@ from ._http_client import HttpClient
 from ._logging import apply_log_level
 from ._maker_client import MakerClient
 from ._rln_client import RlnClient
-from ._utils.precision import to_display_amount, to_raw_amount
 from .errors import NodeNotConfiguredError
 from .types import KaleidoConfig
 
@@ -172,49 +171,6 @@ class KaleidoClient:
         await self.close()
 
 
-# =============================================================================
-# Utility Functions
-# =============================================================================
-
-
-def to_smallest_units(amount: float, precision: int) -> int:
-    """
-    Convert display units to smallest units (e.g., BTC to satoshis).
-
-    Args:
-        amount: Amount in display units
-        precision: Decimal precision (e.g., 8 for BTC)
-
-    Returns:
-        Amount in smallest units as integer
-
-    Example:
-        ```python
-        sats = to_smallest_units(1.5, 8)  # 150000000
-        ```
-    """
-    return to_raw_amount(amount, precision)
-
-
-def to_display_units(amount: int, precision: int) -> float:
-    """
-    Convert smallest units to display units (e.g., satoshis to BTC).
-
-    Args:
-        amount: Amount in smallest units
-        precision: Decimal precision (e.g., 8 for BTC)
-
-    Returns:
-        Amount in display units
-
-    Example:
-        ```python
-        btc = to_display_units(150000000, 8)  # 1.5
-        ```
-    """
-    return to_display_amount(amount, precision)
-
-
 def get_version() -> str:
     """
     Get SDK version.
@@ -237,8 +193,6 @@ def get_sdk_name() -> str:
 
 __all__ = [
     "KaleidoClient",
-    "to_smallest_units",
-    "to_display_units",
     "get_version",
     "get_sdk_name",
 ]
