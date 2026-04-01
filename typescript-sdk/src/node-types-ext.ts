@@ -98,8 +98,14 @@ export type ListTransactionsResponse = ResponseSuccess<'/listtransactions', 'pos
 
 export type GetAssetMediaRequest = RequestBody<'/getassetmedia', 'post'>;
 export type GetAssetMediaResponse = ResponseSuccess<'/getassetmedia', 'post'>;
+export type PostAssetMediaRequest = components['schemas']['PostAssetMediaRequest'];
+export type PostAssetMediaResponse = ResponseSuccess<'/postassetmedia', 'post'>;
+export type InflateRequest = RequestBody<'/inflate', 'post'>;
+export type InflateResponse = ResponseSuccess<'/inflate', 'post'>;
 export type IssueAssetNIARequest = RequestBody<'/issueassetnia', 'post'>;
 export type IssueAssetNIAResponse = ResponseSuccess<'/issueassetnia', 'post'>;
+export type IssueAssetIFARequest = RequestBody<'/issueassetifa', 'post'>;
+export type IssueAssetIFAResponse = ResponseSuccess<'/issueassetifa', 'post'>;
 export type IssueAssetCFARequest = RequestBody<'/issueassetcfa', 'post'>;
 export type IssueAssetCFAResponse = ResponseSuccess<'/issueassetcfa', 'post'>;
 export type IssueAssetUDARequest = RequestBody<'/issueassetuda', 'post'>;
@@ -112,6 +118,7 @@ export type IssueAssetUDAResponse = ResponseSuccess<'/issueassetuda', 'post'>;
 export type ListTransfersRequest = RequestBody<'/listtransfers', 'post'>;
 export type ListTransfersResponse = ResponseSuccess<'/listtransfers', 'post'>;
 export type FailTransfersRequest = RequestBody<'/failtransfers', 'post'>;
+export type FailTransfersResponse = ResponseSuccess<'/failtransfers', 'post'>;
 
 // ============================================================================
 // Lightning Network - Channels
@@ -177,6 +184,7 @@ export type SignMessageRequest = RequestBody<'/signmessage', 'post'>;
 export type SignMessageResponse = ResponseSuccess<'/signmessage', 'post'>;
 export type SendOnionMessageRequest = RequestBody<'/sendonionmessage', 'post'>;
 export type CheckIndexerUrlRequest = RequestBody<'/checkindexerurl', 'post'>;
+export type CheckIndexerUrlResponse = ResponseSuccess<'/checkindexerurl', 'post'>;
 export type CheckProxyEndpointRequest = RequestBody<'/checkproxyendpoint', 'post'>;
 export type RevokeTokenRequest = RequestBody<'/revoketoken', 'post'>;
 export type EstimateFeeRequest = RequestBody<'/estimatefee', 'post'>;
@@ -198,15 +206,12 @@ export type AssignmentAny = components['schemas']['AssignmentAny'];
 export type AssignmentFungible = components['schemas']['AssignmentFungible'];
 export type AssignmentInflationRight = components['schemas']['AssignmentInflationRight'];
 export type AssignmentNonFungible = components['schemas']['AssignmentNonFungible'];
-export type AssignmentReplaceRight = components['schemas']['AssignmentReplaceRight'];
 
 // Core entity schemas
 export type BtcBalance = components['schemas']['BtcBalance'];
 export type BtcBalanceRequest = components['schemas']['BtcBalanceRequest'];
 export type Channel = components['schemas']['Channel'];
-export type CheckIndexerUrlResponse = components['schemas']['CheckIndexerUrlResponse'];
 export type EmptyResponse = components['schemas']['EmptyResponse'];
-export type FailTransfersResponse = components['schemas']['FailTransfersResponse'];
 export type Payment = components['schemas']['Payment'];
 export type Peer = components['schemas']['Peer'];
 export type Swap = components['schemas']['Swap'];
@@ -218,8 +223,6 @@ export type Unspent = components['schemas']['Unspent'];
 export type BlockTime = components['schemas']['BlockTime'];
 export type EmbeddedMedia = components['schemas']['EmbeddedMedia'];
 export type Media = components['schemas']['Media'];
-export type PostAssetMediaRequest = components['schemas']['PostAssetMediaRequest'];
-export type PostAssetMediaResponse = components['schemas']['PostAssetMediaResponse'];
 export type ProofOfReserves = components['schemas']['ProofOfReserves'];
 export type RgbAllocation = components['schemas']['RgbAllocation'];
 export type Token = components['schemas']['Token'];

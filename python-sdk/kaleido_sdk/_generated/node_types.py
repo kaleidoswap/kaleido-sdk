@@ -36,6 +36,7 @@ class AssetSchema(StrEnum):
     NIA = "Nia"
     UDA = "Uda"
     CFA = "Cfa"
+    IFA = "Ifa"
 
 
 class AssignmentAny(BaseModel):
@@ -54,10 +55,6 @@ class AssignmentInflationRight(BaseModel):
 
 class AssignmentNonFungible(BaseModel):
     type: Literal["NonFungible"]
-
-
-class AssignmentReplaceRight(BaseModel):
-    type: Literal["ReplaceRight"]
 
 
 class BackupRequest(BaseModel):
@@ -263,6 +260,21 @@ class IndexerProtocol(StrEnum):
     ESPLORA = "Esplora"
 
 
+class InflateRequest(BaseModel):
+    asset_id: Annotated[
+        str, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ]
+    inflation_amounts: Annotated[list[int], Field(examples=[[100, 50]], min_length=1)]
+    fee_rate: Annotated[int, Field(examples=[5])]
+    min_confirmations: Annotated[int, Field(examples=[1])]
+
+
+class InflateResponse(BaseModel):
+    txid: Annotated[
+        str, Field(examples=["7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664"])
+    ]
+
+
 class InitRequest(BaseModel):
     password: Annotated[str, Field(examples=["nodepassword"])]
     mnemonic: Annotated[
@@ -319,6 +331,17 @@ class IssueAssetCFARequest(BaseModel):
     ] = None
 
 
+class IssueAssetIFARequest(BaseModel):
+    amounts: Annotated[list[int], Field(examples=[[1000, 600]], min_length=1)]
+    inflation_amounts: Annotated[list[int], Field(examples=[[100, 50]])]
+    ticker: Annotated[str, Field(examples=["USDT"])]
+    name: Annotated[str, Field(examples=["Tether"])]
+    precision: Annotated[int, Field(examples=[0])]
+    reject_list_url: Annotated[
+        str | None, Field(examples=["https://some.domain/someasset/rejectlist"])
+    ] = None
+
+
 class IssueAssetNIARequest(BaseModel):
     amounts: Annotated[list[int], Field(examples=[[1000, 600]])]
     ticker: Annotated[str, Field(examples=["USDT"])]
@@ -367,7 +390,9 @@ class KeysendResponse(BaseModel):
 
 
 class ListAssetsRequest(BaseModel):
-    filter_asset_schemas: Annotated[list[AssetSchema], Field(examples=[["Nia", "Uda", "Cfa"]])]
+    filter_asset_schemas: Annotated[
+        list[AssetSchema], Field(examples=[["Nia", "Uda", "Cfa", "Ifa"]])
+    ]
 
 
 class ListTransactionsRequest(BaseModel):
@@ -775,6 +800,7 @@ class TransferKind(StrEnum):
 
 
 class TransferStatus(StrEnum):
+    INITIATED = "Initiated"
     WAITING_COUNTERPARTY = "WaitingCounterparty"
     WAITING_CONFIRMATIONS = "WaitingConfirmations"
     SETTLED = "Settled"
@@ -818,6 +844,26 @@ class AssetCFA(BaseModel):
     added_at: Annotated[int, Field(examples=[1691161979])]
     balance: AssetBalanceResponse
     media: Media | None = None
+
+
+class AssetIFA(BaseModel):
+    asset_id: Annotated[
+        str, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ]
+    ticker: Annotated[str, Field(examples=["USDT"])]
+    name: Annotated[str, Field(examples=["Tether"])]
+    details: Annotated[str | None, Field(examples=["asset details"])] = None
+    precision: Annotated[int, Field(examples=[0])]
+    initial_supply: Annotated[int, Field(examples=[777])]
+    max_supply: Annotated[int, Field(examples=[999])]
+    known_circulating_supply: Annotated[int, Field(examples=[888])]
+    timestamp: Annotated[int, Field(examples=[1691160565])]
+    added_at: Annotated[int, Field(examples=[1691161979])]
+    balance: AssetBalanceResponse
+    media: Media | None = None
+    reject_list_url: Annotated[
+        str | None, Field(examples=["https://some.domain/someasset/rejectlist"])
+    ] = None
 
 
 class AssetMetadataResponse(BaseModel):
@@ -906,11 +952,7 @@ class DecodeRGBInvoiceResponse(BaseModel):
         str | None, Field(examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"])
     ] = None
     assignment: Annotated[
-        AssignmentFungible
-        | AssignmentNonFungible
-        | AssignmentInflationRight
-        | AssignmentReplaceRight
-        | AssignmentAny,
+        AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny,
         Field(discriminator="type"),
     ]
     network: BitcoinNetwork
@@ -926,6 +968,10 @@ class IssueAssetCFAResponse(BaseModel):
     asset: AssetCFA
 
 
+class IssueAssetIFAResponse(BaseModel):
+    asset: AssetIFA
+
+
 class IssueAssetNIAResponse(BaseModel):
     asset: AssetNIA
 
@@ -938,6 +984,7 @@ class ListAssetsResponse(BaseModel):
     nia: list[AssetNIA]
     uda: list[AssetUDA]
     cfa: list[AssetCFA]
+    ifa: list[AssetIFA]
 
 
 class ListChannelsResponse(BaseModel):
@@ -958,11 +1005,7 @@ class Recipient(BaseModel):
     ]
     witness_data: WitnessData | None = None
     assignment: Annotated[
-        AssignmentFungible
-        | AssignmentNonFungible
-        | AssignmentInflationRight
-        | AssignmentReplaceRight
-        | AssignmentAny,
+        AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny,
         Field(discriminator="type"),
     ]
     transport_endpoints: list[str]
@@ -973,11 +1016,7 @@ class RgbAllocation(BaseModel):
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
     ] = None
     assignment: Annotated[
-        AssignmentFungible
-        | AssignmentNonFungible
-        | AssignmentInflationRight
-        | AssignmentReplaceRight
-        | AssignmentAny,
+        AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny,
         Field(discriminator="type"),
     ]
     settled: Annotated[bool, Field(examples=[False])]
@@ -989,14 +1028,9 @@ class RgbInvoiceRequest(BaseModel):
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
     ] = None
     assignment: (
-        AssignmentFungible
-        | AssignmentNonFungible
-        | AssignmentInflationRight
-        | AssignmentReplaceRight
-        | AssignmentAny
-        | None
+        AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny | None
     ) = None
-    duration_seconds: Annotated[int | None, Field(examples=[86400])] = None
+    expiration_timestamp: Annotated[int | None, Field(examples=[1695811760])] = None
     witness: Annotated[bool, Field(examples=[False])]
 
 
@@ -1004,6 +1038,7 @@ class SendRgbRequest(BaseModel):
     donation: Annotated[bool, Field(examples=[False])]
     fee_rate: Annotated[int, Field(examples=[5])]
     min_confirmations: Annotated[int, Field(examples=[1])]
+    expiration_timestamp: Annotated[int | None, Field(examples=[1695811760])] = None
     recipient_map: Annotated[
         dict[str, list[Recipient]],
         Field(
@@ -1099,20 +1134,11 @@ class Transfer(BaseModel):
     updated_at: Annotated[int, Field(examples=[1691162674])]
     status: TransferStatus
     requested_assignment: (
-        AssignmentFungible
-        | AssignmentNonFungible
-        | AssignmentInflationRight
-        | AssignmentReplaceRight
-        | AssignmentAny
-        | None
+        AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny | None
     ) = None
     assignments: list[
         Annotated[
-            AssignmentFungible
-            | AssignmentNonFungible
-            | AssignmentInflationRight
-            | AssignmentReplaceRight
-            | AssignmentAny,
+            AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny,
             Field(discriminator="type"),
         ]
     ]
@@ -1129,7 +1155,7 @@ class Transfer(BaseModel):
         Field(examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"]),
     ] = None
     change_utxo: Annotated[str | None, Field(examples=[None])] = None
-    expiration: Annotated[int | None, Field(examples=[1691171612])] = None
+    expiration_timestamp: Annotated[int | None, Field(examples=[1691171612])] = None
     transport_endpoints: list[TransferTransportEndpoint]
 
 

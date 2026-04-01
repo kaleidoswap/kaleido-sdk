@@ -22,6 +22,7 @@ from ._generated.node_types import (
     BtcBalanceResponse,
     ChangePasswordRequest,
     CheckIndexerUrlRequest,
+    CheckIndexerUrlResponse,
     CheckProxyEndpointRequest,
     CloseChannelRequest,
     ConnectPeerRequest,
@@ -44,12 +45,16 @@ from ._generated.node_types import (
     GetPaymentResponse,
     GetSwapRequest,
     GetSwapResponse,
+    InflateRequest,
+    InflateResponse,
     InitRequest,
     InitResponse,
     InvoiceStatusRequest,
     InvoiceStatusResponse,
     IssueAssetCFARequest,
     IssueAssetCFAResponse,
+    IssueAssetIFARequest,
+    IssueAssetIFAResponse,
     IssueAssetNIARequest,
     IssueAssetNIAResponse,
     IssueAssetUDARequest,
@@ -76,6 +81,8 @@ from ._generated.node_types import (
     NodeInfoResponse,
     OpenChannelRequest,
     OpenChannelResponse,
+    PostAssetMediaRequest,
+    PostAssetMediaResponse,
     RefreshRequest,
     RestoreRequest,
     RevokeTokenRequest,
@@ -350,6 +357,32 @@ class RlnClient:
         data = await self._http.node_post("/getassetmedia", body)
         return GetAssetMediaResponse.model_validate(data)
 
+    async def post_asset_media(self, body: PostAssetMediaRequest) -> PostAssetMediaResponse:
+        """
+        Upload media for later asset issuance.
+
+        Args:
+            body: Multipart media upload request
+        """
+        data = await self._http.node_post_multipart(
+            "/postassetmedia",
+            files={"file": ("asset-media", body.file, "application/octet-stream")},
+        )
+        return PostAssetMediaResponse.model_validate(data)
+
+    async def inflate(self, body: InflateRequest) -> InflateResponse:
+        """
+        Inflate an RGB asset on-chain.
+
+        Args:
+            body: Inflation request
+        """
+        _log.info("rln.inflate(): asset_id=%s", body.asset_id)
+        data = await self._http.node_post("/inflate", body)
+        result = InflateResponse.model_validate(data)
+        _log.info("rln.inflate() -> txid=%s", result.txid)
+        return result
+
     async def issue_asset_nia(self, body: IssueAssetNIARequest) -> IssueAssetNIAResponse:
         """
         Issue an RGB NIA (fungible) asset.
@@ -362,6 +395,22 @@ class RlnClient:
         result = IssueAssetNIAResponse.model_validate(data)
         _log.info(
             "rln.issue_asset_nia() -> asset_id=%s",
+            result.asset.asset_id if result.asset else "<none>",
+        )
+        return result
+
+    async def issue_asset_ifa(self, body: IssueAssetIFARequest) -> IssueAssetIFAResponse:
+        """
+        Issue an RGB IFA asset.
+
+        Args:
+            body: Asset issuance request
+        """
+        _log.info("rln.issue_asset_ifa(): ticker=%s", body.ticker)
+        data = await self._http.node_post("/issueassetifa", body)
+        result = IssueAssetIFAResponse.model_validate(data)
+        _log.info(
+            "rln.issue_asset_ifa() -> asset_id=%s",
             result.asset.asset_id if result.asset else "<none>",
         )
         return result
@@ -719,14 +768,15 @@ class RlnClient:
         """
         await self._http.node_post("/sendonionmessage", body)
 
-    async def check_indexer_url(self, body: CheckIndexerUrlRequest) -> None:
+    async def check_indexer_url(self, body: CheckIndexerUrlRequest) -> CheckIndexerUrlResponse:
         """
         Check if an indexer URL is valid.
 
         Args:
             body: Request with indexer_url
         """
-        await self._http.node_post("/checkindexerurl", body)
+        data = await self._http.node_post("/checkindexerurl", body)
+        return CheckIndexerUrlResponse.model_validate(data)
 
     async def check_proxy_endpoint(self, body: CheckProxyEndpointRequest) -> None:
         """

@@ -256,6 +256,26 @@ class HttpClient:
             params=params,
         )
 
+    async def node_post_multipart(
+        self,
+        path: str,
+        files: dict[str, tuple[str, bytes, str]],
+        data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Make multipart/form-data POST request to Node API."""
+        client = await self._get_client()
+        headers = dict(client.headers)
+        headers.pop("Content-Type", None)
+        return await self._request(
+            "POST",
+            self._node_url(path),
+            files=files,
+            data=data,
+            params=params,
+            headers=headers,
+        )
+
     # =========================================================================
     # Lifecycle
     # =========================================================================

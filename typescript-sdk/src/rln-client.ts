@@ -32,8 +32,14 @@ import type {
     AssetMetadataResponse,
     GetAssetMediaRequest,
     GetAssetMediaResponse,
+    PostAssetMediaRequest,
+    PostAssetMediaResponse,
+    InflateRequest,
+    InflateResponse,
     IssueAssetNIARequest,
     IssueAssetNIAResponse,
+    IssueAssetIFARequest,
+    IssueAssetIFAResponse,
     IssueAssetCFARequest,
     IssueAssetCFAResponse,
     IssueAssetUDARequest,
@@ -44,6 +50,7 @@ import type {
     ListTransfersResponse,
     RefreshRequest,
     FailTransfersRequest,
+    FailTransfersResponse,
     // Lightning Network - Channels
     ListChannelsResponse,
     OpenChannelRequest,
@@ -88,6 +95,7 @@ import type {
     SignMessageResponse,
     SendOnionMessageRequest,
     CheckIndexerUrlRequest,
+    CheckIndexerUrlResponse,
     CheckProxyEndpointRequest,
     RevokeTokenRequest,
 } from './node-types-ext.js';
@@ -248,10 +256,38 @@ export class RlnClient {
         return assertResponse(await this.http.node.POST('/getassetmedia', { body }));
     }
 
+    async postAssetMedia(body: PostAssetMediaRequest): Promise<PostAssetMediaResponse> {
+        this._log.info('postAssetMedia()');
+        return assertResponse(
+            await this.http.node.POST('/postassetmedia', {
+                body,
+                bodySerializer() {
+                    const form = new FormData();
+                    form.set('file', new Blob([body.file]));
+                    return form;
+                },
+            }),
+        );
+    }
+
+    async inflate(body: InflateRequest): Promise<InflateResponse> {
+        this._log.info('inflate(): asset_id=%s', body.asset_id);
+        const result = assertResponse(await this.http.node.POST('/inflate', { body }));
+        this._log.info('inflate() -> txid=%s', result.txid);
+        return result;
+    }
+
     async issueAssetNIA(body: IssueAssetNIARequest): Promise<IssueAssetNIAResponse> {
         this._log.info('issueAssetNIA(): ticker=%s', body.ticker);
         const result = assertResponse(await this.http.node.POST('/issueassetnia', { body }));
         this._log.info('issueAssetNIA() -> asset_id=%s', result.asset?.asset_id);
+        return result;
+    }
+
+    async issueAssetIFA(body: IssueAssetIFARequest): Promise<IssueAssetIFAResponse> {
+        this._log.info('issueAssetIFA(): ticker=%s', body.ticker);
+        const result = assertResponse(await this.http.node.POST('/issueassetifa', { body }));
+        this._log.info('issueAssetIFA() -> asset_id=%s', result.asset?.asset_id);
         return result;
     }
 
@@ -296,9 +332,9 @@ export class RlnClient {
         this._log.info('syncRgbWallet() -> ok');
     }
 
-    async failTransfers(body: FailTransfersRequest): Promise<void> {
+    async failTransfers(body: FailTransfersRequest): Promise<FailTransfersResponse> {
         this._log.info('failTransfers()');
-        assertResponse(await this.http.node.POST('/failtransfers', { body }));
+        return assertResponse(await this.http.node.POST('/failtransfers', { body }));
     }
 
     // ============================================================================
@@ -479,9 +515,9 @@ export class RlnClient {
         assertResponse(await this.http.node.POST('/sendonionmessage', { body }));
     }
 
-    async checkIndexerUrl(body: CheckIndexerUrlRequest): Promise<void> {
+    async checkIndexerUrl(body: CheckIndexerUrlRequest): Promise<CheckIndexerUrlResponse> {
         this._log.debug('checkIndexerUrl()');
-        assertResponse(await this.http.node.POST('/checkindexerurl', { body }));
+        return assertResponse(await this.http.node.POST('/checkindexerurl', { body }));
     }
 
     async checkProxyEndpoint(body: CheckProxyEndpointRequest): Promise<void> {

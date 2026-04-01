@@ -868,6 +868,49 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/inflate': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inflate RGB assets
+         * @description Inflate RGB assets on-chain
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    'application/json': components['schemas']['InflateRequest'];
+                };
+            };
+            responses: {
+                /** @description Successful operation */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        'application/json': components['schemas']['InflateResponse'];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/init': {
         parameters: {
             query?: never;
@@ -987,6 +1030,49 @@ export type paths = {
                     };
                     content: {
                         'application/json': components['schemas']['IssueAssetCFAResponse'];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/issueassetifa': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue an RGB IFA asset
+         * @description Issue an RGB IFA asset
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    'application/json': components['schemas']['IssueAssetIFARequest'];
+                };
+            };
+            responses: {
+                /** @description Successful operation */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        'application/json': components['schemas']['IssueAssetIFAResponse'];
                     };
                 };
             };
@@ -2379,6 +2465,32 @@ export type components = {
             balance: components['schemas']['AssetBalanceResponse'];
             media?: components['schemas']['Media'] | null;
         };
+        AssetIFA: {
+            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
+            asset_id: string;
+            /** @example USDT */
+            ticker: string;
+            /** @example Tether */
+            name: string;
+            /** @example asset details */
+            details?: string | null;
+            /** @example 0 */
+            precision: number;
+            /** @example 777 */
+            initial_supply: number;
+            /** @example 999 */
+            max_supply: number;
+            /** @example 888 */
+            known_circulating_supply: number;
+            /** @example 1691160565 */
+            timestamp: number;
+            /** @example 1691161979 */
+            added_at: number;
+            balance: components['schemas']['AssetBalanceResponse'];
+            media?: components['schemas']['Media'] | null;
+            /** @example https://some.domain/someasset/rejectlist */
+            reject_list_url?: string | null;
+        };
         AssetMetadataRequest: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id: string;
@@ -2447,7 +2559,6 @@ export type components = {
             | components['schemas']['AssignmentFungible']
             | components['schemas']['AssignmentNonFungible']
             | components['schemas']['AssignmentInflationRight']
-            | components['schemas']['AssignmentReplaceRight']
             | components['schemas']['AssignmentAny'];
         AssignmentAny: {
             /**
@@ -2486,13 +2597,6 @@ export type components = {
              * @enum {string}
              */
             type: AssignmentNonFungibleType;
-        };
-        AssignmentReplaceRight: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: AssignmentReplaceRightType;
         };
         BackupRequest: {
             /** @example /path/where/to/save/the/backup/file */
@@ -2720,6 +2824,25 @@ export type components = {
         HTLCStatus: HTLCStatus;
         /** @enum {string} */
         IndexerProtocol: IndexerProtocol;
+        InflateRequest: {
+            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
+            asset_id: string;
+            /**
+             * @example [
+             *       100,
+             *       50
+             *     ]
+             */
+            inflation_amounts: number[];
+            /** @example 5 */
+            fee_rate: number;
+            /** @example 1 */
+            min_confirmations: number;
+        };
+        InflateResponse: {
+            /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
+            txid: string;
+        };
         InitRequest: {
             /** @example nodepassword */
             password: string;
@@ -2758,6 +2881,33 @@ export type components = {
         };
         IssueAssetCFAResponse: {
             asset: components['schemas']['AssetCFA'];
+        };
+        IssueAssetIFARequest: {
+            /**
+             * @example [
+             *       1000,
+             *       600
+             *     ]
+             */
+            amounts: number[];
+            /**
+             * @example [
+             *       100,
+             *       50
+             *     ]
+             */
+            inflation_amounts: number[];
+            /** @example USDT */
+            ticker: string;
+            /** @example Tether */
+            name: string;
+            /** @example 0 */
+            precision: number;
+            /** @example https://some.domain/someasset/rejectlist */
+            reject_list_url?: string | null;
+        };
+        IssueAssetIFAResponse: {
+            asset: components['schemas']['AssetIFA'];
         };
         IssueAssetNIARequest: {
             /**
@@ -2821,7 +2971,8 @@ export type components = {
              * @example [
              *       "Nia",
              *       "Uda",
-             *       "Cfa"
+             *       "Cfa",
+             *       "Ifa"
              *     ]
              */
             filter_asset_schemas: components['schemas']['AssetSchema'][];
@@ -2830,6 +2981,7 @@ export type components = {
             nia: components['schemas']['AssetNIA'][] | null;
             uda: components['schemas']['AssetUDA'][] | null;
             cfa: components['schemas']['AssetCFA'][] | null;
+            ifa: components['schemas']['AssetIFA'][] | null;
         };
         ListChannelsResponse: {
             channels: components['schemas']['Channel'][];
@@ -3070,8 +3222,8 @@ export type components = {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string | null;
             assignment?: components['schemas']['Assignment'] | null;
-            /** @example 86400 */
-            duration_seconds?: number | null;
+            /** @example 1695811760 */
+            expiration_timestamp?: number | null;
             /** @example false */
             witness: boolean;
         };
@@ -3132,6 +3284,8 @@ export type components = {
             fee_rate: number;
             /** @example 1 */
             min_confirmations: number;
+            /** @example 1695811760 */
+            expiration_timestamp?: number | null;
             /**
              * @example {
              *       "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8": [
@@ -3308,7 +3462,7 @@ export type components = {
             /** @example null */
             change_utxo?: string | null;
             /** @example 1691171612 */
-            expiration?: number | null;
+            expiration_timestamp?: number | null;
             transport_endpoints: components['schemas']['TransferTransportEndpoint'][];
         };
         /**
@@ -3376,6 +3530,7 @@ export enum AssetSchema {
     Nia = 'Nia',
     Uda = 'Uda',
     Cfa = 'Cfa',
+    Ifa = 'Ifa',
 }
 export enum AssignmentAnyType {
     Any = 'Any',
@@ -3388,9 +3543,6 @@ export enum AssignmentInflationRightType {
 }
 export enum AssignmentNonFungibleType {
     NonFungible = 'NonFungible',
-}
-export enum AssignmentReplaceRightType {
-    ReplaceRight = 'ReplaceRight',
 }
 export enum BitcoinNetwork {
     Mainnet = 'Mainnet',
@@ -3444,6 +3596,7 @@ export enum TransferKind {
     Inflation = 'Inflation',
 }
 export enum TransferStatus {
+    Initiated = 'Initiated',
     WaitingCounterparty = 'WaitingCounterparty',
     WaitingConfirmations = 'WaitingConfirmations',
     Settled = 'Settled',
