@@ -9,7 +9,7 @@ import asyncio
 import logging
 import os
 
-from kaleido_sdk import KaleidoClient, RoutesRequest, to_display_units
+from kaleido_sdk import KaleidoClient, RoutesRequest, to_display_amount
 
 API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
 
@@ -71,7 +71,7 @@ async def main() -> None:
 
     btc_asset = next((asset for asset in assets.assets if asset.ticker == "BTC"), None)
     if btc_asset is not None:
-        one_btc = to_display_units(100_000_000, btc_asset.precision)
+        one_btc = to_display_amount(100_000_000, btc_asset.precision)
         print(f"\nPrecision check: 100000000 units = {one_btc} {btc_asset.ticker}")
 
 

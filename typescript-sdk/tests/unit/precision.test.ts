@@ -6,39 +6,43 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-    toRawAmount,
+    parseRawAmount,
     toDisplayAmount,
     PrecisionHandler,
     createPrecisionHandler,
     type MappedAsset,
-} from '../../src/utils/index.js';
+} from '../../src/utils/precision.js';
 import { ValidationError } from '../../src/errors.js';
 
 describe('Precision Utilities', () => {
-    describe('toRawAmount', () => {
-        it('should convert BTC to satoshis (8 decimals)', () => {
-            expect(toRawAmount(1, 8)).toBe(100000000);
-            expect(toRawAmount(0.5, 8)).toBe(50000000);
-            expect(toRawAmount(0.00000001, 8)).toBe(1);
+    describe('parseRawAmount', () => {
+        it('should convert numeric and exact decimal inputs to raw units', () => {
+            expect(parseRawAmount(1, 8)).toBe(100000000);
+            expect(parseRawAmount(0.5, 8)).toBe(50000000);
+            expect(parseRawAmount('1', 8)).toBe(100000000);
+            expect(parseRawAmount('0.5', 8)).toBe(50000000);
+            expect(parseRawAmount('0.00000001', 8)).toBe(1);
+            expect(parseRawAmount('100.5', 6)).toBe(100500000);
         });
 
-        it('should convert USDT to atomic units (6 decimals)', () => {
-            expect(toRawAmount(100, 6)).toBe(100000000);
-            expect(toRawAmount(0.000001, 6)).toBe(1);
-        });
-
-        it('should handle precision 0', () => {
-            expect(toRawAmount(100, 0)).toBe(100);
+        it('should support scientific notation strings', () => {
+            expect(parseRawAmount('1e-8', 8)).toBe(1);
+            expect(parseRawAmount('1e2', 6)).toBe(100000000);
         });
 
         it('should reject values with too many decimal places', () => {
-            expect(() => toRawAmount(0.000000001, 8)).toThrow(ValidationError);
-            expect(() => toRawAmount(1.234567891, 8)).toThrow('more than 8 decimal places');
+            expect(() => parseRawAmount('0.000000001', 8)).toThrow(ValidationError);
+            expect(() => parseRawAmount('1.234567891', 8)).toThrow('more than 8 decimal places');
         });
 
-        it('should reject non-finite values', () => {
-            expect(() => toRawAmount(Number.NaN, 8)).toThrow('must be finite');
-            expect(() => toRawAmount(Number.POSITIVE_INFINITY, 8)).toThrow('must be finite');
+        it('should reject invalid strings', () => {
+            expect(() => parseRawAmount('', 8)).toThrow('Invalid amount');
+            expect(() => parseRawAmount('abc', 8)).toThrow('Invalid amount');
+        });
+
+        it('should reject non-finite numeric values', () => {
+            expect(() => parseRawAmount(Number.NaN, 8)).toThrow('must be finite');
+            expect(() => parseRawAmount(Number.POSITIVE_INFINITY, 8)).toThrow('must be finite');
         });
     });
 

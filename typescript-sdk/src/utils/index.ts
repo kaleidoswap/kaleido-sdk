@@ -7,7 +7,7 @@
 export {
     PrecisionHandler,
     createPrecisionHandler,
-    toRawAmount,
+    parseRawAmount,
     toDisplayAmount,
     type MappedAsset,
     type ValidationResult,

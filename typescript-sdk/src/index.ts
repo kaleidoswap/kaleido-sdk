@@ -22,7 +22,7 @@ export { KaleidoClient } from './client.js';
 export { MakerClient } from './maker-client.js';
 export { HttpClient } from './http-client.js';
 export { WSClient } from './ws-client.js';
-export { toSmallestUnits, toDisplayUnits, getVersion, getSdkName } from './client.js';
+export { getVersion, getSdkName } from './client.js';
 
 export {
     LogLevel,
@@ -42,12 +42,18 @@ export type {
     LogState,
 } from './logging.js';
 export {
-    toRawAmount,
+    parseRawAmount,
     toDisplayAmount,
     PrecisionHandler,
     createPrecisionHandler,
     AssetPairMapper,
     createAssetPairMapper,
+} from './utils/index.js';
+export type {
+    MappedAsset,
+    ValidationResult,
+    OrderSizeLimits,
+    AssetPairMappedAsset,
 } from './utils/index.js';
 
 export {

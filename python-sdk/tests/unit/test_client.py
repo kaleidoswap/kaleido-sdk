@@ -15,8 +15,8 @@ from kaleido_sdk import (
     ValidationError,
     get_sdk_name,
     get_version,
-    to_display_units,
-    to_smallest_units,
+    parse_raw_amount,
+    to_display_amount,
 )
 from kaleido_sdk.rln import (
     AssetSchema,
@@ -70,41 +70,41 @@ class TestKaleidoClient:
 class TestUtilityFunctions:
     """Tests for utility functions."""
 
-    def test_to_smallest_units(self) -> None:
+    def test_parse_raw_amount(self) -> None:
         """Test converting to smallest units."""
         # BTC to satoshis
-        assert to_smallest_units(1.0, 8) == 100_000_000
-        assert to_smallest_units(0.5, 8) == 50_000_000
-        assert to_smallest_units(1.5, 8) == 150_000_000
-        assert to_smallest_units(0.00000001, 8) == 1
+        assert parse_raw_amount(1.0, 8) == 100_000_000
+        assert parse_raw_amount(0.5, 8) == 50_000_000
+        assert parse_raw_amount(1.5, 8) == 150_000_000
+        assert parse_raw_amount(0.00000001, 8) == 1
 
         # USDT with precision 6
-        assert to_smallest_units(1.0, 6) == 1_000_000
-        assert to_smallest_units(100.50, 6) == 100_500_000
+        assert parse_raw_amount(1.0, 6) == 1_000_000
+        assert parse_raw_amount(100.50, 6) == 100_500_000
 
-    def test_to_display_units(self) -> None:
+    def test_to_display_amount(self) -> None:
         """Test converting to display units."""
         # Satoshis to BTC
-        assert to_display_units(100_000_000, 8) == 1.0
-        assert to_display_units(50_000_000, 8) == 0.5
-        assert to_display_units(150_000_000, 8) == 1.5
-        assert to_display_units(1, 8) == 0.00000001
+        assert to_display_amount(100_000_000, 8) == 1.0
+        assert to_display_amount(50_000_000, 8) == 0.5
+        assert to_display_amount(150_000_000, 8) == 1.5
+        assert to_display_amount(1, 8) == 0.00000001
 
         # USDT smallest units to display
-        assert to_display_units(1_000_000, 6) == 1.0
-        assert to_display_units(100_500_000, 6) == 100.5
+        assert to_display_amount(1_000_000, 6) == 1.0
+        assert to_display_amount(100_500_000, 6) == 100.5
 
-    def test_to_smallest_units_rejects_extra_precision(self) -> None:
+    def test_parse_raw_amount_rejects_extra_precision(self) -> None:
         """Public helper must reject values that would otherwise be rounded."""
         with pytest.raises(ValidationError, match="more than 8 decimal places"):
-            to_smallest_units(1.234567891, 8)
+            parse_raw_amount(1.234567891, 8)
 
     def test_conversion_roundtrip(self) -> None:
         """Test that conversion roundtrips correctly."""
         original = 1.23456789
         precision = 8
-        smallest = to_smallest_units(original, precision)
-        display = to_display_units(smallest, precision)
+        smallest = parse_raw_amount(original, precision)
+        display = to_display_amount(smallest, precision)
         # Note: floating point precision limits
         assert abs(display - 1.23456789) < 1e-8
 

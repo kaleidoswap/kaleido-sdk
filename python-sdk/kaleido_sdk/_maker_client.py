@@ -50,7 +50,7 @@ from ._generated.api_types import (
 )
 from ._http_client import HttpClient
 from ._logging import get_logger
-from ._utils import to_display_amount, to_raw_amount
+from ._utils import parse_raw_amount, to_display_amount
 from .errors import SwapError
 from .types import Layer
 
@@ -704,7 +704,7 @@ class MakerClient:
         Returns:
             Raw amount in smallest units
         """
-        return to_raw_amount(amount, precision)
+        return parse_raw_amount(amount, precision)
 
     def to_display(self, raw_amount: int, precision: int) -> float:
         """
