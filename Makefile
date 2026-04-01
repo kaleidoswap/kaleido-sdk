@@ -225,6 +225,7 @@ sync-version:
 	perl -i -pe "s/^version = \".*\"/version = \"$$VER\"/" $(PYTHON_SDK)/pyproject.toml; \
 	perl -i -pe "s/^__version__ = \".*\"/__version__ = \"$$VER\"/" $(PYTHON_SDK)/kaleido_sdk/__init__.py; \
 	perl -i -pe "s/^__version__ = \".*\"/__version__ = \"$$VER\"/" $(PYTHON_SDK)/kaleido_sdk/client.py; \
+	cd $(PYTHON_SDK) && uv lock; \
 	perl -i -pe "s/\"version\":\s*\"[^\"]+\"/\"version\": \"$$VER\"/" $(TYPESCRIPT_SDK)/package.json; \
 	echo "✅ Version synced across SDKs"; \
 	$(MAKE) versions
