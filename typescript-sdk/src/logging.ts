@@ -102,6 +102,7 @@ function _defaultStream(): WritableStream {
     if (typeof process !== 'undefined' && typeof process.stderr?.write === 'function') {
         return process.stderr as WritableStream;
     }
+    // eslint-disable-next-line no-console
     return { write: (s: string) => console.error(s.replace(/\n$/, '')) };
 }
 

@@ -175,7 +175,7 @@ export class WSClient extends MiniEmitter {
                             (message as { action?: string }).action ?? '<unknown>',
                         );
                         this.handleMessage(message);
-                    } catch (error) {
+                    } catch {
                         this._log.warn('Message parse error (raw: %s)', event.data);
                         this.emitError(new Error('Failed to parse message'));
                     }
