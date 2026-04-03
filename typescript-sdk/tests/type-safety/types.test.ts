@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { KaleidoClient } from '../../src/index.js';
-import type { TradingPair, Asset } from '../../src/types/index.js';
+import type { TradingPairResponseModel, AssetResponseModel } from '../../src/index.js';
 
 describe('Type Safety', () => {
     describe('Client Types', () => {
@@ -28,16 +28,18 @@ describe('Type Safety', () => {
             // This is a compile-time test - if types are wrong, TypeScript will error
 
             // Mock response structure
-            const mockAssets: Asset[] = [
+            const mockAssets: AssetResponseModel[] = [
                 {
+                    asset_id: 'btc',
                     ticker: 'BTC',
                     name: 'Bitcoin',
                     precision: 8,
+                    protocol_ids: { BTC: 'btc' },
                     is_active: true,
                 },
             ];
 
-            const mockPairs: TradingPair[] = [];
+            const mockPairs: TradingPairResponseModel[] = [];
 
             // Type checking - these should compile without errors
             expect(Array.isArray(mockAssets)).toBe(true);

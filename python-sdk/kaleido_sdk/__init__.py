@@ -89,11 +89,10 @@ from .errors import (
 )
 from .types import (
     # API Types - Assets & Pairs
-    Asset,
+    AssetResponseModel,
     AssetsResponse,
     BitcoinNetwork,
     ChannelDetails,
-    ChannelFees,
     ChannelOrderResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
@@ -101,6 +100,8 @@ from .types import (
     # API Types - Swap Orders
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
+    EstimateFeesRequest,
+    EstimateFeesResponse,
     # API Types - Quotes & Routes
     Fee,
     # API Types - LSP
@@ -150,9 +151,9 @@ from .types import (
     SwapStatus,
     SwapStatusRequest,
     SwapStatusResponse,
-    TradableAsset,
+    TradableAssetResponseModel,
     TradingLimits,
-    TradingPair,
+    TradingPairResponseModel,
     TradingPairsResponse,
 )
 
@@ -203,11 +204,11 @@ __all__ = [
     "PaymentStatus",
     "SwapStatus",
     # API Types - Assets & Pairs
-    "Asset",
+    "AssetResponseModel",
     "AssetsResponse",
-    "TradingPair",
+    "TradingPairResponseModel",
     "TradingPairsResponse",
-    "TradableAsset",
+    "TradableAssetResponseModel",
     "TradingLimits",
     # API Types - Quotes & Routes
     "Fee",
@@ -247,12 +248,13 @@ __all__ = [
     # API Types - LSP
     "LspInfoResponse",
     "NetworkInfoResponse",
-    "ChannelFees",
     "ChannelDetails",
     "PaymentDetails",
     "PaymentBolt11",
     "PaymentOnchain",
     "CreateOrderRequest",
+    "EstimateFeesRequest",
+    "EstimateFeesResponse",
     "ChannelOrderResponse",
     "OrderRequest",
     "RateDecisionRequest",

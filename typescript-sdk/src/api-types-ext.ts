@@ -1,5 +1,5 @@
 /**
- * Re-exports from generated API types with simplified names matching the Python SDK.
+ * Re-exports from generated API types and operation payloads.
  */
 
 import type { operations, components } from './generated/api-types.js';
@@ -86,14 +86,14 @@ export type RateDecisionResponse = ResponseSuccess<'submitLspRateDecision'>;
 // ============================================================================
 
 export type ApiComponents = components;
-export type Asset = components['schemas']['Asset'];
-export type TradingPair = components['schemas']['TradingPair'];
+export type AssetResponseModel = components['schemas']['AssetResponseModel'];
+export type TradingPairResponseModel = components['schemas']['TradingPairResponseModel'];
 export type Quote = components['schemas']['PairQuoteResponse'];
 export type SwapOrder = components['schemas']['SwapOrder'];
 
 // Sub-schema types
 export type Swap = components['schemas']['Swap'];
-export type TradableAsset = components['schemas']['TradableAsset'];
+export type TradableAssetResponseModel = components['schemas']['TradableAssetResponseModel'];
 export type TradingLimits = components['schemas']['TradingLimits'];
 export type MultiHopRoute = components['schemas']['MultiHopRoute'];
 export type RouteStep = components['schemas']['RouteStep'];
@@ -103,7 +103,7 @@ export type SwapRoute = components['schemas']['SwapRoute'];
 export type ReceiverAddress = components['schemas']['ReceiverAddress'];
 export type OrderHistorySummary = components['schemas']['OrderHistorySummary'];
 export type PaginationMeta = components['schemas']['PaginationMeta'];
-export type ChannelFees = components['schemas']['ChannelFees'];
+export type EstimateFeesResponse = components['schemas']['EstimateFeesResponse'];
 export type ChannelDetails = components['schemas']['ChannelDetails'];
 export type PaymentDetails = components['schemas']['PaymentDetails'];
 export type PaymentBolt11 = components['schemas']['PaymentBolt11'];

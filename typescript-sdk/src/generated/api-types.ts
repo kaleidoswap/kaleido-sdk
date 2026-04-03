@@ -437,76 +437,37 @@ export type webhooks = Record<string, never>;
 export type components = {
     schemas: {
         /**
-         * Asset
-         * @description Extended asset definition for the trading system.
-         *
-         *     Extends TradableAsset with:
-         *     - Trading status (is_active)
-         *     - Supported layers (protocol/network combinations as strings)
-         *     - RGB-specific fields for node API compatibility
-         *     - Methods to convert to TradableAsset for specific settlements
-         *
-         *     Supported Layers Format: PROTOCOL/NETWORK
-         *     - BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU
-         *     - RGB_L1, RGB_LN
-         *     - TAPASS_L1, TAPASS_LN
-         *     - LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK
+         * AssetResponseModel
+         * @description API response model for assets.
          */
-        Asset: {
-            /**
-             * Ticker
-             * @description Display ticker (e.g., 'BTC', 'USDT')
-             */
+        AssetResponseModel: {
+            /** Ticker */
             ticker: string;
-            /**
-             * Name
-             * @description Full name
-             */
+            /** Asset Id */
+            asset_id: string;
+            /** Name */
             name: string;
-            /**
-             * Precision
-             * @description Decimal places (e.g., 8 for BTC, 6 for USDT)
-             */
+            /** Precision */
             precision: number;
-            /**
-             * Protocol Ids
-             * @description Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})
-             */
-            protocol_ids?: {
+            /** Protocol Ids */
+            protocol_ids: {
                 [key: string]: string;
             };
-            /** @description Logo/media */
             media?: components['schemas']['Media'] | null;
-            /**
-             * Issued Supply
-             * @description Total issued supply
-             */
+            /** Issued Supply */
             issued_supply?: number | null;
-            /**
-             * Timestamp
-             * @description Creation timestamp
-             */
+            /** Timestamp */
             timestamp?: number | null;
-            /**
-             * Endpoints
-             * @description Layer endpoints with trading limits
-             */
+            /** Endpoints */
             endpoints?: components['schemas']['TradingLimits'][];
             /**
              * Is Active
-             * @description Active for trading
              * @default true
              */
             is_active: boolean;
-            /**
-             * Added At
-             * @description When added to wallet
-             */
+            /** Added At */
             added_at?: number | null;
-            /**
-             * Supported Layers
-             * @description Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')
-             */
+            /** Supported Layers */
             supported_layers?: string[] | null;
         };
         /** AssetsOptions */
@@ -580,7 +541,7 @@ export type components = {
          */
         AssetsResponse: {
             /** Assets */
-            assets: components['schemas']['Asset'][];
+            assets: components['schemas']['AssetResponseModel'][];
             /**
              * Network
              * @default regtest
@@ -612,21 +573,6 @@ export type components = {
             funding_outpoint?: string | null;
             /** Expires At */
             expires_at?: string | null;
-        };
-        /** ChannelFees */
-        ChannelFees: {
-            /** Setup Fee */
-            setup_fee: number;
-            /** Capacity Fee */
-            capacity_fee: number;
-            /** Duration Fee */
-            duration_fee: number;
-            /** Total Fee */
-            total_fee: number;
-            /** Applied Discount */
-            applied_discount?: number | null;
-            /** Discount Code */
-            discount_code?: string | null;
         };
         /** ChannelOrderResponse */
         ChannelOrderResponse: {
@@ -856,6 +802,46 @@ export type components = {
              * @example pair_ticker must be in format 'BASE/QUOTE'
              */
             detail: string;
+        };
+        /**
+         * EstimateFeesRequest
+         * @description Request model for estimating channel fees
+         */
+        EstimateFeesRequest: {
+            /** Lsp Balance Sat */
+            lsp_balance_sat: number;
+            /** Client Balance Sat */
+            client_balance_sat: number;
+            /** Channel Expiry Blocks */
+            channel_expiry_blocks: number;
+            /** Token */
+            token?: string | null;
+            /** Asset Id */
+            asset_id?: string | null;
+            /** Lsp Asset Amount */
+            lsp_asset_amount?: number | null;
+            /** Client Asset Amount */
+            client_asset_amount?: number | null;
+            /** Rfq Id */
+            rfq_id?: string | null;
+        };
+        /**
+         * EstimateFeesResponse
+         * @description Response model for LSPS1 fee estimation
+         */
+        EstimateFeesResponse: {
+            /** Setup Fee */
+            setup_fee: number;
+            /** Capacity Fee */
+            capacity_fee: number;
+            /** Duration Fee */
+            duration_fee: number;
+            /** Total Fee */
+            total_fee: number;
+            /** Applied Discount */
+            applied_discount?: number | null;
+            /** Discount Code */
+            discount_code?: string | null;
         };
         /** FastAPIValidationErrorResponse */
         FastAPIValidationErrorResponse: {
@@ -1701,6 +1687,11 @@ export type components = {
              */
             refund_txid?: string | null;
             /**
+             * Deposit Txid
+             * @description Matched incoming payment reference for deposit attribution
+             */
+            deposit_txid?: string | null;
+            /**
              * Requires Manual Refund
              * @description Whether the order requires manual refund handling
              * @default false
@@ -1896,52 +1887,28 @@ export type components = {
             swap?: components['schemas']['Swap'] | null;
         };
         /**
-         * TradableAsset
-         * @description Asset with layer context(s) for trading operations.
-         *
-         *     Supports both:
-         *     - Single-layer use cases (swap execution): use layer property
-         *     - Multi-layer use cases (trading pairs): use endpoints list
+         * TradableAssetResponseModel
+         * @description API response model for tradable assets.
          */
-        TradableAsset: {
-            /**
-             * Ticker
-             * @description Display ticker (e.g., 'BTC', 'USDT')
-             */
+        TradableAssetResponseModel: {
+            /** Ticker */
             ticker: string;
-            /**
-             * Name
-             * @description Full name
-             */
+            /** Asset Id */
+            asset_id: string;
+            /** Name */
             name: string;
-            /**
-             * Precision
-             * @description Decimal places (e.g., 8 for BTC, 6 for USDT)
-             */
+            /** Precision */
             precision: number;
-            /**
-             * Protocol Ids
-             * @description Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})
-             */
-            protocol_ids?: {
+            /** Protocol Ids */
+            protocol_ids: {
                 [key: string]: string;
             };
-            /** @description Logo/media */
             media?: components['schemas']['Media'] | null;
-            /**
-             * Issued Supply
-             * @description Total issued supply
-             */
+            /** Issued Supply */
             issued_supply?: number | null;
-            /**
-             * Timestamp
-             * @description Creation timestamp
-             */
+            /** Timestamp */
             timestamp?: number | null;
-            /**
-             * Endpoints
-             * @description Layer endpoints with trading limits
-             */
+            /** Endpoints */
             endpoints?: components['schemas']['TradingLimits'][];
         };
         /**
@@ -1973,20 +1940,14 @@ export type components = {
             is_active: boolean;
         };
         /**
-         * TradingPair
-         * @description Complete trading pair with full asset details, routes, and price.
-         *
-         *     This is the unified model used for both:
-         *     - API responses (Pairs API)
-         *     - Database storage
-         *
-         *     Contains all pre-computed information needed to display and validate swaps.
+         * TradingPairResponseModel
+         * @description API response model for trading pairs.
          */
-        TradingPair: {
+        TradingPairResponseModel: {
             /** Id */
-            id?: string;
-            base: components['schemas']['TradableAsset'];
-            quote: components['schemas']['TradableAsset'];
+            id: string;
+            base: components['schemas']['TradableAssetResponseModel'];
+            quote: components['schemas']['TradableAssetResponseModel'];
             /** Price */
             price?: string | null;
             /** Routes */
@@ -1996,6 +1957,16 @@ export type components = {
              * @default true
              */
             is_active: boolean;
+            /** Ticker */
+            ticker: string;
+            /** Base Asset */
+            base_asset: string;
+            /** Base Asset Id */
+            base_asset_id: string;
+            /** Quote Asset */
+            quote_asset: string;
+            /** Quote Asset Id */
+            quote_asset_id: string;
         };
         /**
          * TradingPairsResponse
@@ -2003,7 +1974,7 @@ export type components = {
          */
         TradingPairsResponse: {
             /** Pairs */
-            pairs: components['schemas']['TradingPair'][];
+            pairs: components['schemas']['TradingPairResponseModel'][];
             /** Total */
             total: number;
             /** Limit */
@@ -2408,7 +2379,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                'application/json': components['schemas']['CreateOrderRequest'];
+                'application/json': components['schemas']['EstimateFeesRequest'];
             };
         };
         responses: {
@@ -2418,7 +2389,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    'application/json': components['schemas']['ChannelFees'];
+                    'application/json': components['schemas']['EstimateFeesResponse'];
                 };
             };
             /** @description The LSPS1 parameters or quote reference are invalid. */

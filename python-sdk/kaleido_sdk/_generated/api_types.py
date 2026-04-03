@@ -43,15 +43,6 @@ class ChannelDetails(BaseModel):
     expires_at: Annotated[AwareDatetime | None, Field(title="Expires At")] = None
 
 
-class ChannelFees(BaseModel):
-    setup_fee: Annotated[int, Field(title="Setup Fee")]
-    capacity_fee: Annotated[int, Field(title="Capacity Fee")]
-    duration_fee: Annotated[int, Field(title="Duration Fee")]
-    total_fee: Annotated[int, Field(title="Total Fee")]
-    applied_discount: Annotated[float | None, Field(title="Applied Discount")] = None
-    discount_code: Annotated[str | None, Field(title="Discount Code")] = None
-
-
 class ConfirmSwapRequest(BaseModel):
     swapstring: Annotated[
         str,
@@ -115,6 +106,38 @@ class DetailOnlyErrorResponse(BaseModel):
             title="Detail",
         ),
     ]
+
+
+class EstimateFeesRequest(BaseModel):
+    """
+    Request model for estimating channel fees
+    """
+
+    lsp_balance_sat: Annotated[int, Field(ge=0, title="Lsp Balance Sat")]
+    client_balance_sat: Annotated[int, Field(ge=0, title="Client Balance Sat")]
+    channel_expiry_blocks: Annotated[int, Field(ge=1, title="Channel Expiry Blocks")]
+    token: Annotated[str | None, Field(title="Token")] = None
+    asset_id: Annotated[str | None, Field(title="Asset Id")] = None
+    lsp_asset_amount: Annotated[int | None, Field(title="Lsp Asset Amount")] = None
+    client_asset_amount: Annotated[int | None, Field(title="Client Asset Amount")] = None
+    rfq_id: Annotated[str | None, Field(title="Rfq Id")] = None
+
+
+class AppliedDiscount(RootModel[float]):
+    root: Annotated[float, Field(ge=0.0, le=1.0, title="Applied Discount")]
+
+
+class EstimateFeesResponse(BaseModel):
+    """
+    Response model for LSPS1 fee estimation
+    """
+
+    setup_fee: Annotated[int, Field(ge=0, title="Setup Fee")]
+    capacity_fee: Annotated[int, Field(ge=0, title="Capacity Fee")]
+    duration_fee: Annotated[int, Field(ge=0, title="Duration Fee")]
+    total_fee: Annotated[int, Field(ge=0, title="Total Fee")]
+    applied_discount: Annotated[AppliedDiscount | None, Field(title="Applied Discount")] = None
+    discount_code: Annotated[str | None, Field(title="Discount Code")] = None
 
 
 class Fee(BaseModel):
@@ -706,65 +729,23 @@ class ValidationErrorDetail(BaseModel):
     ]
 
 
-class Asset(BaseModel):
+class AssetResponseModel(BaseModel):
     """
-    Extended asset definition for the trading system.
-
-    Extends TradableAsset with:
-    - Trading status (is_active)
-    - Supported layers (protocol/network combinations as strings)
-    - RGB-specific fields for node API compatibility
-    - Methods to convert to TradableAsset for specific settlements
-
-    Supported Layers Format: PROTOCOL/NETWORK
-    - BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU
-    - RGB_L1, RGB_LN
-    - TAPASS_L1, TAPASS_LN
-    - LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK
+    API response model for assets.
     """
 
-    ticker: Annotated[
-        str, Field(description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker")
-    ]
-    name: Annotated[str, Field(description="Full name", title="Name")]
-    precision: Annotated[
-        int,
-        Field(
-            description="Decimal places (e.g., 8 for BTC, 6 for USDT)",
-            ge=0,
-            le=18,
-            title="Precision",
-        ),
-    ]
-    protocol_ids: Annotated[
-        dict[str, str] | None,
-        Field(
-            description="Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})",
-            title="Protocol Ids",
-        ),
-    ] = None
-    media: Annotated[Media | None, Field(description="Logo/media")] = None
-    issued_supply: Annotated[
-        int | None, Field(description="Total issued supply", title="Issued Supply")
-    ] = None
-    timestamp: Annotated[int | None, Field(description="Creation timestamp", title="Timestamp")] = (
-        None
-    )
-    endpoints: Annotated[
-        list[TradingLimits] | None,
-        Field(description="Layer endpoints with trading limits", title="Endpoints"),
-    ] = None
-    is_active: Annotated[bool, Field(description="Active for trading", title="Is Active")] = True
-    added_at: Annotated[int | None, Field(description="When added to wallet", title="Added At")] = (
-        None
-    )
-    supported_layers: Annotated[
-        list[str] | None,
-        Field(
-            description="Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')",
-            title="Supported Layers",
-        ),
-    ] = None
+    ticker: Annotated[str, Field(title="Ticker")]
+    asset_id: Annotated[str, Field(title="Asset Id")]
+    name: Annotated[str, Field(title="Name")]
+    precision: Annotated[int, Field(title="Precision")]
+    protocol_ids: Annotated[dict[str, str], Field(title="Protocol Ids")]
+    media: Media | None = None
+    issued_supply: Annotated[int | None, Field(title="Issued Supply")] = None
+    timestamp: Annotated[int | None, Field(title="Timestamp")] = None
+    endpoints: Annotated[list[TradingLimits] | None, Field(title="Endpoints")] = None
+    is_active: Annotated[bool, Field(title="Is Active")] = True
+    added_at: Annotated[int | None, Field(title="Added At")] = None
+    supported_layers: Annotated[list[str] | None, Field(title="Supported Layers")] = None
 
 
 class AssetsResponse(BaseModel):
@@ -772,7 +753,7 @@ class AssetsResponse(BaseModel):
     Response model for asset listing endpoints with pagination support.
     """
 
-    assets: Annotated[list[Asset], Field(title="Assets")]
+    assets: Annotated[list[AssetResponseModel], Field(title="Assets")]
     network: Annotated[str, Field(title="Network")] = "regtest"
     total: Annotated[int, Field(title="Total")]
     limit: Annotated[int, Field(title="Limit")]
@@ -1003,6 +984,13 @@ class SwapOrder(BaseModel):
     refund_txid: Annotated[
         str | None, Field(description="Transaction ID of any refund sent", title="Refund Txid")
     ] = None
+    deposit_txid: Annotated[
+        str | None,
+        Field(
+            description="Matched incoming payment reference for deposit attribution",
+            title="Deposit Txid",
+        ),
+    ] = None
     requires_manual_refund: Annotated[
         bool | None,
         Field(
@@ -1048,65 +1036,38 @@ class SwapStatusResponse(BaseModel):
     swap: Swap | None = None
 
 
-class TradableAsset(BaseModel):
+class TradableAssetResponseModel(BaseModel):
     """
-    Asset with layer context(s) for trading operations.
-
-    Supports both:
-    - Single-layer use cases (swap execution): use layer property
-    - Multi-layer use cases (trading pairs): use endpoints list
+    API response model for tradable assets.
     """
 
-    ticker: Annotated[
-        str, Field(description="Display ticker (e.g., 'BTC', 'USDT')", title="Ticker")
-    ]
-    name: Annotated[str, Field(description="Full name", title="Name")]
-    precision: Annotated[
-        int,
-        Field(
-            description="Decimal places (e.g., 8 for BTC, 6 for USDT)",
-            ge=0,
-            le=18,
-            title="Precision",
-        ),
-    ]
-    protocol_ids: Annotated[
-        dict[str, str] | None,
-        Field(
-            description="Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})",
-            title="Protocol Ids",
-        ),
-    ] = None
-    media: Annotated[Media | None, Field(description="Logo/media")] = None
-    issued_supply: Annotated[
-        int | None, Field(description="Total issued supply", title="Issued Supply")
-    ] = None
-    timestamp: Annotated[int | None, Field(description="Creation timestamp", title="Timestamp")] = (
-        None
-    )
-    endpoints: Annotated[
-        list[TradingLimits] | None,
-        Field(description="Layer endpoints with trading limits", title="Endpoints"),
-    ] = None
+    ticker: Annotated[str, Field(title="Ticker")]
+    asset_id: Annotated[str, Field(title="Asset Id")]
+    name: Annotated[str, Field(title="Name")]
+    precision: Annotated[int, Field(title="Precision")]
+    protocol_ids: Annotated[dict[str, str], Field(title="Protocol Ids")]
+    media: Media | None = None
+    issued_supply: Annotated[int | None, Field(title="Issued Supply")] = None
+    timestamp: Annotated[int | None, Field(title="Timestamp")] = None
+    endpoints: Annotated[list[TradingLimits] | None, Field(title="Endpoints")] = None
 
 
-class TradingPair(BaseModel):
+class TradingPairResponseModel(BaseModel):
     """
-    Complete trading pair with full asset details, routes, and price.
-
-    This is the unified model used for both:
-    - API responses (Pairs API)
-    - Database storage
-
-    Contains all pre-computed information needed to display and validate swaps.
+    API response model for trading pairs.
     """
 
-    id: Annotated[str | None, Field(title="Id")] = None
-    base: TradableAsset
-    quote: TradableAsset
+    id: Annotated[str, Field(title="Id")]
+    base: TradableAssetResponseModel
+    quote: TradableAssetResponseModel
     price: Annotated[Price | None, Field(title="Price")] = None
     routes: Annotated[list[SwapRoute] | None, Field(title="Routes")] = None
     is_active: Annotated[bool, Field(title="Is Active")] = True
+    ticker: Annotated[str, Field(title="Ticker")]
+    base_asset: Annotated[str, Field(title="Base Asset")]
+    base_asset_id: Annotated[str, Field(title="Base Asset Id")]
+    quote_asset: Annotated[str, Field(title="Quote Asset")]
+    quote_asset_id: Annotated[str, Field(title="Quote Asset Id")]
 
 
 class TradingPairsResponse(BaseModel):
@@ -1114,7 +1075,7 @@ class TradingPairsResponse(BaseModel):
     Response containing list of trading pairs with pagination support.
     """
 
-    pairs: Annotated[list[TradingPair], Field(title="Pairs")]
+    pairs: Annotated[list[TradingPairResponseModel], Field(title="Pairs")]
     total: Annotated[int, Field(title="Total")]
     limit: Annotated[int, Field(title="Limit")]
     offset: Annotated[int, Field(title="Offset")]

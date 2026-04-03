@@ -20,9 +20,9 @@
       "documentation": "https://docs.kaleidoswap.com/api-reference/introduction"
     },
     "x-build-info": {
-      "version": "v0.4.2",
-      "commit": "89711b3ca3e069639c3084762ec8f6f803655ba8",
-      "buildDate": "2026-03-19T10:54:37.760622+00:00"
+      "version": "v0.4.3",
+      "commit": "0ed3137fa9423c03a3fa152d5770d1580ac53f6d",
+      "buildDate": "2026-04-03T10:27:48.860603+00:00"
     }
   },
   "paths": {
@@ -400,19 +400,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateOrderRequest"
+                "$ref": "#/components/schemas/EstimateFeesRequest"
               },
               "examples": {
                 "asset_purchase_fee_estimate": {
                   "summary": "Estimate asset-backed channel order",
                   "value": {
-                    "client_pubkey": "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
                     "lsp_balance_sat": 150000,
                     "client_balance_sat": 50000,
-                    "required_channel_confirmations": 3,
-                    "funding_confirms_within_blocks": 144,
                     "channel_expiry_blocks": 4032,
-                    "announce_channel": true,
                     "asset_id": "rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB",
                     "client_asset_amount": 2500,
                     "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49"
@@ -428,7 +424,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChannelFees"
+                  "$ref": "#/components/schemas/EstimateFeesResponse"
                 }
               }
             }
@@ -2891,32 +2887,30 @@
   },
   "components": {
     "schemas": {
-      "Asset": {
+      "AssetResponseModel": {
         "properties": {
           "ticker": {
             "type": "string",
-            "title": "Ticker",
-            "description": "Display ticker (e.g., 'BTC', 'USDT')"
+            "title": "Ticker"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
           },
           "name": {
             "type": "string",
-            "title": "Name",
-            "description": "Full name"
+            "title": "Name"
           },
           "precision": {
             "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
+            "title": "Precision"
           },
           "protocol_ids": {
             "additionalProperties": {
               "type": "string"
             },
             "type": "object",
-            "title": "Protocol Ids",
-            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
+            "title": "Protocol Ids"
           },
           "media": {
             "anyOf": [
@@ -2926,21 +2920,18 @@
               {
                 "type": "null"
               }
-            ],
-            "description": "Logo/media"
+            ]
           },
           "issued_supply": {
             "anyOf": [
               {
-                "type": "integer",
-                "format": "int64"
+                "type": "integer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Issued Supply",
-            "description": "Total issued supply"
+            "title": "Issued Supply"
           },
           "timestamp": {
             "anyOf": [
@@ -2951,21 +2942,18 @@
                 "type": "null"
               }
             ],
-            "title": "Timestamp",
-            "description": "Creation timestamp"
+            "title": "Timestamp"
           },
           "endpoints": {
             "items": {
               "$ref": "#/components/schemas/TradingLimits"
             },
             "type": "array",
-            "title": "Endpoints",
-            "description": "Layer endpoints with trading limits"
+            "title": "Endpoints"
           },
           "is_active": {
             "type": "boolean",
             "title": "Is Active",
-            "description": "Active for trading",
             "default": true
           },
           "added_at": {
@@ -2977,8 +2965,7 @@
                 "type": "null"
               }
             ],
-            "title": "Added At",
-            "description": "When added to wallet"
+            "title": "Added At"
           },
           "supported_layers": {
             "anyOf": [
@@ -2992,18 +2979,19 @@
                 "type": "null"
               }
             ],
-            "title": "Supported Layers",
-            "description": "Supported settlement layers (e.g., 'BTC_LN', 'RGB_L1')"
+            "title": "Supported Layers"
           }
         },
         "type": "object",
         "required": [
           "ticker",
+          "asset_id",
           "name",
-          "precision"
+          "precision",
+          "protocol_ids"
         ],
-        "title": "Asset",
-        "description": "Extended asset definition for the trading system.\n\nExtends TradableAsset with:\n- Trading status (is_active)\n- Supported layers (protocol/network combinations as strings)\n- RGB-specific fields for node API compatibility\n- Methods to convert to TradableAsset for specific settlements\n\nSupported Layers Format: PROTOCOL/NETWORK\n- BTC_L1, BTC_LN, BTC_SPARK, BTC_ARKADE, BTC_LIQUID, BTC_CASHU\n- RGB_L1, RGB_LN\n- TAPASS_L1, TAPASS_LN\n- LIQUID_LIQUID, ARKADE_ARKADE, SPARK_SPARK"
+        "title": "AssetResponseModel",
+        "description": "API response model for assets."
       },
       "AssetsOptions": {
         "properties": {
@@ -3091,7 +3079,7 @@
         "properties": {
           "assets": {
             "items": {
-              "$ref": "#/components/schemas/Asset"
+              "$ref": "#/components/schemas/AssetResponseModel"
             },
             "type": "array",
             "title": "Assets"
@@ -3208,56 +3196,6 @@
         },
         "type": "object",
         "title": "ChannelDetails"
-      },
-      "ChannelFees": {
-        "properties": {
-          "setup_fee": {
-            "type": "integer",
-            "title": "Setup Fee"
-          },
-          "capacity_fee": {
-            "type": "integer",
-            "title": "Capacity Fee"
-          },
-          "duration_fee": {
-            "type": "integer",
-            "title": "Duration Fee"
-          },
-          "total_fee": {
-            "type": "integer",
-            "title": "Total Fee"
-          },
-          "applied_discount": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Applied Discount"
-          },
-          "discount_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discount Code"
-          }
-        },
-        "type": "object",
-        "required": [
-          "setup_fee",
-          "capacity_fee",
-          "duration_fee",
-          "total_fee"
-        ],
-        "title": "ChannelFees"
       },
       "ChannelOrderResponse": {
         "properties": {
@@ -3779,6 +3717,145 @@
           "detail"
         ],
         "title": "DetailOnlyErrorResponse"
+      },
+      "EstimateFeesRequest": {
+        "properties": {
+          "lsp_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Lsp Balance Sat"
+          },
+          "client_balance_sat": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Client Balance Sat"
+          },
+          "channel_expiry_blocks": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Channel Expiry Blocks"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "lsp_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lsp Asset Amount"
+          },
+          "client_asset_amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Asset Amount"
+          },
+          "rfq_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rfq Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lsp_balance_sat",
+          "client_balance_sat",
+          "channel_expiry_blocks"
+        ],
+        "title": "EstimateFeesRequest",
+        "description": "Request model for estimating channel fees"
+      },
+      "EstimateFeesResponse": {
+        "properties": {
+          "setup_fee": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Setup Fee"
+          },
+          "capacity_fee": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Capacity Fee"
+          },
+          "duration_fee": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Duration Fee"
+          },
+          "total_fee": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Fee"
+          },
+          "applied_discount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied Discount"
+          },
+          "discount_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "setup_fee",
+          "capacity_fee",
+          "duration_fee",
+          "total_fee"
+        ],
+        "title": "EstimateFeesResponse",
+        "description": "Response model for LSPS1 fee estimation"
       },
       "FastAPIValidationErrorResponse": {
         "properties": {
@@ -5338,6 +5415,18 @@
             "title": "Refund Txid",
             "description": "Transaction ID of any refund sent"
           },
+          "deposit_txid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deposit Txid",
+            "description": "Matched incoming payment reference for deposit attribution"
+          },
           "requires_manual_refund": {
             "anyOf": [
               {
@@ -5707,32 +5796,30 @@
         "type": "object",
         "title": "SwapStatusResponse"
       },
-      "TradableAsset": {
+      "TradableAssetResponseModel": {
         "properties": {
           "ticker": {
             "type": "string",
-            "title": "Ticker",
-            "description": "Display ticker (e.g., 'BTC', 'USDT')"
+            "title": "Ticker"
+          },
+          "asset_id": {
+            "type": "string",
+            "title": "Asset Id"
           },
           "name": {
             "type": "string",
-            "title": "Name",
-            "description": "Full name"
+            "title": "Name"
           },
           "precision": {
             "type": "integer",
-            "maximum": 18.0,
-            "minimum": 0.0,
-            "title": "Precision",
-            "description": "Decimal places (e.g., 8 for BTC, 6 for USDT)"
+            "title": "Precision"
           },
           "protocol_ids": {
             "additionalProperties": {
               "type": "string"
             },
             "type": "object",
-            "title": "Protocol Ids",
-            "description": "Asset IDs per protocol (e.g., {'RGB': 'rgb:xxx', 'TAPASS': 'tap:xxx'})"
+            "title": "Protocol Ids"
           },
           "media": {
             "anyOf": [
@@ -5742,21 +5829,18 @@
               {
                 "type": "null"
               }
-            ],
-            "description": "Logo/media"
+            ]
           },
           "issued_supply": {
             "anyOf": [
               {
-                "type": "integer",
-                "format": "int64"
+                "type": "integer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Issued Supply",
-            "description": "Total issued supply"
+            "title": "Issued Supply"
           },
           "timestamp": {
             "anyOf": [
@@ -5767,26 +5851,26 @@
                 "type": "null"
               }
             ],
-            "title": "Timestamp",
-            "description": "Creation timestamp"
+            "title": "Timestamp"
           },
           "endpoints": {
             "items": {
               "$ref": "#/components/schemas/TradingLimits"
             },
             "type": "array",
-            "title": "Endpoints",
-            "description": "Layer endpoints with trading limits"
+            "title": "Endpoints"
           }
         },
         "type": "object",
         "required": [
           "ticker",
+          "asset_id",
           "name",
-          "precision"
+          "precision",
+          "protocol_ids"
         ],
-        "title": "TradableAsset",
-        "description": "Asset with layer context(s) for trading operations.\n\nSupports both:\n- Single-layer use cases (swap execution): use layer property\n- Multi-layer use cases (trading pairs): use endpoints list"
+        "title": "TradableAssetResponseModel",
+        "description": "API response model for tradable assets."
       },
       "TradingLimits": {
         "properties": {
@@ -5822,17 +5906,17 @@
         "title": "TradingLimits",
         "description": "Trading limits for a layer.\n\nCombines a Layer (protocol/network) with min/max amount limits for trading."
       },
-      "TradingPair": {
+      "TradingPairResponseModel": {
         "properties": {
           "id": {
             "type": "string",
             "title": "Id"
           },
           "base": {
-            "$ref": "#/components/schemas/TradableAsset"
+            "$ref": "#/components/schemas/TradableAssetResponseModel"
           },
           "quote": {
-            "$ref": "#/components/schemas/TradableAsset"
+            "$ref": "#/components/schemas/TradableAssetResponseModel"
           },
           "price": {
             "anyOf": [
@@ -5857,21 +5941,47 @@
             "type": "boolean",
             "title": "Is Active",
             "default": true
+          },
+          "ticker": {
+            "type": "string",
+            "title": "Ticker"
+          },
+          "base_asset": {
+            "type": "string",
+            "title": "Base Asset"
+          },
+          "base_asset_id": {
+            "type": "string",
+            "title": "Base Asset Id"
+          },
+          "quote_asset": {
+            "type": "string",
+            "title": "Quote Asset"
+          },
+          "quote_asset_id": {
+            "type": "string",
+            "title": "Quote Asset Id"
           }
         },
         "type": "object",
         "required": [
+          "id",
           "base",
-          "quote"
+          "quote",
+          "ticker",
+          "base_asset",
+          "base_asset_id",
+          "quote_asset",
+          "quote_asset_id"
         ],
-        "title": "TradingPair",
-        "description": "Complete trading pair with full asset details, routes, and price.\n\nThis is the unified model used for both:\n- API responses (Pairs API)\n- Database storage\n\nContains all pre-computed information needed to display and validate swaps."
+        "title": "TradingPairResponseModel",
+        "description": "API response model for trading pairs."
       },
       "TradingPairsResponse": {
         "properties": {
           "pairs": {
             "items": {
-              "$ref": "#/components/schemas/TradingPair"
+              "$ref": "#/components/schemas/TradingPairResponseModel"
             },
             "type": "array",
             "title": "Pairs"
