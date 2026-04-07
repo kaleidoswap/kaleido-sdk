@@ -15,13 +15,14 @@ from typing import TYPE_CHECKING, Any
 
 from ._generated.api_types import (
     AssetsResponse,
-    ChannelFees,
     ChannelOrderResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
     CreateOrderRequest,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
+    EstimateFeesRequest,
+    EstimateFeesResponse,
     LspInfoResponse,
     NetworkInfoResponse,
     OrderHistoryResponse,
@@ -45,7 +46,7 @@ from ._generated.api_types import (
     SwapRoute,
     SwapStatusRequest,
     SwapStatusResponse,
-    TradingPair,
+    TradingPairResponseModel,
     TradingPairsResponse,
 )
 from ._http_client import HttpClient
@@ -380,7 +381,7 @@ class MakerClient:
         _log.debug("maker.list_pairs()")
         data = await self._http.maker_get("/api/v1/market/pairs")
         pairs_list = data.get("pairs") or []
-        normalized_pairs = [TradingPair.model_validate(p) for p in pairs_list]
+        normalized_pairs = [TradingPairResponseModel.model_validate(p) for p in pairs_list]
         return TradingPairsResponse(
             pairs=normalized_pairs,
             total=data.get("total", len(normalized_pairs)),
@@ -599,7 +600,7 @@ class MakerClient:
         data = await self._http.maker_post("/api/v1/lsps1/get_order", data=body)
         return ChannelOrderResponse.model_validate(data)
 
-    async def estimate_lsp_fees(self, body: CreateOrderRequest) -> ChannelFees:
+    async def estimate_lsp_fees(self, body: EstimateFeesRequest) -> EstimateFeesResponse:
         """
         Estimate fees for an LSP order.
 
@@ -607,7 +608,7 @@ class MakerClient:
             body: LSP order request for fee estimation
         """
         data = await self._http.maker_post("/api/v1/lsps1/estimate_fees", data=body)
-        return ChannelFees.model_validate(data)
+        return EstimateFeesResponse.model_validate(data)
 
     async def submit_lsp_rate_decision(self, body: RateDecisionRequest) -> RateDecisionResponse:
         """

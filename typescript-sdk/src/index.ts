@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * import { KaleidoClient } from 'kaleido-sdk';
- * import type { PairQuoteResponse, Asset } from 'kaleido-sdk';
+ * import type { PairQuoteResponse, AssetResponseModel } from 'kaleido-sdk';
  *
  * const client = KaleidoClient.create({
  *   baseUrl: 'https://api.regtest.kaleidoswap.com',

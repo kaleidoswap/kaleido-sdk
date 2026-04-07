@@ -71,12 +71,12 @@ async def main() -> None:
 
     quote_request = PairQuoteRequest(
         from_asset=SwapLegInput(
-            asset_id=pair.base.ticker,
+            asset_id=pair.base.asset_id,
             layer=from_layer,
             amount=amount_raw,
         ),
         to_asset=SwapLegInput(
-            asset_id=pair.quote.ticker,
+            asset_id=pair.quote.asset_id,
             layer=to_layer,
         ),
     )

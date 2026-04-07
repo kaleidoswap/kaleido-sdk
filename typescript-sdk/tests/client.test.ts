@@ -249,10 +249,12 @@ describe('Integration Tests (Local API)', () => {
 
         if (data.assets.length > 0) {
             const asset = data.assets[0];
-            // Verify fields match our Asset interface
+            // Verify fields match our AssetResponseModel type
+            expect(asset).toHaveProperty('asset_id');
             expect(asset).toHaveProperty('ticker');
             expect(asset).toHaveProperty('name');
             expect(asset).toHaveProperty('precision');
+            expect(asset).toHaveProperty('protocol_ids');
             expect(typeof asset.precision).toBe('number');
         }
     });
@@ -267,12 +269,14 @@ describe('Integration Tests (Local API)', () => {
         expect(Array.isArray(data.pairs)).toBe(true);
 
         if (data.pairs.length > 0) {
-            // TODO: Local API returns legacy nested 'base'/'quote' objects, while SDK expects flat 'base_asset'/'quote_asset'.
-            // Uncomment when API is updated to match OpenAPI spec.
-            // Verify fields match our TradingPair interface
-            // expect(pair).toHaveProperty('base_asset');
-            // expect(pair).toHaveProperty('quote_asset');
-            // expect(typeof pair.base_asset).toBe('string');
+            const pair = data.pairs[0];
+            // Verify key fields from the refreshed TradingPairResponseModel type
+            expect(pair).toHaveProperty('id');
+            expect(pair).toHaveProperty('ticker');
+            expect(pair).toHaveProperty('base');
+            expect(pair).toHaveProperty('quote');
+            expect(pair.base).toHaveProperty('asset_id');
+            expect(pair.quote).toHaveProperty('asset_id');
         }
     });
 

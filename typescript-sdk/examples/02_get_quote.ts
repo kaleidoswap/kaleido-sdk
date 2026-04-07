@@ -24,7 +24,7 @@ async function main() {
         return;
     }
 
-    // Pick first pair - TradingPair has base and quote (TradableAsset) properties
+    // Pick first pair - TradingPair now exposes explicit asset IDs on nested base/quote models
     const pair = pairsResponse.pairs[0];
     console.log(`Using pair: ${pair.base.ticker}/${pair.quote.ticker}`);
 
@@ -36,22 +36,18 @@ async function main() {
     }
     console.log(`  Route: ${route.from_layer} → ${route.to_layer}\n`);
 
-    // Get protocol ID for the asset (e.g., 'BTC' for Bitcoin, RGB contract ID for tokens)
-    const baseAssetId = pair.base.protocol_ids?.['BTC'] || pair.base.ticker;
-    const quoteAssetId = pair.quote.protocol_ids?.['RGB'] || pair.quote.ticker;
-
     // Get a quote for 0.001 BTC (100,000 sats)
     const fromAmount = 100000;
     console.log(`💱 Getting quote for ${toDisplayAmount(fromAmount, pair.base.precision)} ${pair.base.ticker}...`);
 
     const quote = await client.maker.getQuote({
         from_asset: {
-            asset_id: baseAssetId,
+            asset_id: pair.base.asset_id,
             layer: route.from_layer as Layer,
             amount: fromAmount,
         },
         to_asset: {
-            asset_id: quoteAssetId,
+            asset_id: pair.quote.asset_id,
             layer: route.to_layer as Layer,
         },
     });

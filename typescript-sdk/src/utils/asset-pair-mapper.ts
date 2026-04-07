@@ -2,7 +2,7 @@
  * Utilities for working with trading pairs and assets.
  */
 
-import type { TradingPair, TradingPairsResponse } from '../api-types-ext.js';
+import type { TradingPairResponseModel, TradingPairsResponse } from '../api-types-ext.js';
 
 export interface MappedAsset {
     asset_id: string;
@@ -16,24 +16,10 @@ export interface MappedAsset {
     protocol_ids: { [key: string]: string };
 }
 
-function getAssetId(ticker: string, protocolIds?: { [key: string]: string }): string {
-    if (!protocolIds || Object.keys(protocolIds).length === 0) {
-        return ticker;
-    }
-
-    return (
-        protocolIds['RGB'] ||
-        protocolIds['TAPASS'] ||
-        protocolIds['BTC'] ||
-        Object.values(protocolIds)[0] ||
-        ticker
-    );
-}
-
 export class AssetPairMapper {
     private assetMap: Map<string, MappedAsset> = new Map();
     private tickerMap: Map<string, string> = new Map(); // ticker -> asset_id
-    private pairs: TradingPair[];
+    private pairs: TradingPairResponseModel[];
 
     constructor(pairsResponse: TradingPairsResponse) {
         this.pairs = pairsResponse.pairs;
@@ -44,8 +30,8 @@ export class AssetPairMapper {
         this.pairs.forEach((pair) => {
             if (!pair.is_active) return;
 
-            const baseAssetId = getAssetId(pair.base.ticker, pair.base.protocol_ids);
-            const quoteAssetId = getAssetId(pair.quote.ticker, pair.quote.protocol_ids);
+            const baseAssetId = pair.base.asset_id;
+            const quoteAssetId = pair.quote.asset_id;
 
             const baseEndpoint = pair.base.endpoints?.[0];
             const quoteEndpoint = pair.quote.endpoints?.[0];
@@ -157,11 +143,14 @@ export class AssetPairMapper {
             .filter((partner): partner is MappedAsset => partner !== undefined);
     }
 
-    getActivePairs(): TradingPair[] {
+    getActivePairs(): TradingPairResponseModel[] {
         return this.pairs.filter((pair) => pair.is_active);
     }
 
-    findPairByTickers(baseTicker: string, quoteTicker: string): TradingPair | undefined {
+    findPairByTickers(
+        baseTicker: string,
+        quoteTicker: string,
+    ): TradingPairResponseModel | undefined {
         const upperBase = baseTicker.toUpperCase();
         const upperQuote = quoteTicker.toUpperCase();
 

@@ -13,17 +13,18 @@ from typing import TYPE_CHECKING
 
 # Re-export all generated API types (from maker.json OpenAPI spec)
 from ._generated.api_types import (
-    Asset,
+    AssetResponseModel,
     AssetsResponse,
     BitcoinNetwork,
     ChannelDetails,
-    ChannelFees,
     ChannelOrderResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
     CreateOrderRequest,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
+    EstimateFeesRequest,
+    EstimateFeesResponse,
     Fee,
     Layer,
     LspInfoResponse,
@@ -67,9 +68,9 @@ from ._generated.api_types import (
     SwapStatus,
     SwapStatusRequest,
     SwapStatusResponse,
-    TradableAsset,
+    TradableAssetResponseModel,
     TradingLimits,
-    TradingPair,
+    TradingPairResponseModel,
     TradingPairsResponse,
 )
 
@@ -124,11 +125,11 @@ __all__ = [
     "PaymentStatus",
     "SwapStatus",
     # API Types - Assets & Pairs
-    "Asset",
+    "AssetResponseModel",
     "AssetsResponse",
-    "TradingPair",
+    "TradingPairResponseModel",
     "TradingPairsResponse",
-    "TradableAsset",
+    "TradableAssetResponseModel",
     "TradingLimits",
     # API Types - Quotes & Routes
     "Fee",
@@ -168,12 +169,13 @@ __all__ = [
     # API Types - LSP
     "LspInfoResponse",
     "NetworkInfoResponse",
-    "ChannelFees",
+    "EstimateFeesResponse",
     "ChannelDetails",
     "PaymentDetails",
     "PaymentBolt11",
     "PaymentOnchain",
     "CreateOrderRequest",
+    "EstimateFeesRequest",
     "ChannelOrderResponse",
     "OrderRequest",
     "RateDecisionRequest",
