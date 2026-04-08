@@ -3130,6 +3130,7 @@
           "Testnet",
           "Testnet4",
           "Signet",
+          "SignetCustom",
           "Regtest"
         ],
         "title": "BitcoinNetwork"

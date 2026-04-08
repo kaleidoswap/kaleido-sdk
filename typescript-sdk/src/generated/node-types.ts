@@ -3549,6 +3549,7 @@ export enum BitcoinNetwork {
     Testnet = 'Testnet',
     Testnet4 = 'Testnet4',
     Signet = 'Signet',
+    SignetCustom = 'SignetCustom',
     Regtest = 'Regtest',
 }
 export enum ChannelStatus {

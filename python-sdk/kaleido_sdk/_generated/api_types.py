@@ -32,6 +32,7 @@ class BitcoinNetwork(StrEnum):
     TESTNET = "Testnet"
     TESTNET4 = "Testnet4"
     SIGNET = "Signet"
+    SIGNET_CUSTOM = "SignetCustom"
     REGTEST = "Regtest"
 
 

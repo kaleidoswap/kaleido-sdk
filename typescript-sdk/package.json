@@ -1,6 +1,6 @@
 {
     "name": "kaleido-sdk",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": "Kaleidoswap SDK for TypeScript and JavaScript - trade RGB assets on Lightning Network",
     "keywords": [
         "bitcoin",
