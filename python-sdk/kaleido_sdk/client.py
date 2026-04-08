@@ -15,7 +15,7 @@ from ._rln_client import RlnClient
 from .errors import NodeNotConfiguredError
 from .types import KaleidoConfig
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __sdk_name__ = "kaleido-sdk"
 
 
