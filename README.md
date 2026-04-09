@@ -1,15 +1,46 @@
 # Kaleidoswap SDK
 
-Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidoswap.com), a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
+[![npm](https://img.shields.io/npm/v/kaleido-sdk)](https://www.npmjs.com/package/kaleido-sdk)
+[![PyPI](https://img.shields.io/pypi/v/kaleido-sdk)](https://pypi.org/project/kaleido-sdk/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+Official multi-language SDK for [Kaleidoswap](https://kaleidoswap.com) — a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
+
+## Overview
+
+The SDK provides two sub-clients for interacting with the Kaleidoswap protocol:
+
+| Sub-client | What it does |
+|---|---|
+| `client.maker` | Kaleidoswap market API — assets, pairs, quotes, swap orders, LSP |
+| `client.rln` | RGB Lightning Node — wallet, channels, payments, RGB asset operations |
 
 ## SDKs
 
-| Language | Status | Package | README |
-|----------|--------|---------|--------|
-| **Python** | ✅ Ready | `kaleido-sdk` v0.1.0 | [python-sdk/README.md](./python-sdk/README.md) |
-| **TypeScript** | ✅ Ready | `kaleido-sdk` v0.1.0 | [typescript-sdk/README.md](./typescript-sdk/README.md) |
+| Language | Package | Status | Docs |
+|----------|---------|--------|------|
+| **TypeScript** | [`kaleido-sdk`](https://www.npmjs.com/package/kaleido-sdk) | [![npm](https://img.shields.io/npm/v/kaleido-sdk)](https://www.npmjs.com/package/kaleido-sdk) | [README](./typescript-sdk/README.md) |
+| **Python** | [`kaleido-sdk`](https://pypi.org/project/kaleido-sdk/) | [![PyPI](https://img.shields.io/pypi/v/kaleido-sdk)](https://pypi.org/project/kaleido-sdk/) | [README](./python-sdk/README.md) |
 
-## Installation
+
+## Quick Start
+
+### TypeScript
+
+```bash
+npm install kaleido-sdk
+```
+
+```typescript
+import { KaleidoClient } from 'kaleido-sdk';
+
+const client = KaleidoClient.create({
+  baseUrl: 'https://api.signet.kaleidoswap.com',
+});
+
+const assets = await client.maker.listAssets();
+const pairs  = await client.maker.listPairs();
+```
 
 ### Python
 
@@ -17,14 +48,33 @@ Official multi-language SDK for interacting with [Kaleidoswap](https://kaleidosw
 pip install kaleido-sdk
 ```
 
-### TypeScript / Node.js
+```python
+from kaleido_sdk import KaleidoClient
 
-```bash
-npm install kaleido-sdk
-# or: pnpm add kaleido-sdk
+client = KaleidoClient.create(base_url="https://api.signet.kaleidoswap.com")
+
+assets = await client.maker.list_assets()
+pairs  = await client.maker.list_pairs()
 ```
 
-## How It Works
+### RLN (RGB Lightning Node) access
+
+```typescript
+import { RlnClient } from 'kaleido-sdk/rln';
+
+// Standalone
+const rln = new RlnClient({ nodeUrl: 'http://localhost:3001' });
+const info = await rln.getNodeInfo();
+
+// Or via KaleidoClient
+const client = KaleidoClient.create({
+  baseUrl: 'https://api.signet.kaleidoswap.com',
+  nodeUrl: 'http://localhost:3001',
+});
+const channels = await client.rln.listChannels();
+```
+
+## Architecture
 
 ```text
 specs/kaleidoswap.json
@@ -49,37 +99,39 @@ Each SDK is implemented natively in its language and consumes generated types/mo
 ### Build
 
 ```bash
-# Build both SDKs
-make build
-
-# Build individually
-make build-python-sdk
-make build-typescript
+make build               # Build all SDKs
+make build-typescript     # TypeScript only
+make build-python-sdk     # Python only
 ```
 
 ### Test
 
 ```bash
-# Run all tests
-make test
-
-# Run per SDK
-make test-python-sdk
-make test-typescript
+make test                 # Run all tests
+make test-typescript      # TypeScript only
+make test-python-sdk      # Python only
 ```
 
-### Regenerate Models
+### Code Quality
 
 ```bash
-# Regenerate both SDK model/type outputs
-make generate-models
+make check                # Format, lint, and typecheck all SDKs
+make fix                  # Auto-fix format and lint issues
+make pre-commit           # Same checks as CI
+```
 
-# Regenerate individually
-make generate-python-sdk-models
-make generate-ts-types
+### Regenerate Types
 
-# Full refresh (download latest specs + regenerate)
-make regenerate
+```bash
+make generate-models      # Regenerate all models from specs
+make regenerate           # Download latest specs + regenerate
+```
+
+### Version Sync
+
+```bash
+make versions                       # Show current SDK versions
+make sync-version VERSION=0.2.0     # Sync version across all SDKs
 ```
 
 ## Roadmap
@@ -88,9 +140,9 @@ make regenerate
 - [x] TypeScript SDK
 - [x] OpenAPI-driven model generation
 - [x] WebSocket support
+- [ ] Rust SDK (`kaleidoswap-core` — WIP)
 - [ ] Swift SDK for iOS/macOS
 - [ ] Kotlin SDK for Android
-- [ ] CLI tool
 
 ## License
 
@@ -98,7 +150,7 @@ MIT License. See [LICENSE](./LICENSE).
 
 ## Resources
 
-- Specs: [specs/kaleidoswap.json](./specs/kaleidoswap.json), [specs/rgb-lightning-node.yaml](./specs/rgb-lightning-node.yaml)
+- Documentation: [docs.kaleidoswap.com](https://docs.kaleidoswap.com/sdk/introduction)
+- Specs: [kaleidoswap.json](./specs/kaleidoswap.json), [rgb-lightning-node.yaml](./specs/rgb-lightning-node.yaml)
 - RGB Lightning Node: [RGB-Tools/rgb-lightning-node](https://github.com/RGB-Tools/rgb-lightning-node)
 - Website: [kaleidoswap.com](https://kaleidoswap.com)
-- Docs: [docs.kaleidoswap.com](https://docs.kaleidoswap.com)
