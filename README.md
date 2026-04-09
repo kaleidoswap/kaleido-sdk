@@ -6,6 +6,10 @@
 
 Official multi-language SDK for [Kaleidoswap](https://kaleidoswap.com) — a decentralized exchange for Bitcoin and RGB assets on the Lightning Network.
 
+> **Beta Software — Use at Your Own Risk**
+>
+> This SDK is under active development and currently intended for **testnet/signet use only**. It is **not considered safe for mainnet** or production environments. APIs may change without notice. The authors assume no responsibility for any loss of funds or damages arising from the use of this software. Use it at your own risk.
+
 ## Overview
 
 The SDK provides two sub-clients for interacting with the Kaleidoswap protocol:
