@@ -21,7 +21,7 @@ The SDK provides two sub-clients for interacting with the Kaleidoswap protocol:
 |----------|---------|--------|------|
 | **TypeScript** | [`kaleido-sdk`](https://www.npmjs.com/package/kaleido-sdk) | [![npm](https://img.shields.io/npm/v/kaleido-sdk)](https://www.npmjs.com/package/kaleido-sdk) | [README](./typescript-sdk/README.md) |
 | **Python** | [`kaleido-sdk`](https://pypi.org/project/kaleido-sdk/) | [![PyPI](https://img.shields.io/pypi/v/kaleido-sdk)](https://pypi.org/project/kaleido-sdk/) | [README](./python-sdk/README.md) |
-| **Rust** | `kaleidoswap-core` | WIP | [crates/](./crates/kaleidoswap-core/) |
+
 
 ## Quick Start
 
