@@ -19,6 +19,7 @@ from kaleido_sdk import (
     to_display_amount,
 )
 from kaleido_sdk.rln import (
+    AssetBalanceResponse,
     AssetSchema,
     CreateUtxosRequest,
     DecodeRGBInvoiceRequest,
@@ -240,6 +241,50 @@ class TestListAssetsEnumSerialization:
 
             json_payload = mock.call_args[1]["json"]
             assert json_payload["filter_asset_schemas"] == ["Nia"]
+
+
+class TestListAssetsIfaParsing:
+    """IFA assets must survive list_assets response normalization."""
+
+    async def test_list_assets_preserves_ifa_entries(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        fake = {
+            "nia": [],
+            "uda": [],
+            "cfa": [],
+            "ifa": [
+                {
+                    "asset_id": "rgb1ifaassetid",
+                    "ticker": "IFA",
+                    "name": "IFA Asset",
+                    "details": None,
+                    "precision": 0,
+                    "initial_supply": 1,
+                    "max_supply": 1,
+                    "known_circulating_supply": 1,
+                    "timestamp": 1700000000,
+                    "added_at": 1700000001,
+                    "balance": {
+                        "settled": 1,
+                        "future": 0,
+                        "spendable": 1,
+                        "offchain_outbound": 0,
+                        "offchain_inbound": 0,
+                    },
+                    "media": None,
+                    "reject_list_url": None,
+                }
+            ],
+        }
+
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = fake
+            result = await rln.list_assets()
+
+        assert len(result.ifa) == 1
+        assert isinstance(result.ifa[0].balance, AssetBalanceResponse)
+        assert result.ifa[0].__class__.__name__ == "AssetIFA"
+        assert result.ifa[0].ticker == "IFA"
 
 
 class TestConnectionErrorHandling:

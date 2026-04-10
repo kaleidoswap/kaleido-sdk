@@ -324,6 +324,7 @@ class RlnClient:
             "nia": data.get("nia") or [],
             "uda": data.get("uda") or [],
             "cfa": data.get("cfa") or [],
+            "ifa": data.get("ifa") or [],
         }
         return ListAssetsResponse.model_validate(data)
 

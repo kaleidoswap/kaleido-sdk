@@ -1,5 +1,5 @@
 import { KaleidoClient } from '../../src/index.js';
-import type { UnlockRequest } from '../../src/node-types-ext.js';
+import type { ListAssetsResponse, UnlockRequest } from '../../src/node-types-ext.js';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const TEST_API_URL = process.env.TEST_API_URL || 'http://localhost:8000';
@@ -19,6 +19,10 @@ function buildUnlockRequest(password: string): UnlockRequest {
         bitcoind_rpc_port: TEST_BITCOIND_RPC_PORT,
         announce_addresses: [TEST_ANNOUNCE_ADDRESS],
     };
+}
+
+function allNodeAssets({ nia, cfa, uda, ifa }: ListAssetsResponse) {
+    return [...(nia || []), ...(cfa || []), ...(uda || []), ...(ifa || [])];
 }
 
 describe('RLN Client Integration', () => {
@@ -207,8 +211,7 @@ describe('RLN Client Integration', () => {
     describe('Asset Management', () => {
         it('should list node assets', async () => {
             try {
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
 
                 expect(Array.isArray(assets)).toBe(true);
 
@@ -238,8 +241,7 @@ describe('RLN Client Integration', () => {
         it('should get asset balance for valid asset', async () => {
             try {
                 // First get available assets
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
 
                 if (assets.length === 0) {
                     console.warn('No assets available to test getAssetBalance');
@@ -278,8 +280,7 @@ describe('RLN Client Integration', () => {
 
         it('should attempt sendRgb with recipient map', async () => {
             try {
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to test sendRgb');
@@ -645,8 +646,7 @@ describe('RLN Client Integration', () => {
         it('should create RGB invoice', async () => {
             try {
                 // Get available assets first
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to create invoice');
@@ -676,8 +676,7 @@ describe('RLN Client Integration', () => {
 
         it('should create RGB invoice with witness', async () => {
             try {
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to create witness invoice');
@@ -702,8 +701,7 @@ describe('RLN Client Integration', () => {
 
         it('should decode RGB invoice', async () => {
             try {
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
 
                 if (assets.length === 0) {
                     console.warn('No RGB assets available to create invoice for decoding');
@@ -886,8 +884,7 @@ describe('RLN Client Integration', () => {
             try {
                 const channels = (await client.rln.listChannels()).channels || [];
                 const peers = (await client.rln.listPeers()).peers || [];
-                const { nia, cfa, uda } = await client.rln.listAssets();
-                const assets = [...(nia || []), ...(cfa || []), ...(uda || [])];
+                const assets = allNodeAssets(await client.rln.listAssets());
                 const payments = (await client.rln.listPayments()).payments || [];
 
                 // TypeScript should enforce these are arrays
