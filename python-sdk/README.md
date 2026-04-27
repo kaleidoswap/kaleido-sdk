@@ -23,19 +23,19 @@ The SDK exposes two sub-clients depending on what you need:
 from kaleido_sdk import KaleidoClient
 
 # Zero-config — defaults to regtest
-client = KaleidoClient.create()
+client = await KaleidoClient.create()
 assets = await client.maker.list_assets()
 
 # Maker API only
-client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
+client = await KaleidoClient.create(base_url="https://api.kaleidoswap.com")
 assets = await client.maker.list_assets()
 
 # Node only (base_url still defaults to regtest)
-client = KaleidoClient.create(node_url="http://localhost:3001")
+client = await KaleidoClient.create(node_url="http://localhost:3001")
 info = await client.rln.get_node_info()
 
 # Both together
-client = KaleidoClient.create(
+client = await KaleidoClient.create(
     base_url="https://api.kaleidoswap.com",
     node_url="http://localhost:3001",
 )

@@ -25,6 +25,7 @@ from .types import KaleidoConfig
 T = TypeVar("T", bound=BaseModel)
 
 _log = get_logger("http")
+_SDK_HEADER = "python/0.1.6"
 
 
 class HttpClient:
@@ -39,19 +40,29 @@ class HttpClient:
         self._config = config
         self._client: httpx.AsyncClient | None = None
 
-    def _build_headers(self) -> dict[str, str]:
-        headers: dict[str, str] = {
+    def _build_default_headers(self) -> dict[str, str]:
+        return {
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
+
+    def _build_maker_headers(self) -> dict[str, str]:
+        headers = self._build_default_headers()
+
         if self._config.api_key:
             headers["Authorization"] = f"Bearer {self._config.api_key}"
+        if self._config.install_id:
+            headers["X-Kaleido-Install-Id"] = self._config.install_id
+        if self._config.session_id:
+            headers["X-Kaleido-Session-Id"] = self._config.session_id
+        headers["X-Kaleido-SDK"] = _SDK_HEADER
+
         return headers
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
-                headers=self._build_headers(),
+                headers=self._build_default_headers(),
                 timeout=httpx.Timeout(self._config.timeout),
             )
         return self._client
@@ -214,7 +225,12 @@ class HttpClient:
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Make GET request to Maker API."""
-        return await self._request("GET", self._maker_url(path), params=params)
+        return await self._request(
+            "GET",
+            self._maker_url(path),
+            params=params,
+            headers=self._build_maker_headers(),
+        )
 
     async def maker_post(
         self,
@@ -228,6 +244,7 @@ class HttpClient:
             self._maker_url(path),
             json=self._serialize_body(data),
             params=params,
+            headers=self._build_maker_headers(),
         )
 
     # =========================================================================

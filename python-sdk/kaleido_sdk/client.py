@@ -7,8 +7,10 @@ Main client class that coordinates Maker and RLN operations.
 from __future__ import annotations
 
 import logging
+from dataclasses import replace
 
 from ._http_client import HttpClient
+from ._identity import generate_session_id, load_or_create_install_id
 from ._logging import apply_log_level
 from ._maker_client import MakerClient
 from ._rln_client import RlnClient
@@ -29,7 +31,7 @@ class KaleidoClient:
         ```python
         from kaleido_sdk import KaleidoClient
 
-        client = KaleidoClient.create(
+        client = await KaleidoClient.create(
             base_url="https://api.kaleidoswap.com"
         )
 
@@ -54,11 +56,12 @@ class KaleidoClient:
         self._rln = RlnClient(self._http)
 
     @classmethod
-    def create(
+    async def create(
         cls,
         base_url: str = "https://api.regtest.kaleidoswap.com",
         node_url: str | None = None,
         api_key: str | None = None,
+        install_id: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 3,
         cache_ttl: int = 60,
@@ -72,6 +75,7 @@ class KaleidoClient:
                 Defaults to the regtest environment (https://api.regtest.kaleidoswap.com).
             node_url: Optional URL for RGB Lightning Node
             api_key: Optional API key for authenticated requests
+            install_id: Optional persistent install identifier. Generated and stored when omitted.
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum retry attempts (default: 3)
             cache_ttl: Cache TTL in seconds (default: 60)
@@ -85,25 +89,28 @@ class KaleidoClient:
         Example:
             ```python
             # Zero-config — connects to regtest
-            client = KaleidoClient.create()
+            client = await KaleidoClient.create()
 
             # Production Maker API
-            client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
+            client = await KaleidoClient.create(base_url="https://api.kaleidoswap.com")
 
             # With RGB Node only
-            client = KaleidoClient.create(node_url="http://localhost:3000")
+            client = await KaleidoClient.create(node_url="http://localhost:3000")
 
             # Both
-            client = KaleidoClient.create(
+            client = await KaleidoClient.create(
                 base_url="https://api.kaleidoswap.com",
                 node_url="http://localhost:3000",
             )
             ```
         """
+        resolved_install_id = await load_or_create_install_id(install_id)
         config = KaleidoConfig(
             base_url=base_url,
             node_url=node_url,
             api_key=api_key,
+            install_id=resolved_install_id,
+            session_id=generate_session_id(),
             timeout=timeout,
             max_retries=max_retries,
             cache_ttl=cache_ttl,
@@ -112,7 +119,7 @@ class KaleidoClient:
         return cls(config)
 
     @classmethod
-    def from_config(cls, config: KaleidoConfig) -> KaleidoClient:
+    async def from_config(cls, config: KaleidoConfig) -> KaleidoClient:
         """
         Create a new KaleidoClient instance from a config object.
 
@@ -122,7 +129,12 @@ class KaleidoClient:
         Returns:
             Initialized client
         """
-        return cls(config)
+        resolved_config = replace(
+            config,
+            install_id=await load_or_create_install_id(config.install_id),
+            session_id=config.session_id or generate_session_id(),
+        )
+        return cls(resolved_config)
 
     def has_node(self) -> bool:
         """

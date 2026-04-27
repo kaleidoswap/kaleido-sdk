@@ -32,7 +32,7 @@ logging.basicConfig(
 
 async def main() -> None:
     """Main entry point."""
-    client = KaleidoClient.create(
+    client = await KaleidoClient.create(
         base_url=API_URL,
         log_level=logging.DEBUG,
     )
