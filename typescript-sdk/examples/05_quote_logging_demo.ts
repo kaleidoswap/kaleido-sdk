@@ -13,7 +13,7 @@ const WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/
 async function main() {
     console.log('🚀 Starting Quote Logging Demo\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     try {
         // First, discover available routes

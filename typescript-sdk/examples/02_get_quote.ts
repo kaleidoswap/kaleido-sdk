@@ -12,7 +12,7 @@ const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 async function main() {
     console.log('🎨 Kaleidoswap SDK - Get Quote Example\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     // List pairs first
     console.log('📋 Fetching trading pairs...');

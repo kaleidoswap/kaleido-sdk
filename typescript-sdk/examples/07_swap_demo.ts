@@ -28,7 +28,7 @@ async function swapDemo() {
 
     console.log(`📡 Connecting to: ${API_URL}\n`);
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     // ========================================================================
     // Step 1: Fetch and display available assets

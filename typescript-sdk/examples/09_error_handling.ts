@@ -27,7 +27,7 @@ const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 async function main() {
     console.log('🛡️ Error Handling Examples\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     // ========================================================================
     // Example 1: Handling API Errors
@@ -93,7 +93,7 @@ async function main() {
     console.log('📌 Example 3: Network Error Handling\n');
 
     // Create client with invalid URL to simulate network error
-    const badClient = KaleidoClient.create({
+    const badClient = await KaleidoClient.create({
         baseUrl: 'http://invalid-host-that-does-not-exist.local:9999',
         timeout: 2,  // 2 second timeout
     });

@@ -20,9 +20,10 @@ describe('WebSocket Integration', () => {
     let client: KaleidoClient;
     let currentWs: WSClient | undefined;
 
-    beforeAll(() => {
-        client = KaleidoClient.create({
+    beforeAll(async () => {
+        client = await KaleidoClient.create({
             baseUrl: TEST_API_URL,
+            installId: 'inst_test_ws_maker',
         });
     });
 
@@ -96,7 +97,10 @@ describe('WebSocket Integration', () => {
         });
 
         it('should throw error if WebSocket not enabled', async () => {
-            const freshClient = KaleidoClient.create({ baseUrl: TEST_API_URL });
+            const freshClient = await KaleidoClient.create({
+                baseUrl: TEST_API_URL,
+                installId: 'inst_test_ws_maker_fresh',
+            });
 
             await expect(
                 freshClient.maker.streamQuotes(
