@@ -7,212 +7,98 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### ✨ Added - WebSocket Support
+- No unreleased changes.
 
-#### Core Features
-- **Full WebSocket Implementation** for real-time data streaming
-  - Automatic reconnection with exponential backoff
-  - Event-driven architecture with custom event handlers
-  - Connection state management
-  - Ping/pong keepalive mechanism
-
-#### WebSocket Client Features
-- `WebSocketClient` with configurable reconnection settings
-- Support for multiple event types:
-  - `PriceUpdate` - Real-time price updates
-  - `QuoteResponse` - Fast quote responses
-  - `SwapUpdate` - Swap status updates
-  - `OrderUpdate` - Order status updates
-  - `Connected/Disconnected` - Connection lifecycle events
-  - `Error` - Error handling
-
-#### KaleidoClient Integration
-- `connect_websocket()` - Initialize WebSocket connection
-- `connect_websocket_with_config()` - Custom configuration support
-- `disconnect_websocket()` - Clean disconnection
-- `subscribe_to_pair()` - Subscribe to price updates
-- `unsubscribe_from_pair()` - Unsubscribe from updates
-- `get_quote_websocket()` - Fast quote requests via WebSocket
-- `on_websocket_event()` - Register event handlers
-- `reconnect_websocket()` - Manual reconnection
-
-#### Examples Added
-- **Rust**: `websocket_streaming.rs`, `websocket_quotes.rs`
-- **Python**: `websocket_streaming.py`, `websocket_quotes.py`
-- **TypeScript**: `websocket-streaming.ts`, `websocket-quotes.ts`
-
-#### Testing
-- Comprehensive integration test suite for WebSocket functionality
-- Tests for connection lifecycle, subscriptions, events, and reconnection
-
-#### Documentation
-- Complete WebSocket usage guide with examples
-- Updated README with WebSocket examples for all languages
-- Architecture documentation updated
-
-### 🔄 Changed
-- Moved WebSocket documentation from `planned/` to main `docs/` folder
-- Updated ROADMAP to reflect completed WebSocket implementation
-
-## [0.2.0] - 2024-11-19
-
-### 🎉 Major Release: Auto-Generated SDK from OpenAPI Specs
-
-This release introduces a complete architectural refactor, moving from hand-written code to auto-generated code from OpenAPI specifications. This ensures type safety, API parity, and easier maintenance.
-
-### ✨ Added
-
-#### Code Generation
-- **Auto-generation scripts** for TypeScript and Python SDKs
-  - `scripts/generate-typescript.sh` - Generate TypeScript SDK from OpenAPI specs
-  - `scripts/generate-python.sh` - Generate Python SDK from OpenAPI specs
-  - `scripts/update-openapi-specs.sh` - Fetch latest OpenAPI specs from remote sources
-
-#### Makefile Targets
-- `make generate` - Generate both TypeScript and Python SDKs
-- `make generate-typescript` - Generate TypeScript SDK only
-- `make generate-python` - Generate Python SDK only
-- `make update-specs` - Download latest OpenAPI specifications
-
-#### Configuration Files
-- OpenAPI generator config for Python (`openapi-config-kaleido.yaml`, `openapi-config-rgb.yaml`)
-- Generator ignore files (`.generatorignore`) to protect hand-written code
-- CI/CD workflow example (`.github/workflows/generate-sdk.yml.example`)
-
-### 🔄 Changed
-
-#### TypeScript SDK
-- **Refactored `KaleidoClient`** to use auto-generated `KaleidoApiClient` and `RgbNodeClient` internally
-- **Updated type imports** to use generated code from `./generated/kaleido/` and `./generated/rgb-node/`
-- **Re-exported common types** from generated code in `index.ts` for convenience
-- Maintained backward compatibility for most public APIs
-
-#### Python SDK
-- **Refactored `KaleidoClient`** to use auto-generated clients internally
-- **Updated imports** to use generated code from `.generated.kaleido` and `.generated.rgb_node`
-- **Re-exported common types** in `__init__.py` for convenience
-- Maintained backward compatibility for most public APIs
-
-### ⚠️ Breaking Changes
-
-#### Type Names
-- `AssetResponse` → `AssetsResponse` (TypeScript)
-- `QuoteResponse` → `PairQuoteResponse` (Python)
-- `Quote` → `PairQuoteRequest` (TypeScript, for consistency)
-
-#### Import Paths
-**TypeScript:**
-```typescript
-// Before (v0.1.x)
-import { AssetResponse } from 'kaleido-sdk';
-
-// After (v0.2.0)
-import { AssetsResponse } from 'kaleido-sdk';
-```
-
-**Python:**
-```python
-# Before (v0.1.x)
-from kaleido_sdk import QuoteResponse
-
-# After (v0.2.0)
-from kaleido_sdk import PairQuoteResponse
-```
-
-#### Response Field Names
-- Response fields now strictly follow OpenAPI spec (snake_case in JSON responses)
-- TypeScript types enforce the exact field names from the API
-
-### 🐛 Fixed
-- Type safety issues by using OpenAPI-generated types
-- API parity issues by using auto-generated clients
-- Inconsistent naming across languages
-
-### 📝 Documentation
-- Updated README with code generation workflow
-- Added comprehensive migration guide
-- Documented best practices for SDK development
-- Created detailed generation documentation
-
-### 🔧 Internal Changes
-- Moved to hybrid architecture: auto-generated base + hand-written convenience methods
-- Separated generated code (`/generated`) from hand-written code
-- Improved maintainability through automated code generation
-- Added protection for hand-written code via `.generatorignore` files
-
-### 🎯 Benefits
-- ✅ **Type Safety**: All types match OpenAPI specs exactly
-- ✅ **API Parity**: Guaranteed compatibility with the API
-- ✅ **Easy Updates**: Regenerate SDK when API changes
-- ✅ **Better IDE Support**: Enhanced autocomplete from generated types
-- ✅ **Future-Proof**: Clean architecture for long-term maintenance
-
-### 📚 Migration
-See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed migration instructions from v0.1.x to v0.2.0.
-
----
-
-## [0.1.5] - 2024-11-01
+## [0.1.6] - 2026-04-10
 
 ### Added
-- Python SDK examples
-- Additional utility methods for asset management
-- WebSocket support for real-time quotes
+
+- Added IFA asset support when normalizing `list_assets` responses.
+- Added Python and TypeScript test coverage for IFA asset handling.
 
 ### Changed
-- Improved error handling
-- Enhanced retry logic
-- Better logging
+
+- Refreshed the root README with clearer package, setup, and safety guidance.
+- Synced package versions and lockfiles for the `0.1.6` release.
+
+## [0.1.5] - 2026-04-08
 
 ### Fixed
-- Connection timeout issues
-- WebSocket reconnection logic
-- Cache invalidation bugs
 
----
+- Upgraded `vite` to v8 and `vitest` to v4 in the TypeScript SDK to address the Vite security issue tracked by Dependabot.
 
-## [0.1.0] - 2024-10-15
+### Changed
+
+- Synced package versions for the `0.1.5` release.
+
+## [0.1.4] - 2026-04-08
 
 ### Added
-- Initial release of Kaleidoswap SDK
-- TypeScript SDK with full API coverage
-- Python SDK with full API coverage
-- Support for Kaleidoswap Maker API
-- Support for RGB Lightning Node API
-- Comprehensive error handling
-- Retry mechanisms
-- WebSocket support for quotes
-- Utility functions (precision handler, asset mapper)
-- Documentation and examples
 
-### Features
-- Asset and pair management
-- Quote requests (HTTP and WebSocket)
-- Atomic swaps (maker flow)
-- Swap orders
-- LSPS1 channel management
-- RGB asset operations
-- Lightning Network operations
-- On-chain Bitcoin operations
+- Added `SignetCustom` to the generated `BitcoinNetwork` enums in both SDKs.
 
----
+### Fixed
 
-## Release Tags
+- Fixed validation failures when the RLN node reports the `SignetCustom` network type.
 
-- `[0.2.0]` - 2024-11-19 - Auto-generated SDK from OpenAPI
-- `[0.1.5]` - 2024-11-01 - Enhanced features and fixes
-- `[0.1.0]` - 2024-10-15 - Initial release
+## [0.1.3] - 2026-04-07
 
----
+### Added
 
-## Contributing
+- Added `EstimateFeesRequest` and `EstimateFeesResponse` models for maker fee estimation.
+- Added regression coverage for asset-pair mapping and updated API type expectations.
 
-When contributing to this project, please:
-1. Never edit files in `/generated` directories
-2. Run `make generate` after modifying OpenAPI specs
-3. Add tests for hand-written code
-4. Update this CHANGELOG with your changes
-5. Follow the migration guide format for breaking changes
+### Changed
 
-For more information, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+- Updated maker API models in both SDKs to match the latest trading-pair and asset response shapes.
+- Adjusted TypeScript asset-pair mapping to work with explicit asset IDs returned by the API.
+- Pinned transitive TypeScript dependencies to pick up security updates.
 
+### Breaking Changes
+
+- Updated generated maker models and trading-pair response shapes. Consumers depending on the older type names or payload structure may need code changes.
+
+## [0.1.2] - 2026-04-01
+
+### Added
+
+- Added RLN `Inflate` and `IssueAssetIFA` endpoints to the Python and TypeScript SDKs.
+- Added request and response models for the new RLN asset issuance flow.
+
+### Changed
+
+- Extended generated node types and RLN clients to expose the new endpoints.
+- Synced shared version metadata and release files for `0.1.2`.
+
+## [0.1.1] - 2026-04-01
+
+### Added
+
+- Added timeout handling for unlock wallet requests in both SDKs.
+- Added tests covering unlock timeout behavior, public exports, and precision helpers.
+
+### Changed
+
+- Replaced `to_smallest_units` with `parse_raw_amount`.
+- Replaced `to_display_units` with `to_display_amount`.
+- Updated generated Python model headers and tooling to align with `pyright`-based type checking.
+
+### Fixed
+
+- Improved precision parsing and validation for amount conversions.
+- Aligned unlock integration test payloads with current API behavior.
+- Pulled in Python dependency updates for the release branch.
+
+### Breaking Changes
+
+- Renamed the public precision helpers used by both SDKs. Update imports and call sites from `to_smallest_units`/`to_display_units` to `parse_raw_amount`/`to_display_amount`.
+
+## [0.1.0] - 2026-03-21
+
+### Added
+
+- Initial multi-language SDK release for Kaleidoswap.
+- Python and TypeScript SDKs with generated models derived from the Kaleidoswap and RGB Lightning Node OpenAPI specs.
+- `KaleidoClient` support for maker and RLN workflows.
+- HTTP and WebSocket clients, shared error handling, logging helpers, precision utilities, and asset-pair mapping helpers.
+- Example applications and automated test suites for maker, RLN, and WebSocket flows.
