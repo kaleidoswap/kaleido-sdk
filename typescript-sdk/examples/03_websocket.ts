@@ -11,7 +11,7 @@ const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 async function main() {
     console.log('🎨 Kaleidoswap SDK - WebSocket Streaming Example\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     const wsUrl = API_URL.replace(/^http(s?)/, (_, s) => `ws${s}`) + '/api/v1/market/ws';
 

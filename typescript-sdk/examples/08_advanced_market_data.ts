@@ -23,7 +23,7 @@ async function main() {
     console.log('🚀 Advanced Market Data Operations\n');
 
     // Initialize client
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     // ========================================================================
     // Step 1: Fetch data and create helpers

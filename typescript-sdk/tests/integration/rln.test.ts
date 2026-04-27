@@ -29,9 +29,10 @@ describe('RLN Client Integration', () => {
     let client: KaleidoClient;
 
     beforeAll(async () => {
-        client = KaleidoClient.create({
+        client = await KaleidoClient.create({
             baseUrl: TEST_API_URL,
             nodeUrl: TEST_NODE_URL,
+            installId: 'inst_test_rln',
         });
 
         if (!client.hasNode()) {
@@ -830,8 +831,9 @@ describe('RLN Client Integration', () => {
         it('should handle node not configured error', async () => {
             try {
                 // Create client without node URL
-                const clientNoNode = KaleidoClient.create({
+                const clientNoNode = await KaleidoClient.create({
                     baseUrl: TEST_API_URL,
+                    installId: 'inst_test_rln_no_node',
                 });
 
                 expect(clientNoNode.hasNode()).toBe(false);
@@ -848,9 +850,10 @@ describe('RLN Client Integration', () => {
         it('should handle network errors gracefully', async () => {
             try {
                 // Create client with invalid node URL
-                const clientBadNode = KaleidoClient.create({
+                const clientBadNode = await KaleidoClient.create({
                     baseUrl: TEST_API_URL,
                     nodeUrl: 'http://invalid-node-url:9999',
+                    installId: 'inst_test_rln_bad_node',
                 });
 
                 await clientBadNode.rln.getNodeInfo();

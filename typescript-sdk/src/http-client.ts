@@ -15,6 +15,9 @@ export interface HttpClientConfig {
     baseUrl?: string;
     nodeUrl?: string;
     apiKey?: string;
+    installId?: string;
+    sessionId?: string;
+    sdkVersion?: string;
     timeout?: number;
 }
 
@@ -92,11 +95,12 @@ export class HttpClient {
     constructor(config: HttpClientConfig, logState: LogState = new LogState()) {
         this.config = config;
         const fetchWithTimeout = _createFetchWithTimeout(config.timeout);
+        const makerHeaders = this._createMakerHeaders();
 
         if (config.baseUrl) {
             this.makerClient = createClient<paths>({
                 baseUrl: config.baseUrl,
-                headers: config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : undefined,
+                headers: Object.keys(makerHeaders).length > 0 ? makerHeaders : undefined,
                 fetch: fetchWithTimeout,
             });
             this.makerClient.use(_createLoggingMiddleware(logState));
@@ -111,6 +115,28 @@ export class HttpClient {
         }
 
         this._logState = logState;
+    }
+
+    private _createMakerHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {};
+
+        if (this.config.apiKey) {
+            headers.Authorization = `Bearer ${this.config.apiKey}`;
+        }
+
+        if (this.config.installId) {
+            headers['X-Kaleido-Install-Id'] = this.config.installId;
+        }
+
+        if (this.config.sessionId) {
+            headers['X-Kaleido-Session-Id'] = this.config.sessionId;
+        }
+
+        if (this.config.sdkVersion) {
+            headers['X-Kaleido-SDK'] = `typescript/${this.config.sdkVersion}`;
+        }
+
+        return headers;
     }
 
     get maker() {

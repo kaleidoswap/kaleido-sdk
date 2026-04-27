@@ -24,23 +24,23 @@ The SDK exposes two sub-clients depending on what you need:
 import { KaleidoClient } from 'kaleido-sdk';
 
 // Zero-config — defaults to regtest
-const client = KaleidoClient.create();
+const client = await KaleidoClient.create();
 const assets = await client.maker.listAssets();
 
 // Maker API only
-const client = KaleidoClient.create({
+const client = await KaleidoClient.create({
   baseUrl: 'https://api.signet.kaleidoswap.com',
 });
 const assets = await client.maker.listAssets();
 
 // Node only (baseUrl still defaults to regtest)
-const client = KaleidoClient.create({
+const client = await KaleidoClient.create({
   nodeUrl: 'http://localhost:3001',
 });
 const info = await client.rln.getNodeInfo();
 
 // Both together
-const client = KaleidoClient.create({
+const client = await KaleidoClient.create({
   baseUrl: 'https://api.signet.kaleidoswap.com',
   nodeUrl: 'http://localhost:3001',
 });

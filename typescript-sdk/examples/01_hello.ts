@@ -37,12 +37,12 @@ const API_URL = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.
 // Option B — custom stream (e.g. stdout or a file stream):
 //   import { createWriteStream } from 'fs';
 //   const logger = new StreamLogger({ stream: createWriteStream('sdk.log') });
-//   KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger });
+//   await KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger });
 //
 // Option C — your own logger (Winston, Pino, etc.):
 //   import pino from 'pino';
 //   const logger = pino();
-//   KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger });
+//   await KaleidoClient.create({ baseUrl: '…', logLevel: LogLevel.DEBUG, logger });
 //
 // Option D — silence a noisy sub-component after creation:
 //   setComponentLogLevel(client.logState, 'http', LogLevel.WARN);
@@ -57,7 +57,7 @@ async function main(): Promise<void> {
 
     // Create client — logLevel tells the SDK which records to emit.
     // Omitting logLevel (or setting it to LogLevel.SILENT) produces zero output.
-    const client = KaleidoClient.create({
+    const client = await KaleidoClient.create({
         baseUrl: API_URL,
         logLevel: LogLevel.DEBUG, // Show all HTTP and swap traces on stderr
         // logger: new StreamLogger({ stream: process.stdout }), // redirect to stdout

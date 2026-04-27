@@ -29,6 +29,42 @@ describe('HttpClient', () => {
             expect(client.hasNodeClient()).toBe(true);
         });
 
+        it('should send maker authentication and attribution headers', async () => {
+            const originalFetch = globalThis.fetch;
+            let capturedRequest: Request | undefined;
+
+            globalThis.fetch = async (input, init) => {
+                capturedRequest = input instanceof Request ? input : new Request(input, init);
+                return new Response('{}', {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' },
+                });
+            };
+
+            try {
+                const client = new HttpClient({
+                    baseUrl: 'https://api.example.com',
+                    apiKey: 'kld_live_c_test',
+                    installId: 'inst_test_install',
+                    sessionId: 'test-session',
+                    sdkVersion: '0.1.6',
+                });
+
+                await client.maker.GET('/api/v1/lsps1/get_info');
+
+                expect(capturedRequest?.headers.get('authorization')).toBe(
+                    'Bearer kld_live_c_test',
+                );
+                expect(capturedRequest?.headers.get('x-kaleido-install-id')).toBe(
+                    'inst_test_install',
+                );
+                expect(capturedRequest?.headers.get('x-kaleido-session-id')).toBe('test-session');
+                expect(capturedRequest?.headers.get('x-kaleido-sdk')).toBe('typescript/0.1.6');
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+        });
+
         it('should not have node client without nodeUrl', () => {
             const client = new HttpClient({
                 baseUrl: 'https://api.example.com',

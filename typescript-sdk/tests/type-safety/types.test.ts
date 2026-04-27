@@ -11,9 +11,10 @@ import type { TradingPairResponseModel, AssetResponseModel } from '../../src/ind
 
 describe('Type Safety', () => {
     describe('Client Types', () => {
-        it('should have properly typed client', () => {
-            const client = KaleidoClient.create({
+        it('should have properly typed client', async () => {
+            const client = await KaleidoClient.create({
                 baseUrl: 'https://api.example.com',
+                installId: 'inst_test_types',
             });
 
             // Type assertions - these will fail at compile time if types are wrong
@@ -58,9 +59,10 @@ describe('Type Safety', () => {
     });
 
     describe('openapi-fetch Type Integration', () => {
-        it('should have type-safe HTTP client', () => {
-            const client = KaleidoClient.create({
+        it('should have type-safe HTTP client', async () => {
+            const client = await KaleidoClient.create({
                 baseUrl: 'https://api.example.com',
+                installId: 'inst_test_http_types',
             });
 
             // Accessing the underlying openapi-fetch clients

@@ -12,9 +12,10 @@ const TEST_API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 describe('MakerClient Integration', () => {
     let client: KaleidoClient;
 
-    beforeAll(() => {
-        client = KaleidoClient.create({
+    beforeAll(async () => {
+        client = await KaleidoClient.create({
             baseUrl: TEST_API_URL,
+            installId: 'inst_test_maker_integration',
             timeout: 5,
         });
     });

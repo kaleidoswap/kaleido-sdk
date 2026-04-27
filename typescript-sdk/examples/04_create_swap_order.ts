@@ -19,7 +19,7 @@ const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 async function main() {
     console.log('🎨 Kaleidoswap SDK - Create Swap Order Example\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL });
 
     // Step 1: Get trading pairs and setup helpers
     console.log('📋 Fetching trading pairs...');
