@@ -9,7 +9,7 @@ Example:
     from kaleido_sdk import KaleidoClient
 
     async def main():
-        client = KaleidoClient.create(
+        client = await KaleidoClient.create(
             base_url="https://api.kaleidoswap.com"
         )
 
@@ -38,7 +38,7 @@ Logging:
             level=logging.DEBUG,
             format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
         )
-        client = ks.KaleidoClient.create(
+        client = await ks.KaleidoClient.create(
             base_url="https://api.kaleidoswap.com",
             log_level=logging.DEBUG,
         )

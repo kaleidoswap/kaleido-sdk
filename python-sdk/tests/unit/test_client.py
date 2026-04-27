@@ -18,6 +18,12 @@ from kaleido_sdk import (
     parse_raw_amount,
     to_display_amount,
 )
+from kaleido_sdk._http_client import HttpClient
+from kaleido_sdk._identity import (
+    generate_install_id,
+    generate_session_id,
+    load_or_create_install_id,
+)
 from kaleido_sdk.rln import (
     AssetBalanceResponse,
     AssetSchema,
@@ -33,21 +39,25 @@ from kaleido_sdk.rln import (
 class TestKaleidoClient:
     """Tests for KaleidoClient."""
 
-    def test_create_basic(self, base_url: str) -> None:
+    async def test_create_basic(self, base_url: str) -> None:
         """Test basic client creation."""
-        client = KaleidoClient.create(base_url=base_url)
+        client = await KaleidoClient.create(base_url=base_url, install_id="inst_test_create_basic")
         assert client is not None
         assert not client.has_node()
 
-    def test_create_with_node(self, base_url: str, node_url: str) -> None:
+    async def test_create_with_node(self, base_url: str, node_url: str) -> None:
         """Test client creation with node URL."""
-        client = KaleidoClient.create(base_url=base_url, node_url=node_url)
+        client = await KaleidoClient.create(
+            base_url=base_url,
+            node_url=node_url,
+            install_id="inst_test_create_node",
+        )
         assert client is not None
         assert client.has_node()
 
-    def test_create_from_config(self, config: KaleidoConfig) -> None:
+    async def test_create_from_config(self, config: KaleidoConfig) -> None:
         """Test client creation from config object."""
-        client = KaleidoClient.from_config(config)
+        client = await KaleidoClient.from_config(config)
         assert client is not None
 
     def test_maker_property(self, client: KaleidoClient) -> None:
@@ -122,6 +132,38 @@ class TestUtilityFunctions:
         """Test get_sdk_name returns expected name."""
         name = get_sdk_name()
         assert name == "kaleido-sdk"
+
+
+class TestIdentity:
+    """Tests for telemetry identity helpers and headers."""
+
+    def test_generate_install_id(self) -> None:
+        assert generate_install_id().startswith("inst_")
+
+    def test_generate_session_id(self) -> None:
+        assert len(generate_session_id()) == 36
+
+    async def test_install_id_override_does_not_touch_storage(self) -> None:
+        assert await load_or_create_install_id("inst_override") == "inst_override"
+
+    def test_maker_headers_include_attribution(self) -> None:
+        http = HttpClient(
+            KaleidoConfig(
+                base_url="https://api.example.com",
+                api_key="kld_live_c_test",
+                install_id="inst_test_install",
+                session_id="test-session",
+            )
+        )
+
+        headers = http._build_maker_headers()
+
+        assert headers["Authorization"] == "Bearer kld_live_c_test"
+        assert headers["X-Kaleido-Install-Id"] == "inst_test_install"
+        assert headers["X-Kaleido-Session-Id"] == "test-session"
+        assert headers["X-Kaleido-SDK"] == "python/0.1.6"
+        assert "Authorization" not in http._build_default_headers()
+        assert "X-Kaleido-Install-Id" not in http._build_default_headers()
 
 
 # =============================================================================
@@ -293,7 +335,10 @@ class TestConnectionErrorHandling:
     async def test_connection_error_wrapped(self) -> None:
         """httpx.ConnectError should be wrapped in NetworkError."""
 
-        client = KaleidoClient.create(base_url="http://invalid.nonexistent.domain")
+        client = await KaleidoClient.create(
+            base_url="http://invalid.nonexistent.domain",
+            install_id="inst_test_invalid_domain",
+        )
         with pytest.raises(NetworkError) as exc_info:
             await client.maker.list_assets()
 
@@ -302,7 +347,10 @@ class TestConnectionErrorHandling:
 
     async def test_dns_error_user_friendly(self) -> None:
         """DNS resolution failure should give user-friendly error."""
-        client = KaleidoClient.create(base_url="http://does-not-exist.local")
+        client = await KaleidoClient.create(
+            base_url="http://does-not-exist.local",
+            install_id="inst_test_dns_error",
+        )
         with pytest.raises(NetworkError) as exc_info:
             await client.maker.list_assets()
 

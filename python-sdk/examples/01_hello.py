@@ -33,7 +33,7 @@ async def main() -> None:
     print("-" * 40)
 
     # Create client — log_level tells the SDK which records to emit
-    client = KaleidoClient.create(
+    client = await KaleidoClient.create(
         base_url=API_URL,
         log_level=logging.DEBUG,
     )

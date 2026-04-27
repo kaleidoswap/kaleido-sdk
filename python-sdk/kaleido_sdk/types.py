@@ -92,6 +92,10 @@ class KaleidoConfig:
             Defaults to https://api.regtest.kaleidoswap.com.
         node_url: Optional URL for RGB Lightning Node
         api_key: Optional API key for authenticated requests
+        install_id: Optional persistent install identifier. Generated automatically by
+            KaleidoClient.create when omitted.
+        session_id: Optional per-client session identifier. Generated automatically by
+            KaleidoClient.create when omitted.
         timeout: Request timeout in seconds (default: 30)
         max_retries: Maximum retry attempts (default: 3)
         cache_ttl: Cache TTL in seconds (default: 60)
@@ -106,6 +110,8 @@ class KaleidoConfig:
     base_url: str = "https://api.regtest.kaleidoswap.com"
     node_url: str | None = None
     api_key: str | None = None
+    install_id: str | None = None
+    session_id: str | None = None
     timeout: float = 30.0
     max_retries: int = 3
     cache_ttl: int = 60

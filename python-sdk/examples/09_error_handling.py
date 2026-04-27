@@ -60,7 +60,7 @@ def describe_error(error: Exception) -> str:
 
 async def main() -> None:
     """Main entry point."""
-    client = KaleidoClient.create(
+    client = await KaleidoClient.create(
         base_url=API_URL,
         log_level=logging.DEBUG,
     )
@@ -95,7 +95,7 @@ async def main() -> None:
         print(f"  {describe_error(error)}")
 
     print("\n3. Simulating a network failure...")
-    bad_client = KaleidoClient.create(
+    bad_client = await KaleidoClient.create(
         base_url="http://invalid-host-that-does-not-exist.local:9999",
         timeout=2.0,
         log_level=logging.DEBUG,
