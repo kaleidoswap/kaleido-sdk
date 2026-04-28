@@ -8,11 +8,12 @@ import { KaleidoClient, toDisplayAmount } from 'kaleido-sdk';
 import type { Layer } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 async function main() {
     console.log('🎨 Kaleidoswap SDK - Get Quote Example\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL, apiKey: API_KEY });
 
     // List pairs first
     console.log('📋 Fetching trading pairs...');
@@ -38,7 +39,9 @@ async function main() {
 
     // Get a quote for 0.001 BTC (100,000 sats)
     const fromAmount = 100000;
-    console.log(`💱 Getting quote for ${toDisplayAmount(fromAmount, pair.base.precision)} ${pair.base.ticker}...`);
+    console.log(
+        `💱 Getting quote for ${toDisplayAmount(fromAmount, pair.base.precision)} ${pair.base.ticker}...`,
+    );
 
     const quote = await client.maker.getQuote({
         from_asset: {

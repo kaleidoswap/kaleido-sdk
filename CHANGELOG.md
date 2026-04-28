@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes.
+### Added
+
+- Added persistent install IDs and per-client session IDs in both the Python and TypeScript SDKs.
+- Added automatic Maker API attribution headers: `X-Kaleido-Install-Id`, `X-Kaleido-Session-Id`, and `X-Kaleido-SDK`.
+- Added optional `install_id` / `installId` overrides for integrators that manage their own identity storage.
+- Added SDK test coverage for identity generation, install ID overrides, and Maker attribution headers.
+
+### Changed
+
+- Updated Python and TypeScript examples and README snippets to use async client creation.
+
+### Breaking Changes
+
+- Changed `KaleidoClient.create()` from synchronous to asynchronous in both SDKs.
+  - Python: use `client = await KaleidoClient.create(...)`.
+  - TypeScript: use `const client = await KaleidoClient.create(...)`.
 
 ## [0.1.6] - 2026-04-10
 

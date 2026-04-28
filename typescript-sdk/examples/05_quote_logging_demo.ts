@@ -8,12 +8,13 @@
 import { KaleidoClient } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 const WS_URL = process.env.KALEIDO_WS_URL || 'ws://localhost:8000/api/v1/market/ws';
 
 async function main() {
     console.log('🚀 Starting Quote Logging Demo\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL, apiKey: API_KEY });
 
     try {
         // First, discover available routes
@@ -61,7 +62,7 @@ async function main() {
                 console.log(`Expires At:    ${new Date(quote.expires_at * 1000).toISOString()}`);
                 console.log(`Valid For:     ${quote.expires_at - quote.timestamp}s`);
                 console.log('='.repeat(60) + '\n');
-            }
+            },
         );
 
         // Wait for 10 seconds to receive quotes
@@ -71,7 +72,6 @@ async function main() {
         // Unsubscribe
         console.log('\n✅ Unsubscribing from quotes\n');
         unsubscribe();
-
     } catch (error) {
         console.error('❌ Error:', error);
         process.exit(1);

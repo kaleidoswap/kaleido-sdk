@@ -18,12 +18,13 @@ import {
 } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 async function main() {
     console.log('🚀 Advanced Market Data Operations\n');
 
     // Initialize client
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL, apiKey: API_KEY });
 
     // ========================================================================
     // Step 1: Fetch data and create helpers
@@ -50,8 +51,12 @@ async function main() {
         console.log(`    Asset ID: ${btc.asset_id}`);
         console.log(`    Ticker: ${btc.ticker}`);
         console.log(`    Precision: ${btc.precision} decimal places`);
-        console.log(`    Min Order: ${precisionHandler.toDisplayAmount(btc.min_order_size, btc.asset_id)} ${btc.ticker}`);
-        console.log(`    Max Order: ${precisionHandler.toDisplayAmount(btc.max_order_size, btc.asset_id)} ${btc.ticker}`);
+        console.log(
+            `    Min Order: ${precisionHandler.toDisplayAmount(btc.min_order_size, btc.asset_id)} ${btc.ticker}`,
+        );
+        console.log(
+            `    Max Order: ${precisionHandler.toDisplayAmount(btc.max_order_size, btc.asset_id)} ${btc.ticker}`,
+        );
     } else {
         console.log('  BTC not found');
     }
@@ -81,7 +86,9 @@ async function main() {
         console.log(`  2.5 BTC = ${rawViaHandler} atomic units (via PrecisionHandler)`);
 
         const displayViaHandler = precisionHandler.toDisplayAmount(rawViaHandler, btc.asset_id);
-        console.log(`  ${rawViaHandler} atomic units = ${displayViaHandler} BTC (via PrecisionHandler)`);
+        console.log(
+            `  ${rawViaHandler} atomic units = ${displayViaHandler} BTC (via PrecisionHandler)`,
+        );
     }
 
     // ========================================================================
@@ -177,8 +184,12 @@ async function main() {
     const btcUsdtPair = assetMapper.findPairByTickers('BTC', 'USDT');
     if (btcUsdtPair) {
         console.log(`  Found BTC/USDT pair:`);
-        console.log(`    Base: ${btcUsdtPair.base.ticker} (precision: ${btcUsdtPair.base.precision})`);
-        console.log(`    Quote: ${btcUsdtPair.quote.ticker} (precision: ${btcUsdtPair.quote.precision})`);
+        console.log(
+            `    Base: ${btcUsdtPair.base.ticker} (precision: ${btcUsdtPair.base.precision})`,
+        );
+        console.log(
+            `    Quote: ${btcUsdtPair.quote.ticker} (precision: ${btcUsdtPair.quote.precision})`,
+        );
         console.log(`    Active: ${btcUsdtPair.is_active}`);
         console.log(`    Available routes: ${btcUsdtPair.routes?.length || 0}`);
     } else {

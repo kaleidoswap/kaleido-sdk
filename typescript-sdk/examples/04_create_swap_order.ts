@@ -15,11 +15,12 @@ import {
 } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 async function main() {
     console.log('🎨 Kaleidoswap SDK - Create Swap Order Example\n');
 
-    const client = KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL, apiKey: API_KEY });
 
     // Step 1: Get trading pairs and setup helpers
     console.log('📋 Fetching trading pairs...');
@@ -43,7 +44,13 @@ async function main() {
 
     if (!btc || !usdt) {
         console.log('❌ BTC or USDT not found in trading pairs');
-        console.log('Available assets:', assetMapper.getAllAssets().map((a) => a.ticker).join(', '));
+        console.log(
+            'Available assets:',
+            assetMapper
+                .getAllAssets()
+                .map((a) => a.ticker)
+                .join(', '),
+        );
         return;
     }
 
@@ -165,7 +172,9 @@ async function main() {
     } catch (error) {
         if (error instanceof Error) {
             console.log(`\n⚠️  Order creation failed: ${error.message}`);
-            console.log('This is expected in demo mode - provide valid addresses to complete a real swap.');
+            console.log(
+                'This is expected in demo mode - provide valid addresses to complete a real swap.',
+            );
         } else {
             throw error;
         }

@@ -9,7 +9,7 @@
  * import { KaleidoClient } from 'kaleido-sdk';
  * import type { PairQuoteResponse, AssetResponseModel } from 'kaleido-sdk';
  *
- * const client = KaleidoClient.create({
+ * const client = await KaleidoClient.create({
  *   baseUrl: 'https://api.regtest.kaleidoswap.com',
  * });
  *
@@ -23,6 +23,8 @@ export { MakerClient } from './maker-client.js';
 export { HttpClient } from './http-client.js';
 export { WSClient } from './ws-client.js';
 export { getVersion, getSdkName } from './client.js';
+export { generateInstallId, generateSessionId, loadOrCreateInstallId } from './identity.js';
+export type { InstallIdStore } from './identity.js';
 
 export {
     LogLevel,
