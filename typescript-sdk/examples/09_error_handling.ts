@@ -23,11 +23,12 @@ import {
 } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 async function main() {
     console.log('🛡️ Error Handling Examples\n');
 
-    const client = await KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL, apiKey: API_KEY });
 
     // ========================================================================
     // Example 1: Handling API Errors
@@ -65,9 +66,9 @@ async function main() {
         // Try to get quote with invalid parameters
         await client.maker.getQuote({
             from_asset: {
-                asset_id: '',  // Invalid empty asset ID
+                asset_id: '', // Invalid empty asset ID
                 layer: Layer.BTC_LN,
-                amount: -100,  // Invalid negative amount
+                amount: -100, // Invalid negative amount
             },
             to_asset: {
                 asset_id: 'usdt',
@@ -95,7 +96,8 @@ async function main() {
     // Create client with invalid URL to simulate network error
     const badClient = await KaleidoClient.create({
         baseUrl: 'http://invalid-host-that-does-not-exist.local:9999',
-        timeout: 2,  // 2 second timeout
+        apiKey: API_KEY,
+        timeout: 2, // 2 second timeout
     });
 
     try {
@@ -132,7 +134,9 @@ async function main() {
             } else if (error instanceof NetworkError) {
                 console.log(`  ⚠️ ${operationName} network error: ${error.message}`);
             } else {
-                console.log(`  ⚠️ ${operationName} failed: ${error instanceof Error ? error.message : error}`);
+                console.log(
+                    `  ⚠️ ${operationName} failed: ${error instanceof Error ? error.message : error}`,
+                );
             }
             return fallback;
         }
@@ -191,7 +195,9 @@ async function main() {
             },
         });
 
-        console.log(`  ✓ Got quote: ${quote.from_asset.amount} ${quote.from_asset.ticker} → ${quote.to_asset.amount} ${quote.to_asset.ticker}`);
+        console.log(
+            `  ✓ Got quote: ${quote.from_asset.amount} ${quote.from_asset.ticker} → ${quote.to_asset.amount} ${quote.to_asset.ticker}`,
+        );
         console.log(`  ✓ Quote expires: ${new Date(quote.expires_at).toLocaleString()}`);
 
         // Check if quote is still valid

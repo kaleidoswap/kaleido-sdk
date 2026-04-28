@@ -26,6 +26,7 @@ import {
 } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 // ---------------------------------------------------------------------------
 // Logging setup  (application's responsibility — the SDK never does this)
@@ -59,6 +60,7 @@ async function main(): Promise<void> {
     // Omitting logLevel (or setting it to LogLevel.SILENT) produces zero output.
     const client = await KaleidoClient.create({
         baseUrl: API_URL,
+        apiKey: API_KEY,
         logLevel: LogLevel.DEBUG, // Show all HTTP and swap traces on stderr
         // logger: new StreamLogger({ stream: process.stdout }), // redirect to stdout
     });

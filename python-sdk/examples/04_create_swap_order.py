@@ -24,6 +24,7 @@ from kaleido_sdk import (
 )
 
 API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
+API_KEY = os.getenv("KALEIDO_API_KEY")
 NODE_URL = os.getenv("KALEIDO_NODE_URL", "http://localhost:3001")
 
 # ---------------------------------------------------------------------------
@@ -40,11 +41,13 @@ async def main() -> None:
     """Main entry point."""
     client = await KaleidoClient.create(
         base_url=API_URL,
+        api_key=API_KEY,
         log_level=logging.DEBUG,
     )
     node_client = await KaleidoClient.create(
         base_url=API_URL,
         node_url=NODE_URL,
+        api_key=API_KEY,
         log_level=logging.DEBUG,
     )
 
