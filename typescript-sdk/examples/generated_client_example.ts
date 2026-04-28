@@ -8,6 +8,7 @@ import { Layer } from 'kaleido-sdk';
 import type { paths } from 'kaleido-sdk/generated/api-types';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 async function listAssets(client: ReturnType<typeof createClient<paths>>) {
     console.log('📋 Listing all assets...');
@@ -70,6 +71,7 @@ async function main() {
 
     const client = createClient<paths>({
         baseUrl: API_URL,
+        headers: API_KEY ? { Authorization: `Bearer ${API_KEY}` } : undefined,
     });
 
     await listAssets(client);

@@ -9,6 +9,7 @@
  *
  * Environment variables:
  *   KALEIDO_API_URL - API base URL (default: http://localhost:8000)
+ *   KALEIDO_API_KEY - Optional Maker API key
  */
 
 import {
@@ -20,6 +21,7 @@ import {
 } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.KALEIDO_API_KEY;
 
 async function swapDemo() {
     console.log('╔══════════════════════════════════════════════════════════╗');
@@ -28,7 +30,7 @@ async function swapDemo() {
 
     console.log(`📡 Connecting to: ${API_URL}\n`);
 
-    const client = await KaleidoClient.create({ baseUrl: API_URL });
+    const client = await KaleidoClient.create({ baseUrl: API_URL, apiKey: API_KEY });
 
     // ========================================================================
     // Step 1: Fetch and display available assets
@@ -39,7 +41,9 @@ async function swapDemo() {
     const assetsResponse = await client.maker.listAssets();
     console.log(`Found ${assetsResponse.assets.length} assets:`);
     for (const asset of assetsResponse.assets) {
-        console.log(`  • ${asset.ticker.padEnd(6)} - ${asset.name} (precision: ${asset.precision})`);
+        console.log(
+            `  • ${asset.ticker.padEnd(6)} - ${asset.name} (precision: ${asset.precision})`,
+        );
     }
     console.log();
 
@@ -61,7 +65,8 @@ async function swapDemo() {
 
     console.log(`Found ${pairsResponse.pairs.length} trading pairs:`);
     for (const pair of pairsResponse.pairs) {
-        const routes = pair.routes?.map((r) => `${r.from_layer}→${r.to_layer}`).join(', ') || 'none';
+        const routes =
+            pair.routes?.map((r) => `${r.from_layer}→${r.to_layer}`).join(', ') || 'none';
         console.log(`  • ${pair.base.ticker}/${pair.quote.ticker} [routes: ${routes}]`);
     }
     console.log();
@@ -109,7 +114,10 @@ async function swapDemo() {
     console.log('💰 Step 4: Calculating swap amount...\n');
 
     // Use minimum order size if available, otherwise use a small amount
-    const minDisplayAmount = precisionHandler.toDisplayAmount(fromAsset.min_order_size, fromAsset.asset_id);
+    const minDisplayAmount = precisionHandler.toDisplayAmount(
+        fromAsset.min_order_size,
+        fromAsset.asset_id,
+    );
     const swapAmount = Math.max(minDisplayAmount, 0.0001);
     const rawAmount = precisionHandler.toRawAmount(swapAmount, fromAsset.asset_id);
 
@@ -228,9 +236,13 @@ async function swapDemo() {
                 const currentOrder = statusResponse.order;
 
                 if (currentOrder) {
-                    console.log(`  [${Math.round((Date.now() - startTime) / 1000)}s] Status: ${currentOrder.status}`);
+                    console.log(
+                        `  [${Math.round((Date.now() - startTime) / 1000)}s] Status: ${currentOrder.status}`,
+                    );
 
-                    if (['FILLED', 'FAILED', 'EXPIRED', 'CANCELLED'].includes(currentOrder.status)) {
+                    if (
+                        ['FILLED', 'FAILED', 'EXPIRED', 'CANCELLED'].includes(currentOrder.status)
+                    ) {
                         break;
                     }
                 }
