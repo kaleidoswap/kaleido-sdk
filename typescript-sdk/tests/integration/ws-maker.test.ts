@@ -44,28 +44,24 @@ describe('WebSocket Integration', () => {
             expect(typeof client.maker.streamQuotes).toBe('function');
         });
 
-        it.skip(
-            'should stream real-time quotes',
-            async () => {
-                client.maker.enableWebSocket(TEST_WS_URL);
+        it.skip('should stream real-time quotes', { timeout: 10000 }, async () => {
+            client.maker.enableWebSocket(TEST_WS_URL);
 
-                const quotes: QuoteResponse[] = [];
-                const unsubscribe = await client.maker.streamQuotes(
-                    'btc',
-                    'usdt',
-                    10000000, // 0.1 BTC
-                    'BTC_LN',
-                    'RGB_LN',
-                    (quote) => quotes.push(quote),
-                );
+            const quotes: QuoteResponse[] = [];
+            const unsubscribe = await client.maker.streamQuotes(
+                'btc',
+                'usdt',
+                10000000, // 0.1 BTC
+                'BTC_LN',
+                'RGB_LN',
+                (quote) => quotes.push(quote),
+            );
 
-                await new Promise((resolve) => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
 
-                expect(quotes.length).toBeGreaterThan(0);
-                unsubscribe();
-            },
-            { timeout: 10000 },
-        );
+            expect(quotes.length).toBeGreaterThan(0);
+            unsubscribe();
+        });
     });
 
     describe('Quote Streaming', () => {

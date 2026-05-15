@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TimeoutError } from '../../src/errors.js';
+import { SyncKeychainOneOf0, SyncStrategy } from '../../src/node-types-ext.js';
 import { RlnClient } from '../../src/rln-client.js';
 
 describe('RlnClient', () => {
@@ -56,5 +57,44 @@ describe('RlnClient', () => {
             code: 'TIMEOUT_ERROR',
             message: expect.stringContaining('it may still be syncing'),
         });
+    });
+
+    it('sends the default sync request body', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.syncRgbWallet();
+
+        expect(post).toHaveBeenCalledWith('/sync', {
+            body: {
+                options: {
+                    keychain: SyncKeychainOneOf0.Colored,
+                    strategy: SyncStrategy.FastSync,
+                },
+            },
+        });
+    });
+
+    it('accepts explicit sync request options', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+        const request = {
+            options: {
+                keychain: { Vanilla: { lookback: 20 } },
+                strategy: SyncStrategy.FullScan,
+            },
+        };
+
+        await client.syncRgbWallet(request);
+
+        expect(post).toHaveBeenCalledWith('/sync', { body: request });
     });
 });

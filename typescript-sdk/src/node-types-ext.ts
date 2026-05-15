@@ -21,6 +21,8 @@ export {
     InvoiceStatus,
     RecipientType,
     SwapStatus,
+    SyncKeychainOneOf0,
+    SyncStrategy,
     TransactionType,
     TransferKind,
     TransferStatus,
@@ -119,6 +121,9 @@ export type ListTransfersRequest = RequestBody<'/listtransfers', 'post'>;
 export type ListTransfersResponse = ResponseSuccess<'/listtransfers', 'post'>;
 export type FailTransfersRequest = RequestBody<'/failtransfers', 'post'>;
 export type FailTransfersResponse = ResponseSuccess<'/failtransfers', 'post'>;
+export type SyncRequest = RequestBody<'/sync', 'post'>;
+export type SyncOptions = components['schemas']['SyncOptions'];
+export type SyncKeychain = components['schemas']['SyncKeychain'];
 
 // ============================================================================
 // Lightning Network - Channels

@@ -2318,7 +2318,11 @@ export type paths = {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    'application/json': components['schemas']['SyncRequest'];
+                };
+            };
             responses: {
                 /** @description Successful operation */
                 200: {
@@ -3324,8 +3328,6 @@ export type components = {
             recipient_map: {
                 [key: string]: components['schemas']['Recipient'][];
             };
-            /** @example false */
-            skip_sync: boolean;
         };
         SendRgbResponse: {
             /** @example 7c2c95b9c2aa0a7d140495b664de7973b76561de833f0dd84def3efa08941664 */
@@ -3362,6 +3364,30 @@ export type components = {
         };
         /** @enum {string} */
         SwapStatus: SwapStatus;
+        /**
+         * @example {
+         *       "Vanilla": {
+         *         "lookback": 20
+         *       }
+         *     }
+         */
+        SyncKeychain:
+            | SyncKeychainOneOf0
+            | {
+                  Vanilla: {
+                      /** @example 20 */
+                      lookback: number;
+                  };
+              };
+        SyncOptions: {
+            keychain: components['schemas']['SyncKeychain'];
+            strategy: components['schemas']['SyncStrategy'];
+        };
+        SyncRequest: {
+            options: components['schemas']['SyncOptions'];
+        };
+        /** @enum {string} */
+        SyncStrategy: SyncStrategy;
         TakerRequest: {
             /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
             swapstring: string;
@@ -3583,11 +3609,20 @@ export enum SwapStatus {
     Expired = 'Expired',
     Failed = 'Failed',
 }
+export enum SyncKeychainOneOf0 {
+    Colored = 'Colored',
+}
+export enum SyncStrategy {
+    FastSync = 'FastSync',
+    FullSync = 'FullSync',
+    FullScan = 'FullScan',
+}
 export enum TransactionType {
     RgbSend = 'RgbSend',
     Drain = 'Drain',
     CreateUtxos = 'CreateUtxos',
-    User = 'User',
+    SendBtc = 'SendBtc',
+    Incoming = 'Incoming',
 }
 export enum TransferKind {
     Issuance = 'Issuance',
@@ -3595,10 +3630,12 @@ export enum TransferKind {
     ReceiveWitness = 'ReceiveWitness',
     Send = 'Send',
     Inflation = 'Inflation',
+    Burn = 'Burn',
 }
 export enum TransferStatus {
     Initiated = 'Initiated',
     WaitingCounterparty = 'WaitingCounterparty',
+    WaitingSafeHeight = 'WaitingSafeHeight',
     WaitingConfirmations = 'WaitingConfirmations',
     Settled = 'Settled',
     Failed = 'Failed',

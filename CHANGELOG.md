@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes.
+### Added
+
+- Added generated RLN sync request models and enums for the new structured `/sync` request body: `SyncRequest`, `SyncOptions`, `SyncKeychain`, and `SyncStrategy`.
+
+### Changed
+
+- Updated the bundled RGB Lightning Node OpenAPI spec and generated Python/TypeScript node models to match `kaleidoswap/rgb-lightning-node` version `v0.6.5`.
+- Updated the Python and TypeScript RLN clients to send the new default `/sync` request body while still allowing callers to provide explicit sync options.
+- Refreshed generated RLN transfer and transaction enums: `TransactionType` now exposes `SendBtc` and `Incoming`, `TransferKind` now exposes `Burn`, and `TransferStatus` now exposes `WaitingSafeHeight`.
+- Updated the generated maker API `BitcoinNetwork` enum to remove `SignetCustom`.
+
+### Breaking Changes
+
+- Removed `skip_sync` from generated `SendRgbRequest` models to match the updated RLN API.
+- Removed generated `TransactionType.User` in favor of the updated RLN `SendBtc` and `Incoming` transaction types.
+- Removed generated maker API `BitcoinNetwork.SignetCustom`.
 
 ## [0.1.6] - 2026-04-10
 

@@ -716,6 +716,20 @@ class SwapStatus(StrEnum):
     FAILED = "Failed"
 
 
+class Vanilla(BaseModel):
+    lookback: Annotated[int, Field(examples=[20])]
+
+
+class SyncKeychain1(BaseModel):
+    vanilla: Annotated[Vanilla, Field(alias="Vanilla")]
+
+
+class SyncStrategy(StrEnum):
+    FAST_SYNC = "FastSync"
+    FULL_SYNC = "FullSync"
+    FULL_SCAN = "FullScan"
+
+
 class TakerRequest(BaseModel):
     swapstring: Annotated[
         str,
@@ -789,7 +803,8 @@ class TransactionType(StrEnum):
     RGB_SEND = "RgbSend"
     DRAIN = "Drain"
     CREATE_UTXOS = "CreateUtxos"
-    USER = "User"
+    SEND_BTC = "SendBtc"
+    INCOMING = "Incoming"
 
 
 class TransferKind(StrEnum):
@@ -798,11 +813,13 @@ class TransferKind(StrEnum):
     RECEIVE_WITNESS = "ReceiveWitness"
     SEND = "Send"
     INFLATION = "Inflation"
+    BURN = "Burn"
 
 
 class TransferStatus(StrEnum):
     INITIATED = "Initiated"
     WAITING_COUNTERPARTY = "WaitingCounterparty"
+    WAITING_SAFE_HEIGHT = "WaitingSafeHeight"
     WAITING_CONFIRMATIONS = "WaitingConfirmations"
     SETTLED = "Settled"
     FAILED = "Failed"
@@ -1068,7 +1085,6 @@ class SendRgbRequest(BaseModel):
             ]
         ),
     ]
-    skip_sync: Annotated[bool, Field(examples=[False])]
 
 
 class Swap(BaseModel):
@@ -1088,6 +1104,17 @@ class Swap(BaseModel):
     initiated_at: Annotated[int | None, Field(examples=[1691168512])] = None
     expires_at: Annotated[int, Field(examples=[1691172703])]
     completed_at: Annotated[int | None, Field(examples=[1691171075])] = None
+
+
+class SyncOptions(BaseModel):
+    keychain: Annotated[
+        Literal["Colored"] | SyncKeychain1, Field(examples=[{"Vanilla": {"lookback": 20}}])
+    ]
+    strategy: SyncStrategy
+
+
+class SyncRequest(BaseModel):
+    options: SyncOptions
 
 
 class Transaction(BaseModel):

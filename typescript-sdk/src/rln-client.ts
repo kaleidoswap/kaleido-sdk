@@ -6,7 +6,7 @@ import { HttpClient } from './http-client.js';
 import { APIError, TimeoutError, assertResponse } from './errors.js';
 import { createLogger, LogState } from './logging.js';
 import type { ComponentLogger } from './logging.js';
-import { AssetSchema } from './node-types-ext.js';
+import { AssetSchema, SyncKeychainOneOf0, SyncStrategy } from './node-types-ext.js';
 import type {
     InitRequest,
     InitResponse,
@@ -48,6 +48,7 @@ import type {
     SendRgbResponse,
     ListTransfersRequest,
     ListTransfersResponse,
+    SyncRequest,
     RefreshRequest,
     FailTransfersRequest,
     FailTransfersResponse,
@@ -326,9 +327,15 @@ export class RlnClient {
         );
     }
 
-    async syncRgbWallet(): Promise<void> {
+    async syncRgbWallet(body?: SyncRequest): Promise<void> {
         this._log.info('syncRgbWallet()');
-        assertResponse(await this.http.node.POST('/sync'));
+        const request = body ?? {
+            options: {
+                keychain: SyncKeychainOneOf0.Colored,
+                strategy: SyncStrategy.FastSync,
+            },
+        };
+        assertResponse(await this.http.node.POST('/sync', { body: request }));
         this._log.info('syncRgbWallet() -> ok');
     }
 

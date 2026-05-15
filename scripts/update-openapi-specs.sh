@@ -12,7 +12,7 @@ SPECS_DIR="$ROOT_DIR/specs"
 BACKUP_DIR="$ROOT_DIR/specs/backup"
 
 # Default URLs
-RGB_NODE_URL="${RGB_NODE_URL:-https://raw.githubusercontent.com/RGB-Tools/rgb-lightning-node/master/openapi.yaml}"
+RGB_NODE_URL="${RGB_NODE_URL:-https://raw.githubusercontent.com/kaleidoswap/rgb-lightning-node/master/openapi.yaml}"
 MAKER_SPEC_URL="${MAKER_SPEC_URL:-https://raw.githubusercontent.com/kaleidoswap/specs/main/kaleidoswap.json}"
 
 # Parse arguments

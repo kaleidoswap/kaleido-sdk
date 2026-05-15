@@ -27,6 +27,10 @@ from kaleido_sdk.rln import (
     EmptyResponse,
     ListAssetsRequest,
     MakerExecuteRequest,
+    SyncKeychain1,
+    SyncOptions,
+    SyncRequest,
+    SyncStrategy,
 )
 
 
@@ -213,6 +217,38 @@ class TestMakerExecuteType:
         from kaleido_sdk.rln import EmptyResponse as Exported
 
         assert Exported is EmptyResponse
+
+
+class TestSyncRgbWalletRequest:
+    """sync_rgb_wallet must send the regenerated /sync request body."""
+
+    async def test_sends_default_sync_request(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            await rln.sync_rgb_wallet()
+
+            path, sent = mock.call_args[0]
+            assert path == "/sync"
+            assert isinstance(sent, SyncRequest)
+            assert sent.model_dump(mode="json") == {
+                "options": {"keychain": "Colored", "strategy": "FastSync"}
+            }
+
+    async def test_accepts_explicit_sync_request(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        request = SyncRequest(
+            options=SyncOptions(
+                keychain=SyncKeychain1(Vanilla={"lookback": 20}),
+                strategy=SyncStrategy.FULL_SCAN,
+            )
+        )
+
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            await rln.sync_rgb_wallet(request)
+
+            assert mock.call_args[0] == ("/sync", request)
 
 
 class TestListAssetsEnumSerialization:

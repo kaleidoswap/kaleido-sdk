@@ -156,5 +156,5 @@ MIT License. See [LICENSE](./LICENSE).
 
 - Documentation: [docs.kaleidoswap.com](https://docs.kaleidoswap.com/sdk/introduction)
 - Specs: [kaleidoswap.json](./specs/kaleidoswap.json), [rgb-lightning-node.yaml](./specs/rgb-lightning-node.yaml)
-- RGB Lightning Node: [RGB-Tools/rgb-lightning-node](https://github.com/RGB-Tools/rgb-lightning-node)
+- RGB Lightning Node: [kaleidoswap/rgb-lightning-node](https://github.com/kaleidoswap/rgb-lightning-node)
 - Website: [kaleidoswap.com](https://kaleidoswap.com)

@@ -97,6 +97,9 @@ from ._generated.node_types import (
     SendRgbResponse,
     SignMessageRequest,
     SignMessageResponse,
+    SyncOptions,
+    SyncRequest,
+    SyncStrategy,
     TakerRequest,
     UnlockRequest,
 )
@@ -483,9 +486,12 @@ class RlnClient:
         """
         await self._http.node_post("/refreshtransfers", body or RefreshRequest(skip_sync=False))
 
-    async def sync_rgb_wallet(self) -> None:
+    async def sync_rgb_wallet(self, body: SyncRequest | None = None) -> None:
         """Sync the RGB wallet with the blockchain."""
-        await self._http.node_post("/sync")
+        request = body or SyncRequest(
+            options=SyncOptions(keychain="Colored", strategy=SyncStrategy.FAST_SYNC)
+        )
+        await self._http.node_post("/sync", request)
 
     async def fail_transfers(self, body: FailTransfersRequest) -> FailTransfersResponse:
         """
