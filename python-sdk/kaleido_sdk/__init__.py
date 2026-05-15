@@ -157,7 +157,7 @@ from .types import (
     TradingPairsResponse,
 )
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 __all__ = [
     # Main client
     "KaleidoClient",

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- No unreleased changes.
+
+## [0.1.7] - 2026-05-15
+
 ### Added
 
 - Added generated RLN sync request models and enums for the new structured `/sync` request body: `SyncRequest`, `SyncOptions`, `SyncKeychain`, and `SyncStrategy`.
@@ -17,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the Python and TypeScript RLN clients to send the new default `/sync` request body while still allowing callers to provide explicit sync options.
 - Refreshed generated RLN transfer and transaction enums: `TransactionType` now exposes `SendBtc` and `Incoming`, `TransferKind` now exposes `Burn`, and `TransferStatus` now exposes `WaitingSafeHeight`.
 - Updated the generated maker API `BitcoinNetwork` enum to remove `SignetCustom`.
+
+### Fixed
+
+- Updated integration tests to use the Vitest 4 timeout signature.
 
 ### Breaking Changes
 
