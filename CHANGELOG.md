@@ -12,10 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added persistent install IDs and per-client session IDs in both the Python and TypeScript SDKs.
 - Added automatic Maker API attribution headers: `X-Kaleido-Install-Id`, `X-Kaleido-Session-Id`, and `X-Kaleido-SDK`.
 - Added optional `install_id` / `installId` overrides for integrators that manage their own identity storage.
+- Added `allow_insecure` / `allowInsecure` opt-outs for explicitly allowing attribution headers over non-HTTPS Maker URLs. HTTP localhost remains allowed for local development.
+- Added browser `persistInstallId` opt-in for TypeScript. Browser install IDs now default to in-memory storage unless persistence is explicitly requested.
 - Added SDK test coverage for identity generation, install ID overrides, and Maker attribution headers.
 
 ### Changed
 
+- Hardened Python install ID file creation to use atomic `0600` creation.
+- Removed TypeScript's silent `Math.random()` fallback for install/session IDs; secure `crypto.getRandomValues` is now required.
 - Updated Python and TypeScript examples and README snippets to use async client creation.
 
 ### Breaking Changes

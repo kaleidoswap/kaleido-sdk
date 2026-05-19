@@ -99,10 +99,17 @@ function isNodeRuntime(): boolean {
     return typeof maybeProcess?.versions?.node === 'string';
 }
 
-export function resolveInstallIdStore(): InstallIdStore {
+export function resolveInstallIdStore({
+    persistBrowser = false,
+}: {
+    persistBrowser?: boolean;
+} = {}): InstallIdStore {
     const browserStorage = getBrowserStorage();
-    if (browserStorage) {
+    if (browserStorage && persistBrowser) {
         return new BrowserInstallIdStore(browserStorage);
+    }
+    if (browserStorage) {
+        return new MemoryInstallIdStore();
     }
 
     if (isNodeRuntime()) {
@@ -120,11 +127,7 @@ function randomBytes(length: number): Uint8Array {
         return bytes;
     }
 
-    for (let index = 0; index < length; index += 1) {
-        bytes[index] = Math.floor(Math.random() * 256);
-    }
-
-    return bytes;
+    throw new Error('Secure crypto.getRandomValues is required to generate Kaleido IDs.');
 }
 
 function encodeTime(timeMs: number): string {
@@ -173,15 +176,18 @@ export function generateSessionId(): string {
 
 export async function loadOrCreateInstallId({
     override,
-    store = resolveInstallIdStore(),
+    store,
+    persistBrowser,
 }: {
     override?: string;
     store?: InstallIdStore;
+    persistBrowser?: boolean;
 } = {}): Promise<string> {
     if (override) {
         return override;
     }
 
+    store ??= resolveInstallIdStore({ persistBrowser });
     const existingInstallId = await store.load().catch(() => undefined);
     if (existingInstallId) {
         return existingInstallId;

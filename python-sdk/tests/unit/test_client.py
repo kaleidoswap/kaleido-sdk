@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from kaleido_sdk import (
+    ConfigError,
     KaleidoClient,
     KaleidoConfig,
     NetworkError,
@@ -168,6 +169,62 @@ class TestIdentity:
         assert headers["X-Kaleido-SDK"] == "python/0.1.6"
         assert "Authorization" not in http._build_default_headers()
         assert "X-Kaleido-Install-Id" not in http._build_default_headers()
+
+    def test_maker_headers_reject_api_key_over_remote_http(self) -> None:
+        http = HttpClient(
+            KaleidoConfig(
+                base_url="http://api.example.com",
+                api_key="kld_live_c_test",
+                install_id="inst_test_install",
+                session_id="test-session",
+            )
+        )
+
+        with pytest.raises(ConfigError, match="non-HTTPS"):
+            http._build_maker_headers()
+
+    def test_maker_headers_allow_api_key_over_localhost_http(self) -> None:
+        http = HttpClient(
+            KaleidoConfig(
+                base_url="http://localhost:8000",
+                api_key="kld_live_c_test",
+                install_id="inst_test_install",
+                session_id="test-session",
+            )
+        )
+
+        headers = http._build_maker_headers()
+
+        assert headers["Authorization"] == "Bearer kld_live_c_test"
+        assert headers["X-Kaleido-Install-Id"] == "inst_test_install"
+
+    def test_maker_headers_allow_explicit_insecure_opt_out(self) -> None:
+        http = HttpClient(
+            KaleidoConfig(
+                base_url="http://api.example.com",
+                api_key="kld_live_c_test",
+                allow_insecure=True,
+                install_id="inst_test_install",
+                session_id="test-session",
+            )
+        )
+
+        assert http._build_maker_headers()["Authorization"] == "Bearer kld_live_c_test"
+
+    def test_maker_headers_skip_attribution_on_remote_http_without_api_key(self) -> None:
+        http = HttpClient(
+            KaleidoConfig(
+                base_url="http://api.example.com",
+                install_id="inst_test_install",
+                session_id="test-session",
+            )
+        )
+
+        headers = http._build_maker_headers()
+
+        assert "Authorization" not in headers
+        assert "X-Kaleido-Install-Id" not in headers
+        assert "X-Kaleido-Session-Id" not in headers
 
 
 # =============================================================================

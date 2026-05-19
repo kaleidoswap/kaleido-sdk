@@ -15,10 +15,35 @@ export interface HttpClientConfig {
     baseUrl?: string;
     nodeUrl?: string;
     apiKey?: string;
+    allowInsecure?: boolean;
     installId?: string;
     sessionId?: string;
     sdkVersion?: string;
     timeout?: number;
+}
+
+const LOCAL_HTTP_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
+
+function isLocalHttpUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url);
+        return (
+            parsed.protocol === 'http:' &&
+            (LOCAL_HTTP_HOSTS.has(parsed.hostname) || parsed.hostname.endsWith('.localhost'))
+        );
+    } catch {
+        return false;
+    }
+}
+
+function isSecureMakerUrl(url: string | undefined, allowInsecure = false): boolean {
+    if (!url) return true;
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'https:' || allowInsecure || isLocalHttpUrl(url);
+    } catch {
+        return false;
+    }
 }
 
 function _createLoggingMiddleware(state: LogState): Middleware {
@@ -119,16 +144,26 @@ export class HttpClient {
 
     private _createMakerHeaders(): Record<string, string> {
         const headers: Record<string, string> = {};
+        const secureForAttribution = isSecureMakerUrl(
+            this.config.baseUrl,
+            this.config.allowInsecure,
+        );
 
         if (this.config.apiKey) {
+            if (!secureForAttribution) {
+                throw new ConfigError(
+                    'Refusing to send Kaleido API key over a non-HTTPS Maker URL. ' +
+                        'Use HTTPS, localhost HTTP for development, or set allowInsecure: true.',
+                );
+            }
             headers.Authorization = `Bearer ${this.config.apiKey}`;
         }
 
-        if (this.config.installId) {
+        if (secureForAttribution && this.config.installId) {
             headers['X-Kaleido-Install-Id'] = this.config.installId;
         }
 
-        if (this.config.sessionId) {
+        if (secureForAttribution && this.config.sessionId) {
             headers['X-Kaleido-Session-Id'] = this.config.sessionId;
         }
 

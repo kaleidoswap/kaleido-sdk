@@ -62,8 +62,16 @@ def _load_or_create_install_id_sync(override: str | None = None) -> str:
     install_id = generate_install_id()
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(f"{install_id}\n", encoding="utf-8")
-        path.chmod(0o600)
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as file:
+            file.write(f"{install_id}\n")
+    except FileExistsError:
+        try:
+            existing = path.read_text(encoding="utf-8").strip()
+            if existing:
+                return existing
+        except OSError:
+            pass
     except OSError:
         pass
 

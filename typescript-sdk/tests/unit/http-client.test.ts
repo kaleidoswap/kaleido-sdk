@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { ConfigError, TimeoutError } from '../../src/errors.js';
 import { HttpClient } from '../../src/http-client.js';
-import { TimeoutError } from '../../src/errors.js';
 
 describe('HttpClient', () => {
     describe('Constructor', () => {
@@ -63,6 +63,63 @@ describe('HttpClient', () => {
             } finally {
                 globalThis.fetch = originalFetch;
             }
+        });
+
+        it('should reject API keys over remote HTTP maker URLs', () => {
+            expect(
+                () =>
+                    new HttpClient({
+                        baseUrl: 'http://api.example.com',
+                        apiKey: 'kld_live_c_test',
+                        installId: 'inst_test_install',
+                        sessionId: 'test-session',
+                    }),
+            ).toThrow(ConfigError);
+        });
+
+        it('should allow API keys over localhost HTTP maker URLs', async () => {
+            const originalFetch = globalThis.fetch;
+            let capturedRequest: Request | undefined;
+
+            globalThis.fetch = async (input, init) => {
+                capturedRequest = input instanceof Request ? input : new Request(input, init);
+                return new Response('{}', {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' },
+                });
+            };
+
+            try {
+                const client = new HttpClient({
+                    baseUrl: 'http://localhost:8000',
+                    apiKey: 'kld_live_c_test',
+                    installId: 'inst_test_install',
+                    sessionId: 'test-session',
+                    sdkVersion: '0.1.6',
+                });
+
+                await client.maker.GET('/api/v1/lsps1/get_info');
+
+                expect(capturedRequest?.headers.get('authorization')).toBe(
+                    'Bearer kld_live_c_test',
+                );
+                expect(capturedRequest?.headers.get('x-kaleido-install-id')).toBe(
+                    'inst_test_install',
+                );
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+        });
+
+        it('should allow explicit insecure opt-out for remote HTTP maker URLs', () => {
+            const client = new HttpClient({
+                baseUrl: 'http://api.example.com',
+                apiKey: 'kld_live_c_test',
+                allowInsecure: true,
+                installId: 'inst_test_install',
+            });
+
+            expect(client.maker).toBeDefined();
         });
 
         it('should not have node client without nodeUrl', () => {

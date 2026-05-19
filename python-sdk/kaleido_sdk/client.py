@@ -61,6 +61,7 @@ class KaleidoClient:
         base_url: str = "https://api.regtest.kaleidoswap.com",
         node_url: str | None = None,
         api_key: str | None = None,
+        allow_insecure: bool = False,
         install_id: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 3,
@@ -75,6 +76,8 @@ class KaleidoClient:
                 Defaults to the regtest environment (https://api.regtest.kaleidoswap.com).
             node_url: Optional URL for RGB Lightning Node
             api_key: Optional API key for authenticated requests
+            allow_insecure: Allow attribution headers over non-HTTPS Maker URLs.
+                HTTP localhost is allowed automatically for local development.
             install_id: Optional persistent install identifier. Generated and stored when omitted.
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum retry attempts (default: 3)
@@ -109,6 +112,7 @@ class KaleidoClient:
             base_url=base_url,
             node_url=node_url,
             api_key=api_key,
+            allow_insecure=allow_insecure,
             install_id=resolved_install_id,
             session_id=generate_session_id(),
             timeout=timeout,

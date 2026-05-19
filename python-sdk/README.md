@@ -43,6 +43,21 @@ pairs    = await client.maker.list_pairs()
 channels = await client.rln.list_channels()
 ```
 
+## Attribution and local development
+
+When `api_key` is configured, the SDK sends Maker attribution headers over HTTPS only.
+HTTP is allowed automatically for local development hosts such as `localhost` and
+`127.0.0.1`. To use a non-local HTTP Maker URL intentionally, pass
+`allow_insecure=True`.
+
+```python
+client = await KaleidoClient.create(
+    base_url="http://dev-maker.internal:8000",
+    api_key="kld_live_c_...",
+    allow_insecure=True,
+)
+```
+
 ## Documentation
 
 Full usage guide, API reference, and examples at **https://docs.kaleidoswap.com/sdk/introduction**

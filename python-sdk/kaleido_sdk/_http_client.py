@@ -9,12 +9,14 @@ from __future__ import annotations
 import asyncio
 import time
 from typing import Any, TypeVar
+from urllib.parse import urlparse
 
 import httpx
 from pydantic import BaseModel
 
 from ._logging import get_logger
 from .errors import (
+    ConfigError,
     KaleidoError,
     NetworkError,
     TimeoutError,
@@ -26,6 +28,20 @@ T = TypeVar("T", bound=BaseModel)
 
 _log = get_logger("http")
 _SDK_HEADER = "python/0.1.6"
+_LOCAL_HTTP_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
+
+def _is_local_http_url(url: str) -> bool:
+    parsed = urlparse(url)
+    hostname = parsed.hostname or ""
+    return parsed.scheme == "http" and (
+        hostname in _LOCAL_HTTP_HOSTS or hostname.endswith(".localhost")
+    )
+
+
+def _is_secure_maker_url(url: str, *, allow_insecure: bool) -> bool:
+    parsed = urlparse(url)
+    return parsed.scheme == "https" or allow_insecure or _is_local_http_url(url)
 
 
 class HttpClient:
@@ -48,12 +64,22 @@ class HttpClient:
 
     def _build_maker_headers(self) -> dict[str, str]:
         headers = self._build_default_headers()
+        secure_for_attribution = _is_secure_maker_url(
+            self._config.base_url,
+            allow_insecure=self._config.allow_insecure,
+        )
 
         if self._config.api_key:
+            if not secure_for_attribution:
+                raise ConfigError(
+                    "Refusing to send Kaleido API key over a non-HTTPS Maker URL. "
+                    "Use HTTPS, localhost HTTP for development, or set allow_insecure=True."
+                )
             headers["Authorization"] = f"Bearer {self._config.api_key}"
-        if self._config.install_id:
+
+        if secure_for_attribution and self._config.install_id:
             headers["X-Kaleido-Install-Id"] = self._config.install_id
-        if self._config.session_id:
+        if secure_for_attribution and self._config.session_id:
             headers["X-Kaleido-Session-Id"] = self._config.session_id
         headers["X-Kaleido-SDK"] = _SDK_HEADER
 

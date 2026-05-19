@@ -66,6 +66,7 @@ export class KaleidoClient {
                 baseUrl: config.baseUrl,
                 nodeUrl: config.nodeUrl,
                 apiKey: config.apiKey,
+                allowInsecure: config.allowInsecure,
                 installId: config.installId,
                 sessionId: config.sessionId,
                 sdkVersion: SDK_VERSION,
@@ -106,6 +107,7 @@ export class KaleidoClient {
         const installId = await loadOrCreateInstallId({
             override: config.installId,
             store: config.installIdStore,
+            persistBrowser: config.persistInstallId,
         });
         const sessionId = generateSessionId();
 

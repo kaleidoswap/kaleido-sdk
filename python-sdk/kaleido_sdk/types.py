@@ -92,6 +92,8 @@ class KaleidoConfig:
             Defaults to https://api.regtest.kaleidoswap.com.
         node_url: Optional URL for RGB Lightning Node
         api_key: Optional API key for authenticated requests
+        allow_insecure: Allow attribution headers over non-HTTPS Maker URLs.
+            HTTP localhost is allowed automatically for local development.
         install_id: Optional persistent install identifier. Generated automatically by
             KaleidoClient.create when omitted.
         session_id: Optional per-client session identifier. Generated automatically by
@@ -110,6 +112,7 @@ class KaleidoConfig:
     base_url: str = "https://api.regtest.kaleidoswap.com"
     node_url: str | None = None
     api_key: str | None = None
+    allow_insecure: bool = False
     install_id: str | None = None
     session_id: str | None = None
     timeout: float = 30.0
