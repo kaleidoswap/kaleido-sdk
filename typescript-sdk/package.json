@@ -48,10 +48,11 @@
     ],
     "scripts": {
         "generate:types": "bash ../scripts/generate_typescript_types.sh",
-        "prebuild": "npm run generate:types",
+        "generate:version": "node ../scripts/generate_typescript_version.mjs",
+        "prebuild": "npm run generate:version && npm run generate:types",
         "build": "npm run build:ts",
         "build:ts": "tsc",
-        "typecheck": "tsc --noEmit",
+        "typecheck": "npm run generate:version && tsc --noEmit",
         "clean": "rm -rf dist pkg pkg-node src/generated",
         "test": "vitest run",
         "test:unit": "vitest run tests/unit tests/type-safety tests/client.test.ts",

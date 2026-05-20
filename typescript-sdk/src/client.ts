@@ -9,11 +9,9 @@ import { MakerClient } from './maker-client.js';
 import { RlnClient } from './rln-client.js';
 import { LogState, applyLogLevel, setComponentLogLevel, setLogger } from './logging.js';
 import { generateSessionId, loadOrCreateInstallId } from './identity.js';
-import packageJson from '../package.json';
+import { SDK_NAME, SDK_VERSION } from './version.js';
 import type { LogLevel, LogLevelName, SdkLogger } from './logging.js';
 import type { KaleidoConfig } from './types/config.js';
-
-const SDK_VERSION = packageJson.version;
 
 type ResolvedKaleidoConfig = KaleidoConfig & {
     baseUrl: string;
@@ -153,5 +151,5 @@ export function getVersion(): string {
 }
 
 export function getSdkName(): string {
-    return 'kaleido-sdk';
+    return SDK_NAME;
 }

@@ -15,6 +15,7 @@ import httpx
 from pydantic import BaseModel
 
 from ._logging import get_logger
+from ._version import __version__
 from .errors import (
     ConfigError,
     KaleidoError,
@@ -27,7 +28,7 @@ from .types import KaleidoConfig
 T = TypeVar("T", bound=BaseModel)
 
 _log = get_logger("http")
-_SDK_HEADER = "python/0.1.6"
+_SDK_HEADER = f"python/{__version__}"
 _LOCAL_HTTP_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 

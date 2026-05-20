@@ -62,6 +62,7 @@ from ._utils import (
     parse_raw_amount,
     to_display_amount,
 )
+from ._version import __version__
 from ._ws_client import (
     WebSocketMessage,
     WSAction,
@@ -157,7 +158,6 @@ from .types import (
     TradingPairsResponse,
 )
 
-__version__ = "0.1.7"
 __all__ = [
     # Main client
     "KaleidoClient",
@@ -174,6 +174,7 @@ __all__ = [
     "create_precision_handler",
     "ValidationResult",
     "OrderSizeLimits",
+    "__version__",
     # WebSocket
     "WSAction",
     "WSClient",

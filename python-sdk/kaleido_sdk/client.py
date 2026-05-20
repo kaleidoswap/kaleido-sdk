@@ -14,11 +14,9 @@ from ._identity import generate_session_id, load_or_create_install_id
 from ._logging import apply_log_level
 from ._maker_client import MakerClient
 from ._rln_client import RlnClient
+from ._version import __sdk_name__, __version__
 from .errors import NodeNotConfiguredError
 from .types import KaleidoConfig
-
-__version__ = "0.1.7"
-__sdk_name__ = "kaleido-sdk"
 
 
 class KaleidoClient:

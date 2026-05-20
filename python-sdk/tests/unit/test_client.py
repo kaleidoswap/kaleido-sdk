@@ -184,7 +184,7 @@ class TestIdentity:
         assert headers["Authorization"] == "Bearer kld_live_c_test"
         assert headers["X-Kaleido-Install-Id"] == "inst_test_install"
         assert headers["X-Kaleido-Session-Id"] == "test-session"
-        assert headers["X-Kaleido-SDK"] == "python/0.1.6"
+        assert headers["X-Kaleido-SDK"] == f"python/{get_version()}"
         assert "Authorization" not in http._default_headers
         assert "X-Kaleido-Install-Id" not in http._default_headers
 
