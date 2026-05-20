@@ -74,6 +74,16 @@ class NodeInstallIdStore implements InstallIdStore {
 }
 
 const fallbackMemoryStore = new MemoryInstallIdStore();
+const browserMemoryStores = new WeakMap<Storage, MemoryInstallIdStore>();
+
+function getBrowserMemoryStore(storage: Storage): MemoryInstallIdStore {
+    let store = browserMemoryStores.get(storage);
+    if (!store) {
+        store = new MemoryInstallIdStore();
+        browserMemoryStores.set(storage, store);
+    }
+    return store;
+}
 
 function getBrowserStorage(): Storage | undefined {
     try {
@@ -109,7 +119,7 @@ export function resolveInstallIdStore({
         return new BrowserInstallIdStore(browserStorage);
     }
     if (browserStorage) {
-        return new MemoryInstallIdStore();
+        return getBrowserMemoryStore(browserStorage);
     }
 
     if (isNodeRuntime()) {

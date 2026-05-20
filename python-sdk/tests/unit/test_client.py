@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+import kaleido_sdk._identity as identity_module
 from kaleido_sdk import (
     ConfigError,
     KaleidoClient,
@@ -150,6 +151,23 @@ class TestIdentity:
 
     async def test_install_id_override_does_not_touch_storage(self) -> None:
         assert await load_or_create_install_id("inst_override") == "inst_override"
+
+    async def test_install_id_reuses_process_fallback_when_storage_unavailable(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path
+    ) -> None:
+        monkeypatch.setenv("KALEIDO_INSTALL_ID_PATH", str(tmp_path / "missing" / "install_id"))
+        monkeypatch.setattr(identity_module, "_ephemeral_install_id", None)
+
+        def _raise_os_error(*_args, **_kwargs):
+            raise OSError("storage unavailable")
+
+        monkeypatch.setattr(identity_module.os, "open", _raise_os_error)
+
+        first_install_id = await load_or_create_install_id()
+        second_install_id = await load_or_create_install_id()
+
+        assert first_install_id.startswith("inst_")
+        assert second_install_id == first_install_id
 
     def test_maker_headers_include_attribution(self) -> None:
         http = HttpClient(

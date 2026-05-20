@@ -14,6 +14,7 @@ from secrets import choice
 _INSTALL_ID_FILE_NAME = "install_id"
 _INSTALL_ID_PREFIX = "inst_"
 _CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+_ephemeral_install_id: str | None = None
 
 
 def _install_id_path() -> Path:
@@ -46,6 +47,14 @@ def generate_session_id() -> str:
     return str(uuid.uuid4())
 
 
+def _ephemeral_install_id_fallback(candidate: str | None = None) -> str:
+    """Reuse one in-process install ID when file storage is unavailable."""
+    global _ephemeral_install_id
+    if _ephemeral_install_id is None:
+        _ephemeral_install_id = candidate or generate_install_id()
+    return _ephemeral_install_id
+
+
 def _load_or_create_install_id_sync(override: str | None = None) -> str:
     """Load the persistent install ID, or create it if it does not exist."""
     if override:
@@ -65,6 +74,7 @@ def _load_or_create_install_id_sync(override: str | None = None) -> str:
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as file:
             file.write(f"{install_id}\n")
+        return install_id
     except FileExistsError:
         try:
             existing = path.read_text(encoding="utf-8").strip()
@@ -73,9 +83,9 @@ def _load_or_create_install_id_sync(override: str | None = None) -> str:
         except OSError:
             pass
     except OSError:
-        pass
+        return _ephemeral_install_id_fallback(install_id)
 
-    return install_id
+    return _ephemeral_install_id_fallback(install_id)
 
 
 async def load_or_create_install_id(override: str | None = None) -> str:

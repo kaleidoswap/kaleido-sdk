@@ -33,7 +33,7 @@ describe('identity', () => {
         expect(secondInstallId).toBe(firstInstallId);
     });
 
-    it('defaults browser install ID storage to memory even when localStorage exists', async () => {
+    it('defaults browser install ID storage to page-lifetime memory even when localStorage exists', async () => {
         const backing = new Map<string, string>();
         vi.stubGlobal('localStorage', {
             getItem: vi.fn((key: string) => backing.get(key) ?? null),
@@ -50,7 +50,26 @@ describe('identity', () => {
         await firstStore.save('inst_memory_only');
 
         await expect(firstStore.load()).resolves.toBe('inst_memory_only');
-        await expect(secondStore.load()).resolves.toBeUndefined();
+        await expect(secondStore.load()).resolves.toBe('inst_memory_only');
+        expect(backing.has('kld_install_id')).toBe(false);
+    });
+
+    it('reuses browser memory install IDs across clients without localStorage persistence', async () => {
+        const backing = new Map<string, string>();
+        vi.stubGlobal('localStorage', {
+            getItem: vi.fn((key: string) => backing.get(key) ?? null),
+            setItem: vi.fn((key: string, value: string) => {
+                backing.set(key, value);
+            }),
+            removeItem: vi.fn((key: string) => {
+                backing.delete(key);
+            }),
+        });
+
+        const firstInstallId = await loadOrCreateInstallId();
+        const secondInstallId = await loadOrCreateInstallId();
+
+        expect(secondInstallId).toBe(firstInstallId);
         expect(backing.has('kld_install_id')).toBe(false);
     });
 
