@@ -179,27 +179,33 @@ class TestIdentity:
             )
         )
 
-        headers = http._build_maker_headers()
+        headers = http._maker_headers
 
         assert headers["Authorization"] == "Bearer kld_live_c_test"
         assert headers["X-Kaleido-Install-Id"] == "inst_test_install"
         assert headers["X-Kaleido-Session-Id"] == "test-session"
         assert headers["X-Kaleido-SDK"] == "python/0.1.6"
-        assert "Authorization" not in http._build_default_headers()
-        assert "X-Kaleido-Install-Id" not in http._build_default_headers()
+        assert "Authorization" not in http._default_headers
+        assert "X-Kaleido-Install-Id" not in http._default_headers
 
     def test_maker_headers_reject_api_key_over_remote_http(self) -> None:
-        http = HttpClient(
-            KaleidoConfig(
+        with pytest.raises(ConfigError, match="non-HTTPS"):
+            HttpClient(
+                KaleidoConfig(
+                    base_url="http://api.example.com",
+                    api_key="kld_live_c_test",
+                    install_id="inst_test_install",
+                    session_id="test-session",
+                )
+            )
+
+    async def test_create_rejects_api_key_over_remote_http(self) -> None:
+        with pytest.raises(ConfigError, match="non-HTTPS"):
+            await KaleidoClient.create(
                 base_url="http://api.example.com",
                 api_key="kld_live_c_test",
                 install_id="inst_test_install",
-                session_id="test-session",
             )
-        )
-
-        with pytest.raises(ConfigError, match="non-HTTPS"):
-            http._build_maker_headers()
 
     def test_maker_headers_allow_api_key_over_localhost_http(self) -> None:
         http = HttpClient(
@@ -211,7 +217,7 @@ class TestIdentity:
             )
         )
 
-        headers = http._build_maker_headers()
+        headers = http._maker_headers
 
         assert headers["Authorization"] == "Bearer kld_live_c_test"
         assert headers["X-Kaleido-Install-Id"] == "inst_test_install"
@@ -227,7 +233,7 @@ class TestIdentity:
             )
         )
 
-        assert http._build_maker_headers()["Authorization"] == "Bearer kld_live_c_test"
+        assert http._maker_headers["Authorization"] == "Bearer kld_live_c_test"
 
     def test_maker_headers_skip_attribution_on_remote_http_without_api_key(self) -> None:
         http = HttpClient(
@@ -238,11 +244,31 @@ class TestIdentity:
             )
         )
 
-        headers = http._build_maker_headers()
+        headers = http._maker_headers
 
         assert "Authorization" not in headers
         assert "X-Kaleido-Install-Id" not in headers
         assert "X-Kaleido-Session-Id" not in headers
+
+    async def test_maker_requests_reuse_precomputed_headers(self) -> None:
+        http = HttpClient(
+            KaleidoConfig(
+                base_url="https://api.example.com",
+                api_key="kld_live_c_test",
+                install_id="inst_test_install",
+                session_id="test-session",
+            )
+        )
+        http._build_maker_headers = lambda: (_ for _ in ()).throw(  # type: ignore[method-assign]
+            AssertionError("headers should be precomputed")
+        )
+        http._request = AsyncMock(return_value={})  # type: ignore[method-assign]
+
+        await http.maker_get("/api/v1/market/assets")
+
+        _, _, kwargs = http._request.mock_calls[0]
+        assert kwargs["headers"]["Authorization"] == "Bearer kld_live_c_test"
+        assert kwargs["headers"]["X-Kaleido-Install-Id"] == "inst_test_install"
 
 
 # =============================================================================

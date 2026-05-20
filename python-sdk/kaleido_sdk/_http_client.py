@@ -54,6 +54,8 @@ class HttpClient:
 
     def __init__(self, config: KaleidoConfig) -> None:
         self._config = config
+        self._default_headers = self._build_default_headers()
+        self._maker_headers = self._build_maker_headers()
         self._client: httpx.AsyncClient | None = None
 
     def _build_default_headers(self) -> dict[str, str]:
@@ -88,7 +90,7 @@ class HttpClient:
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
-                headers=self._build_default_headers(),
+                headers=self._default_headers,
                 timeout=httpx.Timeout(self._config.timeout),
             )
         return self._client
@@ -255,7 +257,7 @@ class HttpClient:
             "GET",
             self._maker_url(path),
             params=params,
-            headers=self._build_maker_headers(),
+            headers=dict(self._maker_headers),
         )
 
     async def maker_post(
@@ -270,7 +272,7 @@ class HttpClient:
             self._maker_url(path),
             json=self._serialize_body(data),
             params=params,
-            headers=self._build_maker_headers(),
+            headers=dict(self._maker_headers),
         )
 
     # =========================================================================
