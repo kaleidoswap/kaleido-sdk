@@ -74,6 +74,17 @@ class TestIdentity:
         assert "Authorization" not in http._default_headers
         assert "X-Kaleido-Install-Id" not in http._default_headers
 
+    async def test_from_config_preserves_explicit_session_id(self) -> None:
+        client = await KaleidoClient.from_config(
+            KaleidoConfig(
+                base_url="https://api.example.com",
+                install_id="inst_session_override",
+                session_id="session_override",
+            )
+        )
+
+        assert client._http._maker_headers["X-Kaleido-Session-Id"] == "session_override"
+
     def test_maker_headers_reject_api_key_over_remote_http(self) -> None:
         with pytest.raises(ConfigError, match="non-HTTPS"):
             HttpClient(

@@ -7,6 +7,7 @@
 
 import { HttpClient } from './http-client.js';
 import { parseRawAmount, toDisplayAmount } from './utils/precision.js';
+import { configTimeToMilliseconds, MILLISECONDS_PER_SECOND } from './utils/time.js';
 import { assertResponse } from './errors.js';
 import { WSClient } from './ws-client.js';
 import { createLogger, LogState } from './logging.js';
@@ -60,20 +61,6 @@ export interface SwapCompletionOptions {
     /** @deprecated Use `pollInterval` in seconds. Kept for the millisecond migration window. */
     pollIntervalMs?: number;
     onStatusUpdate?: (status: string) => void;
-}
-
-const MILLISECONDS_PER_SECOND = 1000;
-
-function configTimeToMilliseconds(
-    seconds: number | undefined,
-    deprecatedMilliseconds: number | undefined,
-    defaultSeconds: number,
-): number {
-    if (seconds !== undefined) {
-        return seconds * MILLISECONDS_PER_SECOND;
-    }
-
-    return deprecatedMilliseconds ?? defaultSeconds * MILLISECONDS_PER_SECOND;
 }
 
 export class MakerClient {

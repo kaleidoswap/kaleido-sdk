@@ -9,6 +9,7 @@ Uses HttpClient + Pydantic models directly (no generated attrs client).
 from __future__ import annotations
 
 import asyncio
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -447,7 +448,16 @@ class MakerClient:
         Returns:
             Pair route response from the Maker API
         """
-        request = PairRoutesRequest(pair_ticker=body) if isinstance(body, str) else body
+        if isinstance(body, str):
+            warnings.warn(
+                "Passing a string to get_pair_routes is deprecated and will be removed in "
+                "0.3.0. Pass PairRoutesRequest(pair_ticker=...) instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            request = PairRoutesRequest(pair_ticker=body)
+        else:
+            request = body
         data = await self._http.maker_post("/api/v1/market/pairs/routes", data=request)
         return PairRoutesResponse.model_validate(data)
 
@@ -458,6 +468,12 @@ class MakerClient:
         Prefer ``get_pair_routes(PairRoutesRequest(pair_ticker=...))`` when
         calling the spec-aligned API surface.
         """
+        warnings.warn(
+            "get_pair_routes_by_ticker is deprecated; use get_pair_routes and read "
+            ".routes directly.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         response = await self.get_pair_routes(PairRoutesRequest(pair_ticker=pair_ticker))
         return list(response.routes)
 

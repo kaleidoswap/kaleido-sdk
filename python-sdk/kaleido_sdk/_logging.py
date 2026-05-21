@@ -84,6 +84,10 @@ def apply_log_level(level: int | str) -> None:
     KaleidoConfig.log_level.  Applications that want finer control should
     configure the loggers themselves after client creation.
 
+    This is process-global because Python uses stdlib logging. The TypeScript
+    SDK's ``applyLogLevel(state, level)`` mutates one client's ``LogState``
+    instead.
+
     Args:
         level: A logging-module integer constant (e.g. logging.DEBUG) or
                its string equivalent ('DEBUG', 'INFO', 'WARNING', ...).

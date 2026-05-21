@@ -20,6 +20,7 @@ from kaleido_sdk.rln import (
     DecodeRGBInvoiceResponse,
     EmptyResponse,
     ListAssetsRequest,
+    ListUnspentsRequest,
     MakerExecuteRequest,
     SyncKeychain1,
     SyncOptions,
@@ -172,6 +173,21 @@ class TestListAssetsEnumSerialization:
 
             json_payload = mock.call_args[1]["json"]
             assert json_payload["filter_asset_schemas"] == ["Nia"]
+
+
+class TestListUnspentsRequest:
+    """Mirror TypeScript listUnspents filter forwarding coverage."""
+
+    async def test_forwards_explicit_request(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        request = ListUnspentsRequest(skip_sync=True)
+
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {"unspents": []}
+            result = await rln.list_unspents(request)
+
+        assert result.unspents == []
+        assert mock.call_args[0] == ("/listunspents", request)
 
 
 class TestListAssetsIfaParsing:

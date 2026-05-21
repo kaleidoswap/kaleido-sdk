@@ -6,6 +6,8 @@ Counterpart of ``typescript-sdk/tests/unit/maker-client.test.ts``.
 
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
 from kaleido_sdk import KaleidoClient
 
 
@@ -34,9 +36,21 @@ class TestPairRoutes:
 
         with patch.object(maker._http, "maker_post", new_callable=AsyncMock) as mock:
             mock.return_value = {"routes": []}
-            routes = await maker.get_pair_routes_by_ticker("BTC/USDT")
+            with pytest.warns(DeprecationWarning, match="get_pair_routes_by_ticker"):
+                routes = await maker.get_pair_routes_by_ticker("BTC/USDT")
 
         assert routes == []
+        assert mock.call_args.kwargs["data"].pair_ticker == "BTC/USDT"
+
+    async def test_get_pair_routes_string_shorthand_warns(self, client: KaleidoClient) -> None:
+        maker = client.maker
+
+        with patch.object(maker._http, "maker_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {"routes": []}
+            with pytest.warns(DeprecationWarning, match="Passing a string"):
+                routes = await maker.get_pair_routes("BTC/USDT")
+
+        assert routes.routes == []
         assert mock.call_args.kwargs["data"].pair_ticker == "BTC/USDT"
 
     async def test_get_market_routes_uses_spec_native_routes_models(

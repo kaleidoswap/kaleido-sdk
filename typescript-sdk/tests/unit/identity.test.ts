@@ -6,6 +6,7 @@ import {
     MemoryInstallIdStore,
     resolveInstallIdStore,
 } from '../../src/identity.js';
+import { KaleidoClient } from '../../src/client.js';
 
 describe('identity', () => {
     afterEach(() => {
@@ -103,6 +104,28 @@ describe('identity', () => {
         expect(generateSessionId()).toMatch(
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
         );
+    });
+
+    it('uses an explicit session ID in maker attribution headers', async () => {
+        let capturedRequest: Request | undefined;
+        vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+            capturedRequest = input instanceof Request ? input : new Request(input, init);
+            return new Response('{"assets":[],"total":0,"limit":100,"offset":0}', {
+                status: 200,
+                headers: { 'content-type': 'application/json' },
+            });
+        });
+
+        const client = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            installId: 'inst_session_override',
+            sessionId: 'session_override',
+        });
+
+        await client.maker.listAssets();
+
+        expect(capturedRequest?.headers.get('x-kaleido-session-id')).toBe('session_override');
+        await client.close();
     });
 
     describe('Node install ID store (E5, E6)', () => {

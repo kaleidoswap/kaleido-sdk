@@ -15,6 +15,8 @@ export interface KaleidoConfig {
     allowInsecure?: boolean;
     /** Persistent install identifier. Generated and stored automatically when omitted. */
     installId?: string;
+    /** Per-client session identifier. Generated automatically when omitted. */
+    sessionId?: string;
     /** Optional platform-specific install ID store. Useful for tests and custom runtimes. */
     installIdStore?: InstallIdStore;
     /**

@@ -206,7 +206,6 @@ describe('Type Definitions', () => {
                 apiKey: 'secret',
                 timeout: 60,
                 maxRetries: 5,
-                cacheTtl: 120,
             };
             expect(config.timeout).toBe(60);
             expect(config.maxRetries).toBe(5);
@@ -385,11 +384,9 @@ describe('Configuration', () => {
             baseUrl: 'https://api.example.com',
             timeout: 30,
             maxRetries: 3,
-            cacheTtl: 60,
         };
         expect(typeof config.timeout).toBe('number');
         expect(typeof config.maxRetries).toBe('number');
-        expect(typeof config.cacheTtl).toBe('number');
     });
 });
 
@@ -459,6 +456,29 @@ describe('KaleidoClient.rln (Batch G / G2)', () => {
 // ============================================================================
 
 describe('KaleidoClient custom logger', () => {
+    it('keeps the default log level silent', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+        const { createLogger } = await import('../src/logging.js');
+
+        const captured: string[] = [];
+        const client = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            installIdStore: new MemoryInstallIdStore(),
+            logger: {
+                debug: (msg: string) => captured.push(msg),
+                info: (msg: string) => captured.push(msg),
+                warn: (msg: string) => captured.push(msg),
+                error: (msg: string) => captured.push(msg),
+            },
+        });
+
+        createLogger('test', client.logState).warn('default should stay silent');
+
+        expect(captured).toHaveLength(0);
+        await client.close();
+    });
+
     it('forwards SDK log records to the configured logger', async () => {
         const { KaleidoClient } = await import('../src/client.js');
         const { MemoryInstallIdStore } = await import('../src/identity.js');

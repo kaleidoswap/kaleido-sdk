@@ -103,8 +103,7 @@ class KaleidoConfig:
             KaleidoClient.create when omitted.
         timeout: Request timeout in seconds (default: 30)
         max_retries: Maximum retry attempts (default: 3)
-        cache_ttl: Cache TTL in seconds (default: 60)
-        log_level: Python logging level for all SDK loggers (default: logging.WARNING).
+        log_level: Python logging level for all SDK loggers (default: silent).
             Accepts integer constants (logging.DEBUG, logging.INFO, logging.WARNING, ...)
             or their string equivalents ('DEBUG', 'INFO', 'WARNING', 'ERROR').
             Set to logging.DEBUG to see full HTTP traces, WebSocket frames, and
@@ -125,8 +124,7 @@ class KaleidoConfig:
     session_id: str | None = None
     timeout: float = 30.0
     max_retries: int = 3
-    cache_ttl: int = 60
-    log_level: int | str = logging.WARNING
+    log_level: int | str = logging.CRITICAL + 1
     logger: SdkLogger | None = None
 
 

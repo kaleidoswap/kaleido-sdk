@@ -131,6 +131,37 @@ class TestHasMaker:
 class TestCustomLogger:
     """``KaleidoConfig.logger`` should receive SDK log records via the bridge."""
 
+    async def test_default_log_level_is_silent(self) -> None:
+        captured: list[str] = []
+
+        class Recorder:
+            def debug(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
+
+            def info(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
+
+            def warning(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
+
+            def error(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
+
+        client = await KaleidoClient.create(
+            base_url="https://api.example.com",
+            install_id="inst_test_silent_logger",
+            logger=Recorder(),
+        )
+
+        from kaleido_sdk._logging import get_logger, set_logger
+
+        try:
+            get_logger("test").warning("default should stay silent")
+            assert captured == []
+        finally:
+            set_logger(None)
+            await client.close()
+
     async def test_logger_receives_info_records(self) -> None:
         captured: list[tuple[str, str]] = []
 

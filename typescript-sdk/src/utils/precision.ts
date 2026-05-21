@@ -155,7 +155,7 @@ export class PrecisionHandler {
         });
     }
 
-    toRawAmount(displayAmount: number, assetId: string): number {
+    toRawAmount(displayAmount: string | number | bigint, assetId: string): number {
         const assetPrecision = this.assetPrecisionMap.get(assetId);
         if (assetPrecision === undefined) {
             throw new Error(`Asset ${assetId} not found in precision handler`);
@@ -253,8 +253,11 @@ export function createPrecisionHandler(assets: MappedAsset[]): PrecisionHandler 
     return new PrecisionHandler(assets);
 }
 
-export function parseRawAmount(displayAmount: string | number, precision: number): number {
-    return parseNormalizedDisplayAmount(displayAmount, precision);
+export function parseRawAmount(displayAmount: string | number | bigint, precision: number): number {
+    return parseNormalizedDisplayAmount(
+        typeof displayAmount === 'bigint' ? displayAmount.toString() : displayAmount,
+        precision,
+    );
 }
 
 export function toDisplayAmount(rawAmount: number, precision: number): number {

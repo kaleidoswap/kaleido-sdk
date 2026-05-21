@@ -22,6 +22,7 @@ import type {
     SendBtcResponse,
     ListTransactionsRequest,
     ListTransactionsResponse,
+    ListUnspentsRequest,
     ListUnspentsResponse,
     CreateUtxosRequest,
     EstimateFeeRequest,
@@ -221,10 +222,12 @@ export class RlnClient {
         );
     }
 
-    async listUnspents(): Promise<ListUnspentsResponse> {
+    async listUnspents(request?: ListUnspentsRequest): Promise<ListUnspentsResponse> {
         this._log.debug('listUnspents()');
         return assertResponse(
-            await this.http.node.POST('/listunspents', { body: { skip_sync: false } }),
+            await this.http.node.POST('/listunspents', {
+                body: { skip_sync: false, ...request },
+            }),
         );
     }
 

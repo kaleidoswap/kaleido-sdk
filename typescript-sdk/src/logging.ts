@@ -238,6 +238,13 @@ export function createLogger(component: string, state: LogState): ComponentLogge
     return new ComponentLogger(component, state);
 }
 
+/**
+ * Mutate one client's log state.
+ *
+ * Python's `apply_log_level(level)` configures the process-global
+ * `kaleido_sdk` logger because it builds on stdlib logging. TypeScript keeps
+ * log state per client, so callers must pass the target `LogState`.
+ */
 export function applyLogLevel(state: LogState, level: LogLevel | LogLevelName): void {
     state.level = _levelNumber(level);
 }

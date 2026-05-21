@@ -111,7 +111,7 @@ export class KaleidoClient {
             store: config.installIdStore,
             persistBrowser: config.persistInstallId,
         });
-        const sessionId = generateSessionId();
+        const sessionId = config.sessionId ?? generateSessionId();
 
         return new KaleidoClient({
             baseUrl: 'https://api.regtest.kaleidoswap.com',

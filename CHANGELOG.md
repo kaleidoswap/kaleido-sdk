@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed TypeScript's silent `Math.random()` fallback for install/session IDs; secure `crypto.getRandomValues` is now required.
 - Aligned route request and response names with the OpenAPI spec: pair routes use `PairRoutesRequest` / `PairRoutesResponse`, and market route discovery uses `RoutesRequest` / `RoutesResponse`.
 - Normalized TypeScript `SwapCompletionOptions` and `WSClientConfig` time configs to seconds to match Python. Deprecated TypeScript `...Ms` aliases keep an explicit millisecond migration path for one transition window.
+- Aligned RLN unspent filters by allowing TypeScript `listUnspents()` callers to pass the generated request body.
+- Added public TypeScript `sessionId` config support, `bigint` display amounts for TypeScript precision parsing, and explicit Python deprecation warnings for pair-route compatibility shims.
+- Defaulted Python SDK logging to effectively silent to match TypeScript's opt-in logging behavior.
 - Updated Python and TypeScript examples and README snippets to use async client creation.
 
 ### Breaking Changes
@@ -32,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed TypeScript `SwapCompletionOptions.timeout` / `pollInterval` and `WSClientConfig.reconnectDelay` / `pingInterval` from milliseconds to seconds. Use the deprecated `timeoutMs`, `pollIntervalMs`, `reconnectDelayMs`, and `pingIntervalMs` aliases during the transition if a TypeScript caller still provides milliseconds.
 - Changed Python `MakerClient.get_pair_routes()` to accept the spec-aligned `PairRoutesRequest` body and return `PairRoutesResponse`. Pair ticker strings remain accepted as a temporary shorthand, and `get_pair_routes_by_ticker()` preserves the old list-returning convenience shape.
 - Changed TypeScript `RoutesRequest` / `RoutesResponse` to represent market route discovery per the OpenAPI spec. Use `PairRoutesRequest` / `PairRoutesResponse` with `getPairRoutes()`; deprecated `DiscoverRoutesRequest` / `DiscoverRoutesResponse` aliases remain for market route discovery.
+- Removed Python's unused `cache_ttl` config field and `KaleidoClient.create(cache_ttl=...)` argument.
 
 ## [0.1.7] - 2026-05-15
 

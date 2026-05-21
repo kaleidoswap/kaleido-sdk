@@ -98,6 +98,19 @@ describe('RlnClient', () => {
         expect(post).toHaveBeenCalledWith('/sync', { body: request });
     });
 
+    it('forwards listUnspents filters while keeping the default skip_sync', async () => {
+        const post = vi.fn().mockResolvedValue({ data: { unspents: [] } });
+        const client = new RlnClient({
+            node: { POST: post },
+        } as never);
+
+        await client.listUnspents({ skip_sync: true });
+
+        expect(post).toHaveBeenCalledWith('/listunspents', {
+            body: { skip_sync: true },
+        });
+    });
+
     // ========================================================================
     // sendBtc surfaces the response (Batch B1 — Python parity)
     // Mirrors the Python TestRlnClient that asserts SendBtcResponse is returned.

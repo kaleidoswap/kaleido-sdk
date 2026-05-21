@@ -64,8 +64,7 @@ class KaleidoClient:
         install_id: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 3,
-        cache_ttl: int = 60,
-        log_level: int | str = logging.WARNING,
+        log_level: int | str = logging.CRITICAL + 1,
         logger: SdkLogger | None = None,
     ) -> KaleidoClient:
         """
@@ -81,8 +80,7 @@ class KaleidoClient:
             install_id: Optional persistent install identifier. Generated and stored when omitted.
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum retry attempts (default: 3)
-            cache_ttl: Cache TTL in seconds (default: 60)
-            log_level: Python logging level for SDK loggers (default: logging.WARNING).
+            log_level: Python logging level for SDK loggers (default: silent).
                 Set to logging.DEBUG to see full HTTP, WebSocket, and swap traces.
                 The application must configure log handlers separately.
             logger: Optional custom logger (any object with debug/info/warning/error
@@ -121,7 +119,6 @@ class KaleidoClient:
             session_id=generate_session_id(),
             timeout=timeout,
             max_retries=max_retries,
-            cache_ttl=cache_ttl,
             log_level=log_level,
             logger=logger,
         )
