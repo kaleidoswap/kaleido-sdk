@@ -559,15 +559,29 @@ class RlnClient:
         data = await self._http.node_get("/listpeers")
         return ListPeersResponse.model_validate(data)
 
-    async def connect_peer(self, body: ConnectPeerRequest) -> None:
+    async def connect_peer(self, body: ConnectPeerRequest) -> EmptyResponse:
         """
         Connect to a Lightning peer.
 
         Args:
             body: Request with peer_pubkey_and_addr
+
+        Returns:
+            ``EmptyResponse`` (aka :class:`ConnectPeerResponse` alias) — the
+            ``/connectpeer`` endpoint returns an empty JSON body per the
+            OpenAPI spec, so the model is intentionally empty. Surfacing it
+            (rather than ``None``) keeps return-type semantics consistent
+            with the TypeScript SDK and other empty-bodied endpoints such
+            as :meth:`maker_execute`.
+
+        .. versionchanged:: 0.2.0
+            Return type changed from ``None`` to ``EmptyResponse``. Callers
+            that previously discarded the return value continue to work; any
+            ``isinstance(result, type(None))`` checks must be updated.
         """
         _log.info("rln.connect_peer(): peer=%s", body.peer_pubkey_and_addr)
-        await self._http.node_post("/connectpeer", body)
+        data = await self._http.node_post("/connectpeer", body)
+        return EmptyResponse.model_validate(data)
 
     async def disconnect_peer(self, body: DisconnectPeerRequest) -> None:
         """

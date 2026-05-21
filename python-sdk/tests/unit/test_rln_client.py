@@ -230,3 +230,67 @@ class TestUnlockWalletTimeoutHandling:
 
             with pytest.raises(TimeoutError, match="it may still be syncing"):
                 await rln.unlock_wallet({"password": "secret"})
+
+
+# =============================================================================
+# Batch B — return-type alignment (breaking, 0.2.0)
+# =============================================================================
+
+
+class TestSendBtcReturnType:
+    """Mirror typescript-sdk/tests/unit/rln-client.test.ts > sendBtc returns ...
+
+    ``send_btc`` has always returned the response in Python; this test
+    locks in that contract so future regenerations don't accidentally
+    drop the txid surfaced to callers.
+    """
+
+    async def test_returns_send_btc_response_with_txid(
+        self, client_with_node: KaleidoClient
+    ) -> None:
+        from kaleido_sdk.rln import SendBtcRequest, SendBtcResponse
+
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {"txid": "abc123def456"}
+            result = await rln.send_btc(
+                SendBtcRequest(
+                    amount=10_000,
+                    address="bcrt1qexample",
+                    fee_rate=5,
+                    skip_sync=False,
+                )
+            )
+
+        assert isinstance(result, SendBtcResponse)
+        assert result.txid == "abc123def456"
+
+
+class TestConnectPeerReturnType:
+    """Batch B2 — connect_peer surfaces EmptyResponse instead of None.
+
+    Counterpart of the TypeScript test asserting ConnectPeerResponse is
+    returned. The OpenAPI spec defines ``/connectpeer`` as returning an
+    empty object, so the model is intentionally empty; what we're testing
+    is that the SDK doesn't swallow the structured response.
+    """
+
+    async def test_returns_empty_response(self, client_with_node: KaleidoClient) -> None:
+        from kaleido_sdk.rln import ConnectPeerRequest, EmptyResponse
+
+        rln = client_with_node.rln
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = {}
+            result = await rln.connect_peer(
+                ConnectPeerRequest(peer_pubkey_and_addr="03abc@127.0.0.1:9735")
+            )
+
+        assert isinstance(result, EmptyResponse)
+
+    def test_connect_peer_response_alias_resolves_to_empty_response(self) -> None:
+        """The ConnectPeerResponse alias must point at the same class users get
+        back from connect_peer, so type-checking and isinstance work either
+        way (alias was added in Batch B2)."""
+        from kaleido_sdk.rln import ConnectPeerResponse, EmptyResponse
+
+        assert ConnectPeerResponse is EmptyResponse

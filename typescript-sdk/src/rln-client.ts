@@ -19,6 +19,7 @@ import type {
     AddressResponse,
     BtcBalanceResponse,
     SendBtcRequest,
+    SendBtcResponse,
     ListTransactionsRequest,
     ListTransactionsResponse,
     ListUnspentsResponse,
@@ -196,10 +197,19 @@ export class RlnClient {
         );
     }
 
-    async sendBtc(body: SendBtcRequest): Promise<void> {
+    /**
+     * Broadcast a Bitcoin on-chain transaction.
+     *
+     * **Breaking change (0.2.0):** previously returned `void`; now returns the
+     * full {@link SendBtcResponse} surfaced by the node, which carries the
+     * resulting `txid` and any related metadata. Matches the Python SDK's
+     * `send_btc(...)` return type.
+     */
+    async sendBtc(body: SendBtcRequest): Promise<SendBtcResponse> {
         this._log.info('sendBtc(): amount=%s address=%s', body.amount, body.address);
-        assertResponse(await this.http.node.POST('/sendbtc', { body }));
-        this._log.info('sendBtc() -> ok');
+        const result = assertResponse(await this.http.node.POST('/sendbtc', { body }));
+        this._log.info('sendBtc() -> txid=%s', (result as { txid?: string })?.txid);
+        return result;
     }
 
     async listTransactions(request?: ListTransactionsRequest): Promise<ListTransactionsResponse> {
