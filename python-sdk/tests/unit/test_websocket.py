@@ -93,3 +93,36 @@ class TestWSAction:
         assert WSAction.QUOTE_RESPONSE.value == "quote_response"
         assert WSAction.CONNECTION_ESTABLISHED.value == "connection_established"
         assert WSAction.ERROR.value == "error"
+
+
+class TestEnableWebsocketUserId:
+    """Mirror typescript-sdk/tests/unit/ws-client.test.ts userId tests (E9)."""
+
+    def test_explicit_user_id_becomes_client_id(self) -> None:
+        ws = WSClient(
+            "ws://localhost:8000/api/v1/market/ws",
+            user_id="user_abc_123",
+        )
+        assert ws.client_id == "user_abc_123"
+
+    def test_user_id_wins_over_embedded_client_id(self) -> None:
+        """**Behavioural asymmetry vs. TS** — flagged for the audit ledger.
+
+        Python's ``WSClient.__init__`` does ``self._client_id = user_id or
+        uuid.uuid4()`` and then ALWAYS rebuilds the URL with the chosen
+        client_id appended (``_build_url_with_client_id``), so an embedded
+        client ID in the input URL is silently ignored when ``user_id`` is
+        provided. The TypeScript SDK gives the embedded ID precedence to
+        keep existing call sites stable. Test asserts current Python
+        behaviour; reconciliation is a separate decision.
+        """
+        ws = WSClient(
+            "ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe",
+            user_id="user_overrides_embedded",
+        )
+        assert ws.client_id == "user_overrides_embedded"
+
+    def test_no_user_id_generates_uuid(self) -> None:
+        ws = WSClient("ws://localhost:8000/api/v1/market/ws")
+        assert ws.client_id  # truthy
+        assert ws.client_id not in ("ws", "")
