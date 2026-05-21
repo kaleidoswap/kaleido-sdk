@@ -112,10 +112,27 @@ class TestRetryableErrors:
         error = NotFoundError("Resource not found")
         assert error.is_retryable() is False
 
-    def test_rate_limit_error_not_retryable(self) -> None:
-        """RateLimitError should not be retryable."""
+    def test_rate_limit_error_is_retryable(self) -> None:
+        """RateLimitError IS retryable as of 0.2.0 (Batch G / R8).
+
+        Previously Python's ``is_retryable()`` returned False for 429 while
+        the TypeScript SDK retried. Both SDKs now retry rate-limit responses
+        with the standard exponential backoff so callers don't need to
+        special-case them.
+        """
         error = RateLimitError("Too many requests")
-        assert error.is_retryable() is False
+        assert error.is_retryable() is True
+
+    def test_rate_limit_error_extends_api_error(self) -> None:
+        """Batch G1 — RateLimitError must extend APIError so generic API-error
+        handlers also catch rate-limit failures."""
+        from kaleido_sdk import APIError
+
+        error = RateLimitError("Too many requests")
+        assert isinstance(error, APIError)
+        # And the code stays "RATE_LIMIT_ERROR" for back compat.
+        assert error.code == "RATE_LIMIT_ERROR"
+        assert error.status_code == 429
 
 
 class TestHttpErrorMapping:

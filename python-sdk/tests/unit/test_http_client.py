@@ -83,13 +83,12 @@ class TestHttpRetryBehaviour:
         assert calls["n"] == 3
         assert result == {"ok": True}
 
-    async def test_does_not_retry_on_429_rate_limit(self) -> None:
-        """**Behavioural asymmetry vs. TS** — flagged for the audit ledger.
+    async def test_retries_on_429_rate_limit(self) -> None:
+        """Batch G / R8 — 429 is retried alongside 5xx as of 0.2.0.
 
-        Python's ``RateLimitError.is_retryable()`` returns ``False`` (see
-        ``errors.py:32``), so 429 surfaces immediately. The TypeScript SDK's
-        fetch wrapper retries 429 alongside 5xx. Test asserts the current
-        Python behaviour; reconciliation is a separate decision.
+        Aligns Python with the TypeScript SDK and the HTTP ``Retry-After``
+        convention. Callers that want the previous fail-fast behaviour
+        should set ``max_retries=0`` on the client.
         """
         import httpx
 
@@ -116,7 +115,37 @@ class TestHttpRetryBehaviour:
             with pytest.raises(RateLimitError):
                 await http.maker_get("/api/v1/lsps1/get_info")
 
-        assert calls["n"] == 1  # no retries — current Python behaviour
+        # initial attempt + 2 retries
+        assert calls["n"] == 3
+
+    async def test_max_retries_zero_does_not_retry_429(self) -> None:
+        """Companion to the previous test — opt-out via max_retries=0."""
+        import httpx
+
+        from kaleido_sdk import RateLimitError
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_429_no_retry",
+            session_id="s",
+            max_retries=0,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            return httpx.Response(429, json={"error": "slow down"})
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            with pytest.raises(RateLimitError):
+                await http.maker_get("/api/v1/lsps1/get_info")
+
+        assert calls["n"] == 1
 
     async def test_does_not_retry_on_4xx_except_429(self) -> None:
         import httpx

@@ -53,13 +53,23 @@ describe('WSClient', () => {
             expect(ws.clientId).toBe('user_abc_123');
         });
 
-        it('ignores userId when the URL already has an embedded client ID', () => {
+        it('userId wins over embedded client ID (Batch G / R9, 0.2.0)', () => {
             const ws = new WSClient({
                 url: 'ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe',
-                userId: 'user_should_be_ignored',
+                userId: 'user_overrides_embedded',
             });
 
-            // Embedded ID wins so existing call sites stay stable.
+            // Aligned with the Python SDK: caller-supplied userId is
+            // authoritative and the URL is rebuilt accordingly. Callers
+            // who want the old behaviour should drop the userId config.
+            expect(ws.clientId).toBe('user_overrides_embedded');
+        });
+
+        it('keeps an embedded client ID when no userId is supplied', () => {
+            const ws = new WSClient({
+                url: 'ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe',
+            });
+
             expect(ws.clientId).toBe('0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe');
         });
 

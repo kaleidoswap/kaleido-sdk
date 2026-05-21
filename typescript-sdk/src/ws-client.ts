@@ -107,9 +107,19 @@ export class WSClient extends MiniEmitter {
      * - a fully qualified endpoint ending in `/ws/{clientId}`, in which case the
      *   trailing segment is treated as the clientId
      *
-     * If `userId` is provided, it is preferred over a generated UUID. When the
-     * URL already has an embedded client ID, the embedded value wins to keep
-     * existing call sites stable.
+     * Precedence (matches Python SDK as of 0.2.0):
+     *   1. Explicit ``userId`` config — always wins; URL is rebuilt with the
+     *      chosen ID appended.
+     *   2. Embedded client ID in the URL path.
+     *   3. Fresh ``crypto.randomUUID()`` if neither is supplied.
+     *
+     * @remarks
+     * Prior to 0.2.0 an embedded URL client ID took precedence over the
+     * ``userId`` config. That behaviour was inconsistent with the Python SDK,
+     * which has always treated the caller-supplied identifier as
+     * authoritative. Callers that depend on the old behaviour should drop
+     * the ``userId`` config (or simply not pass one) — the embedded ID will
+     * then be used unchanged.
      */
     private static resolveConnectionTarget(
         url: string,
@@ -120,6 +130,19 @@ export class WSClient extends MiniEmitter {
         const lastSegment = segments.at(-1);
         const hasEmbeddedClientId = lastSegment !== undefined && lastSegment !== 'ws';
 
+        // 1) Explicit userId always wins — rebuild the URL with it appended
+        //    (replacing any embedded ID so the wire matches the caller's intent).
+        if (userId && userId.length > 0) {
+            if (hasEmbeddedClientId) {
+                segments[segments.length - 1] = userId;
+            } else {
+                segments.push(userId);
+            }
+            parsed.pathname = '/' + segments.join('/');
+            return { url: parsed.toString(), clientId: userId };
+        }
+
+        // 2) No userId — keep an embedded ID if one is present in the URL.
         if (hasEmbeddedClientId) {
             return {
                 url: parsed.toString(),
@@ -127,7 +150,8 @@ export class WSClient extends MiniEmitter {
             };
         }
 
-        const clientId = userId && userId.length > 0 ? userId : globalThis.crypto.randomUUID();
+        // 3) Otherwise, generate a fresh client ID and append it.
+        const clientId = globalThis.crypto.randomUUID();
         segments.push(clientId);
         parsed.pathname = '/' + segments.join('/');
         return { url: parsed.toString(), clientId };

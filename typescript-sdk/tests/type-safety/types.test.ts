@@ -14,13 +14,18 @@ describe('Type Safety', () => {
         it('should have properly typed client', async () => {
             const client = await KaleidoClient.create({
                 baseUrl: 'https://api.example.com',
+                nodeUrl: 'https://node.example.com',
                 installId: 'inst_test_types',
             });
 
-            // Type assertions - these will fail at compile time if types are wrong
+            // Type assertions - these will fail at compile time if types are wrong.
+            // ``client.rln`` now throws NodeNotConfiguredError when nodeUrl is
+            // absent (Batch G / G2, 0.2.0), so this test configures both
+            // endpoints to keep exercising both property getters.
             expect(client.maker).toBeDefined();
             expect(client.rln).toBeDefined();
             expect(typeof client.hasNode).toBe('function');
+            expect(typeof client.hasMaker).toBe('function');
         });
     });
 

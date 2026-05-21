@@ -106,15 +106,10 @@ class TestEnableWebsocketUserId:
         assert ws.client_id == "user_abc_123"
 
     def test_user_id_wins_over_embedded_client_id(self) -> None:
-        """**Behavioural asymmetry vs. TS** — flagged for the audit ledger.
-
-        Python's ``WSClient.__init__`` does ``self._client_id = user_id or
-        uuid.uuid4()`` and then ALWAYS rebuilds the URL with the chosen
-        client_id appended (``_build_url_with_client_id``), so an embedded
-        client ID in the input URL is silently ignored when ``user_id`` is
-        provided. The TypeScript SDK gives the embedded ID precedence to
-        keep existing call sites stable. Test asserts current Python
-        behaviour; reconciliation is a separate decision.
+        """Both SDKs now agree as of 0.2.0 (Batch G / R9): caller-supplied
+        ``user_id`` overrides any embedded URL client ID. The URL is
+        rebuilt with the chosen ID appended so the wire matches the
+        caller's intent.
         """
         ws = WSClient(
             "ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe",

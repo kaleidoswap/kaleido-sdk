@@ -28,13 +28,19 @@ class KaleidoError(Exception):
         self.response_body = response_body
 
     def is_retryable(self) -> bool:
-        """Check if this error is retryable."""
-        if self.code == "RATE_LIMIT_ERROR":
-            return False
+        """Check if this error is retryable.
+
+        .. versionchanged:: 0.2.0
+            ``RATE_LIMIT_ERROR`` (HTTP 429) is now retryable. The HTTP
+            layer's retry loop will back off and retry rate-limited
+            requests, matching the TypeScript SDK and the HTTP
+            ``Retry-After`` convention. Callers that want to surface the
+            error immediately should set ``max_retries=0``.
+        """
         return (
             self.code == "NETWORK_ERROR"
             or self.code == "TIMEOUT_ERROR"
-            or (self.status_code is not None and self.status_code >= 500)
+            or (self.status_code is not None and (self.status_code >= 500 or self.status_code == 429))
         )
 
     def __repr__(self) -> str:
@@ -148,8 +154,17 @@ class InsufficientBalanceError(KaleidoError):
         self.asset = asset
 
 
-class RateLimitError(KaleidoError):
-    """Rate limit exceeded (429)."""
+class RateLimitError(APIError):
+    """Rate limit exceeded (429).
+
+    .. versionchanged:: 0.2.0
+        Now extends :class:`APIError` instead of :class:`KaleidoError`
+        directly. This matches the TypeScript SDK and lets
+        ``isinstance(err, APIError)`` catch rate-limit errors alongside
+        other HTTP failures. Callers that specifically catch
+        ``RateLimitError`` continue to work; ``err.code`` still resolves
+        to ``"RATE_LIMIT_ERROR"`` for backwards compatibility.
+    """
 
     def __init__(
         self,
@@ -162,7 +177,11 @@ class RateLimitError(KaleidoError):
             msg = f"Rate limit exceeded. Retry after {retry_after} seconds"
         else:
             msg = "Rate limit exceeded"
-        super().__init__(code="RATE_LIMIT_ERROR", message=msg, status_code=429)
+        # APIError.__init__ formats the message as "API Error (429): ..." and
+        # sets self.code = "API_ERROR". Re-pin the code so existing consumers
+        # that match on code == "RATE_LIMIT_ERROR" keep working.
+        super().__init__(message=msg, status_code=429)
+        self.code = "RATE_LIMIT_ERROR"
         self.retry_after = retry_after
 
 

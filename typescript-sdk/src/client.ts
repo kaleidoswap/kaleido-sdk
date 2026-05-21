@@ -9,6 +9,7 @@ import { MakerClient } from './maker-client.js';
 import { RlnClient } from './rln-client.js';
 import { LogState, applyLogLevel, setComponentLogLevel, setLogger } from './logging.js';
 import { generateSessionId, loadOrCreateInstallId } from './identity.js';
+import { NodeNotConfiguredError } from './errors.js';
 import { SDK_NAME, SDK_VERSION } from './version.js';
 import type { LogLevel, LogLevelName, SdkLogger } from './logging.js';
 import type { KaleidoConfig } from './types/config.js';
@@ -147,7 +148,18 @@ export class KaleidoClient {
         return this._maker;
     }
 
+    /**
+     * Access RGB/Lightning Node operations.
+     *
+     * @throws {NodeNotConfiguredError} if no ``nodeUrl`` was supplied to
+     *   the factory. Previously the getter returned an RlnClient that
+     *   would throw lazily on first request; the 0.2.0 behaviour fails
+     *   fast and matches the Python SDK's ``rln`` property.
+     */
     get rln(): RlnClient {
+        if (!this.hasNode()) {
+            throw new NodeNotConfiguredError();
+        }
         return this._rln;
     }
 

@@ -421,6 +421,40 @@ describe('KaleidoClient.hasMaker', () => {
 });
 
 // ============================================================================
+// rln getter raises NodeNotConfiguredError when nodeUrl is missing (Batch G2)
+// Mirrors python-sdk TestKaleidoClient.test_rln_property_without_node.
+// ============================================================================
+
+describe('KaleidoClient.rln (Batch G / G2)', () => {
+    it('throws NodeNotConfiguredError when no nodeUrl is configured', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+        const { NodeNotConfiguredError } = await import('../src/errors.js');
+
+        const client = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            installIdStore: new MemoryInstallIdStore(),
+        });
+
+        expect(() => client.rln).toThrow(NodeNotConfiguredError);
+    });
+
+    it('returns the RlnClient when nodeUrl is configured', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { RlnClient } = await import('../src/rln-client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+
+        const client = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            nodeUrl: 'https://node.example.com',
+            installIdStore: new MemoryInstallIdStore(),
+        });
+
+        expect(client.rln).toBeInstanceOf(RlnClient);
+    });
+});
+
+// ============================================================================
 // Custom logger config (mirrors python-sdk TestCustomLogger)
 // ============================================================================
 
