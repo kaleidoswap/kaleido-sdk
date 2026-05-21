@@ -44,10 +44,14 @@ export type PairQuoteRequest = RequestBody<'requestMarketQuote'>;
 export type PairQuoteResponse = ResponseSuccess<'requestMarketQuote'>;
 
 // Routes
-export type RoutesRequest = RequestBody<'getMarketPairRoutes'>;
-export type RoutesResponse = ResponseSuccess<'getMarketPairRoutes'>;
-export type DiscoverRoutesRequest = RequestBody<'discoverMarketRoutes'>;
-export type DiscoverRoutesResponse = ResponseSuccess<'discoverMarketRoutes'>;
+export type PairRoutesRequest = RequestBody<'getMarketPairRoutes'>;
+export type PairRoutesResponse = ResponseSuccess<'getMarketPairRoutes'>;
+export type RoutesRequest = RequestBody<'discoverMarketRoutes'>;
+export type RoutesResponse = ResponseSuccess<'discoverMarketRoutes'>;
+/** @deprecated Use `RoutesRequest`. */
+export type DiscoverRoutesRequest = RoutesRequest;
+/** @deprecated Use `RoutesResponse`. */
+export type DiscoverRoutesResponse = RoutesResponse;
 export type ReachabilityMatrixResponse = ResponseSuccess<'getMarketRouteMatrix'>;
 
 // Swap Orders

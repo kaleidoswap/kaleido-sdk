@@ -23,6 +23,44 @@ describe('MakerClient - Quote Methods', () => {
         makerClient = new MakerClient(mockHttpClient as unknown as HttpClient);
     });
 
+    describe('route methods', () => {
+        it('uses the pair-route request and response shape for pair routes', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: { routes: [] },
+                error: null,
+            });
+
+            const routes = await makerClient.getPairRoutes({ pair_ticker: 'BTC/USDT' });
+
+            expect(routes).toEqual({ routes: [] });
+            expect(mockHttpClient.maker.POST).toHaveBeenCalledWith('/api/v1/market/pairs/routes', {
+                body: { pair_ticker: 'BTC/USDT' },
+            });
+        });
+
+        it('uses the spec-native Routes types for route discovery', async () => {
+            mockHttpClient.maker.POST.mockResolvedValue({
+                data: { routes: [], timestamp: 1234 },
+                error: null,
+            });
+
+            const routes = await makerClient.getMarketRoutes({
+                from_asset: 'BTC',
+                to_asset: 'USDT',
+                max_hops: 2,
+            });
+
+            expect(routes).toEqual({ routes: [], timestamp: 1234 });
+            expect(mockHttpClient.maker.POST).toHaveBeenCalledWith('/api/v1/market/routes', {
+                body: {
+                    from_asset: 'BTC',
+                    to_asset: 'USDT',
+                    max_hops: 2,
+                },
+            });
+        });
+    });
+
     describe('getQuote', () => {
         it('should successfully get quote with from_amount specified', async () => {
             // Mock successful API response
@@ -603,8 +641,8 @@ describe('MakerClient - Quote Methods', () => {
 
             await makerClient.waitForSwapCompletion('order_456', {
                 accessToken: 'tok_authenticated_user',
-                timeout: 5000,
-                pollInterval: 5,
+                timeout: 5,
+                pollInterval: 0.005,
             });
 
             expect(spy).toHaveBeenCalledWith({
@@ -630,12 +668,73 @@ describe('MakerClient - Quote Methods', () => {
 
             await makerClient.waitForSwapCompletion('o1', {
                 accessToken: 'tok_xyz',
-                timeout: 5000,
-                pollInterval: 1,
+                timeout: 5,
+                pollInterval: 0.001,
             });
 
             for (const call of spy.mock.calls) {
                 expect(call[0]).toMatchObject({ access_token: 'tok_xyz' });
+            }
+        });
+
+        it('treats canonical swap completion intervals as seconds', async () => {
+            vi.useFakeTimers();
+
+            try {
+                const spy = vi
+                    .spyOn(makerClient, 'getSwapOrderStatus')
+                    .mockResolvedValueOnce({
+                        order: { id: 'o-seconds', status: 'OPEN' },
+                    } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>)
+                    .mockResolvedValueOnce({
+                        order: { id: 'o-seconds', status: 'FILLED' },
+                    } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>);
+
+                const wait = makerClient.waitForSwapCompletion('o-seconds', {
+                    accessToken: 'tok_seconds',
+                    timeout: 5,
+                    pollInterval: 2,
+                });
+
+                await vi.advanceTimersByTimeAsync(1999);
+                expect(spy).toHaveBeenCalledTimes(1);
+
+                await vi.advanceTimersByTimeAsync(1);
+                await expect(wait).resolves.toMatchObject({ id: 'o-seconds', status: 'FILLED' });
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('accepts deprecated swap completion millisecond aliases', async () => {
+            vi.useFakeTimers();
+
+            try {
+                const spy = vi
+                    .spyOn(makerClient, 'getSwapOrderStatus')
+                    .mockResolvedValueOnce({
+                        order: { id: 'o-milliseconds', status: 'OPEN' },
+                    } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>)
+                    .mockResolvedValueOnce({
+                        order: { id: 'o-milliseconds', status: 'FILLED' },
+                    } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>);
+
+                const wait = makerClient.waitForSwapCompletion('o-milliseconds', {
+                    accessToken: 'tok_milliseconds',
+                    timeoutMs: 5000,
+                    pollIntervalMs: 7,
+                });
+
+                await vi.advanceTimersByTimeAsync(6);
+                expect(spy).toHaveBeenCalledTimes(1);
+
+                await vi.advanceTimersByTimeAsync(1);
+                await expect(wait).resolves.toMatchObject({
+                    id: 'o-milliseconds',
+                    status: 'FILLED',
+                });
+            } finally {
+                vi.useRealTimers();
             }
         });
     });

@@ -16,8 +16,8 @@ describe('WSClient', () => {
         wsClient = new WSClient({
             url: mockWsUrl,
             maxReconnectAttempts: 3,
-            reconnectDelay: 100,
-            pingInterval: 1000,
+            reconnectDelay: 0.1,
+            pingInterval: 1,
         });
     });
 
@@ -31,6 +31,28 @@ describe('WSClient', () => {
         it('should create WSClient instance', () => {
             expect(wsClient).toBeDefined();
             expect(wsClient.isConnected()).toBe(false);
+        });
+
+        it('normalizes WebSocket config delays from seconds to timer milliseconds', () => {
+            const ws = new WSClient({
+                url: mockWsUrl,
+                reconnectDelay: 1.5,
+                pingInterval: 45,
+            }) as unknown as { reconnectDelayMs: number; pingIntervalMs: number };
+
+            expect(ws.reconnectDelayMs).toBe(1500);
+            expect(ws.pingIntervalMs).toBe(45000);
+        });
+
+        it('accepts deprecated WebSocket millisecond delay aliases', () => {
+            const ws = new WSClient({
+                url: mockWsUrl,
+                reconnectDelayMs: 125,
+                pingIntervalMs: 750,
+            }) as unknown as { reconnectDelayMs: number; pingIntervalMs: number };
+
+            expect(ws.reconnectDelayMs).toBe(125);
+            expect(ws.pingIntervalMs).toBe(750);
         });
 
         it('should preserve a client ID already embedded in the URL', () => {

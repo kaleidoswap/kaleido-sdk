@@ -61,8 +61,14 @@ class MiniEmitter {
 export interface WSClientConfig {
     url: string;
     maxReconnectAttempts?: number;
+    /** Base reconnect backoff delay, in seconds. */
     reconnectDelay?: number;
+    /** Interval between ping messages, in seconds. */
     pingInterval?: number;
+    /** @deprecated Use `reconnectDelay` in seconds. Kept for the millisecond migration window. */
+    reconnectDelayMs?: number;
+    /** @deprecated Use `pingInterval` in seconds. Kept for the millisecond migration window. */
+    pingIntervalMs?: number;
     /**
      * Optional caller-supplied client ID. When provided, it is appended to the
      * URL (if not already present) instead of a generated UUID. Mirrors the
@@ -71,12 +77,26 @@ export interface WSClientConfig {
     userId?: string;
 }
 
+const MILLISECONDS_PER_SECOND = 1000;
+
+function configTimeToMilliseconds(
+    seconds: number | undefined,
+    deprecatedMilliseconds: number | undefined,
+    defaultSeconds: number,
+): number {
+    if (seconds !== undefined) {
+        return seconds * MILLISECONDS_PER_SECOND;
+    }
+
+    return deprecatedMilliseconds ?? defaultSeconds * MILLISECONDS_PER_SECOND;
+}
+
 export class WSClient extends MiniEmitter {
     private ws?: WebSocket;
     private reconnectAttempts = 0;
     private maxReconnectAttempts: number;
-    private reconnectDelay: number;
-    private pingInterval: number;
+    private reconnectDelayMs: number;
+    private pingIntervalMs: number;
     private pingTimer?: ReturnType<typeof setInterval>;
     private url: string;
     private _clientId: string;
@@ -90,8 +110,16 @@ export class WSClient extends MiniEmitter {
         this._clientId = resolvedTarget.clientId;
         this.url = resolvedTarget.url;
         this.maxReconnectAttempts = config.maxReconnectAttempts ?? 5;
-        this.reconnectDelay = config.reconnectDelay ?? 1000;
-        this.pingInterval = config.pingInterval ?? 30000; // 30 seconds
+        this.reconnectDelayMs = configTimeToMilliseconds(
+            config.reconnectDelay,
+            config.reconnectDelayMs,
+            1,
+        );
+        this.pingIntervalMs = configTimeToMilliseconds(
+            config.pingInterval,
+            config.pingIntervalMs,
+            30,
+        );
         this._log = createLogger('ws', logState);
     }
 
@@ -342,7 +370,7 @@ export class WSClient extends MiniEmitter {
         this.stopPing();
         this.pingTimer = setInterval(() => {
             this.ping();
-        }, this.pingInterval);
+        }, this.pingIntervalMs);
     }
 
     private stopPing(): void {
@@ -354,7 +382,7 @@ export class WSClient extends MiniEmitter {
 
     private attemptReconnect(): void {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
+            const delay = this.reconnectDelayMs * Math.pow(2, this.reconnectAttempts);
             this.reconnectAttempts++;
             this._log.info(
                 'Reconnecting (attempt %d/%d) in %dms: %s',

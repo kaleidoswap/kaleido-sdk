@@ -7,6 +7,7 @@ from kaleido_sdk import (
     KaleidoClient,
     Layer,
     MakerClient,
+    PairRoutesRequest,
     ReceiverAddress,
     ReceiverAddressFormat,
     RoutesRequest,
@@ -97,10 +98,9 @@ class TestMakerClientIntegration:
     @pytest.mark.integration
     async def test_get_pair_routes(self, client: KaleidoClient) -> None:
         """Test POST /market/pairs/routes - Get available swap routes for a pair."""
-        # Test with pair_ticker
-        routes = await client.maker.get_pair_routes("BTC/USDT")
+        routes = await client.maker.get_pair_routes(PairRoutesRequest(pair_ticker="BTC/USDT"))
         assert routes is not None
-        assert isinstance(routes, list)
+        assert hasattr(routes, "routes")
 
     @pytest.mark.integration
     async def test_get_market_routes(self, client: KaleidoClient) -> None:

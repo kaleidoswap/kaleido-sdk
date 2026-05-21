@@ -36,6 +36,16 @@ class TestWSClient:
         assert client._reconnect_delay == 2.0
         assert client._ping_interval == 60.0
 
+    def test_config_delays_are_seconds(self) -> None:
+        """Mirror TypeScript WebSocket config unit coverage."""
+        client = WSClient(
+            url="wss://test.com/ws",
+            reconnect_delay=1.5,
+            ping_interval=45.0,
+        )
+        assert client._reconnect_delay == 1.5
+        assert client._ping_interval == 45.0
+
 
 class TestWSClientEvents:
     """Tests for WSClient event handling."""

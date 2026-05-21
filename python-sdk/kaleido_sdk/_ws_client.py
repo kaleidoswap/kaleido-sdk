@@ -163,7 +163,8 @@ class WSClient:
         Args:
             url: WebSocket server URL (e.g. ws://localhost:8000/ws)
             max_reconnect_attempts: Maximum reconnection attempts
-            reconnect_delay: Base delay between reconnection attempts (exponential backoff)
+            reconnect_delay: Base delay between reconnection attempts in seconds
+                (exponential backoff)
             ping_interval: Interval between ping messages (seconds)
             user_id: Optional client/user UUID; if not provided, a UUID is generated automatically.
         """

@@ -30,6 +30,8 @@ from ._generated.api_types import (
     OrderStatsResponse,
     PairQuoteRequest,
     PairQuoteResponse,
+    PairRoutesRequest,
+    PairRoutesResponse,
     RateDecisionRequest,
     RateDecisionResponse,
     RoutesRequest,
@@ -433,23 +435,31 @@ class MakerClient:
         )
         return result
 
-    async def get_pair_routes(self, pair_ticker: str) -> list[SwapRoute]:
+    async def get_pair_routes(self, body: PairRoutesRequest | str) -> PairRoutesResponse:
         """
         Get available routes for a trading pair.
 
         Args:
-            pair_ticker: Pair ticker string (e.g. "BTC/USDT")
+            body: Pair route request. Passing a pair ticker string remains
+                accepted as a temporary shorthand for
+                ``PairRoutesRequest(pair_ticker=body)``.
 
         Returns:
-            List of available swap routes for the pair
+            Pair route response from the Maker API
         """
-        data = await self._http.maker_post(
-            "/api/v1/market/pairs/routes",
-            data={"pair_ticker": pair_ticker},
-        )
-        if isinstance(data, list):
-            return [SwapRoute.model_validate(r) for r in data]
-        return []
+        request = PairRoutesRequest(pair_ticker=body) if isinstance(body, str) else body
+        data = await self._http.maker_post("/api/v1/market/pairs/routes", data=request)
+        return PairRoutesResponse.model_validate(data)
+
+    async def get_pair_routes_by_ticker(self, pair_ticker: str) -> list[SwapRoute]:
+        """
+        Get pair routes by ticker with the legacy list response shape.
+
+        Prefer ``get_pair_routes(PairRoutesRequest(pair_ticker=...))`` when
+        calling the spec-aligned API surface.
+        """
+        response = await self.get_pair_routes(PairRoutesRequest(pair_ticker=pair_ticker))
+        return list(response.routes)
 
     async def get_market_routes(self, body: RoutesRequest) -> RoutesResponse:
         """

@@ -71,7 +71,7 @@ describe('MakerClient Integration', () => {
             try {
                 const routes = await client.maker.getPairRoutes({ pair_ticker: 'BTC/USDT' });
                 expect(routes).toBeDefined();
-                expect(Array.isArray(routes)).toBe(true);
+                expect(routes).toHaveProperty('routes');
             } catch (error) {
                 console.warn('Skipping - API not available:', error);
             }

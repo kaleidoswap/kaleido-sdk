@@ -161,8 +161,8 @@ async function main() {
         // Step 7: Monitor order status
         const finalOrder = await client.maker.waitForSwapCompletion(order.id, {
             accessToken: order.access_token,
-            timeout: 60000, // 1 minute timeout for demo
-            pollInterval: 2000,
+            timeout: 60, // 1 minute timeout for demo
+            pollInterval: 2,
             onStatusUpdate: (status) => {
                 console.log(`  Status update: ${status}`);
             },

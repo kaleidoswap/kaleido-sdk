@@ -18,10 +18,10 @@ import type {
     TradingPairsResponse,
     PairQuoteRequest,
     PairQuoteResponse,
+    PairRoutesRequest,
+    PairRoutesResponse,
     RoutesRequest,
     RoutesResponse,
-    DiscoverRoutesRequest,
-    DiscoverRoutesResponse,
     CreateSwapOrderRequest,
     CreateSwapOrderResponse,
     SwapOrderStatusRequest,
@@ -51,9 +51,29 @@ import type {
 
 export interface SwapCompletionOptions {
     accessToken: string;
+    /** Maximum time to wait for a terminal swap status, in seconds. */
     timeout?: number;
+    /** Delay between swap status polls, in seconds. */
     pollInterval?: number;
+    /** @deprecated Use `timeout` in seconds. Kept for the millisecond migration window. */
+    timeoutMs?: number;
+    /** @deprecated Use `pollInterval` in seconds. Kept for the millisecond migration window. */
+    pollIntervalMs?: number;
     onStatusUpdate?: (status: string) => void;
+}
+
+const MILLISECONDS_PER_SECOND = 1000;
+
+function configTimeToMilliseconds(
+    seconds: number | undefined,
+    deprecatedMilliseconds: number | undefined,
+    defaultSeconds: number,
+): number {
+    if (seconds !== undefined) {
+        return seconds * MILLISECONDS_PER_SECOND;
+    }
+
+    return deprecatedMilliseconds ?? defaultSeconds * MILLISECONDS_PER_SECOND;
 }
 
 export class MakerClient {
@@ -428,12 +448,12 @@ export class MakerClient {
         return result;
     }
 
-    async getPairRoutes(body: RoutesRequest): Promise<RoutesResponse> {
+    async getPairRoutes(body: PairRoutesRequest): Promise<PairRoutesResponse> {
         this._log.debug('getPairRoutes()');
         return assertResponse(await this.http.maker.POST('/api/v1/market/pairs/routes', { body }));
     }
 
-    async getMarketRoutes(body: DiscoverRoutesRequest): Promise<DiscoverRoutesResponse> {
+    async getMarketRoutes(body: RoutesRequest): Promise<RoutesResponse> {
         this._log.debug('getMarketRoutes()');
         return assertResponse(await this.http.maker.POST('/api/v1/market/routes', { body }));
     }
@@ -542,16 +562,22 @@ export class MakerClient {
     // ============================================================================
 
     async waitForSwapCompletion(orderId: string, options: SwapCompletionOptions) {
-        const { accessToken, timeout = 300000, pollInterval = 2000, onStatusUpdate } = options;
+        const { accessToken, onStatusUpdate } = options;
+        const timeoutMs = configTimeToMilliseconds(options.timeout, options.timeoutMs, 300);
+        const pollIntervalMs = configTimeToMilliseconds(
+            options.pollInterval,
+            options.pollIntervalMs,
+            2,
+        );
         const startTime = Date.now();
 
         this._log.info(
             'waitForSwapCompletion(): order_id=%s timeout=%ds',
             orderId,
-            Math.round(timeout / 1000),
+            Math.round(timeoutMs / MILLISECONDS_PER_SECOND),
         );
 
-        while (Date.now() - startTime < timeout) {
+        while (Date.now() - startTime < timeoutMs) {
             try {
                 const statusResponse = await this.getSwapOrderStatus({
                     order_id: orderId,
@@ -588,15 +614,17 @@ export class MakerClient {
                 this._log.warn('waitForSwapCompletion() status check error: %s', error);
             }
 
-            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+            await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
         }
 
         this._log.error(
             'waitForSwapCompletion(): order_id=%s timed out after %ds',
             orderId,
-            Math.round(timeout / 1000),
+            Math.round(timeoutMs / MILLISECONDS_PER_SECOND),
         );
-        throw new Error(`Swap completion timeout after ${timeout}ms for order ${orderId}`);
+        throw new Error(
+            `Swap completion timeout after ${timeoutMs / MILLISECONDS_PER_SECOND}s for order ${orderId}`,
+        );
     }
 
     toRaw(amount: number, precision: number): number {
