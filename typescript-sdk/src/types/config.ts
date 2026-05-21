@@ -24,6 +24,17 @@ export interface KaleidoConfig {
     persistInstallId?: boolean;
     /** Request timeout in seconds (default: 30) */
     timeout?: number;
+    /**
+     * Maximum retry attempts for transient failures (network errors, timeouts,
+     * HTTP 5xx, HTTP 429). The initial request is not counted, so `3` means up
+     * to 4 total attempts. Defaults to `3`, matching the Python SDK.
+     */
+    maxRetries?: number;
+    /**
+     * Base delay in milliseconds for exponential retry backoff.
+     * Actual delay is `retryBaseDelayMs * 2 ** attempt`. Defaults to `1000`.
+     */
+    retryBaseDelayMs?: number;
     /** Log level. Defaults to `LogLevel.SILENT`. */
     logLevel?: LogLevel | LogLevelName;
     /** Custom logger (console, Winston, Pino, etc.). */

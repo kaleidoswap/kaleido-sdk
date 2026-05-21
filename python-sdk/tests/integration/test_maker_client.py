@@ -46,6 +46,7 @@ class TestSwapCompletionOptions:
         assert options.timeout == 300.0
         assert options.poll_interval == 2.0
         assert options.on_status_update is None
+        assert options.access_token is None
 
     def test_custom_values(self) -> None:
         """Test custom option values."""
@@ -59,10 +60,12 @@ class TestSwapCompletionOptions:
             timeout=600.0,
             poll_interval=5.0,
             on_status_update=callback,
+            access_token="tok_test_123",
         )
         assert options.timeout == 600.0
         assert options.poll_interval == 5.0
         assert options.on_status_update is not None
+        assert options.access_token == "tok_test_123"
 
         # Test callback
         options.on_status_update("test")

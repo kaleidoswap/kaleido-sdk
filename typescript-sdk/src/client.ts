@@ -70,6 +70,8 @@ export class KaleidoClient {
                 sessionId: config.sessionId,
                 sdkVersion: SDK_VERSION,
                 timeout: (config.timeout ?? 30) * 1000,
+                maxRetries: config.maxRetries ?? 3,
+                retryBaseDelayMs: config.retryBaseDelayMs ?? 1000,
             },
             this.logState,
         );

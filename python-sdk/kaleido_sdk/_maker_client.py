@@ -68,6 +68,14 @@ class SwapCompletionOptions:
     timeout: float = 300.0  # 5 minutes
     poll_interval: float = 2.0  # 2 seconds
     on_status_update: Callable[[str], None] | None = None
+    access_token: str | None = None
+    """
+    Optional access token forwarded to ``SwapOrderStatusRequest``.
+
+    Required for swap orders created on authenticated sessions; the server
+    will silently treat polls without it as anonymous requests and may
+    return a stale or empty order.
+    """
 
 
 class MakerClient:
@@ -650,10 +658,14 @@ class MakerClient:
             opts.timeout,
         )
 
+        status_request_kwargs: dict[str, str] = {"order_id": order_id}
+        if opts.access_token:
+            status_request_kwargs["access_token"] = opts.access_token
+
         while asyncio.get_event_loop().time() - start_time < opts.timeout:
             try:
                 status_response = await self.get_swap_order_status(
-                    SwapOrderStatusRequest(order_id=order_id)
+                    SwapOrderStatusRequest(**status_request_kwargs)
                 )
                 order = status_response.order
 

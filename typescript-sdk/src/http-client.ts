@@ -20,6 +20,18 @@ export interface HttpClientConfig {
     sessionId?: string;
     sdkVersion?: string;
     timeout?: number;
+    /**
+     * Maximum number of retry attempts for transient failures (network errors,
+     * timeouts, HTTP 5xx, HTTP 429). The initial request is not counted, so a
+     * value of `3` means up to 4 total attempts. Defaults to `0` (no retries)
+     * for backwards compatibility; KaleidoClient passes `3` by default.
+     */
+    maxRetries?: number;
+    /**
+     * Base delay in milliseconds for exponential backoff between retries.
+     * Actual delay is `baseDelayMs * 2 ** attempt`. Defaults to `1000`.
+     */
+    retryBaseDelayMs?: number;
 }
 
 const LOCAL_HTTP_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
@@ -86,28 +98,126 @@ function _createLoggingMiddleware(state: LogState): Middleware {
     };
 }
 
-function _createFetchWithTimeout(timeoutMs?: number): typeof fetch | undefined {
-    if (!timeoutMs || timeoutMs <= 0) {
+/**
+ * HTTP status codes that should trigger a retry. Mirrors the Python SDK's
+ * `KaleidoError.is_retryable()` semantics: server errors (5xx) and
+ * rate-limit responses (429).
+ */
+function _isRetryableStatus(status: number): boolean {
+    return status >= 500 || status === 429;
+}
+
+/**
+ * Sleep helper used between retry attempts. Honors `AbortSignal` so an
+ * upstream cancellation aborts the wait promptly.
+ */
+function _sleep(ms: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (signal?.aborted) {
+            reject(signal.reason ?? new Error('aborted'));
+            return;
+        }
+        const timer = setTimeout(() => {
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+        }, ms);
+        const onAbort = () => {
+            clearTimeout(timer);
+            reject(signal?.reason ?? new Error('aborted'));
+        };
+        signal?.addEventListener('abort', onAbort, { once: true });
+    });
+}
+
+/**
+ * Build a fetch implementation with per-request timeout AND retry-with-backoff.
+ *
+ * Retries on:
+ *   - Network errors (fetch throws)
+ *   - Per-attempt timeouts (AbortError, surfaced as `TimeoutError`)
+ *   - HTTP responses with status >= 500 or status === 429
+ *
+ * Does NOT retry on:
+ *   - Successful responses (2xx/3xx)
+ *   - 4xx (except 429) — these are caller errors and won't change
+ *   - Upstream-aborted requests (caller's signal fired)
+ *
+ * Backoff is exponential: `baseDelayMs * 2 ** attempt`.
+ * Mirrors the Python SDK's retry loop in `_http_client.py:_request`.
+ */
+function _createFetchWithRetry(
+    timeoutMs?: number,
+    maxRetries: number = 0,
+    baseDelayMs: number = 1000,
+): typeof fetch | undefined {
+    const hasTimeout = typeof timeoutMs === 'number' && timeoutMs > 0;
+    if (!hasTimeout && maxRetries <= 0) {
         return undefined;
     }
 
     return async (input, init) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-        const signal = init?.signal
-            ? AbortSignal.any([init.signal, controller.signal])
-            : controller.signal;
+        // RequestInit.signal is typed as AbortSignal | null | undefined; coerce
+        // null to undefined so it matches helpers that only accept the latter.
+        const upstreamSignal: AbortSignal | undefined = init?.signal ?? undefined;
+        let lastError: unknown;
 
-        try {
-            return await fetch(input, { ...init, signal });
-        } catch (error) {
-            if (controller.signal.aborted && !init?.signal?.aborted) {
-                throw new TimeoutError(`Request timeout after ${timeoutMs}ms`);
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            // Bail immediately if the caller has already aborted.
+            if (upstreamSignal?.aborted) {
+                throw upstreamSignal.reason ?? new Error('aborted');
             }
-            throw error;
-        } finally {
-            clearTimeout(timeoutId);
+
+            const perAttemptController = new AbortController();
+            const timeoutId = hasTimeout
+                ? setTimeout(() => perAttemptController.abort(), timeoutMs)
+                : undefined;
+            const signal = upstreamSignal
+                ? AbortSignal.any([upstreamSignal, perAttemptController.signal])
+                : perAttemptController.signal;
+
+            try {
+                const response = await fetch(input, { ...init, signal });
+
+                if (_isRetryableStatus(response.status) && attempt < maxRetries) {
+                    // Drain the body so the connection can be reused.
+                    try {
+                        await response.body?.cancel();
+                    } catch {
+                        /* ignore */
+                    }
+                    const delay = baseDelayMs * 2 ** attempt;
+                    await _sleep(delay, upstreamSignal);
+                    continue;
+                }
+
+                return response;
+            } catch (error) {
+                const timedOut =
+                    perAttemptController.signal.aborted && !upstreamSignal?.aborted;
+                lastError = timedOut
+                    ? new TimeoutError(`Request timeout after ${timeoutMs}ms`)
+                    : error;
+
+                // Upstream cancellation — surface immediately.
+                if (upstreamSignal?.aborted) {
+                    throw upstreamSignal.reason ?? error;
+                }
+
+                if (attempt < maxRetries) {
+                    const delay = baseDelayMs * 2 ** attempt;
+                    await _sleep(delay, upstreamSignal);
+                    continue;
+                }
+
+                throw lastError;
+            } finally {
+                if (timeoutId !== undefined) clearTimeout(timeoutId);
+            }
         }
+
+        // Loop exited without returning — only reachable if `lastError` was set
+        // on the final attempt; defensively throw.
+        throw lastError ?? new Error('Request failed after retries');
     };
 }
 
@@ -119,7 +229,7 @@ export class HttpClient {
 
     constructor(config: HttpClientConfig, logState: LogState = new LogState()) {
         this.config = config;
-        const fetchWithTimeout = _createFetchWithTimeout(config.timeout);
+        const fetchWithTimeout = _createFetchWithRetry(config.timeout, config.maxRetries ?? 0, config.retryBaseDelayMs);
         const makerHeaders = this._createMakerHeaders();
 
         if (config.baseUrl) {
@@ -195,7 +305,11 @@ export class HttpClient {
     enableNodeClient(nodeUrl: string): void {
         this.nodeClient = createClient<nodePaths>({
             baseUrl: nodeUrl,
-            fetch: _createFetchWithTimeout(this.config.timeout),
+            fetch: _createFetchWithRetry(
+                this.config.timeout,
+                this.config.maxRetries ?? 0,
+                this.config.retryBaseDelayMs,
+            ),
         });
         this.nodeClient.use(_createLoggingMiddleware(this._logState));
     }
