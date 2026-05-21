@@ -11,7 +11,7 @@ from dataclasses import replace
 
 from ._http_client import HttpClient
 from ._identity import generate_session_id, load_or_create_install_id
-from ._logging import apply_log_level
+from ._logging import SdkLogger, apply_log_level, set_logger
 from ._maker_client import MakerClient
 from ._rln_client import RlnClient
 from ._version import __sdk_name__, __version__
@@ -49,6 +49,7 @@ class KaleidoClient:
         """
         self._config = config
         apply_log_level(config.log_level)
+        set_logger(config.logger)
         self._http = HttpClient(config)
         self._maker = MakerClient(self._http)
         self._rln = RlnClient(self._http)
@@ -65,6 +66,7 @@ class KaleidoClient:
         max_retries: int = 3,
         cache_ttl: int = 60,
         log_level: int | str = logging.WARNING,
+        logger: SdkLogger | None = None,
     ) -> KaleidoClient:
         """
         Create a new KaleidoClient instance.
@@ -83,6 +85,10 @@ class KaleidoClient:
             log_level: Python logging level for SDK loggers (default: logging.WARNING).
                 Set to logging.DEBUG to see full HTTP, WebSocket, and swap traces.
                 The application must configure log handlers separately.
+            logger: Optional custom logger (any object with debug/info/warning/error
+                methods). When provided, SDK log records are forwarded to it via a
+                ``logging.Handler`` bridge — handy for loguru, structlog, or test
+                recorders. Mirrors the TypeScript SDK's `logger` config field.
 
         Returns:
             Initialized client
@@ -117,6 +123,7 @@ class KaleidoClient:
             max_retries=max_retries,
             cache_ttl=cache_ttl,
             log_level=log_level,
+            logger=logger,
         )
         return cls(config)
 
@@ -137,6 +144,17 @@ class KaleidoClient:
             session_id=config.session_id or generate_session_id(),
         )
         return cls(resolved_config)
+
+    def has_maker(self) -> bool:
+        """
+        Check if the Maker (market) API is configured.
+
+        Returns:
+            True if Maker base URL is set. The factory always populates
+            ``base_url`` with the regtest default, so this is False only when
+            callers build a ``KaleidoConfig`` directly with an empty string.
+        """
+        return bool(self._config.base_url)
 
     def has_node(self) -> bool:
         """

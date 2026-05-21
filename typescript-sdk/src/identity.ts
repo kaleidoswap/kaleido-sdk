@@ -33,10 +33,40 @@ class BrowserInstallIdStore implements InstallIdStore {
 }
 
 async function importNodeModule<T>(specifier: string): Promise<T> {
-    const dynamicImport = new Function('specifier', 'return import(specifier)') as (
-        specifier: string,
-    ) => Promise<T>;
-    return dynamicImport(specifier);
+    // We need to dynamically import Node built-ins (`node:fs` etc.) without
+    // bundlers (Vite, webpack) statically resolving them when this SDK is
+    // bundled for the browser. Two layered strategies:
+    //
+    //   1) Prefer a plain `await import(specifier)` with `/* @vite-ignore */`.
+    //      This works in Node directly, in vitest's VM context, and Vite
+    //      consumers skip the static analysis because of the magic comment.
+    //
+    //   2) Fall back to `new Function('return import(...)')` for environments
+    //      whose static analysis ignores the Vite magic comment but accept
+    //      runtime-constructed function bodies. This branch is unreachable
+    //      under vitest (constructed functions live in the global VM context,
+    //      not the test VM, and would fail with
+    //      ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING).
+    try {
+        return (await import(/* @vite-ignore */ specifier)) as T;
+    } catch {
+        const dynamicImport = new Function('specifier', 'return import(specifier)') as (
+            specifier: string,
+        ) => Promise<T>;
+        return dynamicImport(specifier);
+    }
+}
+
+const INSTALL_ID_PATH_ENV_VAR = 'KALEIDO_INSTALL_ID_PATH';
+
+function readInstallIdPathOverride(): string | undefined {
+    const maybeProcess = (
+        globalThis as {
+            process?: { env?: Record<string, string | undefined> };
+        }
+    ).process;
+    const override = maybeProcess?.env?.[INSTALL_ID_PATH_ENV_VAR];
+    return override && override.length > 0 ? override : undefined;
 }
 
 class NodeInstallIdStore implements InstallIdStore {
@@ -46,6 +76,19 @@ class NodeInstallIdStore implements InstallIdStore {
             importNodeModule<typeof import('node:os')>('node:os'),
             importNodeModule<typeof import('node:path')>('node:path'),
         ]);
+
+        const override = readInstallIdPathOverride();
+        if (override) {
+            // Honour the same env-var override as the Python SDK
+            // (`KALEIDO_INSTALL_ID_PATH`). Caller is responsible for the file
+            // location; we still create the parent directory if missing.
+            const directory = path.dirname(override);
+            if (directory && directory !== '.' && directory !== override) {
+                await fs.mkdir(directory, { recursive: true });
+            }
+            return override;
+        }
+
         const directory = path.join(os.homedir(), '.kaleido');
         await fs.mkdir(directory, { recursive: true });
         return path.join(directory, INSTALL_ID_FILE_NAME);
@@ -69,7 +112,24 @@ class NodeInstallIdStore implements InstallIdStore {
             importNodeModule<typeof import('node:fs')>('node:fs'),
             this.getInstallIdPath(),
         ]);
-        await fs.writeFile(filePath, `${installId}\n`, { encoding: 'utf8', mode: 0o600 });
+
+        // Race-safe write: O_EXCL via the `wx` flag ensures we never overwrite
+        // an install ID set by a concurrent process. If another writer beat us,
+        // re-read and silently accept their value (idempotent fallback).
+        try {
+            await fs.writeFile(filePath, `${installId}\n`, {
+                encoding: 'utf8',
+                mode: 0o600,
+                flag: 'wx',
+            });
+        } catch (error) {
+            const code = (error as NodeJS.ErrnoException | undefined)?.code;
+            if (code === 'EEXIST') {
+                // Another process won the race — leave their value in place.
+                return;
+            }
+            throw error;
+        }
     }
 }
 

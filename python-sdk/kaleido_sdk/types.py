@@ -11,6 +11,8 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from ._logging import SdkLogger
+
 # Re-export all generated API types (from maker.json OpenAPI spec)
 from ._generated.api_types import (
     AssetResponseModel,
@@ -107,6 +109,11 @@ class KaleidoConfig:
             Set to logging.DEBUG to see full HTTP traces, WebSocket frames, and
             swap lifecycle events. The application is responsible for configuring
             log handlers and output destinations.
+        logger: Optional custom logger that satisfies the ``SdkLogger`` Protocol
+            (debug/info/warning/error methods). When set, SDK log records are
+            forwarded to it via a stdlib ``logging.Handler`` bridge. Useful for
+            plugging in loguru, structlog wrappers, or test recorders. Mirrors
+            the TypeScript SDK's `logger` config field.
     """
 
     base_url: str = "https://api.regtest.kaleidoswap.com"
@@ -119,6 +126,7 @@ class KaleidoConfig:
     max_retries: int = 3
     cache_ttl: int = 60
     log_level: int | str = logging.WARNING
+    logger: SdkLogger | None = None
 
 
 __all__ = [

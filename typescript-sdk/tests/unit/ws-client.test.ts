@@ -44,6 +44,25 @@ describe('WSClient', () => {
             expect(baseWsClient.clientId.length).toBeGreaterThan(0);
         });
 
+        it('uses an explicit userId as the WS client ID (E9 parity)', () => {
+            const ws = new WSClient({
+                url: 'ws://localhost:8000/api/v1/market/ws',
+                userId: 'user_abc_123',
+            });
+
+            expect(ws.clientId).toBe('user_abc_123');
+        });
+
+        it('ignores userId when the URL already has an embedded client ID', () => {
+            const ws = new WSClient({
+                url: 'ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe',
+                userId: 'user_should_be_ignored',
+            });
+
+            // Embedded ID wins so existing call sites stay stable.
+            expect(ws.clientId).toBe('0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe');
+        });
+
         it('should have event emitter methods', () => {
             expect(typeof wsClient.on).toBe('function');
             expect(typeof wsClient.emit).toBe('function');

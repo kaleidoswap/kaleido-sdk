@@ -120,6 +120,21 @@ export class KaleidoClient {
         });
     }
 
+    /**
+     * Create a new KaleidoClient from a pre-built `KaleidoConfig`.
+     *
+     * Equivalent to `KaleidoClient.create(config)` but accepts a fully-formed
+     * config object — useful when configuration is loaded from a file or
+     * shared between multiple clients. Mirrors the Python SDK's
+     * `KaleidoClient.from_config`.
+     *
+     * @param config - Pre-built client configuration
+     * @returns Initialized client
+     */
+    static async fromConfig(config: KaleidoConfig): Promise<KaleidoClient> {
+        return KaleidoClient.create(config);
+    }
+
     hasMaker(): boolean {
         return !!this.config.baseUrl;
     }

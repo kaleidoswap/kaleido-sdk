@@ -76,10 +76,13 @@ export class MakerClient {
      * Enable WebSocket for real-time updates
      *
      * @param wsUrl - WebSocket server URL (e.g. ws://localhost:8000/ws)
+     * @param userId - Optional caller-supplied client ID. When provided, it is
+     *                used as the WS client UUID instead of a generated one.
+     *                Mirrors the `user_id` argument on the Python SDK.
      * @returns WSClient instance (use ws.clientId to read the UUID used)
      */
-    enableWebSocket(wsUrl: string): WSClient {
-        this.ws = new WSClient({ url: wsUrl }, this._logState);
+    enableWebSocket(wsUrl: string, userId?: string): WSClient {
+        this.ws = new WSClient({ url: wsUrl, userId }, this._logState);
         return this.ws;
     }
 

@@ -577,3 +577,464 @@ class TestUnlockWalletTimeoutHandling:
 
             with pytest.raises(TimeoutError, match="it may still be syncing"):
                 await rln.unlock_wallet({"password": "secret"})
+
+
+# =============================================================================
+# Batch E — additive parity tests
+# =============================================================================
+
+
+class TestHasMaker:
+    """``has_maker()`` returns True when base_url is non-empty."""
+
+    def test_default_create_has_maker(self, client: KaleidoClient) -> None:
+        assert client.has_maker() is True
+
+    def test_empty_base_url_lacks_maker(self) -> None:
+        from kaleido_sdk import KaleidoConfig
+
+        config = KaleidoConfig(base_url="", install_id="inst_test", session_id="s")
+        client = KaleidoClient(config)
+        assert client.has_maker() is False
+
+
+class TestCustomLogger:
+    """``KaleidoConfig.logger`` should receive SDK log records via the bridge."""
+
+    async def test_logger_receives_info_records(self) -> None:
+        captured: list[tuple[str, str]] = []
+
+        class Recorder:
+            def debug(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("debug", msg))
+
+            def info(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("info", msg))
+
+            def warning(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("warning", msg))
+
+            def error(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("error", msg))
+
+        client = await KaleidoClient.create(
+            base_url="https://api.example.com",
+            install_id="inst_test_logger",
+            log_level="DEBUG",
+            logger=Recorder(),
+        )
+
+        # Trigger any internal log; using a direct logger call mirrors what
+        # the SDK does internally and avoids needing a live HTTP request.
+        from kaleido_sdk._logging import get_logger
+
+        get_logger("test").info("hello from sdk")
+
+        # Reset the global logger handler so subsequent tests aren't affected.
+        from kaleido_sdk._logging import set_logger as _set_logger
+
+        try:
+            assert any(
+                level == "info" and "hello from sdk" in msg
+                for level, msg in captured
+            ), f"expected info bridge record, got {captured!r}"
+        finally:
+            _set_logger(None)
+            await client.close()
+
+    def test_set_logger_is_idempotent(self) -> None:
+        from kaleido_sdk._logging import _root, set_logger
+        from kaleido_sdk._logging import _SdkLoggerHandler  # type: ignore[attr-defined]
+
+        class _Noop:
+            def debug(self, *a: object, **k: object) -> None: ...
+            def info(self, *a: object, **k: object) -> None: ...
+            def warning(self, *a: object, **k: object) -> None: ...
+            def error(self, *a: object, **k: object) -> None: ...
+
+        try:
+            set_logger(_Noop())
+            set_logger(_Noop())
+            set_logger(_Noop())
+            bridges = [h for h in _root.handlers if isinstance(h, _SdkLoggerHandler)]
+            assert len(bridges) == 1
+        finally:
+            set_logger(None)
+
+
+class TestAssetPairMapper:
+    """Sanity tests for the ported AssetPairMapper utility."""
+
+    def _build_pairs_response(self):
+        from kaleido_sdk._generated.api_types import (
+            TradableAssetResponseModel,
+            TradingLimits,
+            TradingPairResponseModel,
+            TradingPairsResponse,
+        )
+
+        btc = TradableAssetResponseModel(
+            ticker="BTC",
+            asset_id="asset_btc",
+            name="Bitcoin",
+            precision=8,
+            protocol_ids={"native": "btc"},
+            endpoints=[
+                TradingLimits(layer="BTC_LN", min_amount=1000, max_amount=1_000_000_000)
+            ],
+        )
+        usdt = TradableAssetResponseModel(
+            ticker="USDT",
+            asset_id="asset_usdt",
+            name="Tether",
+            precision=6,
+            protocol_ids={"rgb": "usdt-rgb"},
+            endpoints=[TradingLimits(layer="RGB_LN", min_amount=1, max_amount=10_000_000)],
+        )
+
+        pair = TradingPairResponseModel(
+            id="pair_btc_usdt",
+            base=btc,
+            quote=usdt,
+            ticker="BTC/USDT",
+            base_asset="BTC",
+            base_asset_id="asset_btc",
+            quote_asset="USDT",
+            quote_asset_id="asset_usdt",
+            is_active=True,
+        )
+
+        return TradingPairsResponse(
+            pairs=[pair], total=1, limit=100, offset=0, timestamp=0
+        )
+
+    def test_find_by_ticker_and_id(self) -> None:
+        from kaleido_sdk import create_asset_pair_mapper
+
+        mapper = create_asset_pair_mapper(self._build_pairs_response())
+
+        btc = mapper.find_by_ticker("btc")  # case-insensitive
+        assert btc is not None
+        assert btc["asset_id"] == "asset_btc"
+        assert btc["min_order_size"] == 1000
+        assert btc["max_order_size"] == 1_000_000_000
+
+        assert mapper.find_by_id("asset_usdt") is not None
+        assert mapper.find_by_id("asset_missing") is None
+
+    def test_can_trade_and_partners(self) -> None:
+        from kaleido_sdk import create_asset_pair_mapper
+
+        mapper = create_asset_pair_mapper(self._build_pairs_response())
+
+        assert mapper.can_trade("asset_btc", "asset_usdt") is True
+        assert mapper.can_trade("asset_btc", "asset_other") is False
+        assert mapper.can_trade_by_ticker("BTC", "USDT") is True
+
+        partners = mapper.get_trading_partners("asset_btc")
+        assert len(partners) == 1
+        assert partners[0]["asset_id"] == "asset_usdt"
+
+    def test_find_pair_by_tickers_and_active(self) -> None:
+        from kaleido_sdk import create_asset_pair_mapper
+
+        mapper = create_asset_pair_mapper(self._build_pairs_response())
+
+        assert mapper.find_pair_by_tickers("BTC", "USDT") is not None
+        assert mapper.find_pair_by_tickers("USDT", "BTC") is None  # direction matters
+        assert len(mapper.get_active_pairs()) == 1
+
+
+# =============================================================================
+# Symmetric tests — counterparts for items added in the TypeScript SDK
+# =============================================================================
+
+
+class TestHttpRetryBehaviour:
+    """Mirror typescript-sdk/tests/unit/http-client.test.ts > Retry behaviour.
+
+    Python's HTTP layer has always had a retry loop; these tests close the gap
+    where parity was previously only implicit.
+    """
+
+    async def test_retries_transient_5xx_then_succeeds(self) -> None:
+        import httpx
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_retry_5xx",
+            session_id="s",
+            max_retries=3,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            if calls["n"] < 3:
+                return httpx.Response(503, json={"error": "upstream"})
+            return httpx.Response(200, json={"ok": True})
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            result = await http.maker_get("/api/v1/lsps1/get_info")
+
+        assert calls["n"] == 3
+        assert result == {"ok": True}
+
+    async def test_does_not_retry_on_429_rate_limit(self) -> None:
+        """**Behavioural asymmetry vs. TS** — flagged for the audit ledger.
+
+        Python's ``RateLimitError.is_retryable()`` returns ``False`` (see
+        ``errors.py:32``), so 429 surfaces immediately. The TypeScript SDK's
+        fetch wrapper retries 429 alongside 5xx. Test asserts the current
+        Python behaviour; reconciliation is a separate decision.
+        """
+        import httpx
+
+        from kaleido_sdk import RateLimitError
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_retry_429",
+            session_id="s",
+            max_retries=2,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            return httpx.Response(429, json={"error": "slow down"})
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            with pytest.raises(RateLimitError):
+                await http.maker_get("/api/v1/lsps1/get_info")
+
+        assert calls["n"] == 1  # no retries — current Python behaviour
+
+    async def test_does_not_retry_on_4xx_except_429(self) -> None:
+        import httpx
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_no_retry_4xx",
+            session_id="s",
+            max_retries=3,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            return httpx.Response(400, json={"error": "bad request"})
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            with pytest.raises(ValidationError):
+                await http.maker_get("/api/v1/lsps1/get_info")
+
+        assert calls["n"] == 1  # no retries
+
+    async def test_retries_on_network_errors_and_surfaces_failure(self) -> None:
+        import httpx
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_retry_net",
+            session_id="s",
+            max_retries=2,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            raise httpx.ConnectError("network refused")
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            with pytest.raises(NetworkError):
+                await http.maker_get("/api/v1/lsps1/get_info")
+
+        # initial attempt + 2 retries
+        assert calls["n"] == 3
+
+    async def test_retries_on_timeouts_and_surfaces_timeout_error(self) -> None:
+        import httpx
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_retry_timeout",
+            session_id="s",
+            max_retries=1,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            raise httpx.TimeoutException("slow")
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            with pytest.raises(TimeoutError):
+                await http.maker_get("/api/v1/lsps1/get_info")
+
+        # initial attempt + 1 retry
+        assert calls["n"] == 2
+
+    async def test_max_retries_zero_disables_retries(self) -> None:
+        import httpx
+
+        config = KaleidoConfig(
+            base_url="https://api.example.com",
+            install_id="inst_no_retries",
+            session_id="s",
+            max_retries=0,
+        )
+        http = HttpClient(config)
+
+        calls = {"n": 0}
+
+        async def mock_request(*_args, **_kwargs):
+            calls["n"] += 1
+            raise httpx.ConnectError("boom")
+
+        client = await http._get_client()
+        with patch.object(client, "request", side_effect=mock_request), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            with pytest.raises(NetworkError):
+                await http.maker_get("/api/v1/lsps1/get_info")
+
+        assert calls["n"] == 1
+
+
+class TestEnableWebsocketUserId:
+    """Mirror typescript-sdk/tests/unit/ws-client.test.ts userId tests (E9)."""
+
+    def test_explicit_user_id_becomes_client_id(self) -> None:
+        from kaleido_sdk import WSClient
+
+        ws = WSClient(
+            "ws://localhost:8000/api/v1/market/ws",
+            user_id="user_abc_123",
+        )
+        assert ws.client_id == "user_abc_123"
+
+    def test_user_id_wins_over_embedded_client_id(self) -> None:
+        """**Behavioural asymmetry vs. TS** — flagged for the audit ledger.
+
+        Python's ``WSClient.__init__`` does ``self._client_id = user_id or
+        uuid.uuid4()`` and then ALWAYS rebuilds the URL with the chosen
+        client_id appended (``_build_url_with_client_id``), so an embedded
+        client ID in the input URL is silently ignored when ``user_id`` is
+        provided. The TypeScript SDK gives the embedded ID precedence to
+        keep existing call sites stable. Test asserts current Python
+        behaviour; reconciliation is a separate decision.
+        """
+        from kaleido_sdk import WSClient
+
+        ws = WSClient(
+            "ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe",
+            user_id="user_overrides_embedded",
+        )
+        assert ws.client_id == "user_overrides_embedded"
+
+    def test_no_user_id_generates_uuid(self) -> None:
+        from kaleido_sdk import WSClient
+
+        ws = WSClient("ws://localhost:8000/api/v1/market/ws")
+        assert ws.client_id  # truthy
+        assert ws.client_id not in ("ws", "")
+
+
+class TestInstallIdRaceSafety:
+    """Mirror typescript-sdk/tests/unit/identity.test.ts race-safety test.
+
+    Python uses ``os.O_EXCL`` in ``_load_or_create_install_id_sync``; this
+    test asserts that a second writer doesn't clobber the first writer's
+    value when the file already exists.
+    """
+
+    async def test_second_writer_does_not_overwrite(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path
+    ) -> None:
+        from kaleido_sdk._identity import (
+            _load_or_create_install_id_sync,
+            load_or_create_install_id,
+        )
+
+        target = tmp_path / "install_id"
+        monkeypatch.setenv("KALEIDO_INSTALL_ID_PATH", str(target))
+
+        # First writer creates the file with a known value.
+        target.write_text("inst_first_writer\n", encoding="utf-8")
+
+        # Subsequent load_or_create calls must surface the existing value
+        # instead of generating a fresh ID and overwriting.
+        first = await load_or_create_install_id()
+        second = await load_or_create_install_id()
+        assert first == "inst_first_writer"
+        assert second == "inst_first_writer"
+
+        # And the file on disk is untouched.
+        assert target.read_text(encoding="utf-8").strip() == "inst_first_writer"
+
+    def test_sync_helper_respects_existing_file_under_O_EXCL_race(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path
+    ) -> None:
+        """Simulate the FileExistsError branch: O_EXCL fires because another
+        writer raced us between the load() and save() calls."""
+        import os as os_module
+
+        from kaleido_sdk._identity import _load_or_create_install_id_sync
+
+        target = tmp_path / "install_id"
+        monkeypatch.setenv("KALEIDO_INSTALL_ID_PATH", str(target))
+
+        # Pretend the file does not exist on the first read attempt so we
+        # enter the write branch. Then have os.open raise FileExistsError as
+        # if another writer beat us to the punch, while the file (now on
+        # disk thanks to the racing writer) contains a winning value.
+        target.write_text("inst_racing_winner\n", encoding="utf-8")
+
+        original_read_text = type(target).read_text
+        calls = {"reads": 0}
+
+        def first_read_returns_empty(self_path, *args, **kwargs):
+            calls["reads"] += 1
+            if calls["reads"] == 1:
+                # Simulate the file not existing yet on first read.
+                raise OSError("simulated absence")
+            return original_read_text(self_path, *args, **kwargs)
+
+        original_os_open = os_module.open
+
+        def raising_open(path, flags, mode=0o777):
+            if flags & os_module.O_EXCL:
+                raise FileExistsError(path)
+            return original_os_open(path, flags, mode)
+
+        monkeypatch.setattr(type(target), "read_text", first_read_returns_empty)
+        monkeypatch.setattr(os_module, "open", raising_open)
+
+        result = _load_or_create_install_id_sync()
+        assert result == "inst_racing_winner"

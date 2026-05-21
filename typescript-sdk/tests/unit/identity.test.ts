@@ -104,4 +104,64 @@ describe('identity', () => {
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
         );
     });
+
+    describe('Node install ID store (E5, E6)', () => {
+        // Use the actual filesystem under a temp path. We resolve the store
+        // indirectly through loadOrCreateInstallId after pointing the env var
+        // at a fresh location so we exercise the same code path users hit.
+
+        it('honours the KALEIDO_INSTALL_ID_PATH env var override', async () => {
+            const os = await import('node:os');
+            const path = await import('node:path');
+            const { promises: fs } = await import('node:fs');
+
+            const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'kld-id-'));
+            const target = path.join(tmpDir, 'custom_install_id');
+            const prev = process.env.KALEIDO_INSTALL_ID_PATH;
+            process.env.KALEIDO_INSTALL_ID_PATH = target;
+
+            try {
+                const store = resolveInstallIdStore();
+                const installId = await loadOrCreateInstallId({ store });
+                expect(installId).toMatch(/^inst_/);
+                const onDisk = (await fs.readFile(target, 'utf8')).trim();
+                expect(onDisk).toBe(installId);
+            } finally {
+                if (prev === undefined) {
+                    delete process.env.KALEIDO_INSTALL_ID_PATH;
+                } else {
+                    process.env.KALEIDO_INSTALL_ID_PATH = prev;
+                }
+                await fs.rm(tmpDir, { recursive: true, force: true });
+            }
+        });
+
+        it('is race-safe: concurrent saves do not overwrite an existing file', async () => {
+            const os = await import('node:os');
+            const path = await import('node:path');
+            const { promises: fs } = await import('node:fs');
+
+            const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'kld-id-'));
+            const target = path.join(tmpDir, 'install_id');
+            const prev = process.env.KALEIDO_INSTALL_ID_PATH;
+            process.env.KALEIDO_INSTALL_ID_PATH = target;
+
+            try {
+                const store = resolveInstallIdStore();
+                await store.save('inst_first_writer');
+                // Second save must be a no-op because the file exists.
+                await store.save('inst_second_writer');
+
+                const onDisk = (await fs.readFile(target, 'utf8')).trim();
+                expect(onDisk).toBe('inst_first_writer');
+            } finally {
+                if (prev === undefined) {
+                    delete process.env.KALEIDO_INSTALL_ID_PATH;
+                } else {
+                    process.env.KALEIDO_INSTALL_ID_PATH = prev;
+                }
+                await fs.rm(tmpDir, { recursive: true, force: true });
+            }
+        });
+    });
 });

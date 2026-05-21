@@ -63,6 +63,12 @@ export interface WSClientConfig {
     maxReconnectAttempts?: number;
     reconnectDelay?: number;
     pingInterval?: number;
+    /**
+     * Optional caller-supplied client ID. When provided, it is appended to the
+     * URL (if not already present) instead of a generated UUID. Mirrors the
+     * `user_id` constructor argument in the Python SDK's WSClient.
+     */
+    userId?: string;
 }
 
 export class WSClient extends MiniEmitter {
@@ -80,7 +86,7 @@ export class WSClient extends MiniEmitter {
 
     constructor(config: WSClientConfig, logState: LogState = new LogState()) {
         super();
-        const resolvedTarget = WSClient.resolveConnectionTarget(config.url);
+        const resolvedTarget = WSClient.resolveConnectionTarget(config.url, config.userId);
         this._clientId = resolvedTarget.clientId;
         this.url = resolvedTarget.url;
         this.maxReconnectAttempts = config.maxReconnectAttempts ?? 5;
@@ -100,8 +106,15 @@ export class WSClient extends MiniEmitter {
      * - a base endpoint ending in `/ws`, in which case a clientId is appended
      * - a fully qualified endpoint ending in `/ws/{clientId}`, in which case the
      *   trailing segment is treated as the clientId
+     *
+     * If `userId` is provided, it is preferred over a generated UUID. When the
+     * URL already has an embedded client ID, the embedded value wins to keep
+     * existing call sites stable.
      */
-    private static resolveConnectionTarget(url: string): { url: string; clientId: string } {
+    private static resolveConnectionTarget(
+        url: string,
+        userId?: string,
+    ): { url: string; clientId: string } {
         const parsed = new URL(url);
         const segments = parsed.pathname.split('/').filter(Boolean);
         const lastSegment = segments.at(-1);
@@ -114,10 +127,10 @@ export class WSClient extends MiniEmitter {
             };
         }
 
-        const generatedClientId = globalThis.crypto.randomUUID();
-        segments.push(generatedClientId);
+        const clientId = userId && userId.length > 0 ? userId : globalThis.crypto.randomUUID();
+        segments.push(clientId);
         parsed.pathname = '/' + segments.join('/');
-        return { url: parsed.toString(), clientId: generatedClientId };
+        return { url: parsed.toString(), clientId };
     }
 
     async connect(): Promise<void> {

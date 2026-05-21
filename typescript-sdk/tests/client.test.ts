@@ -392,3 +392,141 @@ describe('Configuration', () => {
         expect(typeof config.cacheTtl).toBe('number');
     });
 });
+
+// ============================================================================
+// hasMaker() (mirrors python-sdk TestHasMaker)
+// ============================================================================
+
+describe('KaleidoClient.hasMaker', () => {
+    it('returns true for the default factory (baseUrl populated)', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+
+        const client = await KaleidoClient.create({
+            installIdStore: new MemoryInstallIdStore(),
+        });
+        expect(client.hasMaker()).toBe(true);
+    });
+
+    it('returns false when baseUrl is explicitly empty', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+
+        const client = await KaleidoClient.create({
+            baseUrl: '',
+            installIdStore: new MemoryInstallIdStore(),
+        });
+        expect(client.hasMaker()).toBe(false);
+    });
+});
+
+// ============================================================================
+// Custom logger config (mirrors python-sdk TestCustomLogger)
+// ============================================================================
+
+describe('KaleidoClient custom logger', () => {
+    it('forwards SDK log records to the configured logger', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+        const { createLogger, applyLogLevel, LogLevel } = await import('../src/logging.js');
+
+        const captured: Array<{ level: string; msg: string }> = [];
+        const recorder = {
+            debug: (msg: string) => captured.push({ level: 'debug', msg }),
+            info: (msg: string) => captured.push({ level: 'info', msg }),
+            warn: (msg: string) => captured.push({ level: 'warn', msg }),
+            error: (msg: string) => captured.push({ level: 'error', msg }),
+        };
+
+        const client = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            installIdStore: new MemoryInstallIdStore(),
+            logLevel: LogLevel.DEBUG,
+            logger: recorder,
+        });
+
+        // Hit an internal component logger; equivalent to the Python test
+        // emitting via the kaleido_sdk.test child logger.
+        applyLogLevel(client.logState, LogLevel.DEBUG);
+        const log = createLogger('test', client.logState);
+        log.info('hello from sdk');
+
+        expect(
+            captured.some(
+                (entry) => entry.level === 'info' && entry.msg.includes('hello from sdk'),
+            ),
+        ).toBe(true);
+
+        await client.close();
+    });
+
+    it('setLogger swaps the logger and is idempotent across repeated calls', async () => {
+        const { KaleidoClient, setLogger } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+        const { createLogger, LogLevel, applyLogLevel } = await import('../src/logging.js');
+
+        const client = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            installIdStore: new MemoryInstallIdStore(),
+            logLevel: LogLevel.DEBUG,
+        });
+        applyLogLevel(client.logState, LogLevel.DEBUG);
+
+        const firstHits: string[] = [];
+        const secondHits: string[] = [];
+
+        setLogger(client.logState, {
+            debug: () => {},
+            info: (m: string) => firstHits.push(m),
+            warn: () => {},
+            error: () => {},
+        });
+        setLogger(client.logState, {
+            debug: () => {},
+            info: (m: string) => secondHits.push(m),
+            warn: () => {},
+            error: () => {},
+        });
+
+        const log = createLogger('test', client.logState);
+        log.info('only second logger should see this');
+
+        expect(firstHits).toHaveLength(0);
+        expect(secondHits.length).toBeGreaterThan(0);
+
+        await client.close();
+    });
+});
+
+// ============================================================================
+// fromConfig() factory (E4 — Python parity)
+// ============================================================================
+
+describe('KaleidoClient.fromConfig', () => {
+    it('is exposed as a static factory mirroring Python from_config', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        expect(typeof KaleidoClient.fromConfig).toBe('function');
+    });
+
+    it('produces a client equivalent to KaleidoClient.create(config)', async () => {
+        const { KaleidoClient } = await import('../src/client.js');
+        const { MemoryInstallIdStore } = await import('../src/identity.js');
+
+        const installIdStore = new MemoryInstallIdStore();
+        await installIdStore.save('inst_fixed_for_test');
+
+        const fromCreate = await KaleidoClient.create({
+            baseUrl: 'https://api.example.com',
+            installIdStore,
+        });
+        const fromFactory = await KaleidoClient.fromConfig({
+            baseUrl: 'https://api.example.com',
+            installIdStore,
+        });
+
+        expect(fromCreate.hasMaker()).toBe(true);
+        expect(fromFactory.hasMaker()).toBe(true);
+        expect(fromCreate.hasNode()).toBe(false);
+        expect(fromFactory.hasNode()).toBe(false);
+    });
+});

@@ -54,10 +54,13 @@ Logging:
 from ._maker_client import MakerClient, SwapCompletionOptions
 from ._rln_client import RlnClient
 from ._utils import (
+    AssetPairMappedAsset,
+    AssetPairMapper,
     MappedAsset,
     OrderSizeLimits,
     PrecisionHandler,
     ValidationResult,
+    create_asset_pair_mapper,
     create_precision_handler,
     parse_raw_amount,
     to_display_amount,
@@ -174,6 +177,9 @@ __all__ = [
     "create_precision_handler",
     "ValidationResult",
     "OrderSizeLimits",
+    "AssetPairMapper",
+    "AssetPairMappedAsset",
+    "create_asset_pair_mapper",
     "__version__",
     # WebSocket
     "WSAction",

@@ -589,4 +589,56 @@ describe('MakerClient - Quote Methods', () => {
             expect(sats).toBe(150000000);
         });
     });
+
+    // ========================================================================
+    // waitForSwapCompletion forwards accessToken to status request
+    // (Mirrors python-sdk TestWaitForSwapCompletionAccessToken)
+    // ========================================================================
+
+    describe('waitForSwapCompletion accessToken forwarding', () => {
+        it('forwards the accessToken into the status poll body', async () => {
+            const spy = vi
+                .spyOn(makerClient, 'getSwapOrderStatus')
+                .mockResolvedValue({
+                    order: { id: 'order_456', status: 'FILLED' },
+                } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>);
+
+            await makerClient.waitForSwapCompletion('order_456', {
+                accessToken: 'tok_authenticated_user',
+                timeout: 5000,
+                pollInterval: 5,
+            });
+
+            expect(spy).toHaveBeenCalledWith({
+                order_id: 'order_456',
+                access_token: 'tok_authenticated_user',
+            });
+        });
+
+        it('passes the accessToken on every status poll, not just the first', async () => {
+            const responses = [
+                { order: { id: 'o1', status: 'PENDING' } },
+                { order: { id: 'o1', status: 'PENDING' } },
+                { order: { id: 'o1', status: 'FILLED' } },
+            ];
+            const spy = vi
+                .spyOn(makerClient, 'getSwapOrderStatus')
+                .mockImplementation(
+                    async () =>
+                        responses.shift() as unknown as Awaited<
+                            ReturnType<typeof makerClient.getSwapOrderStatus>
+                        >,
+                );
+
+            await makerClient.waitForSwapCompletion('o1', {
+                accessToken: 'tok_xyz',
+                timeout: 5000,
+                pollInterval: 1,
+            });
+
+            for (const call of spy.mock.calls) {
+                expect(call[0]).toMatchObject({ access_token: 'tok_xyz' });
+            }
+        });
+    });
 });
