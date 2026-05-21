@@ -82,6 +82,16 @@ export type RateDecisionRequest = RequestBody<'submitLspRateDecision'>;
 export type RateDecisionResponse = ResponseSuccess<'submitLspRateDecision'>;
 
 // ============================================================================
+// Cross-SDK type-name aliases (Batch F)
+// These keep call sites portable: code written against either Python's or
+// TypeScript's historic name still resolves. Prefer the canonical name on
+// each side going forward; aliases are non-deprecated until 0.2.0.
+// ============================================================================
+
+/** Alias of {@link EstimateLspFeesRequest} — matches the Python type name. */
+export type EstimateFeesRequest = EstimateLspFeesRequest;
+
+// ============================================================================
 // Schema types (matching Python SDK exports)
 // ============================================================================
 

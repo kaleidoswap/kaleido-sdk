@@ -1038,3 +1038,43 @@ class TestInstallIdRaceSafety:
 
         result = _load_or_create_install_id_sync()
         assert result == "inst_racing_winner"
+
+
+class TestCrossSdkTypeNameAliases:
+    """Batch F — type-name aliases keep call sites portable across SDKs.
+
+    Each alias must resolve to the SAME underlying class as its canonical
+    name; this guards against future regenerations dropping the re-export
+    or rebinding it to a stale class.
+    """
+
+    def test_estimate_lsp_fees_aliases_resolve_to_python_canonical(self) -> None:
+        from kaleido_sdk import (
+            EstimateFeesRequest,
+            EstimateFeesResponse,
+            EstimateLspFeesRequest,
+            EstimateLspFeesResponse,
+        )
+
+        assert EstimateLspFeesRequest is EstimateFeesRequest
+        assert EstimateLspFeesResponse is EstimateFeesResponse
+
+    def test_get_lsp_order_response_alias(self) -> None:
+        from kaleido_sdk import ChannelOrderResponse, GetLspOrderResponse
+
+        assert GetLspOrderResponse is ChannelOrderResponse
+
+    def test_create_ln_invoice_response_alias(self) -> None:
+        from kaleido_sdk.rln import CreateLNInvoiceResponse, LNInvoiceResponse
+
+        assert CreateLNInvoiceResponse is LNInvoiceResponse
+
+    def test_maker_execute_response_alias(self) -> None:
+        from kaleido_sdk.rln import EmptyResponse, MakerExecuteResponse
+
+        assert MakerExecuteResponse is EmptyResponse
+
+    def test_node_network_info_response_alias(self) -> None:
+        from kaleido_sdk.rln import NetworkInfoResponse, NodeNetworkInfoResponse
+
+        assert NodeNetworkInfoResponse is NetworkInfoResponse

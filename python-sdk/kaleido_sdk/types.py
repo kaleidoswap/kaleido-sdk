@@ -129,6 +129,21 @@ class KaleidoConfig:
     logger: SdkLogger | None = None
 
 
+# =============================================================================
+# Cross-SDK type-name aliases (Batch F)
+# Re-export the historical TypeScript names so call sites stay portable.
+# Aliases are non-deprecated until 0.2.0; prefer the canonical name on the
+# right-hand side going forward.
+# =============================================================================
+
+#: Alias of :class:`EstimateFeesRequest` — matches the TypeScript type name.
+EstimateLspFeesRequest = EstimateFeesRequest
+#: Alias of :class:`EstimateFeesResponse` — matches the TypeScript type name.
+EstimateLspFeesResponse = EstimateFeesResponse
+#: Alias of :class:`ChannelOrderResponse` for ``get_lsp_order`` — matches the TS name.
+GetLspOrderResponse = ChannelOrderResponse
+
+
 __all__ = [
     # Config
     "KaleidoConfig",
@@ -197,4 +212,8 @@ __all__ = [
     "OrderRequest",
     "RateDecisionRequest",
     "RateDecisionResponse",
+    # Cross-SDK type-name aliases (Batch F)
+    "EstimateLspFeesRequest",
+    "EstimateLspFeesResponse",
+    "GetLspOrderResponse",
 ]

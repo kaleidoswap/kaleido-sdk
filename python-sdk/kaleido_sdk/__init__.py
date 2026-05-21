@@ -98,6 +98,7 @@ from .types import (
     BitcoinNetwork,
     ChannelDetails,
     ChannelOrderResponse,
+    GetLspOrderResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
     CreateOrderRequest,
@@ -106,6 +107,8 @@ from .types import (
     CreateSwapOrderResponse,
     EstimateFeesRequest,
     EstimateFeesResponse,
+    EstimateLspFeesRequest,
+    EstimateLspFeesResponse,
     # API Types - Quotes & Routes
     Fee,
     # API Types - LSP
@@ -266,4 +269,8 @@ __all__ = [
     "OrderRequest",
     "RateDecisionRequest",
     "RateDecisionResponse",
+    # Cross-SDK type-name aliases (Batch F)
+    "EstimateLspFeesRequest",
+    "EstimateLspFeesResponse",
+    "GetLspOrderResponse",
 ]
