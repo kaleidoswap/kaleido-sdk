@@ -22,9 +22,10 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
     let client: KaleidoClient;
     let currentWs: WSClient | undefined;
 
-    beforeAll(() => {
-        client = KaleidoClient.create({
+    beforeAll(async () => {
+        client = await KaleidoClient.create({
             baseUrl: TEST_API_URL,
+            installId: 'inst_test_pairs_ws',
         });
     });
 
@@ -435,7 +436,10 @@ describe('Trading Pairs and WebSocket Quotes Integration', () => {
         }, 10000);
 
         it('should throw error if WebSocket not enabled before streaming', async () => {
-            const freshClient = KaleidoClient.create({ baseUrl: TEST_API_URL });
+            const freshClient = await KaleidoClient.create({
+                baseUrl: TEST_API_URL,
+                installId: 'inst_test_pairs_ws_fresh',
+            });
 
             await expect(
                 freshClient.maker.streamQuotes(

@@ -9,12 +9,15 @@ from __future__ import annotations
 import asyncio
 import time
 from typing import Any, TypeVar
+from urllib.parse import urlparse
 
 import httpx
 from pydantic import BaseModel
 
 from ._logging import get_logger
+from ._version import __version__
 from .errors import (
+    ConfigError,
     KaleidoError,
     NetworkError,
     TimeoutError,
@@ -25,6 +28,21 @@ from .types import KaleidoConfig
 T = TypeVar("T", bound=BaseModel)
 
 _log = get_logger("http")
+_SDK_HEADER = f"python/{__version__}"
+_LOCAL_HTTP_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
+
+def _is_local_http_url(url: str) -> bool:
+    parsed = urlparse(url)
+    hostname = parsed.hostname or ""
+    return parsed.scheme == "http" and (
+        hostname in _LOCAL_HTTP_HOSTS or hostname.endswith(".localhost")
+    )
+
+
+def _is_secure_maker_url(url: str, *, allow_insecure: bool) -> bool:
+    parsed = urlparse(url)
+    return parsed.scheme == "https" or allow_insecure or _is_local_http_url(url)
 
 
 class HttpClient:
@@ -37,21 +55,43 @@ class HttpClient:
 
     def __init__(self, config: KaleidoConfig) -> None:
         self._config = config
+        self._default_headers = self._build_default_headers()
+        self._maker_headers = self._build_maker_headers()
         self._client: httpx.AsyncClient | None = None
 
-    def _build_headers(self) -> dict[str, str]:
-        headers: dict[str, str] = {
+    def _build_default_headers(self) -> dict[str, str]:
+        return {
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
+
+    def _build_maker_headers(self) -> dict[str, str]:
+        headers = self._build_default_headers()
+        secure_for_attribution = _is_secure_maker_url(
+            self._config.base_url,
+            allow_insecure=self._config.allow_insecure,
+        )
+
         if self._config.api_key:
+            if not secure_for_attribution:
+                raise ConfigError(
+                    "Refusing to send Kaleido API key over a non-HTTPS Maker URL. "
+                    "Use HTTPS, localhost HTTP for development, or set allow_insecure=True."
+                )
             headers["Authorization"] = f"Bearer {self._config.api_key}"
+
+        if secure_for_attribution and self._config.install_id:
+            headers["X-Kaleido-Install-Id"] = self._config.install_id
+        if secure_for_attribution and self._config.session_id:
+            headers["X-Kaleido-Session-Id"] = self._config.session_id
+        headers["X-Kaleido-SDK"] = _SDK_HEADER
+
         return headers
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
-                headers=self._build_headers(),
+                headers=self._default_headers,
                 timeout=httpx.Timeout(self._config.timeout),
             )
         return self._client
@@ -214,7 +254,12 @@ class HttpClient:
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Make GET request to Maker API."""
-        return await self._request("GET", self._maker_url(path), params=params)
+        return await self._request(
+            "GET",
+            self._maker_url(path),
+            params=params,
+            headers=dict(self._maker_headers),
+        )
 
     async def maker_post(
         self,
@@ -228,6 +273,7 @@ class HttpClient:
             self._maker_url(path),
             json=self._serialize_body(data),
             params=params,
+            headers=dict(self._maker_headers),
         )
 
     # =========================================================================

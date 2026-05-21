@@ -151,6 +151,8 @@ export type DisconnectPeerRequest = RequestBody<'/disconnectpeer', 'post'>;
 
 export type LNInvoiceRequest = components['schemas']['LNInvoiceRequest'];
 export type CreateLNInvoiceResponse = ResponseSuccess<'/lninvoice', 'post'>;
+/** Alias of {@link CreateLNInvoiceResponse} — matches the Python type name. */
+export type LNInvoiceResponse = CreateLNInvoiceResponse;
 export type RgbInvoiceRequest = components['schemas']['RgbInvoiceRequest'];
 export type RgbInvoiceResponse = components['schemas']['RgbInvoiceResponse'];
 export type DecodeLNInvoiceRequest = RequestBody<'/decodelninvoice', 'post'>;

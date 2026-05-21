@@ -1,0 +1,93 @@
+"""
+Client identity helpers for telemetry attribution.
+"""
+
+from __future__ import annotations
+
+import os
+import time
+import uuid
+from asyncio import to_thread
+from pathlib import Path
+from secrets import choice
+
+_INSTALL_ID_FILE_NAME = "install_id"
+_INSTALL_ID_PREFIX = "inst_"
+_CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+_ephemeral_install_id: str | None = None
+
+
+def _install_id_path() -> Path:
+    override = os.environ.get("KALEIDO_INSTALL_ID_PATH")
+    if override:
+        return Path(override).expanduser()
+
+    return Path.home() / ".kaleido" / _INSTALL_ID_FILE_NAME
+
+
+def _encode_time(timestamp_ms: int) -> str:
+    value = timestamp_ms
+    encoded = ""
+
+    for _ in range(10):
+        value, index = divmod(value, 32)
+        encoded = _CROCKFORD_BASE32[index] + encoded
+
+    return encoded
+
+
+def generate_install_id() -> str:
+    """Generate an opaque persistent install ID."""
+    random_part = "".join(choice(_CROCKFORD_BASE32) for _ in range(16))
+    return f"{_INSTALL_ID_PREFIX}{_encode_time(int(time.time() * 1000))}{random_part}"
+
+
+def generate_session_id() -> str:
+    """Generate a per-client session ID."""
+    return str(uuid.uuid4())
+
+
+def _ephemeral_install_id_fallback(candidate: str | None = None) -> str:
+    """Reuse one in-process install ID when file storage is unavailable."""
+    global _ephemeral_install_id
+    if _ephemeral_install_id is None:
+        _ephemeral_install_id = candidate or generate_install_id()
+    return _ephemeral_install_id
+
+
+def _load_or_create_install_id_sync(override: str | None = None) -> str:
+    """Load the persistent install ID, or create it if it does not exist."""
+    if override:
+        return override
+
+    path = _install_id_path()
+    try:
+        install_id = path.read_text(encoding="utf-8").strip()
+        if install_id:
+            return install_id
+    except OSError:
+        pass
+
+    install_id = generate_install_id()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as file:
+            file.write(f"{install_id}\n")
+        return install_id
+    except FileExistsError:
+        try:
+            existing = path.read_text(encoding="utf-8").strip()
+            if existing:
+                return existing
+        except OSError:
+            pass
+    except OSError:
+        return _ephemeral_install_id_fallback(install_id)
+
+    return _ephemeral_install_id_fallback(install_id)
+
+
+async def load_or_create_install_id(override: str | None = None) -> str:
+    """Load the persistent install ID without blocking the event loop."""
+    return await to_thread(_load_or_create_install_id_sync, override)

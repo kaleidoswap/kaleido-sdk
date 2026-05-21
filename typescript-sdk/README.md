@@ -24,28 +24,55 @@ The SDK exposes two sub-clients depending on what you need:
 import { KaleidoClient } from 'kaleido-sdk';
 
 // Zero-config — defaults to regtest
-const client = KaleidoClient.create();
+const client = await KaleidoClient.create();
 const assets = await client.maker.listAssets();
 
 // Maker API only
-const client = KaleidoClient.create({
+const client = await KaleidoClient.create({
   baseUrl: 'https://api.signet.kaleidoswap.com',
 });
 const assets = await client.maker.listAssets();
 
 // Node only (baseUrl still defaults to regtest)
-const client = KaleidoClient.create({
+const client = await KaleidoClient.create({
   nodeUrl: 'http://localhost:3001',
 });
 const info = await client.rln.getNodeInfo();
 
 // Both together
-const client = KaleidoClient.create({
+const client = await KaleidoClient.create({
   baseUrl: 'https://api.signet.kaleidoswap.com',
   nodeUrl: 'http://localhost:3001',
 });
 const pairs    = await client.maker.listPairs();
 const channels = await client.rln.listChannels();
+```
+
+## Attribution and local development
+
+When `apiKey` is configured, the SDK sends Maker attribution headers over HTTPS only.
+HTTP is allowed automatically for local development hosts such as `localhost` and
+`127.0.0.1`. To use a non-local HTTP Maker URL intentionally, pass
+`allowInsecure: true`.
+
+```typescript
+const client = await KaleidoClient.create({
+  baseUrl: 'http://dev-maker.internal:8000',
+  apiKey: 'kld_live_c_...',
+  allowInsecure: true,
+});
+```
+
+In browsers, generated install IDs are memory-only by default. If your app has
+collected the right consent and wants stable browser attribution across sessions,
+opt in explicitly:
+
+```typescript
+const client = await KaleidoClient.create({
+  baseUrl: 'https://api.kaleidoswap.com',
+  apiKey: 'kld_live_c_...',
+  persistInstallId: true,
+});
 ```
 
 ## Documentation

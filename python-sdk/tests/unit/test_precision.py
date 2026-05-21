@@ -67,6 +67,10 @@ class TestStandaloneFunctions:
         assert parse_raw_amount(Decimal("1.5"), 8) == 150_000_000
         assert parse_raw_amount(2, 8) == 200_000_000
 
+    def test_parse_raw_amount_from_int_matches_ts_bigint_path(self) -> None:
+        """Integer display amounts stay exact across both SDKs."""
+        assert parse_raw_amount(2, 8) == 200_000_000
+
     def test_parse_raw_amount_rejects_extra_precision(self) -> None:
         """Parse helper must reject amounts beyond asset precision."""
         with pytest.raises(ValidationError, match="more than 8 decimal places"):

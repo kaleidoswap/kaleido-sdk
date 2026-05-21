@@ -12,6 +12,7 @@ import os
 from kaleido_sdk import KaleidoClient, get_sdk_name, get_version
 
 API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
+API_KEY = os.getenv("KALEIDO_API_KEY")
 
 # ---------------------------------------------------------------------------
 # Logging setup (application's responsibility — the SDK never does this)
@@ -33,8 +34,9 @@ async def main() -> None:
     print("-" * 40)
 
     # Create client — log_level tells the SDK which records to emit
-    client = KaleidoClient.create(
+    client = await KaleidoClient.create(
         base_url=API_URL,
+        api_key=API_KEY,
         log_level=logging.DEBUG,
     )
 

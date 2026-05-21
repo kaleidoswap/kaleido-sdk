@@ -19,6 +19,7 @@ describe('Precision Utilities', () => {
         it('should convert numeric and exact decimal inputs to raw units', () => {
             expect(parseRawAmount(1, 8)).toBe(100000000);
             expect(parseRawAmount(0.5, 8)).toBe(50000000);
+            expect(parseRawAmount(2n, 8)).toBe(200000000);
             expect(parseRawAmount('1', 8)).toBe(100000000);
             expect(parseRawAmount('0.5', 8)).toBe(50000000);
             expect(parseRawAmount('0.00000001', 8)).toBe(1);
@@ -89,6 +90,7 @@ describe('Precision Utilities', () => {
             const handler = new PrecisionHandler(mockAssets);
 
             expect(handler.toRawAmount(1, 'btc')).toBe(100000000);
+            expect(handler.toRawAmount(2n, 'btc')).toBe(200000000);
             expect(handler.toDisplayAmount(100000000, 'btc')).toBe(1);
         });
 

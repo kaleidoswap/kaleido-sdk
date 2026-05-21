@@ -44,6 +44,7 @@ help:
 	@echo "  generate-models            - Generate all models (Python SDK + TypeScript)"
 	@echo "  generate-python-sdk-models - Generate Python SDK Pydantic models"
 	@echo "  generate-ts-types          - Generate TypeScript types"
+	@echo "  generate-versions          - Generate runtime version modules"
 	@echo "  regenerate                 - Full regen: update-specs + generate-models"
 	@echo "  update-specs               - Download latest OpenAPI specs"
 	@echo ""
@@ -76,11 +77,11 @@ TS_GENERATED     := typescript-sdk/src/generated/api-types.ts
 
 build: build-python-sdk build-typescript
 
-build-typescript:
+build-typescript: generate-typescript-version
 	@echo "📦 Building TypeScript SDK..."
 	cd $(TYPESCRIPT_SDK) && pnpm install --frozen-lockfile && pnpm run build
 
-build-python-sdk:
+build-python-sdk: generate-python-version
 	@echo "🐍 Building Python SDK..."
 	cd $(PYTHON_SDK) && uv build
 
@@ -106,11 +107,11 @@ check-format-python:
 	@echo "🔍 Checking Python SDK formatting..."
 	cd $(PYTHON_SDK) && uvx ruff format --check kaleido_sdk tests
 
-check-lint-python:
+check-lint-python: generate-python-version
 	@echo "🔍 Checking Python SDK lint..."
 	cd $(PYTHON_SDK) && uvx ruff check kaleido_sdk tests
 
-typecheck-python:
+typecheck-python: generate-python-version
 	@echo "📝 Type checking Python SDK..."
 	cd $(PYTHON_SDK) && uvx --with . pyright kaleido_sdk
 
@@ -161,7 +162,7 @@ check-lint-typescript: $(TYPESCRIPT_SDK)/node_modules/.modules.yaml
 # ============================================================================
 
 # Force regeneration of all models regardless of timestamps (use for manual runs)
-generate-models: generate-python-sdk-models generate-ts-types
+generate-models: generate-python-sdk-models generate-ts-types generate-versions
 	@echo "✅ All models generated (Python SDK + TypeScript)"
 
 generate-python-sdk-models:
@@ -169,6 +170,15 @@ generate-python-sdk-models:
 
 generate-ts-types:
 	@bash scripts/generate_typescript_types.sh
+
+generate-python-version:
+	@python3 scripts/generate_python_version.py
+
+generate-typescript-version:
+	@node scripts/generate_typescript_version.mjs
+
+generate-versions: generate-python-version generate-typescript-version
+	@echo "✅ Runtime version modules generated"
 
 # File-based targets: Make skips regeneration when spec files are older than outputs.
 # Used exclusively by 'regenerate' — do not call directly.
@@ -180,7 +190,7 @@ $(TS_GENERATED): $(SPECS) scripts/generate_typescript_types.sh
 
 # Smart regenerate: update specs, then only regenerate if specs actually changed.
 # Make compares spec file timestamps against generated outputs and skips if up-to-date.
-regenerate: update-specs $(PYTHON_GENERATED) $(TS_GENERATED)
+regenerate: update-specs $(PYTHON_GENERATED) $(TS_GENERATED) generate-versions
 	@echo "✅ Full regeneration complete!"
 
 update-specs:
@@ -223,10 +233,10 @@ sync-version:
 	@VER="$(VERSION)"; VER="$${VER#v}"; \
 	echo "Updating SDK versions to $$VER"; \
 	perl -i -pe "s/^version = \".*\"/version = \"$$VER\"/" $(PYTHON_SDK)/pyproject.toml; \
-	perl -i -pe "s/^__version__ = \".*\"/__version__ = \"$$VER\"/" $(PYTHON_SDK)/kaleido_sdk/__init__.py; \
-	perl -i -pe "s/^__version__ = \".*\"/__version__ = \"$$VER\"/" $(PYTHON_SDK)/kaleido_sdk/client.py; \
+	python3 scripts/generate_python_version.py; \
 	(cd $(PYTHON_SDK) && uv lock); \
 	perl -i -pe "s/\"version\":\s*\"[^\"]+\"/\"version\": \"$$VER\"/" $(TYPESCRIPT_SDK)/package.json; \
+	node scripts/generate_typescript_version.mjs; \
 	echo "✅ Version synced across SDKs"; \
 	$(MAKE) versions
 

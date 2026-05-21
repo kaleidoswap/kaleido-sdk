@@ -16,8 +16,8 @@ describe('WSClient', () => {
         wsClient = new WSClient({
             url: mockWsUrl,
             maxReconnectAttempts: 3,
-            reconnectDelay: 100,
-            pingInterval: 1000,
+            reconnectDelay: 0.1,
+            pingInterval: 1,
         });
     });
 
@@ -33,6 +33,28 @@ describe('WSClient', () => {
             expect(wsClient.isConnected()).toBe(false);
         });
 
+        it('normalizes WebSocket config delays from seconds to timer milliseconds', () => {
+            const ws = new WSClient({
+                url: mockWsUrl,
+                reconnectDelay: 1.5,
+                pingInterval: 45,
+            }) as unknown as { reconnectDelayMs: number; pingIntervalMs: number };
+
+            expect(ws.reconnectDelayMs).toBe(1500);
+            expect(ws.pingIntervalMs).toBe(45000);
+        });
+
+        it('accepts deprecated WebSocket millisecond delay aliases', () => {
+            const ws = new WSClient({
+                url: mockWsUrl,
+                reconnectDelayMs: 125,
+                pingIntervalMs: 750,
+            }) as unknown as { reconnectDelayMs: number; pingIntervalMs: number };
+
+            expect(ws.reconnectDelayMs).toBe(125);
+            expect(ws.pingIntervalMs).toBe(750);
+        });
+
         it('should preserve a client ID already embedded in the URL', () => {
             expect(wsClient.clientId).toBe('0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe');
         });
@@ -42,6 +64,35 @@ describe('WSClient', () => {
 
             expect(baseWsClient.clientId).toBeDefined();
             expect(baseWsClient.clientId.length).toBeGreaterThan(0);
+        });
+
+        it('uses an explicit userId as the WS client ID (E9 parity)', () => {
+            const ws = new WSClient({
+                url: 'ws://localhost:8000/api/v1/market/ws',
+                userId: 'user_abc_123',
+            });
+
+            expect(ws.clientId).toBe('user_abc_123');
+        });
+
+        it('userId wins over embedded client ID (Batch G / R9, 0.2.0)', () => {
+            const ws = new WSClient({
+                url: 'ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe',
+                userId: 'user_overrides_embedded',
+            });
+
+            // Aligned with the Python SDK: caller-supplied userId is
+            // authoritative and the URL is rebuilt accordingly. Callers
+            // who want the old behaviour should drop the userId config.
+            expect(ws.clientId).toBe('user_overrides_embedded');
+        });
+
+        it('keeps an embedded client ID when no userId is supplied', () => {
+            const ws = new WSClient({
+                url: 'ws://localhost:8000/api/v1/market/ws/0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe',
+            });
+
+            expect(ws.clientId).toBe('0b33b045-4cb8-4e2e-9e2d-bd8c1c8b4abe');
         });
 
         it('should have event emitter methods', () => {

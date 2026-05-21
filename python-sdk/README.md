@@ -23,24 +23,39 @@ The SDK exposes two sub-clients depending on what you need:
 from kaleido_sdk import KaleidoClient
 
 # Zero-config — defaults to regtest
-client = KaleidoClient.create()
+client = await KaleidoClient.create()
 assets = await client.maker.list_assets()
 
 # Maker API only
-client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
+client = await KaleidoClient.create(base_url="https://api.kaleidoswap.com")
 assets = await client.maker.list_assets()
 
 # Node only (base_url still defaults to regtest)
-client = KaleidoClient.create(node_url="http://localhost:3001")
+client = await KaleidoClient.create(node_url="http://localhost:3001")
 info = await client.rln.get_node_info()
 
 # Both together
-client = KaleidoClient.create(
+client = await KaleidoClient.create(
     base_url="https://api.kaleidoswap.com",
     node_url="http://localhost:3001",
 )
 pairs    = await client.maker.list_pairs()
 channels = await client.rln.list_channels()
+```
+
+## Attribution and local development
+
+When `api_key` is configured, the SDK sends Maker attribution headers over HTTPS only.
+HTTP is allowed automatically for local development hosts such as `localhost` and
+`127.0.0.1`. To use a non-local HTTP Maker URL intentionally, pass
+`allow_insecure=True`.
+
+```python
+client = await KaleidoClient.create(
+    base_url="http://dev-maker.internal:8000",
+    api_key="kld_live_c_...",
+    allow_insecure=True,
+)
 ```
 
 ## Documentation

@@ -28,28 +28,51 @@ def second_node_url() -> str:
 @pytest.fixture
 def config(base_url: str) -> KaleidoConfig:
     """Basic SDK configuration."""
-    return KaleidoConfig(base_url=base_url)
+    return KaleidoConfig(
+        base_url=base_url, install_id="inst_test_config", session_id="test-session"
+    )
 
 
 @pytest.fixture
 def config_with_node(base_url: str, node_url: str) -> KaleidoConfig:
     """SDK configuration with node URL."""
-    return KaleidoConfig(base_url=base_url, node_url=node_url)
+    return KaleidoConfig(
+        base_url=base_url,
+        node_url=node_url,
+        install_id="inst_test_config_node",
+        session_id="test-session-node",
+    )
 
 
 @pytest.fixture
 def client(base_url: str) -> KaleidoClient:
     """Basic KaleidoClient instance."""
-    return KaleidoClient.create(base_url=base_url)
+    return KaleidoClient(
+        KaleidoConfig(base_url=base_url, install_id="inst_test_client", session_id="test-session")
+    )
 
 
 @pytest.fixture
 def client_with_node(base_url: str, node_url: str) -> KaleidoClient:
     """KaleidoClient instance with node configured."""
-    return KaleidoClient.create(base_url=base_url, node_url=node_url)
+    return KaleidoClient(
+        KaleidoConfig(
+            base_url=base_url,
+            node_url=node_url,
+            install_id="inst_test_client_node",
+            session_id="test-session-node",
+        )
+    )
 
 
 @pytest.fixture
 def second_client_with_node(base_url: str, second_node_url: str) -> KaleidoClient:
     """KaleidoClient instance with second node configured."""
-    return KaleidoClient.create(base_url=base_url, node_url=second_node_url)
+    return KaleidoClient(
+        KaleidoConfig(
+            base_url=base_url,
+            node_url=second_node_url,
+            install_id="inst_test_second_client_node",
+            session_id="test-session-second-node",
+        )
+    )

@@ -2,6 +2,11 @@
 Utility functions for the Kaleidoswap SDK.
 """
 
+from .asset_pair_mapper import (
+    AssetPairMappedAsset,
+    AssetPairMapper,
+    create_asset_pair_mapper,
+)
 from .precision import (
     MappedAsset,
     OrderSizeLimits,
@@ -20,4 +25,7 @@ __all__ = [
     "MappedAsset",
     "ValidationResult",
     "OrderSizeLimits",
+    "AssetPairMapper",
+    "AssetPairMappedAsset",
+    "create_asset_pair_mapper",
 ]

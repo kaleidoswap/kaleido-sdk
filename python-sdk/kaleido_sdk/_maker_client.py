@@ -9,6 +9,7 @@ Uses HttpClient + Pydantic models directly (no generated attrs client).
 from __future__ import annotations
 
 import asyncio
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -30,6 +31,8 @@ from ._generated.api_types import (
     OrderStatsResponse,
     PairQuoteRequest,
     PairQuoteResponse,
+    PairRoutesRequest,
+    PairRoutesResponse,
     RateDecisionRequest,
     RateDecisionResponse,
     RoutesRequest,
@@ -68,6 +71,14 @@ class SwapCompletionOptions:
     timeout: float = 300.0  # 5 minutes
     poll_interval: float = 2.0  # 2 seconds
     on_status_update: Callable[[str], None] | None = None
+    access_token: str | None = None
+    """
+    Optional access token forwarded to ``SwapOrderStatusRequest``.
+
+    Required for swap orders created on authenticated sessions; the server
+    will silently treat polls without it as anonymous requests and may
+    return a stale or empty order.
+    """
 
 
 class MakerClient:
@@ -425,23 +436,46 @@ class MakerClient:
         )
         return result
 
-    async def get_pair_routes(self, pair_ticker: str) -> list[SwapRoute]:
+    async def get_pair_routes(self, body: PairRoutesRequest | str) -> PairRoutesResponse:
         """
         Get available routes for a trading pair.
 
         Args:
-            pair_ticker: Pair ticker string (e.g. "BTC/USDT")
+            body: Pair route request. Passing a pair ticker string remains
+                accepted as a temporary shorthand for
+                ``PairRoutesRequest(pair_ticker=body)``.
 
         Returns:
-            List of available swap routes for the pair
+            Pair route response from the Maker API
         """
-        data = await self._http.maker_post(
-            "/api/v1/market/pairs/routes",
-            data={"pair_ticker": pair_ticker},
+        if isinstance(body, str):
+            warnings.warn(
+                "Passing a string to get_pair_routes is deprecated and will be removed in "
+                "0.3.0. Pass PairRoutesRequest(pair_ticker=...) instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            request = PairRoutesRequest(pair_ticker=body)
+        else:
+            request = body
+        data = await self._http.maker_post("/api/v1/market/pairs/routes", data=request)
+        return PairRoutesResponse.model_validate(data)
+
+    async def get_pair_routes_by_ticker(self, pair_ticker: str) -> list[SwapRoute]:
+        """
+        Get pair routes by ticker with the legacy list response shape.
+
+        Prefer ``get_pair_routes(PairRoutesRequest(pair_ticker=...))`` when
+        calling the spec-aligned API surface.
+        """
+        warnings.warn(
+            "get_pair_routes_by_ticker is deprecated; use get_pair_routes and read "
+            ".routes directly.",
+            DeprecationWarning,
+            stacklevel=2,
         )
-        if isinstance(data, list):
-            return [SwapRoute.model_validate(r) for r in data]
-        return []
+        response = await self.get_pair_routes(PairRoutesRequest(pair_ticker=pair_ticker))
+        return list(response.routes)
 
     async def get_market_routes(self, body: RoutesRequest) -> RoutesResponse:
         """
@@ -650,10 +684,14 @@ class MakerClient:
             opts.timeout,
         )
 
+        status_request_kwargs: dict[str, str] = {"order_id": order_id}
+        if opts.access_token:
+            status_request_kwargs["access_token"] = opts.access_token
+
         while asyncio.get_event_loop().time() - start_time < opts.timeout:
             try:
                 status_response = await self.get_swap_order_status(
-                    SwapOrderStatusRequest(order_id=order_id)
+                    SwapOrderStatusRequest(**status_request_kwargs)
                 )
                 order = status_response.order
 

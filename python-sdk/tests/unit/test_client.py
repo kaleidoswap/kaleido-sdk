@@ -1,57 +1,45 @@
 """
-Tests for KaleidoClient.
+Tests for ``KaleidoClient`` (constructor, factories, properties) and the
+package-root utility helpers. Larger concerns (HTTP transport, identity,
+WebSocket, RLN methods, public-export surface) live in sibling test files.
 """
-
-from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from kaleido_sdk import (
     KaleidoClient,
     KaleidoConfig,
-    NetworkError,
     NodeNotConfiguredError,
-    TimeoutError,
     ValidationError,
     get_sdk_name,
     get_version,
     parse_raw_amount,
     to_display_amount,
 )
-from kaleido_sdk.rln import (
-    AssetBalanceResponse,
-    AssetSchema,
-    CreateUtxosRequest,
-    DecodeRGBInvoiceRequest,
-    DecodeRGBInvoiceResponse,
-    EmptyResponse,
-    ListAssetsRequest,
-    MakerExecuteRequest,
-    SyncKeychain1,
-    SyncOptions,
-    SyncRequest,
-    SyncStrategy,
-)
 
 
 class TestKaleidoClient:
     """Tests for KaleidoClient."""
 
-    def test_create_basic(self, base_url: str) -> None:
+    async def test_create_basic(self, base_url: str) -> None:
         """Test basic client creation."""
-        client = KaleidoClient.create(base_url=base_url)
+        client = await KaleidoClient.create(base_url=base_url, install_id="inst_test_create_basic")
         assert client is not None
         assert not client.has_node()
 
-    def test_create_with_node(self, base_url: str, node_url: str) -> None:
+    async def test_create_with_node(self, base_url: str, node_url: str) -> None:
         """Test client creation with node URL."""
-        client = KaleidoClient.create(base_url=base_url, node_url=node_url)
+        client = await KaleidoClient.create(
+            base_url=base_url,
+            node_url=node_url,
+            install_id="inst_test_create_node",
+        )
         assert client is not None
         assert client.has_node()
 
-    def test_create_from_config(self, config: KaleidoConfig) -> None:
+    async def test_create_from_config(self, config: KaleidoConfig) -> None:
         """Test client creation from config object."""
-        client = KaleidoClient.from_config(config)
+        client = await KaleidoClient.from_config(config)
         assert client is not None
 
     def test_maker_property(self, client: KaleidoClient) -> None:
@@ -128,233 +116,110 @@ class TestUtilityFunctions:
         assert name == "kaleido-sdk"
 
 
-# =============================================================================
-# Bug-fix regression tests
-# =============================================================================
+class TestHasMaker:
+    """``has_maker()`` returns True when base_url is non-empty."""
+
+    def test_default_create_has_maker(self, client: KaleidoClient) -> None:
+        assert client.has_maker() is True
+
+    def test_empty_base_url_lacks_maker(self) -> None:
+        config = KaleidoConfig(base_url="", install_id="inst_test", session_id="s")
+        client = KaleidoClient(config)
+        assert client.has_maker() is False
 
 
-class TestCreateUtxosFeeRate:
-    """create_utxos must serialize the current generated request shape."""
+class TestCustomLogger:
+    """``KaleidoConfig.logger`` should receive SDK log records via the bridge."""
 
-    async def test_fee_rate_sent_as_int(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = {}
-            await rln.create_utxos(
-                CreateUtxosRequest(up_to=True, num=5, fee_rate=1, skip_sync=False)
-            )
+    async def test_default_log_level_is_silent(self) -> None:
+        captured: list[str] = []
 
-            sent = mock.call_args[0][1]
-            assert isinstance(sent, dict)
-            assert isinstance(sent["fee_rate"], int)
-            assert sent["fee_rate"] == 1
+        class Recorder:
+            def debug(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
 
-    async def test_fee_rate_none_omitted(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = {}
-            await rln.create_utxos(
-                CreateUtxosRequest(up_to=True, num=5, fee_rate=1, skip_sync=False)
-            )
+            def info(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
 
-            sent = mock.call_args[0][1]
-            assert "size" not in sent
-            assert sent["fee_rate"] == 1
-            assert sent["skip_sync"] is False
+            def warning(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
 
-    async def test_fee_rate_whole_number(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = {}
-            await rln.create_utxos(CreateUtxosRequest(up_to=False, fee_rate=4, skip_sync=False))
+            def error(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(msg)
 
-            sent = mock.call_args[0][1]
-            assert sent["fee_rate"] == 4
-            assert isinstance(sent["fee_rate"], int)
-
-
-class TestDecodeRgbInvoiceType:
-    """decode_rgb_invoice must return DecodeRGBInvoiceResponse."""
-
-    async def test_returns_correct_type(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        fake = {
-            "recipient_id": "utxob:abc",
-            "recipient_type": "Witness",
-            "asset_id": "rgb:2dk...",
-            "assignment": {"type": "Any"},
-            "network": "Regtest",
-            "expiration_timestamp": 1700000000,
-            "transport_endpoints": ["rpc://proxy.example.com/json-rpc"],
-        }
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = fake
-            result = await rln.decode_rgb_invoice(DecodeRGBInvoiceRequest(invoice="rgb:..."))
-
-        assert isinstance(result, DecodeRGBInvoiceResponse)
-        assert result.recipient_id == "utxob:abc"
-        assert result.transport_endpoints == ["rpc://proxy.example.com/json-rpc"]
-
-    def test_decode_response_has_no_invoice_field(self) -> None:
-        assert "invoice" not in DecodeRGBInvoiceResponse.model_fields
-
-
-class TestMakerExecuteType:
-    """maker_execute must return EmptyResponse."""
-
-    async def test_returns_empty_response(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        fake = {}
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = fake
-            result = await rln.maker_execute(
-                MakerExecuteRequest(swapstring="s", payment_secret="p", taker_pubkey="t")
-            )
-
-        assert isinstance(result, EmptyResponse)
-
-    def test_type_exported_from_package(self) -> None:
-        from kaleido_sdk.rln import EmptyResponse as Exported
-
-        assert Exported is EmptyResponse
-
-
-class TestSyncRgbWalletRequest:
-    """sync_rgb_wallet must send the regenerated /sync request body."""
-
-    async def test_sends_default_sync_request(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = {}
-            await rln.sync_rgb_wallet()
-
-            path, sent = mock.call_args[0]
-            assert path == "/sync"
-            assert isinstance(sent, SyncRequest)
-            assert sent.model_dump(mode="json") == {
-                "options": {"keychain": "Colored", "strategy": "FastSync"}
-            }
-
-    async def test_accepts_explicit_sync_request(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        request = SyncRequest(
-            options=SyncOptions(
-                keychain=SyncKeychain1(Vanilla={"lookback": 20}),
-                strategy=SyncStrategy.FULL_SCAN,
-            )
+        client = await KaleidoClient.create(
+            base_url="https://api.example.com",
+            install_id="inst_test_silent_logger",
+            logger=Recorder(),
         )
 
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = {}
-            await rln.sync_rgb_wallet(request)
+        from kaleido_sdk._logging import get_logger, set_logger
 
-            assert mock.call_args[0] == ("/sync", request)
+        try:
+            get_logger("test").warning("default should stay silent")
+            assert captured == []
+        finally:
+            set_logger(None)
+            await client.close()
 
+    async def test_logger_receives_info_records(self) -> None:
+        captured: list[tuple[str, str]] = []
 
-class TestListAssetsEnumSerialization:
-    """filter_asset_schemas enums must serialize to string values."""
+        class Recorder:
+            def debug(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("debug", msg))
 
-    def test_json_mode_serializes_enums(self) -> None:
-        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.NIA, AssetSchema.UDA])
-        dumped = req.model_dump(mode="json", exclude_none=True)
-        for v in dumped["filter_asset_schemas"]:
-            assert isinstance(v, str), f"Expected str, got {type(v)}"
+            def info(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("info", msg))
 
-    def test_python_mode_keeps_enum_objects(self) -> None:
-        """Confirm mode='python' (old default) keeps Enum objects -- the original bug."""
-        req = ListAssetsRequest(filter_asset_schemas=[AssetSchema.NIA])
-        dumped = req.model_dump(exclude_none=True)
-        assert isinstance(dumped["filter_asset_schemas"][0], AssetSchema)
+            def warning(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("warning", msg))
 
-    async def test_node_post_serializes_enums(self, client_with_node: KaleidoClient) -> None:
-        """HttpClient.node_post must produce JSON-safe dicts for enum fields."""
-        http = client_with_node.rln._http
-        body = ListAssetsRequest(filter_asset_schemas=[AssetSchema.NIA])
+            def error(self, msg: str, *args: object, **kwargs: object) -> None:
+                captured.append(("error", msg))
 
-        with patch.object(http, "_request", new_callable=AsyncMock) as mock:
-            mock.return_value = {"nia": [], "uda": [], "cfa": []}
-            await http.node_post("/listassets", body)
+        client = await KaleidoClient.create(
+            base_url="https://api.example.com",
+            install_id="inst_test_logger",
+            log_level="DEBUG",
+            logger=Recorder(),
+        )
 
-            json_payload = mock.call_args[1]["json"]
-            assert json_payload["filter_asset_schemas"] == ["Nia"]
+        # Trigger any internal log; using a direct logger call mirrors what
+        # the SDK does internally and avoids needing a live HTTP request.
+        from kaleido_sdk._logging import get_logger
 
+        get_logger("test").info("hello from sdk")
 
-class TestListAssetsIfaParsing:
-    """IFA assets must survive list_assets response normalization."""
+        # Reset the global logger handler so subsequent tests aren't affected.
+        from kaleido_sdk._logging import set_logger as _set_logger
 
-    async def test_list_assets_preserves_ifa_entries(self, client_with_node: KaleidoClient) -> None:
-        rln = client_with_node.rln
-        fake = {
-            "nia": [],
-            "uda": [],
-            "cfa": [],
-            "ifa": [
-                {
-                    "asset_id": "rgb1ifaassetid",
-                    "ticker": "IFA",
-                    "name": "IFA Asset",
-                    "details": None,
-                    "precision": 0,
-                    "initial_supply": 1,
-                    "max_supply": 1,
-                    "known_circulating_supply": 1,
-                    "timestamp": 1700000000,
-                    "added_at": 1700000001,
-                    "balance": {
-                        "settled": 1,
-                        "future": 0,
-                        "spendable": 1,
-                        "offchain_outbound": 0,
-                        "offchain_inbound": 0,
-                    },
-                    "media": None,
-                    "reject_list_url": None,
-                }
-            ],
-        }
+        try:
+            assert any(level == "info" and "hello from sdk" in msg for level, msg in captured), (
+                f"expected info bridge record, got {captured!r}"
+            )
+        finally:
+            _set_logger(None)
+            await client.close()
 
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.return_value = fake
-            result = await rln.list_assets()
+    def test_set_logger_is_idempotent(self) -> None:
+        from kaleido_sdk._logging import (
+            _root,
+            _SdkLoggerHandler,  # type: ignore[attr-defined]
+            set_logger,
+        )
 
-        assert len(result.ifa) == 1
-        assert isinstance(result.ifa[0].balance, AssetBalanceResponse)
-        assert result.ifa[0].__class__.__name__ == "AssetIFA"
-        assert result.ifa[0].ticker == "IFA"
+        class _Noop:
+            def debug(self, *a: object, **k: object) -> None: ...
+            def info(self, *a: object, **k: object) -> None: ...
+            def warning(self, *a: object, **k: object) -> None: ...
+            def error(self, *a: object, **k: object) -> None: ...
 
-
-class TestConnectionErrorHandling:
-    """Connection errors should be wrapped in NetworkError with clear messages."""
-
-    async def test_connection_error_wrapped(self) -> None:
-        """httpx.ConnectError should be wrapped in NetworkError."""
-
-        client = KaleidoClient.create(base_url="http://invalid.nonexistent.domain")
-        with pytest.raises(NetworkError) as exc_info:
-            await client.maker.list_assets()
-
-        assert "Network error" in str(exc_info.value) or "Failed to connect" in str(exc_info.value)
-        assert exc_info.value.code == "NETWORK_ERROR"
-
-    async def test_dns_error_user_friendly(self) -> None:
-        """DNS resolution failure should give user-friendly error."""
-        client = KaleidoClient.create(base_url="http://does-not-exist.local")
-        with pytest.raises(NetworkError) as exc_info:
-            await client.maker.list_assets()
-
-        error_msg = str(exc_info.value)
-        assert "Failed to connect" in error_msg or "Network error" in error_msg
-
-
-class TestUnlockWalletTimeoutHandling:
-    """unlock_wallet should surface a clear hint on timeout."""
-
-    async def test_unlock_timeout_contains_resync_hint(
-        self, client_with_node: KaleidoClient
-    ) -> None:
-        rln = client_with_node.rln
-        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
-            mock.side_effect = TimeoutError("Request timed out")
-
-            with pytest.raises(TimeoutError, match="it may still be syncing"):
-                await rln.unlock_wallet({"password": "secret"})
+        try:
+            set_logger(_Noop())
+            set_logger(_Noop())
+            set_logger(_Noop())
+            bridges = [h for h in _root.handlers if isinstance(h, _SdkLoggerHandler)]
+            assert len(bridges) == 1
+        finally:
+            set_logger(None)

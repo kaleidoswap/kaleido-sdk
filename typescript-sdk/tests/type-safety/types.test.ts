@@ -11,15 +11,21 @@ import type { TradingPairResponseModel, AssetResponseModel } from '../../src/ind
 
 describe('Type Safety', () => {
     describe('Client Types', () => {
-        it('should have properly typed client', () => {
-            const client = KaleidoClient.create({
+        it('should have properly typed client', async () => {
+            const client = await KaleidoClient.create({
                 baseUrl: 'https://api.example.com',
+                nodeUrl: 'https://node.example.com',
+                installId: 'inst_test_types',
             });
 
-            // Type assertions - these will fail at compile time if types are wrong
+            // Type assertions - these will fail at compile time if types are wrong.
+            // ``client.rln`` now throws NodeNotConfiguredError when nodeUrl is
+            // absent (Batch G / G2, 0.2.0), so this test configures both
+            // endpoints to keep exercising both property getters.
             expect(client.maker).toBeDefined();
             expect(client.rln).toBeDefined();
             expect(typeof client.hasNode).toBe('function');
+            expect(typeof client.hasMaker).toBe('function');
         });
     });
 
@@ -58,9 +64,10 @@ describe('Type Safety', () => {
     });
 
     describe('openapi-fetch Type Integration', () => {
-        it('should have type-safe HTTP client', () => {
-            const client = KaleidoClient.create({
+        it('should have type-safe HTTP client', async () => {
+            const client = await KaleidoClient.create({
                 baseUrl: 'https://api.example.com',
+                installId: 'inst_test_http_types',
             });
 
             // Accessing the underlying openapi-fetch clients

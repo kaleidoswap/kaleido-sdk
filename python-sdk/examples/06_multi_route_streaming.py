@@ -12,6 +12,7 @@ import os
 from kaleido_sdk import KaleidoClient, Layer
 
 API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
+API_KEY = os.getenv("KALEIDO_API_KEY")
 WS_URL = os.getenv("KALEIDO_WS_URL", "wss://api.staging.kaleidoswap.com/api/v1/market/ws")
 
 logging.basicConfig(
@@ -63,8 +64,9 @@ async def stream_once(client: KaleidoClient, from_layer: Layer, to_layer: Layer)
 
 async def main() -> None:
     """Main entry point."""
-    client = KaleidoClient.create(
+    client = await KaleidoClient.create(
         base_url=API_URL,
+        api_key=API_KEY,
         log_level=logging.DEBUG,
     )
     ws = client.maker.enable_websocket(WS_URL)

@@ -12,9 +12,10 @@ const TEST_API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
 describe('MakerClient Integration', () => {
     let client: KaleidoClient;
 
-    beforeAll(() => {
-        client = KaleidoClient.create({
+    beforeAll(async () => {
+        client = await KaleidoClient.create({
             baseUrl: TEST_API_URL,
+            installId: 'inst_test_maker_integration',
             timeout: 5,
         });
     });
@@ -70,7 +71,7 @@ describe('MakerClient Integration', () => {
             try {
                 const routes = await client.maker.getPairRoutes({ pair_ticker: 'BTC/USDT' });
                 expect(routes).toBeDefined();
-                expect(Array.isArray(routes)).toBe(true);
+                expect(routes).toHaveProperty('routes');
             } catch (error) {
                 console.warn('Skipping - API not available:', error);
             }

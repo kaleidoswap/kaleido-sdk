@@ -44,10 +44,14 @@ export type PairQuoteRequest = RequestBody<'requestMarketQuote'>;
 export type PairQuoteResponse = ResponseSuccess<'requestMarketQuote'>;
 
 // Routes
-export type RoutesRequest = RequestBody<'getMarketPairRoutes'>;
-export type RoutesResponse = ResponseSuccess<'getMarketPairRoutes'>;
-export type DiscoverRoutesRequest = RequestBody<'discoverMarketRoutes'>;
-export type DiscoverRoutesResponse = ResponseSuccess<'discoverMarketRoutes'>;
+export type PairRoutesRequest = RequestBody<'getMarketPairRoutes'>;
+export type PairRoutesResponse = ResponseSuccess<'getMarketPairRoutes'>;
+export type RoutesRequest = RequestBody<'discoverMarketRoutes'>;
+export type RoutesResponse = ResponseSuccess<'discoverMarketRoutes'>;
+/** @deprecated Use `RoutesRequest`. */
+export type DiscoverRoutesRequest = RoutesRequest;
+/** @deprecated Use `RoutesResponse`. */
+export type DiscoverRoutesResponse = RoutesResponse;
 export type ReachabilityMatrixResponse = ResponseSuccess<'getMarketRouteMatrix'>;
 
 // Swap Orders
@@ -80,6 +84,16 @@ export type EstimateLspFeesRequest = RequestBody<'estimateLspFees'>;
 export type EstimateLspFeesResponse = ResponseSuccess<'estimateLspFees'>;
 export type RateDecisionRequest = RequestBody<'submitLspRateDecision'>;
 export type RateDecisionResponse = ResponseSuccess<'submitLspRateDecision'>;
+
+// ============================================================================
+// Cross-SDK type-name aliases (Batch F)
+// These keep call sites portable: code written against either Python's or
+// TypeScript's historic name still resolves. Prefer the canonical name on
+// each side going forward; aliases are non-deprecated until 0.2.0.
+// ============================================================================
+
+/** Alias of {@link EstimateLspFeesRequest} — matches the Python type name. */
+export type EstimateFeesRequest = EstimateLspFeesRequest;
 
 // ============================================================================
 // Schema types (matching Python SDK exports)

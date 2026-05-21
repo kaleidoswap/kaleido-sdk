@@ -66,4 +66,89 @@ describe('AssetPairMapper', () => {
         expect(mapper.findByTicker('RGBUSDT')?.asset_id).toBe('usdt-canonical');
         expect(mapper.canTrade('btc-canonical', 'usdt-canonical')).toBe(true);
     });
+
+    // ========================================================================
+    // Parity coverage with python-sdk TestAssetPairMapper
+    // ========================================================================
+
+    const buildPairsResponse = (): TradingPairsResponse => ({
+        pairs: [
+            {
+                id: 'pair_btc_usdt',
+                ticker: 'BTC/USDT',
+                base_asset: 'BTC',
+                base_asset_id: 'asset_btc',
+                quote_asset: 'USDT',
+                quote_asset_id: 'asset_usdt',
+                is_active: true,
+                base: {
+                    ticker: 'BTC',
+                    asset_id: 'asset_btc',
+                    name: 'Bitcoin',
+                    precision: 8,
+                    protocol_ids: { native: 'btc' },
+                    endpoints: [
+                        {
+                            layer: 'BTC_LN',
+                            min_amount: 1000,
+                            max_amount: 1_000_000_000,
+                            is_active: true,
+                        },
+                    ],
+                },
+                quote: {
+                    ticker: 'USDT',
+                    asset_id: 'asset_usdt',
+                    name: 'Tether',
+                    precision: 6,
+                    protocol_ids: { rgb: 'usdt-rgb' },
+                    endpoints: [
+                        {
+                            layer: 'RGB_LN',
+                            min_amount: 1,
+                            max_amount: 10_000_000,
+                            is_active: true,
+                        },
+                    ],
+                },
+            },
+        ],
+        total: 1,
+        limit: 100,
+        offset: 0,
+        timestamp: 0,
+    });
+
+    it('findByTicker is case-insensitive and surfaces min/max limits', () => {
+        const mapper = createAssetPairMapper(buildPairsResponse());
+
+        const btc = mapper.findByTicker('btc'); // lower-case input
+        expect(btc).toBeDefined();
+        expect(btc?.asset_id).toBe('asset_btc');
+        expect(btc?.min_order_size).toBe(1000);
+        expect(btc?.max_order_size).toBe(1_000_000_000);
+
+        expect(mapper.findById('asset_usdt')).toBeDefined();
+        expect(mapper.findById('asset_missing')).toBeUndefined();
+    });
+
+    it('canTrade and canTradeByTicker correctly resolve trading partners', () => {
+        const mapper = createAssetPairMapper(buildPairsResponse());
+
+        expect(mapper.canTrade('asset_btc', 'asset_usdt')).toBe(true);
+        expect(mapper.canTrade('asset_btc', 'asset_other')).toBe(false);
+        expect(mapper.canTradeByTicker('BTC', 'USDT')).toBe(true);
+
+        const partners = mapper.getTradingPartners('asset_btc');
+        expect(partners).toHaveLength(1);
+        expect(partners[0].asset_id).toBe('asset_usdt');
+    });
+
+    it('findPairByTickers respects base/quote direction and getActivePairs filters', () => {
+        const mapper = createAssetPairMapper(buildPairsResponse());
+
+        expect(mapper.findPairByTickers('BTC', 'USDT')).toBeDefined();
+        expect(mapper.findPairByTickers('USDT', 'BTC')).toBeUndefined(); // direction matters
+        expect(mapper.getActivePairs()).toHaveLength(1);
+    });
 });

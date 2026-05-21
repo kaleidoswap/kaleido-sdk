@@ -7,7 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes.
+### Added
+
+- Added persistent install IDs and per-client session IDs in both the Python and TypeScript SDKs.
+- Added automatic Maker API attribution headers: `X-Kaleido-Install-Id`, `X-Kaleido-Session-Id`, and `X-Kaleido-SDK`.
+- Added optional `install_id` / `installId` overrides for integrators that manage their own identity storage.
+- Added `allow_insecure` / `allowInsecure` opt-outs for explicitly allowing attribution headers over non-HTTPS Maker URLs. HTTP localhost remains allowed for local development.
+- Added browser `persistInstallId` opt-in for TypeScript. Browser install IDs now default to in-memory storage unless persistence is explicitly requested.
+- Added SDK test coverage for identity generation, install ID overrides, and Maker attribution headers.
+
+### Changed
+
+- Hardened Python install ID file creation to use atomic `0600` creation.
+- Removed TypeScript's silent `Math.random()` fallback for install/session IDs; secure `crypto.getRandomValues` is now required.
+- Aligned route request and response names with the OpenAPI spec: pair routes use `PairRoutesRequest` / `PairRoutesResponse`, and market route discovery uses `RoutesRequest` / `RoutesResponse`.
+- Normalized TypeScript `SwapCompletionOptions` and `WSClientConfig` time configs to seconds to match Python. Deprecated TypeScript `...Ms` aliases keep an explicit millisecond migration path for one transition window.
+- Aligned RLN unspent filters by allowing TypeScript `listUnspents()` callers to pass the generated request body.
+- Added public TypeScript `sessionId` config support, `bigint` display amounts for TypeScript precision parsing, and explicit Python deprecation warnings for pair-route compatibility shims.
+- Defaulted Python SDK logging to effectively silent to match TypeScript's opt-in logging behavior.
+- Updated Python and TypeScript examples and README snippets to use async client creation.
+
+### Breaking Changes
+
+- Changed `KaleidoClient.create()` from synchronous to asynchronous in both SDKs.
+  - Python: use `client = await KaleidoClient.create(...)`.
+  - TypeScript: use `const client = await KaleidoClient.create(...)`.
+- Changed TypeScript `SwapCompletionOptions.timeout` / `pollInterval` and `WSClientConfig.reconnectDelay` / `pingInterval` from milliseconds to seconds. Use the deprecated `timeoutMs`, `pollIntervalMs`, `reconnectDelayMs`, and `pingIntervalMs` aliases during the transition if a TypeScript caller still provides milliseconds.
+- Changed Python `MakerClient.get_pair_routes()` to accept the spec-aligned `PairRoutesRequest` body and return `PairRoutesResponse`. Pair ticker strings remain accepted as a temporary shorthand, and `get_pair_routes_by_ticker()` preserves the old list-returning convenience shape.
+- Changed TypeScript `RoutesRequest` / `RoutesResponse` to represent market route discovery per the OpenAPI spec. Use `PairRoutesRequest` / `PairRoutesResponse` with `getPairRoutes()`; deprecated `DiscoverRoutesRequest` / `DiscoverRoutesResponse` aliases remain for market route discovery.
+- Removed Python's unused `cache_ttl` config field and `KaleidoClient.create(cache_ttl=...)` argument.
 
 ## [0.1.7] - 2026-05-15
 

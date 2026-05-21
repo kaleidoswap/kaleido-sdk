@@ -266,4 +266,28 @@ __all__ = [
     "ListUnspentsResponse",
     "Transfer",
     "ListTransfersResponse",
+    # Cross-SDK type-name aliases (Batch F + B2)
+    "CreateLNInvoiceResponse",
+    "MakerExecuteResponse",
+    "NodeNetworkInfoResponse",
+    "ConnectPeerResponse",
 ]
+
+
+# =============================================================================
+# Cross-SDK type-name aliases (Batch F)
+# These re-export the historical TypeScript names so calling code is portable
+# across SDKs. Aliases are non-deprecated until 0.2.0.
+# =============================================================================
+
+#: Alias of :class:`LNInvoiceResponse` — matches the TypeScript type name.
+CreateLNInvoiceResponse = LNInvoiceResponse
+#: Alias of :class:`EmptyResponse` returned by ``maker_execute`` — matches the TS name.
+MakerExecuteResponse = EmptyResponse
+#: Alias of :class:`EmptyResponse` returned by ``connect_peer`` — matches the TS
+#: name. ``/connectpeer`` returns an empty JSON body per the OpenAPI spec.
+ConnectPeerResponse = EmptyResponse
+#: Alias of the node-side :class:`NetworkInfoResponse` for disambiguation against
+#: the Maker API's identically-named type. ``rln-client.py`` imports it under
+#: this alias internally; this re-export lets call sites use either spelling.
+NodeNetworkInfoResponse = NetworkInfoResponse

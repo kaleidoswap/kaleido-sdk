@@ -9,7 +9,7 @@ Example:
     from kaleido_sdk import KaleidoClient
 
     async def main():
-        client = KaleidoClient.create(
+        client = await KaleidoClient.create(
             base_url="https://api.kaleidoswap.com"
         )
 
@@ -38,7 +38,7 @@ Logging:
             level=logging.DEBUG,
             format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
         )
-        client = ks.KaleidoClient.create(
+        client = await ks.KaleidoClient.create(
             base_url="https://api.kaleidoswap.com",
             log_level=logging.DEBUG,
         )
@@ -54,14 +54,18 @@ Logging:
 from ._maker_client import MakerClient, SwapCompletionOptions
 from ._rln_client import RlnClient
 from ._utils import (
+    AssetPairMappedAsset,
+    AssetPairMapper,
     MappedAsset,
     OrderSizeLimits,
     PrecisionHandler,
     ValidationResult,
+    create_asset_pair_mapper,
     create_precision_handler,
     parse_raw_amount,
     to_display_amount,
 )
+from ._version import __version__
 from ._ws_client import (
     WebSocketMessage,
     WSAction,
@@ -102,8 +106,11 @@ from .types import (
     CreateSwapOrderResponse,
     EstimateFeesRequest,
     EstimateFeesResponse,
+    EstimateLspFeesRequest,
+    EstimateLspFeesResponse,
     # API Types - Quotes & Routes
     Fee,
+    GetLspOrderResponse,
     # API Types - LSP
     # Config
     KaleidoConfig,
@@ -120,6 +127,8 @@ from .types import (
     PaginationMeta,
     PairQuoteRequest,
     PairQuoteResponse,
+    PairRoutesRequest,
+    PairRoutesResponse,
     PaymentBolt11,
     PaymentDetails,
     PaymentOnchain,
@@ -157,7 +166,6 @@ from .types import (
     TradingPairsResponse,
 )
 
-__version__ = "0.1.7"
 __all__ = [
     # Main client
     "KaleidoClient",
@@ -174,6 +182,10 @@ __all__ = [
     "create_precision_handler",
     "ValidationResult",
     "OrderSizeLimits",
+    "AssetPairMapper",
+    "AssetPairMappedAsset",
+    "create_asset_pair_mapper",
+    "__version__",
     # WebSocket
     "WSAction",
     "WSClient",
@@ -220,6 +232,8 @@ __all__ = [
     "RouteStep",
     "PairQuoteRequest",
     "PairQuoteResponse",
+    "PairRoutesRequest",
+    "PairRoutesResponse",
     "RoutesRequest",
     "RoutesResponse",
     "ReachabilityCell",
@@ -259,4 +273,8 @@ __all__ = [
     "OrderRequest",
     "RateDecisionRequest",
     "RateDecisionResponse",
+    # Cross-SDK type-name aliases (Batch F)
+    "EstimateLspFeesRequest",
+    "EstimateLspFeesResponse",
+    "GetLspOrderResponse",
 ]

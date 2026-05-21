@@ -22,13 +22,13 @@
  * import { KaleidoClient, LogLevel } from 'kaleido-sdk';
  *
  * // Built-in stderr output at DEBUG level:
- * const client = KaleidoClient.create({
+ * const client = await KaleidoClient.create({
  *   baseUrl: 'https://api.kaleidoswap.com',
  *   logLevel: LogLevel.DEBUG,
  * });
  *
  * // Plug in your own logger (Winston, Pino, etc.):
- * const client = KaleidoClient.create({
+ * const client = await KaleidoClient.create({
  *   baseUrl: 'https://api.kaleidoswap.com',
  *   logLevel: LogLevel.INFO,
  *   logger: myWinstonLogger,   // must have debug/info/warn/error methods
@@ -238,6 +238,13 @@ export function createLogger(component: string, state: LogState): ComponentLogge
     return new ComponentLogger(component, state);
 }
 
+/**
+ * Mutate one client's log state.
+ *
+ * Python's `apply_log_level(level)` configures the process-global
+ * `kaleido_sdk` logger because it builds on stdlib logging. TypeScript keeps
+ * log state per client, so callers must pass the target `LogState`.
+ */
 export function applyLogLevel(state: LogState, level: LogLevel | LogLevelName): void {
     state.level = _levelNumber(level);
 }
