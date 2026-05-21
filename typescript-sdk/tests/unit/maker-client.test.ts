@@ -597,11 +597,9 @@ describe('MakerClient - Quote Methods', () => {
 
     describe('waitForSwapCompletion accessToken forwarding', () => {
         it('forwards the accessToken into the status poll body', async () => {
-            const spy = vi
-                .spyOn(makerClient, 'getSwapOrderStatus')
-                .mockResolvedValue({
-                    order: { id: 'order_456', status: 'FILLED' },
-                } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>);
+            const spy = vi.spyOn(makerClient, 'getSwapOrderStatus').mockResolvedValue({
+                order: { id: 'order_456', status: 'FILLED' },
+            } as unknown as Awaited<ReturnType<typeof makerClient.getSwapOrderStatus>>);
 
             await makerClient.waitForSwapCompletion('order_456', {
                 accessToken: 'tok_authenticated_user',

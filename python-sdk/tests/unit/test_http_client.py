@@ -75,8 +75,9 @@ class TestHttpRetryBehaviour:
             return httpx.Response(200, json={"ok": True})
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             result = await http.maker_get("/api/v1/lsps1/get_info")
 
@@ -109,8 +110,9 @@ class TestHttpRetryBehaviour:
             return httpx.Response(429, json={"error": "slow down"})
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             with pytest.raises(RateLimitError):
                 await http.maker_get("/api/v1/lsps1/get_info")
@@ -139,8 +141,9 @@ class TestHttpRetryBehaviour:
             return httpx.Response(429, json={"error": "slow down"})
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             with pytest.raises(RateLimitError):
                 await http.maker_get("/api/v1/lsps1/get_info")
@@ -165,8 +168,9 @@ class TestHttpRetryBehaviour:
             return httpx.Response(400, json={"error": "bad request"})
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             with pytest.raises(ValidationError):
                 await http.maker_get("/api/v1/lsps1/get_info")
@@ -191,8 +195,9 @@ class TestHttpRetryBehaviour:
             raise httpx.ConnectError("network refused")
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             with pytest.raises(NetworkError):
                 await http.maker_get("/api/v1/lsps1/get_info")
@@ -218,8 +223,9 @@ class TestHttpRetryBehaviour:
             raise httpx.TimeoutException("slow")
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             with pytest.raises(TimeoutError):
                 await http.maker_get("/api/v1/lsps1/get_info")
@@ -245,8 +251,9 @@ class TestHttpRetryBehaviour:
             raise httpx.ConnectError("boom")
 
         client = await http._get_client()
-        with patch.object(client, "request", side_effect=mock_request), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+        with (
+            patch.object(client, "request", side_effect=mock_request),
+            patch("asyncio.sleep", new_callable=AsyncMock),
         ):
             with pytest.raises(NetworkError):
                 await http.maker_get("/api/v1/lsps1/get_info")

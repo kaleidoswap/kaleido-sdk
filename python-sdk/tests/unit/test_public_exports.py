@@ -24,9 +24,7 @@ class TestAssetPairMapper:
             name="Bitcoin",
             precision=8,
             protocol_ids={"native": "btc"},
-            endpoints=[
-                TradingLimits(layer="BTC_LN", min_amount=1000, max_amount=1_000_000_000)
-            ],
+            endpoints=[TradingLimits(layer="BTC_LN", min_amount=1000, max_amount=1_000_000_000)],
         )
         usdt = TradableAssetResponseModel(
             ticker="USDT",
@@ -49,9 +47,7 @@ class TestAssetPairMapper:
             is_active=True,
         )
 
-        return TradingPairsResponse(
-            pairs=[pair], total=1, limit=100, offset=0, timestamp=0
-        )
+        return TradingPairsResponse(pairs=[pair], total=1, limit=100, offset=0, timestamp=0)
 
     def test_find_by_ticker_and_id(self) -> None:
         from kaleido_sdk import create_asset_pair_mapper

@@ -98,7 +98,6 @@ from .types import (
     BitcoinNetwork,
     ChannelDetails,
     ChannelOrderResponse,
-    GetLspOrderResponse,
     ConfirmSwapRequest,
     ConfirmSwapResponse,
     CreateOrderRequest,
@@ -111,6 +110,7 @@ from .types import (
     EstimateLspFeesResponse,
     # API Types - Quotes & Routes
     Fee,
+    GetLspOrderResponse,
     # API Types - LSP
     # Config
     KaleidoConfig,

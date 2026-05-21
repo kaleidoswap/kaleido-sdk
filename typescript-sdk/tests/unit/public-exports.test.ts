@@ -62,7 +62,6 @@ describe('public utility exports', () => {
         expect(limits.precision).toBe(8);
         expect(pairAsset.name).toBe('Bitcoin');
     });
-
 });
 
 // ============================================================================

@@ -287,9 +287,9 @@ describe('HttpClient', () => {
                     retryBaseDelayMs: 1,
                 });
 
-                await expect(
-                    client.maker.GET('/api/v1/lsps1/get_info'),
-                ).rejects.toThrow(/network refused/);
+                await expect(client.maker.GET('/api/v1/lsps1/get_info')).rejects.toThrow(
+                    /network refused/,
+                );
                 // initial attempt + 2 retries = 3 calls
                 expect(calls).toBe(3);
             } finally {
@@ -317,9 +317,9 @@ describe('HttpClient', () => {
                     retryBaseDelayMs: 1,
                 });
 
-                await expect(
-                    client.maker.GET('/api/v1/lsps1/get_info'),
-                ).rejects.toBeInstanceOf(TimeoutError);
+                await expect(client.maker.GET('/api/v1/lsps1/get_info')).rejects.toBeInstanceOf(
+                    TimeoutError,
+                );
                 // initial attempt + 1 retry
                 expect(calls).toBe(2);
             } finally {

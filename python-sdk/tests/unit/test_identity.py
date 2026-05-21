@@ -184,7 +184,7 @@ class TestInstallIdRaceSafety:
         # And the file on disk is untouched.
         assert target.read_text(encoding="utf-8").strip() == "inst_first_writer"
 
-    def test_sync_helper_respects_existing_file_under_O_EXCL_race(
+    def test_sync_helper_respects_existing_file_under_o_excl_race(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path
     ) -> None:
         """Simulate the FileExistsError branch: O_EXCL fires because another

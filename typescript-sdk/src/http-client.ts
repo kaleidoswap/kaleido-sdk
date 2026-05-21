@@ -192,8 +192,7 @@ function _createFetchWithRetry(
 
                 return response;
             } catch (error) {
-                const timedOut =
-                    perAttemptController.signal.aborted && !upstreamSignal?.aborted;
+                const timedOut = perAttemptController.signal.aborted && !upstreamSignal?.aborted;
                 lastError = timedOut
                     ? new TimeoutError(`Request timeout after ${timeoutMs}ms`)
                     : error;
@@ -229,7 +228,11 @@ export class HttpClient {
 
     constructor(config: HttpClientConfig, logState: LogState = new LogState()) {
         this.config = config;
-        const fetchWithTimeout = _createFetchWithRetry(config.timeout, config.maxRetries ?? 0, config.retryBaseDelayMs);
+        const fetchWithTimeout = _createFetchWithRetry(
+            config.timeout,
+            config.maxRetries ?? 0,
+            config.retryBaseDelayMs,
+        );
         const makerHeaders = this._createMakerHeaders();
 
         if (config.baseUrl) {

@@ -164,17 +164,19 @@ class TestCustomLogger:
         from kaleido_sdk._logging import set_logger as _set_logger
 
         try:
-            assert any(
-                level == "info" and "hello from sdk" in msg
-                for level, msg in captured
-            ), f"expected info bridge record, got {captured!r}"
+            assert any(level == "info" and "hello from sdk" in msg for level, msg in captured), (
+                f"expected info bridge record, got {captured!r}"
+            )
         finally:
             _set_logger(None)
             await client.close()
 
     def test_set_logger_is_idempotent(self) -> None:
-        from kaleido_sdk._logging import _root, set_logger
-        from kaleido_sdk._logging import _SdkLoggerHandler  # type: ignore[attr-defined]
+        from kaleido_sdk._logging import (
+            _root,
+            _SdkLoggerHandler,  # type: ignore[attr-defined]
+            set_logger,
+        )
 
         class _Noop:
             def debug(self, *a: object, **k: object) -> None: ...

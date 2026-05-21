@@ -11,8 +11,6 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from ._logging import SdkLogger
-
 # Re-export all generated API types (from maker.json OpenAPI spec)
 from ._generated.api_types import (
     AssetResponseModel,
@@ -75,6 +73,7 @@ from ._generated.api_types import (
     TradingPairResponseModel,
     TradingPairsResponse,
 )
+from ._logging import SdkLogger
 
 if TYPE_CHECKING:
     pass

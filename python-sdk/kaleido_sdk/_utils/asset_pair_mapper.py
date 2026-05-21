@@ -74,9 +74,7 @@ class AssetPairMapper:
                 precision=pair.base.precision,
                 is_active=pair.is_active,
                 min_order_size=base_endpoint.min_amount if base_endpoint else 0,
-                max_order_size=(
-                    base_endpoint.max_amount if base_endpoint else _MAX_SAFE_INTEGER
-                ),
+                max_order_size=(base_endpoint.max_amount if base_endpoint else _MAX_SAFE_INTEGER),
                 trading_partner=pair.quote.asset_id,
                 protocol_ids=dict(pair.base.protocol_ids or {}),
             )
@@ -88,9 +86,7 @@ class AssetPairMapper:
                 precision=pair.quote.precision,
                 is_active=pair.is_active,
                 min_order_size=quote_endpoint.min_amount if quote_endpoint else 0,
-                max_order_size=(
-                    quote_endpoint.max_amount if quote_endpoint else _MAX_SAFE_INTEGER
-                ),
+                max_order_size=(quote_endpoint.max_amount if quote_endpoint else _MAX_SAFE_INTEGER),
                 trading_partner=pair.base.asset_id,
                 protocol_ids=dict(pair.quote.protocol_ids or {}),
             )
@@ -118,10 +114,7 @@ class AssetPairMapper:
             # take the LARGEST min and the SMALLEST max (matches TS impl).
             if min_order_size > 0 and min_order_size > existing["min_order_size"]:
                 existing["min_order_size"] = min_order_size
-            if (
-                max_order_size < _MAX_SAFE_INTEGER
-                and max_order_size < existing["max_order_size"]
-            ):
+            if max_order_size < _MAX_SAFE_INTEGER and max_order_size < existing["max_order_size"]:
                 existing["max_order_size"] = max_order_size
             return
 
@@ -182,10 +175,7 @@ class AssetPairMapper:
         upper_base = base_ticker.upper()
         upper_quote = quote_ticker.upper()
         for pair in self._pairs:
-            if (
-                pair.base.ticker.upper() == upper_base
-                and pair.quote.ticker.upper() == upper_quote
-            ):
+            if pair.base.ticker.upper() == upper_base and pair.quote.ticker.upper() == upper_quote:
                 return pair
         return None
 

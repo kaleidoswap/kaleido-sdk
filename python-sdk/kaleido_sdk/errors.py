@@ -40,7 +40,10 @@ class KaleidoError(Exception):
         return (
             self.code == "NETWORK_ERROR"
             or self.code == "TIMEOUT_ERROR"
-            or (self.status_code is not None and (self.status_code >= 500 or self.status_code == 429))
+            or (
+                self.status_code is not None
+                and (self.status_code >= 500 or self.status_code == 429)
+            )
         )
 
     def __repr__(self) -> str:
