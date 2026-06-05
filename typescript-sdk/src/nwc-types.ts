@@ -28,7 +28,10 @@ export type NwcRlnMethod =
   | 'rln_decode_rgb_invoice'
   | 'rln_send_asset'
   | 'rln_list_channels'
-  | 'rln_get_address';
+  | 'rln_get_address'
+  | 'rln_decode_ln_invoice'
+  | 'rln_send_btc'
+  | 'rln_list_payments';
 
 export type NwcMethod = NwcStandardMethod | NwcRlnMethod;
 

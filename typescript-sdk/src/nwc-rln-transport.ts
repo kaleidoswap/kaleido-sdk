@@ -25,6 +25,7 @@ type NodeResult = { data?: any; error?: unknown; response?: Response };
 const GET_METHODS: Record<string, NwcRlnMethod> = {
   '/nodeinfo': 'rln_node_info',
   '/listchannels': 'rln_list_channels',
+  '/listpayments': 'rln_list_payments',
 };
 
 const POST_METHODS: Record<string, NwcRlnMethod> = {
@@ -34,6 +35,8 @@ const POST_METHODS: Record<string, NwcRlnMethod> = {
   '/rgbinvoice': 'rln_rgb_invoice',
   '/decodergbinvoice': 'rln_decode_rgb_invoice',
   '/sendrgb': 'rln_send_asset',
+  '/decodelninvoice': 'rln_decode_ln_invoice',
+  '/sendbtc': 'rln_send_btc',
 };
 
 export class NwcRlnNodeClient implements RlnNodeClient {
