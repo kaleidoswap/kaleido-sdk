@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { NWCClient, NwcError, parseNwcUri } from '../../src/nwc-client.js';
+import { NwcRlnNodeClient } from '../../src/nwc-rln-transport.js';
 
 const WALLET_PUBKEY =
   'b889ff5b1513b641e2a139f661a661364979c5beee91842f8f0ef42ab558e9d4';
@@ -77,5 +78,35 @@ describe('NwcError', () => {
     expect(err.name).toBe('NwcError');
     expect(err.code).toBe('QUOTA_EXCEEDED');
     expect(err.message).toBe('over budget');
+  });
+});
+
+describe('NwcRlnNodeClient', () => {
+  // Fake NWCClient that echoes the method + params it was called with.
+  const fakeNwc = {
+    request: async (method: string, params: unknown) => ({ method, params }),
+  } as unknown as NWCClient;
+
+  it('maps GET endpoints to rln_ methods', async () => {
+    const node = new NwcRlnNodeClient(fakeNwc);
+    const res = await node.GET('/nodeinfo');
+    expect(res.error).toBeUndefined();
+    expect(res.data).toEqual({ method: 'rln_node_info', params: {} });
+  });
+
+  it('maps POST endpoints and forwards the body as params', async () => {
+    const node = new NwcRlnNodeClient(fakeNwc);
+    const res = await node.POST('/assetbalance', { body: { asset_id: 'x' } });
+    expect(res.data).toEqual({
+      method: 'rln_asset_balance',
+      params: { asset_id: 'x' },
+    });
+  });
+
+  it('returns an error for unsupported endpoints', async () => {
+    const node = new NwcRlnNodeClient(fakeNwc);
+    const res = await node.GET('/networkinfo');
+    expect(res.data).toBeUndefined();
+    expect(res.error).toMatchObject({ message: expect.stringContaining('not available') });
   });
 });

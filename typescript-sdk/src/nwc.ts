@@ -14,3 +14,6 @@
 
 export { NWCClient, NwcError, parseNwcUri } from './nwc-client.js';
 export * from './nwc-types.js';
+
+// Run the RLN node over NWC (alternative to HTTP `nodeUrl`).
+export { NwcRlnNodeClient, createNwcRlnClient } from './nwc-rln-transport.js';
