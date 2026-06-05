@@ -226,6 +226,50 @@ export class NWCClient {
     return result?.transactions ?? [];
   }
 
+  // --- KaleidoSwap RLN extensions (rln_*) -------------------------------------
+  // Results are the raw rgb-lightning-node responses; typed as `unknown` so
+  // callers can narrow against the RLN API as needed.
+
+  /** Full RLN node info (`/nodeinfo`). */
+  rlnNodeInfo(): Promise<unknown> {
+    return this.request<unknown>('rln_node_info', {});
+  }
+
+  /** List RGB assets (`/listassets`). */
+  rlnListAssets(params: Record<string, unknown> = {}): Promise<unknown> {
+    return this.request<unknown>('rln_list_assets', params);
+  }
+
+  /** RGB asset balance (`/assetbalance`). Requires `{ asset_id }`. */
+  rlnAssetBalance(params: { asset_id: string } & Record<string, unknown>): Promise<unknown> {
+    return this.request<unknown>('rln_asset_balance', params);
+  }
+
+  /** Create an RGB invoice (`/rgbinvoice`). */
+  rlnRgbInvoice(params: Record<string, unknown>): Promise<unknown> {
+    return this.request<unknown>('rln_rgb_invoice', params);
+  }
+
+  /** Decode an RGB invoice (`/decodergbinvoice`). Requires `{ invoice }`. */
+  rlnDecodeRgbInvoice(params: { invoice: string }): Promise<unknown> {
+    return this.request<unknown>('rln_decode_rgb_invoice', params);
+  }
+
+  /** Send RGB assets (`/sendrgb`). */
+  rlnSendAsset(params: Record<string, unknown>): Promise<unknown> {
+    return this.request<unknown>('rln_send_asset', params);
+  }
+
+  /** List Lightning channels (`/listchannels`). */
+  rlnListChannels(): Promise<unknown> {
+    return this.request<unknown>('rln_list_channels', {});
+  }
+
+  /** Get a new on-chain address (`/address`). */
+  rlnGetAddress(): Promise<unknown> {
+    return this.request<unknown>('rln_get_address', {});
+  }
+
   /** Close all relay connections. Call when the client is no longer needed. */
   close(): void {
     this.pool.close(this.relays);

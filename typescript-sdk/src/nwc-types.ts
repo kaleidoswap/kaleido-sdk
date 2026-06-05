@@ -5,7 +5,8 @@
  * millisatoshis, per the spec.
  */
 
-export type NwcMethod =
+/** Standard NIP-47 methods. */
+export type NwcStandardMethod =
   | 'get_info'
   | 'get_balance'
   | 'make_invoice'
@@ -13,6 +14,23 @@ export type NwcMethod =
   | 'pay_keysend'
   | 'lookup_invoice'
   | 'list_transactions';
+
+/**
+ * KaleidoSwap RLN extension methods (namespaced `rln_`). These ride the same
+ * NWC envelope but expose RGB + node features beyond standard NIP-47. Results
+ * are the raw RLN responses (see the rgb-lightning-node API).
+ */
+export type NwcRlnMethod =
+  | 'rln_node_info'
+  | 'rln_list_assets'
+  | 'rln_asset_balance'
+  | 'rln_rgb_invoice'
+  | 'rln_decode_rgb_invoice'
+  | 'rln_send_asset'
+  | 'rln_list_channels'
+  | 'rln_get_address';
+
+export type NwcMethod = NwcStandardMethod | NwcRlnMethod;
 
 /** Standard NIP-47 error codes. */
 export type NwcErrorCode =
