@@ -147,4 +147,10 @@ export interface NwcListTransactionsParams {
 export interface NwcClientOptions {
   /** Per-request timeout in milliseconds (default 60000). */
   timeoutMs?: number;
+  /**
+   * Encryption used for outgoing requests. Default `nip44` (modern). Set to
+   * `nip04` only for legacy wallet services that don't support NIP-44.
+   * Responses are auto-detected regardless of this setting.
+   */
+  encryption?: 'nip44' | 'nip04';
 }

@@ -23,6 +23,7 @@ import {
   finalizeEvent,
   getPublicKey,
   nip04,
+  nip44,
   type Event,
   type Filter,
 } from 'nostr-tools';
@@ -119,6 +120,9 @@ export class NWCClient {
   readonly clientPubkey: string;
   readonly lud16?: string;
   private readonly timeoutMs: number;
+  private readonly encryption: 'nip44' | 'nip04';
+  /** Cached NIP-44 conversation key for this connection. */
+  private readonly convKey: Uint8Array;
 
   constructor(uri: string, options: NwcClientOptions = {}) {
     const info = parseNwcUri(uri);
@@ -128,16 +132,27 @@ export class NWCClient {
     this.clientPubkey = getPublicKey(this.secretBytes);
     this.lud16 = info.lud16;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    this.encryption = options.encryption ?? 'nip44';
+    this.convKey = nip44.getConversationKey(this.secretBytes, this.walletPubkey);
     this.pool = new SimplePool();
+  }
+
+  private encryptContent(plaintext: string): string {
+    return this.encryption === 'nip44'
+      ? nip44.encrypt(plaintext, this.convKey)
+      : nip04.encrypt(this.secretBytes, this.walletPubkey, plaintext);
+  }
+
+  /** Decrypt a response, detecting the scheme (NIP-04 carries a `?iv=` marker). */
+  private decryptContent(payload: string): string {
+    return payload.includes('?iv=')
+      ? nip04.decrypt(this.secretBytes, this.walletPubkey, payload)
+      : nip44.decrypt(payload, this.convKey);
   }
 
   /** Low-level NIP-47 request/response round-trip. */
   async request<T>(method: NwcMethod, params: Record<string, unknown>): Promise<T> {
-    const content = nip04.encrypt(
-      this.secretBytes,
-      this.walletPubkey,
-      JSON.stringify({ method, params })
-    );
+    const content = this.encryptContent(JSON.stringify({ method, params }));
 
     const reqEvent = finalizeEvent(
       {
@@ -164,11 +179,7 @@ export class NWCClient {
           clearTimeout(timer);
           sub.close();
           try {
-            const decrypted = nip04.decrypt(
-              this.secretBytes,
-              this.walletPubkey,
-              event.content
-            );
+            const decrypted = this.decryptContent(event.content);
             const response = JSON.parse(decrypted) as {
               error?: { code: string; message: string } | null;
               result?: T;
