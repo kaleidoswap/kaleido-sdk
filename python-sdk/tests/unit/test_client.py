@@ -24,6 +24,8 @@ from kaleido_sdk.rln import (
     CreateUtxosRequest,
     DecodeRGBInvoiceRequest,
     DecodeRGBInvoiceResponse,
+    DecodeSwapstringRequest,
+    DecodeSwapstringResponse,
     EmptyResponse,
     ListAssetsRequest,
     MakerExecuteRequest,
@@ -197,6 +199,35 @@ class TestDecodeRgbInvoiceType:
 
     def test_decode_response_has_no_invoice_field(self) -> None:
         assert "invoice" not in DecodeRGBInvoiceResponse.model_fields
+
+
+class TestDecodeSwapstring:
+    """decode_swapstring must send the generated request and parse its response."""
+
+    async def test_decodes_string_input(self, client_with_node: KaleidoClient) -> None:
+        rln = client_with_node.rln
+        fake = {
+            "qty_from": 30,
+            "qty_to": 10,
+            "from_asset": None,
+            "to_asset": "rgb:asset",
+            "expiry": 1715896416,
+            "payment_hash": "a" * 64,
+        }
+
+        with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
+            mock.return_value = fake
+            result = await rln.decode_swapstring("30///10/rgb:asset/1715896416/hash")
+
+        path, sent = mock.call_args[0]
+        assert path == "/decodeswapstring"
+        assert isinstance(sent, DecodeSwapstringRequest)
+        assert sent.swapstring == "30///10/rgb:asset/1715896416/hash"
+        assert isinstance(result, DecodeSwapstringResponse)
+        assert result.qty_from == 30
+        assert result.from_asset is None
+        assert result.to_asset == "rgb:asset"
+        assert result.payment_hash == "a" * 64
 
 
 class TestMakerExecuteType:

@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes.
+### Added
+
+- Added Python and TypeScript RLN client methods and public request/response types for decoding swapstrings through `POST /decodeswapstring`.
+- Added unit coverage for swapstring request serialization and decoded response handling in both SDKs.
+
+### Changed
+
+- Updated the bundled RGB Lightning Node OpenAPI spec and generated Python/TypeScript node models to match `kaleidoswap/rgb-lightning-node` version `v0.7.0`.
+- Preserved the Kaleidoswap RLN repository link when refreshing the upstream OpenAPI specification.
 
 ## [0.1.7] - 2026-05-15
 

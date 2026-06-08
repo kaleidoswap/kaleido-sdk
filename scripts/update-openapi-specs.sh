@@ -72,6 +72,11 @@ download_spec() {
     [[ -f "$output" ]] && old_hash=$(shasum "$output" | cut -d' ' -f1)
 
     if curl -fsSL "$url" -o "$output.tmp"; then
+        if [[ "$output" == "$SPECS_DIR/rgb-lightning-node.yaml" ]]; then
+            perl -i -pe \
+                's#https://github\.com/RGB-Tools/rgb-lightning-node#https://github.com/kaleidoswap/rgb-lightning-node#g' \
+                "$output.tmp"
+        fi
         local new_hash; new_hash=$(shasum "$output.tmp" | cut -d' ' -f1)
         if [[ "$old_hash" == "$new_hash" ]]; then
             rm -f "$output.tmp"

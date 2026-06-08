@@ -97,4 +97,28 @@ describe('RlnClient', () => {
 
         expect(post).toHaveBeenCalledWith('/sync', { body: request });
     });
+
+    it('decodes a swapstring and returns the generated response shape', async () => {
+        const response = {
+            qty_from: 30,
+            qty_to: 10,
+            from_asset: null,
+            to_asset: 'rgb:asset',
+            expiry: 1715896416,
+            payment_hash: 'a'.repeat(64),
+        };
+        const post = vi.fn().mockResolvedValue({ data: response });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        const result = await client.decodeSwapstring('30///10/rgb:asset/1715896416/hash');
+
+        expect(post).toHaveBeenCalledWith('/decodeswapstring', {
+            body: { swapstring: '30///10/rgb:asset/1715896416/hash' },
+        });
+        expect(result).toEqual(response);
+    });
 });
