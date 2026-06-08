@@ -567,6 +567,49 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/decodeswapstring': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decode a swapstring
+         * @description Decode the provided swapstring
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    'application/json': components['schemas']['DecodeSwapstringRequest'];
+                };
+            };
+            responses: {
+                /** @description Successful operation */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        'application/json': components['schemas']['DecodeSwapstringResponse'];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/disconnectpeer': {
         parameters: {
             query?: never;
@@ -2754,6 +2797,24 @@ export type components = {
             /** @example 1698325849 */
             expiration_timestamp?: number | null;
             transport_endpoints: string[];
+        };
+        DecodeSwapstringRequest: {
+            /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
+            swapstring: string;
+        };
+        DecodeSwapstringResponse: {
+            /** @example 30 */
+            qty_from: number;
+            /** @example 10 */
+            qty_to: number;
+            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
+            from_asset?: string | null;
+            /** @example rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE */
+            to_asset?: string | null;
+            /** @example 1715896416 */
+            expiry: number;
+            /** @example 9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
+            payment_hash: string;
         };
         DisconnectPeerRequest: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */

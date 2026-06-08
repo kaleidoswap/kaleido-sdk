@@ -182,6 +182,32 @@ class DecodeRGBInvoiceRequest(BaseModel):
     ]
 
 
+class DecodeSwapstringRequest(BaseModel):
+    swapstring: Annotated[
+        str,
+        Field(
+            examples=[
+                "30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+            ]
+        ),
+    ]
+
+
+class DecodeSwapstringResponse(BaseModel):
+    qty_from: Annotated[int, Field(examples=[30])]
+    qty_to: Annotated[int, Field(examples=[10])]
+    from_asset: Annotated[
+        str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
+    ] = None
+    to_asset: Annotated[
+        str | None, Field(examples=["rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE"])
+    ] = None
+    expiry: Annotated[int, Field(examples=[1715896416])]
+    payment_hash: Annotated[
+        str, Field(examples=["9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"])
+    ]
+
+
 class DisconnectPeerRequest(BaseModel):
     peer_pubkey: Annotated[
         str, Field(examples=["03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d"])

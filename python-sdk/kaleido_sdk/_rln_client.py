@@ -31,6 +31,8 @@ from ._generated.node_types import (
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
     DecodeRGBInvoiceResponse,
+    DecodeSwapstringRequest,
+    DecodeSwapstringResponse,
     DisconnectPeerRequest,
     EmptyResponse,
     EstimateFeeRequest,
@@ -630,6 +632,20 @@ class RlnClient:
         """
         data = await self._http.node_post("/decodergbinvoice", body)
         return DecodeRGBInvoiceResponse.model_validate(data)
+
+    async def decode_swapstring(
+        self, body: DecodeSwapstringRequest | str
+    ) -> DecodeSwapstringResponse:
+        """
+        Decode a swapstring.
+
+        Args:
+            body: Request with swapstring, or just the swapstring
+        """
+        if isinstance(body, str):
+            body = DecodeSwapstringRequest(swapstring=body)
+        data = await self._http.node_post("/decodeswapstring", body)
+        return DecodeSwapstringResponse.model_validate(data)
 
     async def get_invoice_status(self, body: InvoiceStatusRequest) -> InvoiceStatusResponse:
         """

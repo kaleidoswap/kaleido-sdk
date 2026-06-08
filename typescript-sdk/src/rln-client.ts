@@ -73,6 +73,8 @@ import type {
     DecodeLNInvoiceResponse,
     DecodeRGBInvoiceRequest,
     DecodeRGBInvoiceResponse,
+    DecodeSwapstringRequest,
+    DecodeSwapstringResponse,
     InvoiceStatusRequest,
     InvoiceStatusResponse,
     SendPaymentRequest,
@@ -424,6 +426,16 @@ export class RlnClient {
     async decodeRgbInvoice(body: DecodeRGBInvoiceRequest): Promise<DecodeRGBInvoiceResponse> {
         this._log.debug('decodeRgbInvoice()');
         return assertResponse(await this.http.node.POST('/decodergbinvoice', { body }));
+    }
+
+    async decodeSwapstring(
+        body: DecodeSwapstringRequest | string,
+    ): Promise<DecodeSwapstringResponse> {
+        this._log.debug('decodeSwapstring()');
+        const requestBody = typeof body === 'string' ? { swapstring: body } : body;
+        return assertResponse(
+            await this.http.node.POST('/decodeswapstring', { body: requestBody }),
+        );
     }
 
     async getInvoiceStatus(body: InvoiceStatusRequest): Promise<InvoiceStatusResponse> {
