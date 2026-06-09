@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Bumped `pytest` from 9.0.2 to 9.0.3 in `/python-sdk`.
 - Updated the bundled RGB Lightning Node OpenAPI spec and generated Python/TypeScript node models to match `kaleidoswap/rgb-lightning-node` version `v0.7.0`.
 - Preserved the Kaleidoswap RLN repository link when refreshing the upstream OpenAPI specification.
 
