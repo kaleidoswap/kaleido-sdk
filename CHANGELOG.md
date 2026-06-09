@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bumped `pytest` from 9.0.2 to 9.0.3 in `/python-sdk`.
 - Bumped `postcss` from 8.5.9 to 8.5.14 in `/typescript-sdk`.
+- Bumped `fast-uri` from 3.1.0 to 3.1.2 in `/typescript-sdk`.
 - Updated the bundled RGB Lightning Node OpenAPI spec and generated Python/TypeScript node models to match `kaleidoswap/rgb-lightning-node` version `v0.7.0`.
 - Preserved the Kaleidoswap RLN repository link when refreshing the upstream OpenAPI specification.
 
