@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Breaking Changes
+
+## [0.1.8] - 2026-06-09
+
+### Added
+
 - Added Python and TypeScript RLN client methods and public request/response types for decoding swapstrings through `POST /decodeswapstring`.
 - Added unit coverage for swapstring request serialization and decoded response handling in both SDKs.
 
