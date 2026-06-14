@@ -1,0 +1,25 @@
+[package]
+name = "kaleido-sdk-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.78"
+license = "MIT OR Apache-2.0"
+description = "Taker SDK core for the KaleidoSwap maker /v2 API + swap protocol"
+repository = "https://github.com/kaleidoswap/kaleido-sdk"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+reqwest = { version = "0.12", default-features = false, features = [
+    "rustls-tls",
+    "json",
+] }
+
+# Crypto (verify/sign/spend) reuses the maker's audited primitives — wired
+# in as those modules land. Path dep for local dev (sibling checkout);
+# swap to a git dep (rev-pinned) for CI. NEVER reimplement these.
+# maker-musig = { path = "../../../kaleidoswap-maker-rs/crates/maker-musig" }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
