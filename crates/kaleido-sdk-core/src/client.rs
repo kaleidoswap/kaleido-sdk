@@ -8,7 +8,10 @@ use serde_json::Value;
 
 use crate::config::Config;
 use crate::error::{Error, Result};
-use crate::types::{NodeInfo, Quote, QuoteRequest, SwapStatus, SwapType};
+use crate::types::{
+    ChainResponse, NodeInfo, Quote, QuoteRequest, ReverseResponse, SubmarineResponse, SwapStatus,
+    SwapType,
+};
 
 /// Async client bound to one maker. Cheap to clone (wraps a pooled
 /// `reqwest::Client`).
@@ -70,21 +73,27 @@ impl MakerClient {
         self.get(&format!("/v2/swap/{id}")).await
     }
 
-    // ── creates (rich responses kept as Value until the swap state
-    //    machines type them) ───────────────────────────────────────────────
+    // ── creates ──────────────────────────────────────────────────────────────
+    //
+    // Responses are typed (the caller MUST pass each to the matching
+    // `verify::verify_*_lockup` before funding). Request bodies stay as
+    // `Value` until the `swap` state machines own taker key generation.
 
-    /// `POST /v2/swap/submarine`.
-    pub async fn create_submarine(&self, body: &Value) -> Result<Value> {
+    /// `POST /v2/swap/submarine`. Verify with
+    /// [`verify::verify_submarine_lockup`](crate::verify::verify_submarine_lockup).
+    pub async fn create_submarine(&self, body: &Value) -> Result<SubmarineResponse> {
         self.post("/v2/swap/submarine", body).await
     }
 
-    /// `POST /v2/swap/reverse`.
-    pub async fn create_reverse(&self, body: &Value) -> Result<Value> {
+    /// `POST /v2/swap/reverse`. Verify with
+    /// [`verify::verify_reverse_lockup`](crate::verify::verify_reverse_lockup).
+    pub async fn create_reverse(&self, body: &Value) -> Result<ReverseResponse> {
         self.post("/v2/swap/reverse", body).await
     }
 
-    /// `POST /v2/swap/chain`.
-    pub async fn create_chain(&self, body: &Value) -> Result<Value> {
+    /// `POST /v2/swap/chain`. Verify with
+    /// [`verify::verify_chain_lockup`](crate::verify::verify_chain_lockup).
+    pub async fn create_chain(&self, body: &Value) -> Result<ChainResponse> {
         self.post("/v2/swap/chain", body).await
     }
 

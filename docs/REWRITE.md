@@ -54,9 +54,14 @@ SDK on every nightly run.
 
 ## Build order
 
-1. **Core foundation** — crate + typed `/v2` client + error/config/types. ← here
+1. **Core foundation** — crate + typed `/v2` client + error/config/types. ✅ done
 2. **verify/** — recompute lockup tree/address per venue (reuse `maker-musig`).
-3. **sign/ + spend/** — MuSig2 coop + unilateral script-path, per venue.
+   ✅ done for **Bitcoin L1 + Liquid** (submarine/reverse/chain); mirrors
+   `maker-swap/src/create.rs`, 6 unit tests incl. tampered-address /
+   wrong-preimage rejection. **Arkade VHTLC verify deferred to #3** (needs
+   live Ark server params via ark-client). ← here
+3. **sign/ + spend/** — MuSig2 coop + unilateral script-path, per venue
+   (incl. wiring ark-client for the Arkade VHTLC + completing Arkade verify).
 4. **swap/** — submarine → reverse → chain state machines tying it together.
 5. **UniFFI → Python**; a `complete_swap()` high-level call; example test script.
 6. **wasm → TypeScript.**
