@@ -16,12 +16,18 @@ reqwest = { version = "0.12", default-features = false, features = [
     "json",
 ] }
 hex = "0.4"
+# Fresh per-session MuSig2 nonces (BIP-327). Pinned to the same major as
+# maker-musig so `OsRng` satisfies its `rand::{RngCore,CryptoRng}` bounds.
+rand = "0.8"
 
 # Crypto (verify/sign/spend) reuses the maker's audited primitives rather
 # than reimplementing consensus-critical code. Path dep for local dev
 # (sibling checkout); swap to a git dep (rev-pinned) for CI. NEVER
-# reimplement these — `verify/` mirrors `maker-swap/src/create.rs` exactly.
+# reimplement these — `verify/` mirrors `maker-swap/src/create.rs` and
+# `sign/` mirrors `maker-api/src/coop.rs` exactly.
 maker-musig = { path = "../../../kaleidoswap-maker-rs/crates/maker-musig" }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+# Schnorr verification of aggregated MuSig2 signatures in `sign` tests.
+bitcoin = "0.32"

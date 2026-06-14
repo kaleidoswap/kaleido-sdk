@@ -62,6 +62,15 @@ SDK on every nightly run.
    live Ark server params via ark-client). ← here
 3. **sign/ + spend/** — MuSig2 coop + unilateral script-path, per venue
    (incl. wiring ark-client for the Arkade VHTLC + completing Arkade verify).
+   - **sign/** ✅ done — Bitcoin cooperative MuSig2 key-path claim/refund
+     (`TakerCoopSession`), mirrors `maker-api/src/coop.rs`; reuses
+     `maker-musig` sessions; 3 tests incl. a full two-party roundtrip whose
+     aggregated sig verifies under the tweaked taproot key. (The maker's
+     coop endpoints are BTC-only by design; Liquid/Arkade settle via
+     `spend`.) ← here
+   - **spend/** ⏳ next — build + sign the actual claim/refund txs
+     (needs an Esplora client to find the lockup UTXO + broadcast), Liquid
+     script-path, and the Arkade VHTLC via **ark-client** (+ Arkade verify).
 4. **swap/** — submarine → reverse → chain state machines tying it together.
 5. **UniFFI → Python**; a `complete_swap()` high-level call; example test script.
 6. **wasm → TypeScript.**

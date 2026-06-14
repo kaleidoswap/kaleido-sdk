@@ -18,18 +18,19 @@
 pub mod client;
 pub mod config;
 pub mod error;
+pub mod sign;
 pub mod types;
 pub mod verify;
 
 // Protocol layers — scaffolded; implemented on top of `maker-musig` next
 // (build order in docs/REWRITE.md).
-pub mod sign;
 pub mod spend;
 pub mod swap;
 
 pub use client::MakerClient;
 pub use config::Config;
 pub use error::{Error, Result};
+pub use sign::{bitcoin_key_path_sighash, CoopKind, TakerCoopSession};
 pub use types::{
     BitcoinNetwork, ChainResponse, LiquidNetwork, NodeInfo, Quote, QuoteRequest, ReverseResponse,
     SubmarineResponse, SwapEvent, SwapStatus, SwapType, Venue,

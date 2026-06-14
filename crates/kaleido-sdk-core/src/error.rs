@@ -31,4 +31,10 @@ pub enum Error {
     /// independently recomputed — refuse the swap (see `verify`).
     #[error("verification failed: {0}")]
     Verification(String),
+
+    /// A cryptographic primitive failed (`sign`/`spend`): bad key material,
+    /// a malformed counterparty nonce/partial, or partial-sig aggregation
+    /// that didn't verify (a misbehaving maker or a sighash mismatch).
+    #[error("crypto: {0}")]
+    Crypto(String),
 }
