@@ -487,7 +487,9 @@ class RlnClient:
         Args:
             body: Optional refresh request
         """
-        await self._http.node_post("/refreshtransfers", body or RefreshRequest(skip_sync=False))
+        await self._http.node_post(
+            "/refreshtransfers", body or RefreshRequest(skip_sync=False, filter=[])
+        )
 
     async def sync_rgb_wallet(self, body: SyncRequest | None = None) -> None:
         """Sync the RGB wallet with the blockchain."""

@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.11] - 2026-06-17
+
+### Fixed
+
+- `refreshTransfers()` / `refresh_transfers()` now send `filter: []` (refresh all pending transfers) in their default body. RLN 0.7.1 made `filter` a required field on `RefreshRequest` (`POST /refreshtransfers`); the previous `{skip_sync}`-only default was rejected with `HTTP 400 "Failed to deserialize the JSON body into the target type"`. Applies to both the TypeScript and Python clients.
+
 ## [0.1.10] - 2026-06-17
 
 ### Fixed
