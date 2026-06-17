@@ -15,6 +15,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.9] - 2026-06-17
+
+### Added
+
+- Added the **NWC (Nostr Wallet Connect, NIP-47) client** as the `kaleido-sdk/nwc` subpath: `NWCClient` with `rln_*` RLN extension methods, an `RlnTransport` seam to run `RlnClient` over an NWC connection, NIP-44 encryption (with NIP-04 fallback), and LN-invoice decode / send-BTC / list-payments mapped over the NWC transport.
+- Added generated RLN models and client methods for `POST /sendrgb`, `POST /inflate`, and `POST /issueassetifa`, plus Inflatable Fungible Asset (IFA) types (e.g. `AssetIFA`).
+
+### Changed
+
+- Updated the bundled RGB Lightning Node OpenAPI spec and regenerated the Python/TypeScript node models to match `kaleidoswap/rgb-lightning-node` `v0.7.1`.
+- `list_unspents()` now sends `settled_only=False` by default.
+
+### Breaking Changes
+
+- `ListUnspentsRequest` now requires a `settled_only` field (RLN 0.7.1). Callers that construct the request directly must pass `settled_only`; RLN 0.7.1 rejects the previous `{skip_sync}`-only body with `HTTP 400 "Failed to deserialize the JSON body into the target type"`.
+- `POST /sendasset` (`SendAssetRequest` / `SendAssetResponse`) was renamed to `POST /sendrgb` (`SendRgbRequest` / `SendRgbResponse`).
+
 ## [0.1.8] - 2026-06-09
 
 ### Added
