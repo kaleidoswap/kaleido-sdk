@@ -3077,6 +3077,8 @@ export type components = {
         };
         ListUnspentsRequest: {
             /** @example false */
+            settled_only: boolean;
+            /** @example false */
             skip_sync: boolean;
         };
         ListUnspentsResponse: {
@@ -3260,10 +3262,20 @@ export type components = {
         };
         /** @enum {string} */
         RecipientType: RecipientType;
+        RefreshFilter: {
+            status: components['schemas']['RefreshTransferStatus'];
+            incoming: boolean;
+        };
         RefreshRequest: {
+            /** @example rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd */
+            asset_id?: string | null;
+            /** @example [] */
+            filter: components['schemas']['RefreshFilter'][];
             /** @example false */
             skip_sync: boolean;
         };
+        /** @enum {string} */
+        RefreshTransferStatus: RefreshTransferStatus;
         RestoreRequest: {
             /** @example /path/to/the/backup/file */
             backup_path: string;
@@ -3286,8 +3298,9 @@ export type components = {
             min_confirmations: number;
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id?: string | null;
+            /** @example null */
             assignment?: components['schemas']['Assignment'] | null;
-            /** @example 1695811760 */
+            /** @example null */
             expiration_timestamp?: number | null;
             /** @example false */
             witness: boolean;
@@ -3349,7 +3362,7 @@ export type components = {
             fee_rate: number;
             /** @example 1 */
             min_confirmations: number;
-            /** @example 1695811760 */
+            /** @example null */
             expiration_timestamp?: number | null;
             /**
              * @example {
@@ -3357,7 +3370,8 @@ export type components = {
              *         {
              *           "recipient_id": "utxob:2FjRqgQ-eEWCVHY5-zmpFtYzT-gGm3MdR-sTnxNcS-7RtUbY9-4NYuuh",
              *           "assignment": {
-             *             "Fungible": 400
+             *             "type": "Fungible",
+             *             "value": 400
              *           },
              *           "transport_endpoints": [
              *             "rpc://127.0.0.1:3000/json-rpc"
@@ -3366,7 +3380,8 @@ export type components = {
              *         {
              *           "recipient_id": "utxob:3GkRrhR-fFXDLIZ6-0anqGuzU-hHn4NeS-tUoyOdT-8SuVcZ0-5OZvvi",
              *           "assignment": {
-             *             "Fungible": 200
+             *             "type": "Fungible",
+             *             "value": 200
              *           },
              *           "transport_endpoints": [
              *             "rpc://127.0.0.1:3000/json-rpc"
@@ -3377,7 +3392,8 @@ export type components = {
              *         {
              *           "recipient_id": "utxob:4HlSsiS-gGYEMKA7-1borHvaV-iIo5OfT-uVpzPeU-9TvWdA1-6PAwwj",
              *           "assignment": {
-             *             "Fungible": 100
+             *             "type": "Fungible",
+             *             "value": 100
              *           },
              *           "transport_endpoints": [
              *             "rpc://127.0.0.1:3000/json-rpc"
@@ -3662,6 +3678,10 @@ export enum InvoiceStatus {
 export enum RecipientType {
     Blind = 'Blind',
     Witness = 'Witness',
+}
+export enum RefreshTransferStatus {
+    WaitingCounterparty = 'WaitingCounterparty',
+    WaitingConfirmations = 'WaitingConfirmations',
 }
 export enum SwapStatus {
     Waiting = 'Waiting',
