@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.10] - 2026-06-17
+
+### Fixed
+
+- **TypeScript** `listUnspents()` now sends `settled_only: false` by default, matching the Python client and RLN 0.7.1's required `ListUnspentsRequest` shape. In 0.1.9 the TS convenience method still sent the `{skip_sync}`-only body and was rejected by RLN 0.7.1 with `HTTP 400 "Failed to deserialize the JSON body into the target type"`.
+
 ## [0.1.9] - 2026-06-17
 
 ### Added

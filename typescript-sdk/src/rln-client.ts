@@ -238,7 +238,9 @@ export class RlnClient {
     async listUnspents(): Promise<ListUnspentsResponse> {
         this._log.debug('listUnspents()');
         return assertResponse(
-            await this.node.POST('/listunspents', { body: { skip_sync: false } }),
+            await this.node.POST('/listunspents', {
+                body: { skip_sync: false, settled_only: false },
+            }),
         );
     }
 
