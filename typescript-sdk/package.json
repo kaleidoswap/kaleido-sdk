@@ -35,6 +35,12 @@
             "types": "./dist/rln.d.ts",
             "default": "./dist/rln.js"
         },
+        "./nwc": {
+            "import": "./dist/nwc.js",
+            "require": "./dist/nwc.js",
+            "types": "./dist/nwc.d.ts",
+            "default": "./dist/nwc.js"
+        },
         "./generated/api-types": {
             "import": "./dist/generated/api-types.js",
             "require": "./dist/generated/api-types.js",
@@ -80,6 +86,7 @@
         "node": ">=18.0.0"
     },
     "dependencies": {
+        "nostr-tools": "^2.23.5",
         "openapi-fetch": "^0.15.2"
     },
     "pnpm": {
