@@ -433,6 +433,7 @@ class ListTransfersRequest(BaseModel):
 
 
 class ListUnspentsRequest(BaseModel):
+    settled_only: Annotated[bool, Field(examples=[False])]
     skip_sync: Annotated[bool, Field(examples=[False])]
 
 
@@ -634,8 +635,9 @@ class RecipientType(StrEnum):
     WITNESS = "Witness"
 
 
-class RefreshRequest(BaseModel):
-    skip_sync: Annotated[bool, Field(examples=[False])]
+class RefreshTransferStatus(StrEnum):
+    WAITING_COUNTERPARTY = "WaitingCounterparty"
+    WAITING_CONFIRMATIONS = "WaitingConfirmations"
 
 
 class RestoreRequest(BaseModel):
@@ -1055,6 +1057,19 @@ class Recipient(BaseModel):
     transport_endpoints: list[str]
 
 
+class RefreshFilter(BaseModel):
+    status: RefreshTransferStatus
+    incoming: bool
+
+
+class RefreshRequest(BaseModel):
+    asset_id: Annotated[
+        str | None, Field(examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zd"])
+    ] = None
+    filter: Annotated[list[RefreshFilter], Field(examples=[[]])]
+    skip_sync: Annotated[bool, Field(examples=[False])]
+
+
 class RgbAllocation(BaseModel):
     asset_id: Annotated[
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
@@ -1071,10 +1086,15 @@ class RgbInvoiceRequest(BaseModel):
     asset_id: Annotated[
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
     ] = None
-    assignment: (
-        AssignmentFungible | AssignmentNonFungible | AssignmentInflationRight | AssignmentAny | None
-    ) = None
-    expiration_timestamp: Annotated[int | None, Field(examples=[1695811760])] = None
+    assignment: Annotated[
+        AssignmentFungible
+        | AssignmentNonFungible
+        | AssignmentInflationRight
+        | AssignmentAny
+        | None,
+        Field(examples=[None]),
+    ] = None
+    expiration_timestamp: Annotated[int | None, Field(examples=[None])] = None
     witness: Annotated[bool, Field(examples=[False])]
 
 
@@ -1082,7 +1102,7 @@ class SendRgbRequest(BaseModel):
     donation: Annotated[bool, Field(examples=[False])]
     fee_rate: Annotated[int, Field(examples=[5])]
     min_confirmations: Annotated[int, Field(examples=[1])]
-    expiration_timestamp: Annotated[int | None, Field(examples=[1695811760])] = None
+    expiration_timestamp: Annotated[int | None, Field(examples=[None])] = None
     recipient_map: Annotated[
         dict[str, list[Recipient]],
         Field(
@@ -1091,19 +1111,19 @@ class SendRgbRequest(BaseModel):
                     "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8": [
                         {
                             "recipient_id": "utxob:2FjRqgQ-eEWCVHY5-zmpFtYzT-gGm3MdR-sTnxNcS-7RtUbY9-4NYuuh",
-                            "assignment": {"Fungible": 400},
+                            "assignment": {"type": "Fungible", "value": 400},
                             "transport_endpoints": ["rpc://127.0.0.1:3000/json-rpc"],
                         },
                         {
                             "recipient_id": "utxob:3GkRrhR-fFXDLIZ6-0anqGuzU-hHn4NeS-tUoyOdT-8SuVcZ0-5OZvvi",
-                            "assignment": {"Fungible": 200},
+                            "assignment": {"type": "Fungible", "value": 200},
                             "transport_endpoints": ["rpc://127.0.0.1:3000/json-rpc"],
                         },
                     ],
                     "rgb:d8qDVS5X-ICVG2uM-CPr3yO4-lfBhgjt-7FN1EPE-ApY1LcM": [
                         {
                             "recipient_id": "utxob:4HlSsiS-gGYEMKA7-1borHvaV-iIo5OfT-uVpzPeU-9TvWdA1-6PAwwj",
-                            "assignment": {"Fungible": 100},
+                            "assignment": {"type": "Fungible", "value": 100},
                             "transport_endpoints": ["rpc://127.0.0.1:3000/json-rpc"],
                         }
                     ],

@@ -282,7 +282,8 @@ class RlnClient:
             body: Optional request with skip_sync flag
         """
         data = await self._http.node_post(
-            "/listunspents", body or ListUnspentsRequest(skip_sync=False)
+            "/listunspents",
+            body or ListUnspentsRequest(skip_sync=False, settled_only=False),
         )
         return ListUnspentsResponse.model_validate(data)
 
