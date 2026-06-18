@@ -23,54 +23,54 @@ type NodeResult = { data?: any; error?: unknown; response?: Response };
 
 /** RLN endpoints reachable over NWC, mapped to their `rln_*` method. */
 const GET_METHODS: Record<string, NwcRlnMethod> = {
-  '/nodeinfo': 'rln_node_info',
-  '/listchannels': 'rln_list_channels',
-  '/listpayments': 'rln_list_payments',
+    '/nodeinfo': 'rln_node_info',
+    '/listchannels': 'rln_list_channels',
+    '/listpayments': 'rln_list_payments',
 };
 
 const POST_METHODS: Record<string, NwcRlnMethod> = {
-  '/address': 'rln_get_address',
-  '/listassets': 'rln_list_assets',
-  '/assetbalance': 'rln_asset_balance',
-  '/rgbinvoice': 'rln_rgb_invoice',
-  '/decodergbinvoice': 'rln_decode_rgb_invoice',
-  '/sendrgb': 'rln_send_asset',
-  '/decodelninvoice': 'rln_decode_ln_invoice',
-  '/sendbtc': 'rln_send_btc',
+    '/address': 'rln_get_address',
+    '/listassets': 'rln_list_assets',
+    '/assetbalance': 'rln_asset_balance',
+    '/rgbinvoice': 'rln_rgb_invoice',
+    '/decodergbinvoice': 'rln_decode_rgb_invoice',
+    '/sendrgb': 'rln_send_asset',
+    '/decodelninvoice': 'rln_decode_ln_invoice',
+    '/sendbtc': 'rln_send_btc',
 };
 
 export class NwcRlnNodeClient implements RlnNodeClient {
-  constructor(private readonly nwc: NWCClient) {}
+    constructor(private readonly nwc: NWCClient) {}
 
-  GET(path: string): Promise<NodeResult> {
-    return this.call(GET_METHODS[path], path, undefined);
-  }
-
-  POST(path: string, init?: { body?: unknown }): Promise<NodeResult> {
-    return this.call(POST_METHODS[path], path, init?.body);
-  }
-
-  private async call(
-    method: NwcRlnMethod | undefined,
-    path: string,
-    body: unknown
-  ): Promise<NodeResult> {
-    if (!method) {
-      return {
-        error: {
-          message: `RLN endpoint '${path}' is not available over the NWC transport`,
-        },
-      };
+    GET(path: string): Promise<NodeResult> {
+        return this.call(GET_METHODS[path], path, undefined);
     }
-    try {
-      const params =
-        body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
-      const data = await this.nwc.request<any>(method, params);
-      return { data };
-    } catch (err) {
-      return { error: err instanceof Error ? { message: err.message } : err };
+
+    POST(path: string, init?: { body?: unknown }): Promise<NodeResult> {
+        return this.call(POST_METHODS[path], path, init?.body);
     }
-  }
+
+    private async call(
+        method: NwcRlnMethod | undefined,
+        path: string,
+        body: unknown,
+    ): Promise<NodeResult> {
+        if (!method) {
+            return {
+                error: {
+                    message: `RLN endpoint '${path}' is not available over the NWC transport`,
+                },
+            };
+        }
+        try {
+            const params =
+                body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+            const data = await this.nwc.request<any>(method, params);
+            return { data };
+        } catch (err) {
+            return { error: err instanceof Error ? { message: err.message } : err };
+        }
+    }
 }
 
 /**
@@ -83,9 +83,6 @@ export class NwcRlnNodeClient implements RlnNodeClient {
  * const info = await rln.getNodeInfo();
  * const assets = await rln.listAssets();
  */
-export function createNwcRlnClient(
-  nwc: NWCClient,
-  logState: LogState = new LogState()
-): RlnClient {
-  return new RlnClient(new HttpClient({}), logState, new NwcRlnNodeClient(nwc));
+export function createNwcRlnClient(nwc: NWCClient, logState: LogState = new LogState()): RlnClient {
+    return new RlnClient(new HttpClient({}), logState, new NwcRlnNodeClient(nwc));
 }

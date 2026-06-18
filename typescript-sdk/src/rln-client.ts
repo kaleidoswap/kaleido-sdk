@@ -119,11 +119,7 @@ export class RlnClient {
     private readonly _log: ComponentLogger;
     private readonly _nodeOverride?: RlnNodeClient;
 
-    constructor(
-        http: HttpClient,
-        logState: LogState = new LogState(),
-        nodeClient?: RlnNodeClient,
-    ) {
+    constructor(http: HttpClient, logState: LogState = new LogState(), nodeClient?: RlnNodeClient) {
         this.http = http;
         this._log = createLogger('rln', logState);
         this._nodeOverride = nodeClient;
