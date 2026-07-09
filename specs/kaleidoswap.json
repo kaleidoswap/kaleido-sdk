@@ -3,7 +3,7 @@
   "info": {
     "title": "Kaleidoswap RGB-LSP API",
     "summary": "Public KaleidoSwap Maker API contract",
-    "description": "Public Maker API for KaleidoSwap market data, quotes, swap orders, and RGB LSPS1\nchannel operations.\n\nPublic Maker endpoints are unauthenticated today. Admin and wallet-management\nroutes remain private and are intentionally excluded from this contract.\n\nUse the per-order `access_token` returned by LSPS1 and swap-order creation flows\nwhen polling protected order status endpoints or submitting a rate decision after\nthe maker requests client confirmation.",
+    "description": "Public Maker API for KaleidoSwap market data, quotes, atomic swaps, and RGB LSPS1\nchannel operations.\n\nMaker endpoints support Bearer API-key authentication. During rollout,\ndeployments may accept anonymous requests while attribution is collected; once\nAPI-key enforcement is enabled, requests without a valid `kld_...` key return\n`401`.\n\nUse the per-order `access_token` returned by LSPS1 channel-order creation when\npolling protected order status endpoints or submitting a rate decision after the\nmaker requests client confirmation.",
     "version": "0.2.0",
     "termsOfService": "https://kaleidoswap.com/terms",
     "contact": {
@@ -20,9 +20,9 @@
       "documentation": "https://docs.kaleidoswap.com/api-reference/introduction"
     },
     "x-build-info": {
-      "version": "v0.4.3",
-      "commit": "0ed3137fa9423c03a3fa152d5770d1580ac53f6d",
-      "buildDate": "2026-04-03T10:27:48.860603+00:00"
+      "version": "v0.5.0",
+      "commit": "816ebe9ebff363fa4eab4bdee2ed001134a28006",
+      "buildDate": "2026-06-18T12:33:38.731704+00:00"
     }
   },
   "paths": {
@@ -42,6 +42,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LspInfoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -109,7 +122,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/lsps1/network_info": {
@@ -127,6 +145,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NetworkInfoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -184,7 +215,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/lsps1/create_order": {
@@ -268,6 +304,19 @@
                   "client_asset_amount": 2500,
                   "rfq_id": "8e6635fb-ab37-4aed-89f4-bc9c98fb8b49",
                   "access_token": "ord_live_3rCkP9dG7mN4"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -383,7 +432,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/lsps1/estimate_fees": {
@@ -425,6 +479,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EstimateFeesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -524,7 +591,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/lsps1/get_order": {
@@ -561,6 +633,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChannelOrderResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -659,7 +744,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/lsps1/rate_decision": {
@@ -702,6 +792,19 @@
                   "order_id": "550e8400-e29b-41d4-a716-446655440000",
                   "decision_accepted": true,
                   "message": "Rate accepted. Order will proceed with current market rate."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -812,7 +915,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/swaps/nodeinfo": {
@@ -830,6 +938,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SwapNodeInfoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -868,7 +989,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/swaps/init": {
@@ -913,6 +1039,19 @@
                 "example": {
                   "swapstring": "1500000/BTC/875000/rgb:2NZGjyz-pJePUgegh-RLHbpx1Hy-iZMagWiZZ-qY4AxGymW-yCEYwwB/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2",
                   "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -1005,7 +1144,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/swaps/execute": {
@@ -1048,6 +1192,19 @@
                 "example": {
                   "status": 200,
                   "message": "Swap executed successfully."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -1140,7 +1297,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/swaps/atomic/status": {
@@ -1177,6 +1339,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SwapStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -1285,7 +1460,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/market/assets": {
@@ -1444,6 +1624,19 @@
               }
             }
           },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Too many requests. Respect the rate-limit headers before retrying.",
             "content": {
@@ -1532,7 +1725,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/market/pairs": {
@@ -1739,6 +1937,19 @@
               }
             }
           },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Too many requests. Respect the rate-limit headers before retrying.",
             "content": {
@@ -1808,7 +2019,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/market/pairs/routes": {
@@ -1836,6 +2052,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PairRoutesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -1925,7 +2154,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/market/routes": {
@@ -1953,6 +2187,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RoutesResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -2013,7 +2260,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/market/routes/matrix": {
@@ -2031,6 +2283,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReachabilityMatrixResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
+                },
+                "example": {
+                  "error": "missing_api_key"
                 }
               }
             }
@@ -2069,7 +2334,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     },
     "/api/v1/market/quote": {
@@ -2078,7 +2348,7 @@
           "market"
         ],
         "summary": "Request market quote",
-        "description": "Request an RFQ-backed quote for a route between two asset legs. A successful response returns an `rfq_id` that can be consumed by swap-init or swap-order creation flows until the quote expires.",
+        "description": "Request an RFQ-backed quote for a route between two asset legs. A successful response returns an `rfq_id` that can be consumed by atomic swap initiation until the quote expires.",
         "operationId": "requestMarketQuote",
         "parameters": [],
         "requestBody": {
@@ -2144,6 +2414,19 @@
                   },
                   "timestamp": 1715896356,
                   "expires_at": 1715896416
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer API key.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "missing_api_key"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyAuthErrorResponse"
                 }
               }
             }
@@ -2249,12 +2532,35 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "KaleidoApiKey": []
+          }
+        ]
       }
     }
   },
   "components": {
     "schemas": {
+      "ApiKeyAuthErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "description": "API-key authentication error code",
+            "examples": [
+              "missing_api_key",
+              "invalid_api_key"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ApiKeyAuthErrorResponse"
+      },
       "AssetResponseModel": {
         "properties": {
           "ticker": {
@@ -2498,6 +2804,7 @@
           "Testnet",
           "Testnet4",
           "Signet",
+          "SignetCustom",
           "Regtest"
         ],
         "title": "BitcoinNetwork"
@@ -2895,7 +3202,8 @@
           "email": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "format": "email"
               },
               {
                 "type": "null"
@@ -3462,57 +3770,6 @@
         ],
         "title": "OrderState"
       },
-      "PaginationMeta": {
-        "properties": {
-          "total": {
-            "type": "integer",
-            "title": "Total",
-            "description": "Total number of items matching the filter"
-          },
-          "limit": {
-            "type": "integer",
-            "title": "Limit",
-            "description": "Number of items per page"
-          },
-          "skip": {
-            "type": "integer",
-            "title": "Skip",
-            "description": "Number of items skipped"
-          },
-          "current_page": {
-            "type": "integer",
-            "title": "Current Page",
-            "description": "Current page number (1-indexed)"
-          },
-          "total_pages": {
-            "type": "integer",
-            "title": "Total Pages",
-            "description": "Total number of pages"
-          },
-          "has_next": {
-            "type": "boolean",
-            "title": "Has Next",
-            "description": "Whether there is a next page"
-          },
-          "has_previous": {
-            "type": "boolean",
-            "title": "Has Previous",
-            "description": "Whether there is a previous page"
-          }
-        },
-        "type": "object",
-        "required": [
-          "total",
-          "limit",
-          "skip",
-          "current_page",
-          "total_pages",
-          "has_next",
-          "has_previous"
-        ],
-        "title": "PaginationMeta",
-        "description": "Pagination metadata"
-      },
       "PairQuoteRequest": {
         "properties": {
           "from_asset": {
@@ -3832,17 +4089,6 @@
         ],
         "title": "PaymentState"
       },
-      "PaymentStatus": {
-        "type": "string",
-        "enum": [
-          "NOT_PAID",
-          "UNDERPAID",
-          "PAID",
-          "OVERPAID"
-        ],
-        "title": "PaymentStatus",
-        "description": "Payment status for onchain payments with support for partial payments."
-      },
       "RateDecisionRequest": {
         "properties": {
           "order_id": {
@@ -3979,45 +4225,6 @@
         ],
         "title": "ReachabilityMatrixResponse",
         "description": "Full reachability matrix response."
-      },
-      "ReceiverAddress": {
-        "properties": {
-          "address": {
-            "type": "string",
-            "title": "Address",
-            "description": "The actual address, invoice, or token string"
-          },
-          "format": {
-            "$ref": "#/components/schemas/ReceiverAddressFormat",
-            "description": "Format of the receiver address"
-          }
-        },
-        "type": "object",
-        "required": [
-          "address",
-          "format"
-        ],
-        "title": "ReceiverAddress",
-        "description": "Receiver address or invoice with its format.\n\nEncapsulates the destination for receiving funds along with\nmetadata about what format it uses."
-      },
-      "ReceiverAddressFormat": {
-        "type": "string",
-        "enum": [
-          "BTC_ADDRESS",
-          "BOLT11",
-          "BOLT12",
-          "LN_ADDRESS",
-          "RGB_INVOICE",
-          "LIQUID_ADDRESS",
-          "LIQUID_INVOICE",
-          "SPARK_ADDRESS",
-          "SPARK_INVOICE",
-          "ARKADE_ADDRESS",
-          "ARKADE_INVOICE",
-          "CASHU_TOKEN"
-        ],
-        "title": "ReceiverAddressFormat",
-        "description": "Supported receiver address and invoice formats.\n\nDifferent networks and protocols use different address/invoice formats\nfor receiving payments."
       },
       "RouteStep": {
         "properties": {
@@ -4485,6 +4692,18 @@
             "examples": [
               "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
             ]
+          },
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token",
+            "description": "Per-swap token required to poll /swaps/atomic/status. Returned only once here at initiation — store it alongside the payment hash."
           }
         },
         "type": "object",
@@ -4534,6 +4753,12 @@
             "examples": [
               "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
             ]
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "Per-swap access token returned by /swaps/init.",
+            "default": ""
           }
         },
         "type": "object",
@@ -4542,6 +4767,7 @@
         ],
         "title": "SwapStatusRequest",
         "example": {
+          "access_token": "ord_live_3rCkP9dG7mN4",
           "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
         }
       },
@@ -4867,21 +5093,17 @@
         ],
         "title": "ValidationErrorDetail"
       }
+    },
+    "securitySchemes": {
+      "KaleidoApiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Kaleido API key",
+        "description": "Pass a Kaleido API key such as `kld_live_c_...`."
+      }
     }
   },
   "servers": [
-    {
-      "url": "https://api.signet.kaleidoswap.com",
-      "description": "Signet"
-    },
-    {
-      "url": "https://api.regtest.kaleidoswap.com",
-      "description": "Regtest"
-    },
-    {
-      "url": "https://api.staging.kaleidoswap.com",
-      "description": "Staging"
-    },
     {
       "url": "http://localhost:8000",
       "description": "Local development"
@@ -4899,10 +5121,6 @@
     {
       "name": "swaps",
       "description": "Atomic swap APIs used by direct RLN integrations to initialize, execute, and track swaps."
-    },
-    {
-      "name": "swap-orders",
-      "description": "Order-based swap APIs for web and service integrations that do not manage the atomic swap protocol directly."
     }
   ]
 }

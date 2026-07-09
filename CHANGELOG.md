@@ -15,11 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.13] - 2026-07-09
+
+### Fixed
+
+- Completes the 0.1.12 release, which published to **npm only** (the PyPI job failed on a spec/model mismatch). Synced the committed OpenAPI spec (`specs/kaleidoswap.json`) to upstream `kaleidoswap/specs` and regenerated the models, dropping four schemas left orphaned once the order flow was removed — `ReceiverAddress`, `ReceiverAddressFormat`, `PaymentStatus`, `PaginationMeta` — plus their hand-written re-exports. No functional API change versus 0.1.12; the removed swap-order surface stays removed.
+
 ## [0.1.12] - 2026-07-09
 
 ### Removed
 
-- **Order-based swap flow removed.** The maker API's `/api/v1/swaps/orders/*` endpoints were retired, so the SDK no longer ships the order-based surface. Removed methods `createSwapOrder`/`create_swap_order`, `getSwapOrderStatus`/`get_swap_order_status`, `getOrderHistory`/`get_order_history`, `getOrderAnalytics`/`get_order_analytics`, the rate-decision method, and `waitForSwapCompletion`/`wait_for_swap_completion` (plus the `SwapCompletionOptions` options type). Removed types `SwapOrder`, `SwapOrderStatus`, `CreateSwapOrderRequest`/`CreateSwapOrderResponse`, `SwapOrderStatusRequest`/`SwapOrderStatusResponse`, `SwapOrderRateDecisionRequest`/`SwapOrderRateDecisionResponse`, `RateDecisionRequest`/`RateDecisionResponse`, `OrderHistoryResponse`, `OrderHistorySummary`, and `OrderStatsResponse`.
+- **Order-based swap flow removed.** The maker API's `/api/v1/swaps/orders/*` endpoints were retired, so the SDK no longer ships the order-based surface. Removed methods `createSwapOrder`/`create_swap_order`, `getSwapOrderStatus`/`get_swap_order_status`, `getOrderHistory`/`get_order_history`, `getOrderAnalytics`/`get_order_analytics`, the swap-order rate-decision method, and `waitForSwapCompletion`/`wait_for_swap_completion` (plus the `SwapCompletionOptions` options type). Removed types `SwapOrder`, `SwapOrderStatus`, `CreateSwapOrderRequest`/`CreateSwapOrderResponse`, `SwapOrderStatusRequest`/`SwapOrderStatusResponse`, `SwapOrderRateDecisionRequest`/`SwapOrderRateDecisionResponse`, `OrderHistoryResponse`, `OrderHistorySummary`, and `OrderStatsResponse`. (The LSPS1 `RateDecisionRequest`/`RateDecisionResponse` used by `submitLspRateDecision` are unaffected.)
 
 ### Breaking Changes
 

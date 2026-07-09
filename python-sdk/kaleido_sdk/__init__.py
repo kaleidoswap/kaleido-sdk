@@ -111,20 +111,16 @@ from .types import (
     NetworkInfoResponse,
     OrderRequest,
     OrderState,
-    PaginationMeta,
     PairQuoteRequest,
     PairQuoteResponse,
     PaymentBolt11,
     PaymentDetails,
     PaymentOnchain,
     PaymentState,
-    PaymentStatus,
     RateDecisionRequest,
     RateDecisionResponse,
     ReachabilityCell,
     ReachabilityMatrixResponse,
-    ReceiverAddress,
-    ReceiverAddressFormat,
     RoutesRequest,
     RoutesResponse,
     RouteStep,
@@ -145,7 +141,7 @@ from .types import (
     TradingPairsResponse,
 )
 
-__version__ = "0.1.12"
+__version__ = "0.1.13"
 __all__ = [
     # Main client
     "KaleidoClient",
@@ -183,11 +179,9 @@ __all__ = [
     "RateLimitError",
     # Enums (API)
     "Layer",
-    "ReceiverAddressFormat",
     "BitcoinNetwork",
     "OrderState",
     "PaymentState",
-    "PaymentStatus",
     "SwapStatus",
     # API Types - Assets & Pairs
     "AssetResponseModel",
@@ -201,7 +195,6 @@ __all__ = [
     "SwapLeg",
     "SwapLegInput",
     "SwapRoute",
-    "ReceiverAddress",
     "MultiHopRoute",
     "RouteStep",
     "PairQuoteRequest",
@@ -210,7 +203,6 @@ __all__ = [
     "RoutesResponse",
     "ReachabilityCell",
     "ReachabilityMatrixResponse",
-    "PaginationMeta",
     # API Types - Atomic Swaps
     "SwapRequest",
     "SwapResponse",

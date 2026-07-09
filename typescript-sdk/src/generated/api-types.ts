@@ -323,7 +323,7 @@ export type paths = {
         put?: never;
         /**
          * Request market quote
-         * @description Request an RFQ-backed quote for a route between two asset legs. A successful response returns an `rfq_id` that can be consumed by swap-init or swap-order creation flows until the quote expires.
+         * @description Request an RFQ-backed quote for a route between two asset legs. A successful response returns an `rfq_id` that can be consumed by atomic swap initiation until the quote expires.
          */
         post: operations['requestMarketQuote'];
         delete?: never;
@@ -336,6 +336,16 @@ export type paths = {
 export type webhooks = Record<string, never>;
 export type components = {
     schemas: {
+        /** ApiKeyAuthErrorResponse */
+        ApiKeyAuthErrorResponse: {
+            /**
+             * Error
+             * @description API-key authentication error code
+             * @example missing_api_key
+             * @example invalid_api_key
+             */
+            error: string;
+        };
         /**
          * AssetResponseModel
          * @description API response model for assets.
@@ -884,47 +894,6 @@ export type components = {
          */
         OrderState: OrderState;
         /**
-         * PaginationMeta
-         * @description Pagination metadata
-         */
-        PaginationMeta: {
-            /**
-             * Total
-             * @description Total number of items matching the filter
-             */
-            total: number;
-            /**
-             * Limit
-             * @description Number of items per page
-             */
-            limit: number;
-            /**
-             * Skip
-             * @description Number of items skipped
-             */
-            skip: number;
-            /**
-             * Current Page
-             * @description Current page number (1-indexed)
-             */
-            current_page: number;
-            /**
-             * Total Pages
-             * @description Total number of pages
-             */
-            total_pages: number;
-            /**
-             * Has Next
-             * @description Whether there is a next page
-             */
-            has_next: boolean;
-            /**
-             * Has Previous
-             * @description Whether there is a previous page
-             */
-            has_previous: boolean;
-        };
-        /**
          * PairQuoteRequest
          * @description Request for a quote on a trading pair using SwapLegInput.
          * @example {
@@ -1057,12 +1026,6 @@ export type components = {
          */
         PaymentState: PaymentState;
         /**
-         * PaymentStatus
-         * @description Payment status for onchain payments with support for partial payments.
-         * @enum {string}
-         */
-        PaymentStatus: PaymentStatus;
-        /**
          * RateDecisionRequest
          * @description Request for user to accept new rate or request refund
          * @example {
@@ -1147,31 +1110,6 @@ export type components = {
              */
             timestamp: number;
         };
-        /**
-         * ReceiverAddress
-         * @description Receiver address or invoice with its format.
-         *
-         *     Encapsulates the destination for receiving funds along with
-         *     metadata about what format it uses.
-         */
-        ReceiverAddress: {
-            /**
-             * Address
-             * @description The actual address, invoice, or token string
-             */
-            address: string;
-            /** @description Format of the receiver address */
-            format: components['schemas']['ReceiverAddressFormat'];
-        };
-        /**
-         * ReceiverAddressFormat
-         * @description Supported receiver address and invoice formats.
-         *
-         *     Different networks and protocols use different address/invoice formats
-         *     for receiving payments.
-         * @enum {string}
-         */
-        ReceiverAddressFormat: ReceiverAddressFormat;
         /**
          * RouteStep
          * @description Single step in a route (one swap within a trading pair).
@@ -1436,6 +1374,11 @@ export type components = {
              * @example 9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2
              */
             payment_hash: string;
+            /**
+             * Access Token
+             * @description Per-swap token required to poll /swaps/atomic/status. Returned only once here at initiation — store it alongside the payment hash.
+             */
+            access_token?: string | null;
         };
         /**
          * SwapRoute
@@ -1456,6 +1399,7 @@ export type components = {
         /**
          * SwapStatusRequest
          * @example {
+         *       "access_token": "ord_live_3rCkP9dG7mN4",
          *       "payment_hash": "9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2"
          *     }
          */
@@ -1465,6 +1409,12 @@ export type components = {
              * @example 9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2
              */
             payment_hash: string;
+            /**
+             * Access Token
+             * @description Per-swap access token returned by /swaps/init.
+             * @default
+             */
+            access_token: string;
         };
         /** SwapStatusResponse */
         SwapStatusResponse: {
@@ -1632,6 +1582,20 @@ export interface operations {
                     'application/json': components['schemas']['LspInfoResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -1715,6 +1679,20 @@ export interface operations {
                 };
                 content: {
                     'application/json': components['schemas']['NetworkInfoResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description Too many requests. Respect the rate-limit headers before retrying. */
@@ -1854,6 +1832,20 @@ export interface operations {
                      *     }
                      */
                     'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description The referenced asset was not found. */
@@ -1997,6 +1989,20 @@ export interface operations {
                     'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
@@ -2119,6 +2125,20 @@ export interface operations {
                      *     }
                      */
                     'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description No LSPS1 order exists for the supplied order ID. */
@@ -2247,6 +2267,20 @@ export interface operations {
                     'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description No LSPS1 order exists for the supplied order ID. */
             404: {
                 headers: {
@@ -2362,6 +2396,20 @@ export interface operations {
                     'application/json': components['schemas']['SwapNodeInfoResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description Too many requests. Respect the rate-limit headers before retrying. */
             429: {
                 headers: {
@@ -2443,6 +2491,20 @@ export interface operations {
                      *     }
                      */
                     'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description Request validation failed before reaching application logic. */
@@ -2568,6 +2630,20 @@ export interface operations {
                     'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
@@ -2683,6 +2759,20 @@ export interface operations {
                      *     }
                      */
                     'application/json': components['schemas']['KaleidoErrorResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description No swap exists for the supplied payment hash. */
@@ -2832,6 +2922,20 @@ export interface operations {
                     'application/json': components['schemas']['KaleidoErrorResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description The requested asset could not be found. */
             404: {
                 headers: {
@@ -2965,6 +3069,20 @@ export interface operations {
                     'application/json': components['schemas']['DetailOnlyErrorResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
@@ -3060,6 +3178,20 @@ export interface operations {
                      *     }
                      */
                     'application/json': components['schemas']['DetailOnlyErrorResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description No routes exist for the requested pair. */
@@ -3162,6 +3294,20 @@ export interface operations {
                     'application/json': components['schemas']['RoutesResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description Request validation failed before reaching application logic. */
             422: {
                 headers: {
@@ -3239,6 +3385,20 @@ export interface operations {
                 };
                 content: {
                     'application/json': components['schemas']['ReachabilityMatrixResponse'];
+                };
+            };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
                 };
             };
             /** @description Too many requests. Respect the rate-limit headers before retrying. */
@@ -3347,6 +3507,20 @@ export interface operations {
                     'application/json': components['schemas']['DetailOnlyErrorResponse'];
                 };
             };
+            /** @description Missing or invalid Bearer API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "missing_api_key"
+                     *     }
+                     */
+                    'application/json': components['schemas']['ApiKeyAuthErrorResponse'];
+                };
+            };
             /** @description The requested pair does not exist. */
             404: {
                 headers: {
@@ -3448,6 +3622,7 @@ export enum BitcoinNetwork {
     Testnet = 'Testnet',
     Testnet4 = 'Testnet4',
     Signet = 'Signet',
+    SignetCustom = 'SignetCustom',
     Regtest = 'Regtest',
 }
 export enum Layer {
@@ -3478,26 +3653,6 @@ export enum PaymentState {
     PAID = 'PAID',
     REFUNDED = 'REFUNDED',
     TO_REFUND = 'TO_REFUND',
-}
-export enum PaymentStatus {
-    NOT_PAID = 'NOT_PAID',
-    UNDERPAID = 'UNDERPAID',
-    PAID = 'PAID',
-    OVERPAID = 'OVERPAID',
-}
-export enum ReceiverAddressFormat {
-    BTC_ADDRESS = 'BTC_ADDRESS',
-    BOLT11 = 'BOLT11',
-    BOLT12 = 'BOLT12',
-    LN_ADDRESS = 'LN_ADDRESS',
-    RGB_INVOICE = 'RGB_INVOICE',
-    LIQUID_ADDRESS = 'LIQUID_ADDRESS',
-    LIQUID_INVOICE = 'LIQUID_INVOICE',
-    SPARK_ADDRESS = 'SPARK_ADDRESS',
-    SPARK_INVOICE = 'SPARK_INVOICE',
-    ARKADE_ADDRESS = 'ARKADE_ADDRESS',
-    ARKADE_INVOICE = 'ARKADE_INVOICE',
-    CASHU_TOKEN = 'CASHU_TOKEN',
 }
 export enum SwapStatus {
     Waiting = 'Waiting',
