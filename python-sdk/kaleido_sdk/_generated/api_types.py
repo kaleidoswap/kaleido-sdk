@@ -5,7 +5,18 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Any
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field, RootModel
+
+
+class ApiKeyAuthErrorResponse(BaseModel):
+    error: Annotated[
+        str,
+        Field(
+            description="API-key authentication error code",
+            examples=["missing_api_key", "invalid_api_key"],
+            title="Error",
+        ),
+    ]
 
 
 class AssetsOptions(BaseModel):
@@ -32,6 +43,7 @@ class BitcoinNetwork(StrEnum):
     TESTNET = "Testnet"
     TESTNET4 = "Testnet4"
     SIGNET = "Signet"
+    SIGNET_CUSTOM = "SignetCustom"
     REGTEST = "Regtest"
 
 
@@ -93,7 +105,7 @@ class CreateOrderRequest(BaseModel):
     client_asset_amount: Annotated[int | None, Field(title="Client Asset Amount")] = None
     rfq_id: Annotated[str | None, Field(title="Rfq Id")] = None
     email: Annotated[
-        str | None, Field(description="Optional email for notifications", title="Email")
+        EmailStr | None, Field(description="Optional email for notifications", title="Email")
     ] = None
 
 
@@ -287,26 +299,6 @@ class OrderState(StrEnum):
     PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
 
 
-class PaginationMeta(BaseModel):
-    """
-    Pagination metadata
-    """
-
-    total: Annotated[
-        int, Field(description="Total number of items matching the filter", title="Total")
-    ]
-    limit: Annotated[int, Field(description="Number of items per page", title="Limit")]
-    skip: Annotated[int, Field(description="Number of items skipped", title="Skip")]
-    current_page: Annotated[
-        int, Field(description="Current page number (1-indexed)", title="Current Page")
-    ]
-    total_pages: Annotated[int, Field(description="Total number of pages", title="Total Pages")]
-    has_next: Annotated[bool, Field(description="Whether there is a next page", title="Has Next")]
-    has_previous: Annotated[
-        bool, Field(description="Whether there is a previous page", title="Has Previous")
-    ]
-
-
 class PairRoutesRequest(BaseModel):
     pair_id: Annotated[str | None, Field(title="Pair Id")] = None
     from_asset_id: Annotated[str | None, Field(title="From Asset Id")] = None
@@ -322,17 +314,6 @@ class PaymentState(StrEnum):
     PAID = "PAID"
     REFUNDED = "REFUNDED"
     TO_REFUND = "TO_REFUND"
-
-
-class PaymentStatus(StrEnum):
-    """
-    Payment status for onchain payments with support for partial payments.
-    """
-
-    NOT_PAID = "NOT_PAID"
-    UNDERPAID = "UNDERPAID"
-    PAID = "PAID"
-    OVERPAID = "OVERPAID"
 
 
 class RateDecisionRequest(BaseModel):
@@ -382,28 +363,6 @@ class ReachabilityMatrixResponse(BaseModel):
     ]
     assets: Annotated[list[str], Field(description="All assets in the matrix", title="Assets")]
     timestamp: Annotated[int, Field(description="Response timestamp", title="Timestamp")]
-
-
-class ReceiverAddressFormat(StrEnum):
-    """
-    Supported receiver address and invoice formats.
-
-    Different networks and protocols use different address/invoice formats
-    for receiving payments.
-    """
-
-    BTC_ADDRESS = "BTC_ADDRESS"
-    BOLT11 = "BOLT11"
-    BOLT12 = "BOLT12"
-    LN_ADDRESS = "LN_ADDRESS"
-    RGB_INVOICE = "RGB_INVOICE"
-    LIQUID_ADDRESS = "LIQUID_ADDRESS"
-    LIQUID_INVOICE = "LIQUID_INVOICE"
-    SPARK_ADDRESS = "SPARK_ADDRESS"
-    SPARK_INVOICE = "SPARK_INVOICE"
-    ARKADE_ADDRESS = "ARKADE_ADDRESS"
-    ARKADE_INVOICE = "ARKADE_INVOICE"
-    CASHU_TOKEN = "CASHU_TOKEN"
 
 
 class IndicativePrice(RootModel[str]):
@@ -583,6 +542,13 @@ class SwapResponse(BaseModel):
             title="Payment Hash",
         ),
     ]
+    access_token: Annotated[
+        str | None,
+        Field(
+            description="Per-swap token required to poll /swaps/atomic/status. Returned only once here at initiation — store it alongside the payment hash.",
+            title="Access Token",
+        ),
+    ] = None
 
 
 class SwapRoute(BaseModel):
@@ -613,6 +579,10 @@ class SwapStatusRequest(BaseModel):
             title="Payment Hash",
         ),
     ]
+    access_token: Annotated[
+        str,
+        Field(description="Per-swap access token returned by /swaps/init.", title="Access Token"),
+    ] = ""
 
 
 class TradingLimits(BaseModel):
@@ -803,20 +773,6 @@ class PaymentOnchain(BaseModel):
         ),
     ] = None
     last_payment_check: Annotated[int | None, Field(title="Last Payment Check")] = None
-
-
-class ReceiverAddress(BaseModel):
-    """
-    Receiver address or invoice with its format.
-
-    Encapsulates the destination for receiving funds along with
-    metadata about what format it uses.
-    """
-
-    address: Annotated[
-        str, Field(description="The actual address, invoice, or token string", title="Address")
-    ]
-    format: Annotated[ReceiverAddressFormat, Field(description="Format of the receiver address")]
 
 
 class RoutesResponse(BaseModel):

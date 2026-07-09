@@ -10,8 +10,6 @@ export {
     Layer,
     OrderState,
     PaymentState,
-    PaymentStatus,
-    ReceiverAddressFormat,
     SwapStatus,
 } from './generated/api-types.js';
 
@@ -88,8 +86,6 @@ export type RouteStep = components['schemas']['RouteStep'];
 export type SwapLeg = components['schemas']['SwapLeg'];
 export type SwapLegInput = components['schemas']['SwapLegInput'];
 export type SwapRoute = components['schemas']['SwapRoute'];
-export type ReceiverAddress = components['schemas']['ReceiverAddress'];
-export type PaginationMeta = components['schemas']['PaginationMeta'];
 export type EstimateFeesResponse = components['schemas']['EstimateFeesResponse'];
 export type ChannelDetails = components['schemas']['ChannelDetails'];
 export type PaymentDetails = components['schemas']['PaymentDetails'];
