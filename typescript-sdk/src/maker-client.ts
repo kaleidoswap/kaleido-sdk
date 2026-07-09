@@ -22,14 +22,6 @@ import type {
     RoutesResponse,
     DiscoverRoutesRequest,
     DiscoverRoutesResponse,
-    CreateSwapOrderRequest,
-    CreateSwapOrderResponse,
-    SwapOrderStatusRequest,
-    SwapOrderStatusResponse,
-    OrderHistoryResponse,
-    OrderStatsResponse,
-    SwapOrderRateDecisionRequest,
-    SwapOrderRateDecisionResponse,
     SwapRequest,
     SwapResponse,
     ConfirmSwapRequest,
@@ -48,13 +40,6 @@ import type {
     RateDecisionRequest,
     RateDecisionResponse,
 } from './api-types-ext.js';
-
-export interface SwapCompletionOptions {
-    accessToken: string;
-    timeout?: number;
-    pollInterval?: number;
-    onStatusUpdate?: (status: string) => void;
-}
 
 export class MakerClient {
     private http: HttpClient;
@@ -438,46 +423,6 @@ export class MakerClient {
     // Note: /api/v1/market/routes/matrix endpoint not in OpenAPI spec
 
     // ============================================================================
-    // Swap Orders API - /api/v1/swaps/orders/*
-    // ============================================================================
-
-    async createSwapOrder(body: CreateSwapOrderRequest): Promise<CreateSwapOrderResponse> {
-        this._log.info('createSwapOrder(): rfq_id=%s', body.rfq_id);
-        const result = assertResponse(await this.http.maker.POST('/api/v1/swaps/orders', { body }));
-        this._log.info('createSwapOrder() -> order_id=%s', result.id);
-        return result;
-    }
-
-    async getSwapOrderStatus(body: SwapOrderStatusRequest): Promise<SwapOrderStatusResponse> {
-        this._log.debug('getSwapOrderStatus(): order_id=%s', body.order_id);
-        return assertResponse(await this.http.maker.POST('/api/v1/swaps/orders/status', { body }));
-    }
-
-    async getOrderHistory(params?: {
-        status?: string;
-        limit?: number;
-        skip?: number;
-    }): Promise<OrderHistoryResponse> {
-        return assertResponse(
-            await this.http.maker.GET('/api/v1/swaps/orders/history', {
-                params: params ? { query: params as Record<string, unknown> } : undefined,
-            }),
-        );
-    }
-
-    async getOrderAnalytics(): Promise<OrderStatsResponse> {
-        return assertResponse(await this.http.maker.GET('/api/v1/swaps/orders/analytics'));
-    }
-
-    async submitRateDecision(
-        body: SwapOrderRateDecisionRequest,
-    ): Promise<SwapOrderRateDecisionResponse> {
-        return assertResponse(
-            await this.http.maker.POST('/api/v1/swaps/orders/rate_decision', { body }),
-        );
-    }
-
-    // ============================================================================
     // Atomic Swaps API - /api/v1/swaps/*
     // ============================================================================
 
@@ -537,64 +482,6 @@ export class MakerClient {
     // ============================================================================
     // Convenience Methods
     // ============================================================================
-
-    async waitForSwapCompletion(orderId: string, options: SwapCompletionOptions) {
-        const { accessToken, timeout = 300000, pollInterval = 2000, onStatusUpdate } = options;
-        const startTime = Date.now();
-
-        this._log.info(
-            'waitForSwapCompletion(): order_id=%s timeout=%ds',
-            orderId,
-            Math.round(timeout / 1000),
-        );
-
-        while (Date.now() - startTime < timeout) {
-            try {
-                const statusResponse = await this.getSwapOrderStatus({
-                    order_id: orderId,
-                    access_token: accessToken,
-                });
-                const order = statusResponse.order;
-
-                if (order) {
-                    this._log.debug(
-                        'waitForSwapCompletion() status poll: order_id=%s status=%s',
-                        orderId,
-                        order.status,
-                    );
-
-                    if (onStatusUpdate) {
-                        onStatusUpdate(order.status);
-                    }
-
-                    if (
-                        order.status === 'FILLED' ||
-                        order.status === 'FAILED' ||
-                        order.status === 'EXPIRED' ||
-                        order.status === 'CANCELLED'
-                    ) {
-                        this._log.info(
-                            'waitForSwapCompletion(): order_id=%s terminal state=%s',
-                            orderId,
-                            order.status,
-                        );
-                        return order;
-                    }
-                }
-            } catch (error) {
-                this._log.warn('waitForSwapCompletion() status check error: %s', error);
-            }
-
-            await new Promise((resolve) => setTimeout(resolve, pollInterval));
-        }
-
-        this._log.error(
-            'waitForSwapCompletion(): order_id=%s timed out after %ds',
-            orderId,
-            Math.round(timeout / 1000),
-        );
-        throw new Error(`Swap completion timeout after ${timeout}ms for order ${orderId}`);
-    }
 
     toRaw(amount: number, precision: number): number {
         return parseRawAmount(amount, precision);

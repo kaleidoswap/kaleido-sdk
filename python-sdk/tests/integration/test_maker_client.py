@@ -3,12 +3,8 @@ import pytest
 from kaleido_sdk import (
     ConfirmSwapRequest,
     CreateOrderRequest,
-    CreateSwapOrderRequest,
     KaleidoClient,
-    Layer,
     MakerClient,
-    ReceiverAddress,
-    ReceiverAddressFormat,
     RoutesRequest,
     SwapCompletionOptions,
     SwapRequest,
@@ -119,107 +115,6 @@ class TestMakerClientIntegration:
         assert quote.to_asset.amount is not None, "To amount must be calculated"
         assert quote.to_asset.amount > 0, "To amount must be positive"
         assert quote.price > 0, "Price must be set"
-
-    # ==========================================================================
-    # SWAP ORDER ENDPOINTS (/orders/*)
-    # ==========================================================================
-
-    @pytest.mark.integration
-    async def test_create_swap_order(
-        self, client: KaleidoClient, second_client_with_node: KaleidoClient
-    ) -> None:
-        """Test POST /orders - Create a swap order.
-
-        1. Get a quote (RFQ)
-        2. Get receiver invoice/address from taker node
-        3. Create swap order with receiver address
-        4. Verify order creation
-        """
-        # Step 1: List assets and get RGB asset id for USDT
-        assets = await client.maker.list_assets()
-        assert assets is not None
-        usdt_asset = next((a for a in assets.assets if a.ticker == "USDT"), None)
-        assert usdt_asset is not None, "USDT asset not found in list_assets"
-        pid = usdt_asset.protocol_ids
-        asset_id = (pid or {}).get("RGB") if isinstance(pid, dict) else None
-        assert asset_id is not None, "USDT RGB asset id not found in protocol_ids"
-        quote = await get_fresh_quote(
-            client,
-            from_asset=asset_id,
-            to_asset="BTC",
-            from_layer=Layer.RGB_LN,
-            to_layer=Layer.BTC_L1,
-        )
-        assert quote.rfq_id is not None, "Quote must have RFQ ID"
-        assert quote.from_asset.amount is not None and quote.from_asset.amount > 0, (
-            "From amount must be set"
-        )
-        assert quote.to_asset.amount is not None and quote.to_asset.amount > 0, (
-            "To amount must be calculated"
-        )
-
-        # Step 2: Get receiver address from second node (taker)
-        address_response = await second_client_with_node.rln.get_address()
-        receiver_address_str = address_response.address
-
-        # Step 3: Create swap order (use quote's from_asset/to_asset as dicts for generated client)
-        from_asset_dict = (
-            quote.from_asset.to_dict()
-            if hasattr(quote.from_asset, "to_dict")
-            else getattr(quote.from_asset, "model_dump", lambda: quote.from_asset)()
-        )
-        to_asset_dict = (
-            quote.to_asset.to_dict()
-            if hasattr(quote.to_asset, "to_dict")
-            else getattr(quote.to_asset, "model_dump", lambda: quote.to_asset)()
-        )
-        request = CreateSwapOrderRequest(
-            rfq_id=quote.rfq_id,
-            from_asset=from_asset_dict,
-            to_asset=to_asset_dict,
-            receiver_address=ReceiverAddress(
-                address=receiver_address_str,
-                format=ReceiverAddressFormat.BTC_ADDRESS,
-            ),
-            min_onchain_conf=1,
-            refund_address=receiver_address_str,
-            email="test@example.com",
-        )
-        order = await client.maker.create_swap_order(request)
-        # Step 4: Verify order creation
-        assert order is not None
-        order_id = getattr(order, "order_id", None) or getattr(order, "id", None)
-        assert order_id is not None, "Order must have id or order_id"
-        assert hasattr(order, "status")
-        status_val = getattr(order.status, "value", str(order.status))
-        assert status_val == "PENDING_PAYMENT"
-
-    @pytest.mark.integration
-    @pytest.mark.skip(reason="Requires existing swap order in backend")
-    async def test_get_swap_order_status(self, client: KaleidoClient) -> None:
-        """Test POST /orders/status - Get swap order status."""
-        pass
-
-    @pytest.mark.integration
-    async def test_get_order_history(self, client: KaleidoClient) -> None:
-        """Test GET /orders/history - Get order history with pagination."""
-        history = await client.maker.get_order_history(limit=10, skip=0)
-        assert history is not None
-        assert hasattr(history, "data")
-        assert hasattr(history, "pagination")
-
-    @pytest.mark.integration
-    async def test_get_order_analytics(self, client: KaleidoClient) -> None:
-        """Test GET /orders/analytics - Get order statistics."""
-        analytics = await client.maker.get_order_analytics()
-        assert analytics is not None
-        assert hasattr(analytics, "status_counts")
-
-    @pytest.mark.integration
-    @pytest.mark.skip(reason="Requires order in PENDING_RATE_DECISION state")
-    async def test_submit_rate_decision(self, client: KaleidoClient) -> None:
-        """Test POST /orders/rate_decision - Handle rate change decision."""
-        pass
 
     # ==========================================================================
     # ATOMIC SWAP ENDPOINTS (/swaps/*)

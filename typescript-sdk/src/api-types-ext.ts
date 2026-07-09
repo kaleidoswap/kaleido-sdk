@@ -12,7 +12,6 @@ export {
     PaymentState,
     PaymentStatus,
     ReceiverAddressFormat,
-    SwapOrderStatus,
     SwapStatus,
 } from './generated/api-types.js';
 
@@ -50,16 +49,6 @@ export type DiscoverRoutesRequest = RequestBody<'discoverMarketRoutes'>;
 export type DiscoverRoutesResponse = ResponseSuccess<'discoverMarketRoutes'>;
 export type ReachabilityMatrixResponse = ResponseSuccess<'getMarketRouteMatrix'>;
 
-// Swap Orders
-export type CreateSwapOrderRequest = RequestBody<'createSwapOrder'>;
-export type CreateSwapOrderResponse = ResponseSuccess<'createSwapOrder'>;
-export type SwapOrderStatusRequest = RequestBody<'getSwapOrderStatus'>;
-export type SwapOrderStatusResponse = ResponseSuccess<'getSwapOrderStatus'>;
-export type OrderHistoryResponse = ResponseSuccess<'listSwapOrderHistory'>;
-export type OrderStatsResponse = ResponseSuccess<'getSwapOrderAnalytics'>;
-export type SwapOrderRateDecisionRequest = RequestBody<'submitSwapOrderRateDecision'>;
-export type SwapOrderRateDecisionResponse = ResponseSuccess<'submitSwapOrderRateDecision'>;
-
 // Atomic Swaps
 export type SwapRequest = RequestBody<'initiateAtomicSwap'>;
 export type SwapResponse = ResponseSuccess<'initiateAtomicSwap'>;
@@ -89,7 +78,6 @@ export type ApiComponents = components;
 export type AssetResponseModel = components['schemas']['AssetResponseModel'];
 export type TradingPairResponseModel = components['schemas']['TradingPairResponseModel'];
 export type Quote = components['schemas']['PairQuoteResponse'];
-export type SwapOrder = components['schemas']['SwapOrder'];
 
 // Sub-schema types
 export type Swap = components['schemas']['Swap'];
@@ -101,7 +89,6 @@ export type SwapLeg = components['schemas']['SwapLeg'];
 export type SwapLegInput = components['schemas']['SwapLegInput'];
 export type SwapRoute = components['schemas']['SwapRoute'];
 export type ReceiverAddress = components['schemas']['ReceiverAddress'];
-export type OrderHistorySummary = components['schemas']['OrderHistorySummary'];
 export type PaginationMeta = components['schemas']['PaginationMeta'];
 export type EstimateFeesResponse = components['schemas']['EstimateFeesResponse'];
 export type ChannelDetails = components['schemas']['ChannelDetails'];

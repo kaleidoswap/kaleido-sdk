@@ -10,8 +10,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from ._generated.api_types import (
     AssetsResponse,
@@ -19,15 +18,11 @@ from ._generated.api_types import (
     ConfirmSwapRequest,
     ConfirmSwapResponse,
     CreateOrderRequest,
-    CreateSwapOrderRequest,
-    CreateSwapOrderResponse,
     EstimateFeesRequest,
     EstimateFeesResponse,
     LspInfoResponse,
     NetworkInfoResponse,
-    OrderHistoryResponse,
     OrderRequest,
-    OrderStatsResponse,
     PairQuoteRequest,
     PairQuoteResponse,
     RateDecisionRequest,
@@ -35,12 +30,6 @@ from ._generated.api_types import (
     RoutesRequest,
     RoutesResponse,
     SwapNodeInfoResponse,
-    SwapOrder,
-    SwapOrderRateDecisionRequest,
-    SwapOrderRateDecisionResponse,
-    SwapOrderStatus,
-    SwapOrderStatusRequest,
-    SwapOrderStatusResponse,
     SwapRequest,
     SwapResponse,
     SwapRoute,
@@ -52,22 +41,12 @@ from ._generated.api_types import (
 from ._http_client import HttpClient
 from ._logging import get_logger
 from ._utils import parse_raw_amount, to_display_amount
-from .errors import SwapError
 from .types import Layer
 
 if TYPE_CHECKING:
     from ._ws_client import QuoteResponse, WSClient
 
 _log = get_logger("maker")
-
-
-@dataclass
-class SwapCompletionOptions:
-    """Options for waiting for swap completion."""
-
-    timeout: float = 300.0  # 5 minutes
-    poll_interval: float = 2.0  # 2 seconds
-    on_status_update: Callable[[str], None] | None = None
 
 
 class MakerClient:
@@ -77,7 +56,6 @@ class MakerClient:
     Provides methods for:
     - Listing assets and trading pairs
     - Getting quotes
-    - Creating and managing swap orders
     - Atomic swaps
     - LSP (Lightning Service Provider) operations
     - WebSocket streaming for real-time quotes
@@ -454,74 +432,6 @@ class MakerClient:
         return RoutesResponse.model_validate(data)
 
     # =========================================================================
-    # Swap Orders API - /api/v1/swaps/orders/*
-    # =========================================================================
-
-    async def create_swap_order(self, body: CreateSwapOrderRequest) -> CreateSwapOrderResponse:
-        """
-        Create a new swap order.
-
-        Args:
-            body: Swap order creation request
-        """
-        _log.info("maker.create_swap_order(): rfq_id=%s", body.rfq_id)
-        data = await self._http.maker_post("/api/v1/swaps/orders", data=body)
-        result = CreateSwapOrderResponse.model_validate(data)
-        _log.info("maker.create_swap_order() -> order_id=%s", result.id)
-        return result
-
-    async def get_swap_order_status(self, body: SwapOrderStatusRequest) -> SwapOrderStatusResponse:
-        """
-        Get the status of a swap order.
-
-        Args:
-            body: Request with order_id
-        """
-        data = await self._http.maker_post("/api/v1/swaps/orders/status", data=body)
-        return SwapOrderStatusResponse.model_validate(data)
-
-    async def get_order_history(
-        self,
-        status: SwapOrderStatus | str | None = None,
-        limit: int | None = None,
-        skip: int | None = None,
-    ) -> OrderHistoryResponse:
-        """
-        Get order history with optional filtering.
-
-        Args:
-            status: Filter by order status
-            limit: Maximum number of results
-            skip: Number of results to skip
-        """
-        params: dict[str, Any] = {}
-        if status is not None:
-            params["status"] = status.value if isinstance(status, SwapOrderStatus) else status
-        if limit is not None:
-            params["limit"] = limit
-        if skip is not None:
-            params["skip"] = skip
-        data = await self._http.maker_get("/api/v1/swaps/orders/history", params=params or None)
-        return OrderHistoryResponse.model_validate(data)
-
-    async def get_order_analytics(self) -> OrderStatsResponse:
-        """Get order analytics and statistics."""
-        data = await self._http.maker_get("/api/v1/swaps/orders/analytics")
-        return OrderStatsResponse.model_validate(data)
-
-    async def submit_rate_decision(
-        self, body: SwapOrderRateDecisionRequest
-    ) -> SwapOrderRateDecisionResponse:
-        """
-        Submit a rate decision for a pending order.
-
-        Args:
-            body: Rate decision request
-        """
-        data = await self._http.maker_post("/api/v1/swaps/orders/rate_decision", data=body)
-        return SwapOrderRateDecisionResponse.model_validate(data)
-
-    # =========================================================================
     # Atomic Swaps API - /api/v1/swaps/*
     # =========================================================================
 
@@ -623,76 +533,6 @@ class MakerClient:
     # =========================================================================
     # Convenience Methods
     # =========================================================================
-
-    async def wait_for_swap_completion(
-        self,
-        order_id: str,
-        options: SwapCompletionOptions | None = None,
-    ) -> SwapOrder:
-        """
-        Wait for a swap order to complete.
-
-        Args:
-            order_id: Order ID to monitor
-            options: Polling options
-
-        Returns:
-            Final swap order
-
-        Raises:
-            SwapError: If timeout exceeded
-        """
-        opts = options or SwapCompletionOptions()
-        start_time = asyncio.get_event_loop().time()
-        _log.info(
-            "maker.wait_for_swap_completion(): order_id=%s timeout=%.0fs",
-            order_id,
-            opts.timeout,
-        )
-
-        while asyncio.get_event_loop().time() - start_time < opts.timeout:
-            try:
-                status_response = await self.get_swap_order_status(
-                    SwapOrderStatusRequest(order_id=order_id)
-                )
-                order = status_response.order
-
-                if order:
-                    status_obj = getattr(order, "status", None)
-                    if isinstance(status_obj, SwapOrderStatus):
-                        status_value = status_obj.value
-                    elif status_obj is not None:
-                        status_value = str(status_obj)
-                    else:
-                        status_value = None
-
-                    _log.debug("Swap order %s status poll: %s", order_id, status_value)
-
-                    if status_value and opts.on_status_update:
-                        opts.on_status_update(status_value)
-
-                    if status_value in {"FILLED", "FAILED", "EXPIRED", "CANCELLED"}:
-                        _log.info(
-                            "maker.wait_for_swap_completion(): order_id=%s terminal state=%s",
-                            order_id,
-                            status_value,
-                        )
-                        return order
-
-            except Exception:
-                pass
-
-            await asyncio.sleep(opts.poll_interval)
-
-        _log.error(
-            "maker.wait_for_swap_completion(): order_id=%s timed out after %.0fs",
-            order_id,
-            opts.timeout,
-        )
-        raise SwapError(
-            f"Swap completion timeout after {opts.timeout}s for order {order_id}",
-            swap_id=order_id,
-        )
 
     def to_raw(self, amount: float, precision: int) -> int:
         """

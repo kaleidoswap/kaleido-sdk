@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Any
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, EmailStr, Field, RootModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
 
 
 class AssetsOptions(BaseModel):
@@ -287,18 +287,6 @@ class OrderState(StrEnum):
     PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
 
 
-class OrderStatsResponse(BaseModel):
-    status_counts: Annotated[
-        dict[str, int], Field(description="Count of orders by status", title="Status Counts")
-    ]
-    filled_orders_volume: Annotated[
-        int, Field(description="Total volume of filled orders", title="Filled Orders Volume")
-    ]
-    filled_orders_count: Annotated[
-        int, Field(description="Total count of filled orders", title="Filled Orders Count")
-    ]
-
-
 class PaginationMeta(BaseModel):
     """
     Pagination metadata
@@ -564,54 +552,6 @@ class SwapNodeInfoResponse(BaseModel):
     block_height: Annotated[int | None, Field(examples=[805434], title="Block Height")]
 
 
-class SwapOrderRateDecisionRequest(BaseModel):
-    """
-    Request for user to accept new rate or request refund for a swap order
-    """
-
-    order_id: Annotated[str, Field(description="Swap order ID", title="Order Id")]
-    access_token: Annotated[
-        str, Field(description="Per-order access token", title="Access Token")
-    ] = ""
-    accept_new_rate: Annotated[
-        bool,
-        Field(
-            description="True to accept new rate, False to request refund", title="Accept New Rate"
-        ),
-    ]
-
-
-class SwapOrderRateDecisionResponse(BaseModel):
-    """
-    Response after user makes rate decision for a swap order
-    """
-
-    order_id: Annotated[str, Field(title="Order Id")]
-    decision_accepted: Annotated[bool, Field(title="Decision Accepted")]
-    message: Annotated[str, Field(title="Message")]
-    refund_txid: Annotated[
-        str | None,
-        Field(description="Present if refund was requested and processed", title="Refund Txid"),
-    ] = None
-
-
-class SwapOrderStatus(StrEnum):
-    OPEN = "OPEN"
-    PENDING_PAYMENT = "PENDING_PAYMENT"
-    PAID = "PAID"
-    EXECUTING = "EXECUTING"
-    FILLED = "FILLED"
-    CANCELLED = "CANCELLED"
-    EXPIRED = "EXPIRED"
-    FAILED = "FAILED"
-    PENDING_RATE_DECISION = "PENDING_RATE_DECISION"
-
-
-class SwapOrderStatusRequest(BaseModel):
-    order_id: Annotated[str, Field(title="Order Id")]
-    access_token: Annotated[str, Field(title="Access Token")] = ""
-
-
 class SwapRequest(BaseModel):
     rfq_id: Annotated[str, Field(examples=["1234567890"], title="Rfq Id")]
     from_asset: Annotated[str, Field(examples=["BTC"], title="From Asset")]
@@ -786,23 +726,6 @@ class MultiHopRoute(BaseModel):
     total_hops: Annotated[int, Field(description="Number of hops in the route", title="Total Hops")]
 
 
-class OrderHistorySummary(BaseModel):
-    """
-    Simplified order information for history listing
-    """
-
-    id: Annotated[str, Field(description="Order ID", title="Id")]
-    status: Annotated[SwapOrderStatus, Field(description="Order status")]
-    from_asset: Annotated[str, Field(description="Asset being swapped from", title="From Asset")]
-    from_amount: Annotated[int, Field(description="Amount of from_asset", title="From Amount")]
-    to_asset: Annotated[str, Field(description="Asset being swapped to", title="To Asset")]
-    to_amount: Annotated[int, Field(description="Amount of to_asset", title="To Amount")]
-    created_at: Annotated[int, Field(description="Order creation timestamp", title="Created At")]
-    filled_at: Annotated[
-        int | None, Field(description="Order completion timestamp", title="Filled At")
-    ] = None
-
-
 class PairQuoteRequest(BaseModel):
     """
     Request for a quote on a trading pair using SwapLegInput.
@@ -934,104 +857,6 @@ class Swap(BaseModel):
     completed_at: Annotated[int | None, Field(examples=[1691171075], title="Completed At")] = None
 
 
-class SwapOrder(BaseModel):
-    id: Annotated[str, Field(description="Order identifier", title="Id")]
-    rfq_id: Annotated[
-        str, Field(description="Quote identifier used to create the order", title="Rfq Id")
-    ]
-    maker_pubkey: Annotated[
-        str | None, Field(description="Maker node public key", title="Maker Pubkey")
-    ] = None
-    from_asset: Annotated[
-        SwapLeg,
-        Field(
-            description="Complete specification for input: asset, ticker, network, protocol, and amount"
-        ),
-    ]
-    to_asset: Annotated[
-        SwapLeg,
-        Field(
-            description="Complete specification for output: asset, ticker, network, protocol, and amount"
-        ),
-    ]
-    price: Annotated[int, Field(title="Price")]
-    deposit_address: Annotated[
-        ReceiverAddress | None,
-        Field(description="Address/Invoice for the user to deposit funds into"),
-    ] = None
-    payout_address: Annotated[
-        ReceiverAddress | None,
-        Field(description="Destination address/invoice for receiving the to_asset payout"),
-    ] = None
-    refund_address: Annotated[
-        str | None, Field(description="Onchain refund address if provided", title="Refund Address")
-    ] = None
-    status: Annotated[SwapOrderStatus, Field(description="Current order status")] = "OPEN"
-    created_at: Annotated[
-        int | None,
-        Field(
-            description="Creation timestamp (seconds since epoch)",
-            examples=[1715896356],
-            title="Created At",
-        ),
-    ] = None
-    expires_at: Annotated[
-        int | None, Field(description="Expiry timestamp (seconds since epoch)", title="Expires At")
-    ] = None
-    filled_at: Annotated[
-        int | None, Field(description="Timestamp when the order was filled", title="Filled At")
-    ] = None
-    refund_txid: Annotated[
-        str | None, Field(description="Transaction ID of any refund sent", title="Refund Txid")
-    ] = None
-    deposit_txid: Annotated[
-        str | None,
-        Field(
-            description="Matched incoming payment reference for deposit attribution",
-            title="Deposit Txid",
-        ),
-    ] = None
-    requires_manual_refund: Annotated[
-        bool | None,
-        Field(
-            description="Whether the order requires manual refund handling",
-            examples=[False],
-            title="Requires Manual Refund",
-        ),
-    ] = False
-    payment_status: Annotated[
-        PaymentStatus | None, Field(description="Status of onchain payment verification")
-    ] = None
-    payment_difference: Annotated[
-        int | None,
-        Field(
-            description="Payment difference in satoshis (positive for overpayment, negative for underpayment)",
-            title="Payment Difference",
-        ),
-    ] = None
-    last_payment_check: Annotated[
-        int | None,
-        Field(description="Timestamp of the last payment verification", title="Last Payment Check"),
-    ] = None
-    email: Annotated[
-        str | None,
-        Field(
-            description="Notification email address", examples=["swap@example.com"], title="Email"
-        ),
-    ] = None
-    failure_reason: Annotated[
-        str | None,
-        Field(description="Reason the order failed, if applicable", title="Failure Reason"),
-    ] = None
-    fee: Annotated[Fee, Field(description="Fee information from the quote")]
-
-
-class SwapOrderStatusResponse(BaseModel):
-    order_id: Annotated[str, Field(title="Order Id")]
-    status: SwapOrderStatus
-    order: SwapOrder
-
-
 class SwapStatusResponse(BaseModel):
     swap: Swap | None = None
 
@@ -1080,46 +905,6 @@ class TradingPairsResponse(BaseModel):
     limit: Annotated[int, Field(title="Limit")]
     offset: Annotated[int, Field(title="Offset")]
     timestamp: Annotated[int, Field(title="Timestamp")]
-
-
-class CreateSwapOrderRequest(BaseModel):
-    rfq_id: Annotated[
-        str, Field(description="RFQ ID cannot be empty", min_length=1, title="Rfq Id")
-    ]
-    from_asset: Annotated[
-        SwapLeg,
-        Field(
-            description="Complete input specification: asset, ticker, network, protocol, and amount"
-        ),
-    ]
-    to_asset: Annotated[
-        SwapLeg,
-        Field(
-            description="Complete output specification: asset, ticker, network, protocol, and amount"
-        ),
-    ]
-    receiver_address: Annotated[
-        ReceiverAddress,
-        Field(description="Destination address/invoice for receiving the to_asset payout"),
-    ]
-    min_onchain_conf: Annotated[int | None, Field(title="Min Onchain Conf")] = 1
-    refund_address: Annotated[str | None, Field(title="Refund Address")] = None
-    email: Annotated[
-        EmailStr | None, Field(description="Optional email for notifications", title="Email")
-    ] = None
-
-
-class CreateSwapOrderResponse(BaseModel):
-    id: Annotated[str, Field(title="Id")]
-    rfq_id: Annotated[str, Field(title="Rfq Id")]
-    deposit_address: ReceiverAddress | None = None
-    status: SwapOrderStatus
-    access_token: Annotated[str, Field(title="Access Token")]
-
-
-class OrderHistoryResponse(BaseModel):
-    data: Annotated[list[OrderHistorySummary], Field(description="List of orders", title="Data")]
-    pagination: PaginationMeta
 
 
 class PaymentDetails(BaseModel):

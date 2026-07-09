@@ -36,10 +36,9 @@ async function main() {
     console.log('📌 Example 1: API Error Handling\n');
 
     try {
-        // Try to get status for non-existent order
-        await client.maker.getSwapOrderStatus({
-            order_id: 'non-existent-order-id',
-            access_token: 'invalid-access-token',
+        // Try to get status for a non-existent atomic swap
+        await client.maker.getAtomicSwapStatus({
+            payment_hash: '0'.repeat(64),
         });
     } catch (error) {
         if (error instanceof APIError) {

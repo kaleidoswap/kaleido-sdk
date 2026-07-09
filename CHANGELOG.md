@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.12] - 2026-07-09
+
+### Removed
+
+- **Order-based swap flow removed.** The maker API's `/api/v1/swaps/orders/*` endpoints were retired, so the SDK no longer ships the order-based surface. Removed methods `createSwapOrder`/`create_swap_order`, `getSwapOrderStatus`/`get_swap_order_status`, `getOrderHistory`/`get_order_history`, `getOrderAnalytics`/`get_order_analytics`, the rate-decision method, and `waitForSwapCompletion`/`wait_for_swap_completion` (plus the `SwapCompletionOptions` options type). Removed types `SwapOrder`, `SwapOrderStatus`, `CreateSwapOrderRequest`/`CreateSwapOrderResponse`, `SwapOrderStatusRequest`/`SwapOrderStatusResponse`, `SwapOrderRateDecisionRequest`/`SwapOrderRateDecisionResponse`, `RateDecisionRequest`/`RateDecisionResponse`, `OrderHistoryResponse`, `OrderHistorySummary`, and `OrderStatsResponse`.
+
+### Breaking Changes
+
+- Code using the removed order-based methods/types must migrate to the atomic swap flow: `initSwap`/`init_swap` → whitelist the swapstring on your RLN node → `executeSwap`/`execute_swap`, with status via `getAtomicSwapStatus`/`get_atomic_swap_status`. LSPS1 channel orders (`createLspOrder`/`getLspOrder`) are unaffected.
+
 ## [0.1.11] - 2026-06-17
 
 ### Fixed

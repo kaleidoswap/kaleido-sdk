@@ -162,30 +162,6 @@ describe('MakerClient Integration', () => {
         });
     });
 
-    describe('Order History & Analytics', () => {
-        it('should get order history with pagination', { timeout: 10000 }, async () => {
-            try {
-                const history = await client.maker.getOrderHistory({ limit: 10, skip: 0 });
-                expect(history).toBeDefined();
-                expect(history).toHaveProperty('data');
-                expect(history).toHaveProperty('pagination');
-                expect(Array.isArray(history.data)).toBe(true);
-            } catch (error) {
-                console.warn('Skipping - API not available:', error);
-            }
-        });
-
-        it('should get order analytics', { timeout: 10000 }, async () => {
-            try {
-                const analytics = await client.maker.getOrderAnalytics();
-                expect(analytics).toBeDefined();
-                expect(analytics).toHaveProperty('status_counts');
-            } catch (error) {
-                console.warn('Skipping - API not available:', error);
-            }
-        });
-    });
-
     describe('LSP Operations', () => {
         it('should get LSP info', { timeout: 10000 }, async () => {
             try {
