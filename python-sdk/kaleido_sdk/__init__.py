@@ -51,7 +51,7 @@ Logging:
         ```
 """
 
-from ._maker_client import MakerClient, SwapCompletionOptions
+from ._maker_client import MakerClient
 from ._rln_client import RlnClient
 from ._utils import (
     MappedAsset,
@@ -97,9 +97,6 @@ from .types import (
     ConfirmSwapRequest,
     ConfirmSwapResponse,
     CreateOrderRequest,
-    # API Types - Swap Orders
-    CreateSwapOrderRequest,
-    CreateSwapOrderResponse,
     EstimateFeesRequest,
     EstimateFeesResponse,
     # API Types - Quotes & Routes
@@ -112,11 +109,8 @@ from .types import (
     LspInfoResponse,
     MultiHopRoute,
     NetworkInfoResponse,
-    OrderHistoryResponse,
-    OrderHistorySummary,
     OrderRequest,
     OrderState,
-    OrderStatsResponse,
     PaginationMeta,
     PairQuoteRequest,
     PairQuoteResponse,
@@ -138,12 +132,6 @@ from .types import (
     SwapLeg,
     SwapLegInput,
     SwapNodeInfoResponse,
-    SwapOrder,
-    SwapOrderRateDecisionRequest,
-    SwapOrderRateDecisionResponse,
-    SwapOrderStatus,
-    SwapOrderStatusRequest,
-    SwapOrderStatusResponse,
     # API Types - Atomic Swaps
     SwapRequest,
     SwapResponse,
@@ -157,13 +145,12 @@ from .types import (
     TradingPairsResponse,
 )
 
-__version__ = "0.1.11"
+__version__ = "0.1.12"
 __all__ = [
     # Main client
     "KaleidoClient",
     "MakerClient",
     "RlnClient",
-    "SwapCompletionOptions",
     # Utility functions
     "parse_raw_amount",
     "to_display_amount",
@@ -198,7 +185,6 @@ __all__ = [
     "Layer",
     "ReceiverAddressFormat",
     "BitcoinNetwork",
-    "SwapOrderStatus",
     "OrderState",
     "PaymentState",
     "PaymentStatus",
@@ -224,17 +210,6 @@ __all__ = [
     "RoutesResponse",
     "ReachabilityCell",
     "ReachabilityMatrixResponse",
-    # API Types - Swap Orders
-    "CreateSwapOrderRequest",
-    "CreateSwapOrderResponse",
-    "SwapOrder",
-    "SwapOrderStatusRequest",
-    "SwapOrderStatusResponse",
-    "SwapOrderRateDecisionRequest",
-    "SwapOrderRateDecisionResponse",
-    "OrderHistoryResponse",
-    "OrderHistorySummary",
-    "OrderStatsResponse",
     "PaginationMeta",
     # API Types - Atomic Swaps
     "SwapRequest",

@@ -29,7 +29,7 @@ describe('MakerClient Error Handling Reproduction', () => {
         });
 
         try {
-            await client.createSwapOrder({} as any);
+            await client.initSwap({} as any);
             expect(true).toBe(false); // Should not reach here
         } catch (error: any) {
             // When response is missing, we default to 500 status
@@ -52,7 +52,7 @@ describe('MakerClient Error Handling Reproduction', () => {
         });
 
         try {
-            await client.createSwapOrder({} as any);
+            await client.initSwap({} as any);
             expect(true).toBe(false); // Should not reach here
         } catch (error: any) {
             expect(error).toBeInstanceOf(ValidationError);

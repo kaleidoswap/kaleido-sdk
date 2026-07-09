@@ -79,4 +79,3 @@ export * from './api-types-ext.js';
 export type { paths } from './generated/api-types.js';
 export type { paths as ApiPaths } from './generated/api-types.js';
 export type * from './types/ws.js';
-export type { SwapCompletionOptions } from './maker-client.js';

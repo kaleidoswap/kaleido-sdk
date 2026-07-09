@@ -53,7 +53,7 @@ export interface QuoteResponse {
      * Price of 1 whole unit of from_asset expressed in the smallest unit of to_asset.
      */
     price: number;
-    /** Quote / RFQ identifier — pass to createSwapOrder */
+    /** Quote / RFQ identifier — pass to initSwap */
     rfq_id: string;
     /** Server-side Unix timestamp (seconds) when the quote was created */
     timestamp: number;

@@ -2,7 +2,7 @@
  * Example 07: Swap Demo
  *
  * Complete swap demonstration using the Kaleidoswap SDK.
- * This example shows the full flow from fetching pairs to creating a swap order.
+ * This example shows the full flow from fetching pairs to initiating an atomic swap.
  *
  * Usage:
  *   npx tsx examples/07_swap_demo.ts
@@ -16,7 +16,6 @@ import {
     createAssetPairMapper,
     createPrecisionHandler,
     Layer,
-    ReceiverAddressFormat,
 } from 'kaleido-sdk';
 
 const API_URL = process.env.KALEIDO_API_URL || 'http://localhost:8000';
@@ -150,87 +149,50 @@ async function swapDemo() {
     console.log(`  Expires: ${new Date(quote.expires_at).toLocaleString()}\n`);
 
     // ========================================================================
-    // Step 6: Create swap order
+    // Step 6: Initiate atomic swap
     // ========================================================================
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📝 Step 6: Creating swap order...\n');
-
-    // Determine receiver address format based on layer
-    let receiverFormat: ReceiverAddressFormat;
-    switch (route.to_layer) {
-        case Layer.BTC_LN:
-            receiverFormat = ReceiverAddressFormat.BOLT11;
-            break;
-        case Layer.BTC_L1:
-            receiverFormat = ReceiverAddressFormat.BTC_ADDRESS;
-            break;
-        case Layer.RGB_LN:
-        case Layer.RGB_L1:
-            receiverFormat = ReceiverAddressFormat.RGB_INVOICE;
-            break;
-        default:
-            throw new Error(`Unhandled layer: ${route.to_layer}`);
-    }
+    console.log('📝 Step 6: Initiating atomic swap...\n');
 
     try {
-        const order = await client.maker.createSwapOrder({
+        const swap = await client.maker.initSwap({
             rfq_id: quote.rfq_id,
-            from_asset: {
-                asset_id: quote.from_asset.asset_id,
-                name: fromAsset.name,
-                ticker: quote.from_asset.ticker,
-                layer: quote.from_asset.layer,
-                amount: quote.from_asset.amount,
-                precision: fromAsset.precision,
-            },
-            to_asset: {
-                asset_id: quote.to_asset.asset_id,
-                name: toAsset.name,
-                ticker: quote.to_asset.ticker,
-                layer: quote.to_asset.layer,
-                amount: quote.to_asset.amount,
-                precision: toAsset.precision,
-            },
-            receiver_address: {
-                // Demo placeholder - use real address in production
-                address: 'demo-receiver-address',
-                format: receiverFormat,
-            },
-            min_onchain_conf: 1,
+            from_asset: quote.from_asset.asset_id,
+            from_amount: quote.from_asset.amount ?? 0,
+            to_asset: quote.to_asset.asset_id,
+            to_amount: quote.to_asset.amount ?? 0,
         });
 
-        console.log('✅ Swap order created successfully!\n');
-        console.log(`  Order ID: ${order.id}`);
-        console.log(`  RFQ ID:   ${order.rfq_id}`);
-        console.log(`  Status:   ${order.status}`);
-
-        if (order.deposit_address) {
-            console.log(`\n📬 Deposit Address:`);
-            console.log(`  Address: ${order.deposit_address.address}`);
-            console.log(`  Format:  ${order.deposit_address.format}`);
-        }
+        console.log('✅ Atomic swap initiated successfully!\n');
+        console.log(`  Payment hash: ${swap.payment_hash}`);
+        console.log(`  Swapstring:   ${swap.swapstring.slice(0, 40)}...`);
+        console.log(
+            '\n  Next step (not shown here): a taker calls executeSwap() with the' +
+                '\n  swapstring, their node pubkey, and the payment hash to settle the swap.',
+        );
 
         // ====================================================================
-        // Step 7: Monitor order status (brief demo)
+        // Step 7: Monitor atomic swap status (brief demo)
         // ====================================================================
         console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('⏳ Step 7: Monitoring order status (10 seconds)...\n');
+        console.log('⏳ Step 7: Monitoring swap status (10 seconds)...\n');
 
         const startTime = Date.now();
         const timeout = 10000;
 
         while (Date.now() - startTime < timeout) {
             try {
-                const statusResponse = await client.maker.getSwapOrderStatus({
-                    order_id: order.id,
-                    access_token: order.access_token,
+                const statusResponse = await client.maker.getAtomicSwapStatus({
+                    payment_hash: swap.payment_hash,
                 });
-                const currentOrder = statusResponse.order;
+                const currentSwap = statusResponse.swap;
 
-                if (currentOrder) {
-                    console.log(`  [${Math.round((Date.now() - startTime) / 1000)}s] Status: ${currentOrder.status}`);
+                if (currentSwap) {
+                    console.log(
+                        `  [${Math.round((Date.now() - startTime) / 1000)}s] Status: ${currentSwap.status}`,
+                    );
 
-                    if (['FILLED', 'FAILED', 'EXPIRED', 'CANCELLED'].includes(currentOrder.status)) {
+                    if (['Succeeded', 'Failed', 'Expired'].includes(currentSwap.status)) {
                         break;
                     }
                 }
@@ -242,10 +204,10 @@ async function swapDemo() {
         }
     } catch (error) {
         if (error instanceof Error) {
-            console.log(`⚠️  Order creation result: ${error.message}`);
+            console.log(`⚠️  Swap initiation result: ${error.message}`);
             console.log('\nThis may be expected if:');
-            console.log('  • The demo receiver address is not valid');
-            console.log('  • The maker node requires specific address formats');
+            console.log('  • The quote has expired');
+            console.log('  • The maker has insufficient liquidity for this route');
             console.log('  • Additional validation is required\n');
         } else {
             throw error;
@@ -263,8 +225,8 @@ async function swapDemo() {
     console.log('  ✓ Using AssetPairMapper for asset lookup');
     console.log('  ✓ Using PrecisionHandler for amount conversion');
     console.log('  ✓ Requesting a quote');
-    console.log('  ✓ Creating a swap order');
-    console.log('  ✓ Monitoring order status\n');
+    console.log('  ✓ Initiating an atomic swap');
+    console.log('  ✓ Monitoring swap status\n');
 
     console.log('╔══════════════════════════════════════════════════════════╗');
     console.log('║                    🎉 Demo Complete!                     ║');

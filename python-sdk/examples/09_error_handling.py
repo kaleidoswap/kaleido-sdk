@@ -3,9 +3,8 @@
 Example 09: Error Handling
 
 Demonstrates typed exception handling for:
-1. API errors from a non-existent order
-2. Validation errors from an invalid quote request
-3. Network errors from an invalid host
+1. Validation errors from an invalid quote request
+2. Network errors from an invalid host
 """
 
 import asyncio
@@ -22,7 +21,6 @@ from kaleido_sdk import (
     PairQuoteRequest,
     RateLimitError,
     SwapLegInput,
-    SwapOrderStatusRequest,
     TimeoutError,
     ValidationError,
 )
@@ -68,15 +66,7 @@ async def main() -> None:
     print(f"Maker API: {API_URL}")
     print("-" * 40)
 
-    print("\n1. Requesting status for a non-existent order...")
-    try:
-        await client.maker.get_swap_order_status(
-            SwapOrderStatusRequest(order_id="non-existent-order-id")
-        )
-    except Exception as error:
-        print(f"  {describe_error(error)}")
-
-    print("\n2. Sending an invalid quote request...")
+    print("\n1. Sending an invalid quote request...")
     try:
         await client.maker.get_quote(
             PairQuoteRequest(
@@ -94,7 +84,7 @@ async def main() -> None:
     except Exception as error:
         print(f"  {describe_error(error)}")
 
-    print("\n3. Simulating a network failure...")
+    print("\n2. Simulating a network failure...")
     bad_client = KaleidoClient.create(
         base_url="http://invalid-host-that-does-not-exist.local:9999",
         timeout=2.0,
