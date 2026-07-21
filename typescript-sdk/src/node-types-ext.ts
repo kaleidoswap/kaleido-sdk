@@ -25,7 +25,10 @@ export {
     SyncStrategy,
     TransactionType,
     TransferKind,
-    TransferStatus,
+    // RLN 0.8.0: openapi-typescript collapses the identical `TransferStatus` and
+    // `RefreshedTransfer.updated_status` enums into a single generated enum named
+    // after the latter. Alias it back so the public `TransferStatus` name is stable.
+    RefreshedTransferUpdated_status as TransferStatus,
 } from './generated/node-types.js';
 
 // Helper types (internal) - extract from paths

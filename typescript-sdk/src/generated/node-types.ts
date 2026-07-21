@@ -825,6 +825,49 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/getconsignment': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get a send consignment
+         * @description Get the hex string of the consignment bytes for a send transfer, identified by its asset ID and txid. Useful to hand the consignment to the counterparty out-of-band when the node filesystem is not accessible from the API caller.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    'application/json': components['schemas']['GetConsignmentRequest'];
+                };
+            };
+            responses: {
+                /** @description Successful operation */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        'application/json': components['schemas']['GetConsignmentResponse'];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/getpayment': {
         parameters: {
             query?: never;
@@ -1915,6 +1958,92 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/provideoutofbandack': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Provide an out-of-band ACK
+         * @description Record the out-of-band ACK received from a recipient of an outgoing transfer
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    'application/json': components['schemas']['ProvideOutOfBandAckRequest'];
+                };
+            };
+            responses: {
+                /** @description Successful operation */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        'application/json': components['schemas']['ProvideOutOfBandAckResponse'];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/provideoutofbandconsignment': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Provide an out-of-band consignment
+         * @description Provide a consignment received out-of-band, as a binary upload, along with any media files it references (one `media` field per file) The consignment is validated and the matching incoming transfer(s) are processed.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    'multipart/form-data': components['schemas']['ProvideOutOfBandConsignmentRequest'];
+                };
+            };
+            responses: {
+                /** @description Successful operation */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        'application/json': components['schemas']['ProvideOutOfBandConsignmentResponse'];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/refreshtransfers': {
         parameters: {
             query?: never;
@@ -1947,7 +2076,7 @@ export type paths = {
                         [name: string]: unknown;
                     };
                     content: {
-                        'application/json': components['schemas']['EmptyResponse'];
+                        'application/json': components['schemas']['RefreshResponse'];
                     };
                 };
             };
@@ -2797,6 +2926,10 @@ export type components = {
             /** @example 1698325849 */
             expiration_timestamp?: number | null;
             transport_endpoints: string[];
+            /** @example {} */
+            unknown_query_params: {
+                [key: string]: string;
+            };
         };
         DecodeSwapstringRequest: {
             /** @example 30/rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8/10/rgb:icfqnK9y-wObZKTu-XJcDL98-sKbE5Mh-OuDJhiI-brRJrzE/1715896416/9d342c6ba006e24abee84a2e034a22d5e30c1f2599fb9c3574d46d3cde3d65a2 */
@@ -2868,6 +3001,16 @@ export type components = {
         GetChannelIdResponse: {
             /** @example 8129afe1b1d7cf60d5e1bf4c04b09bec925ed4df5417ceee0484e24f816a105a */
             channel_id: string;
+        };
+        GetConsignmentRequest: {
+            /** @example rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zt */
+            asset_id: string;
+            /** @example 33cf3e42fb1c6faa0d47e6a498a9d4e5c56e8a06ea0d295c6d90e2b6c85f7a1e */
+            txid: string;
+        };
+        GetConsignmentResponse: {
+            /** @example 52474200 */
+            bytes_hex: string;
         };
         GetPaymentRequest: {
             /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
@@ -3205,6 +3348,17 @@ export type components = {
             /** @example a8b60c8ce3067b5fc881d4831323e24751daec3b64353c8df3205ec5d838f1c5 */
             temporary_channel_id: string;
         };
+        OperationResult: {
+            /** @example 33cf3e42fb1c6faa0d47e6a498a9d4e5c56e8a06ea0d295c6d90e2b6c85f7a1e */
+            txid: string;
+            /** @example 3 */
+            batch_transfer_idx: number;
+            /**
+             * Format: int64
+             * @example 12345678901234567000
+             */
+            entropy: number;
+        };
         Payment: {
             /** @example 3000000 */
             amt_msat?: number | null;
@@ -3253,6 +3407,23 @@ export type components = {
              */
             proof: number[];
         };
+        ProvideOutOfBandAckRequest: {
+            /** @example utxob:2Bwv2Vx-t7VD8XjTh-9EMbpBFKh-J5HDFY4pj-eywu4tKKk-hjTvzJa */
+            recipient_id: string;
+        };
+        ProvideOutOfBandAckResponse: {
+            operation?: components['schemas']['OperationResult'] | null;
+        };
+        ProvideOutOfBandConsignmentRequest: {
+            /** Format: binary */
+            file: string;
+            media?: string[];
+        };
+        ProvideOutOfBandConsignmentResponse: {
+            transfers: {
+                [key: string]: components['schemas']['RefreshedTransfer'];
+            };
+        };
         Recipient: {
             /** @example bcrt:utxob:2FZsSuk-iyVQLVuU4-Gc6J4qkE8-mLS17N4jd-MEx6cWz9F-MFkyE1n */
             recipient_id: string;
@@ -3262,6 +3433,20 @@ export type components = {
         };
         /** @enum {string} */
         RecipientType: RecipientType;
+        RefreshedTransfer: {
+            /**
+             * @example WaitingBroadcast
+             * @enum {string|null}
+             */
+            updated_status?: RefreshedTransferUpdated_status;
+            failure?: components['schemas']['RefreshFailure'] | null;
+        };
+        RefreshFailure: {
+            /** @example InvalidConsignment */
+            name: string;
+            /** @example Invalid consignment */
+            message: string;
+        };
         RefreshFilter: {
             status: components['schemas']['RefreshTransferStatus'];
             incoming: boolean;
@@ -3273,6 +3458,11 @@ export type components = {
             filter: components['schemas']['RefreshFilter'][];
             /** @example false */
             skip_sync: boolean;
+        };
+        RefreshResponse: {
+            transfers: {
+                [key: string]: components['schemas']['RefreshedTransfer'];
+            };
         };
         /** @enum {string} */
         RefreshTransferStatus: RefreshTransferStatus;
@@ -3300,10 +3490,16 @@ export type components = {
             asset_id?: string | null;
             /** @example null */
             assignment?: components['schemas']['Assignment'] | null;
-            /** @example null */
-            expiration_timestamp?: number | null;
+            /** @example 1695811760 */
+            expiration_timestamp: number;
             /** @example false */
             witness: boolean;
+            /**
+             * @example [
+             *       "rpc://127.0.0.1:3000/json-rpc"
+             *     ]
+             */
+            transport_endpoints: string[];
         };
         RgbInvoiceResponse: {
             /** @example bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX */
@@ -3311,7 +3507,7 @@ export type components = {
             /** @example rgb:~/~/~/bcrt:utxob:cbgHUJ4e-7QyKY4U-Jsj5AZw-oI0gxZh-7fxQY2_-tFFUAZN-4CgpX?expiry=1695811760&endpoints=rpc://127.0.0.1:3000/json-rpc */
             invoice: string;
             /** @example 1695811760 */
-            expiration_timestamp?: number | null;
+            expiration_timestamp: number;
             /** @example 1 */
             batch_transfer_idx: number;
         };
@@ -3362,8 +3558,8 @@ export type components = {
             fee_rate: number;
             /** @example 1 */
             min_confirmations: number;
-            /** @example null */
-            expiration_timestamp?: number | null;
+            /** @example 1695811760 */
+            expiration_timestamp: number;
             /**
              * @example {
              *       "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8": [
@@ -3574,7 +3770,7 @@ export type components = {
          */
         TransferKind: TransferKind;
         /** @enum {string} */
-        TransferStatus: TransferStatus;
+        TransferStatus: RefreshedTransferUpdated_status;
         TransferTransportEndpoint: {
             /** @example http://127.0.0.1:3000/json-rpc */
             endpoint: string;
@@ -3597,8 +3793,6 @@ export type components = {
             bitcoind_rpc_port: number;
             /** @example 127.0.0.1:50001 */
             indexer_url?: string | null;
-            /** @example rpc://127.0.0.1:3000/json-rpc */
-            proxy_endpoint?: string | null;
             announce_addresses: string[];
             /** @example nodeAlias */
             announce_alias?: string | null;
@@ -3606,6 +3800,8 @@ export type components = {
         Unspent: {
             utxo: components['schemas']['Utxo'];
             rgb_allocations: components['schemas']['RgbAllocation'][];
+            /** @example 0 */
+            pending_blinded: number;
         };
         Utxo: {
             /** @example efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0 */
@@ -3614,6 +3810,10 @@ export type components = {
             btc_amount: number;
             /** @example true */
             colorable: boolean;
+            /** @example true */
+            exists: boolean;
+            /** @example 42 */
+            derivation_index: number | null;
         };
         WitnessData: {
             /** @example 1000 */
@@ -3679,6 +3879,15 @@ export enum RecipientType {
     Blind = 'Blind',
     Witness = 'Witness',
 }
+export enum RefreshedTransferUpdated_status {
+    Initiated = 'Initiated',
+    WaitingCounterparty = 'WaitingCounterparty',
+    WaitingSafeHeight = 'WaitingSafeHeight',
+    WaitingConfirmations = 'WaitingConfirmations',
+    WaitingBroadcast = 'WaitingBroadcast',
+    Settled = 'Settled',
+    Failed = 'Failed',
+}
 export enum RefreshTransferStatus {
     WaitingCounterparty = 'WaitingCounterparty',
     WaitingConfirmations = 'WaitingConfirmations',
@@ -3712,14 +3921,6 @@ export enum TransferKind {
     Send = 'Send',
     Inflation = 'Inflation',
     Burn = 'Burn',
-}
-export enum TransferStatus {
-    Initiated = 'Initiated',
-    WaitingCounterparty = 'WaitingCounterparty',
-    WaitingSafeHeight = 'WaitingSafeHeight',
-    WaitingConfirmations = 'WaitingConfirmations',
-    Settled = 'Settled',
-    Failed = 'Failed',
 }
 export enum TransportType {
     JsonRpc = 'JsonRpc',

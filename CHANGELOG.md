@@ -15,6 +15,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.14] - 2026-07-21
+
+### Changed
+
+- Synced the vendored RGB Lightning Node OpenAPI spec (`specs/rgb-lightning-node.yaml`) to RLN **v0.8.0** and regenerated the node models (Python + TypeScript).
+
+### Added
+
+- New RLN endpoints from v0.8.0: `/getconsignment`, `/provideoutofbandack`, `/provideoutofbandconsignment` (out-of-band consignment transfer), plus their request/response types.
+- `/refreshtransfers` now returns a `RefreshResponse` (`{ transfers }`) instead of an empty body.
+- New transfer status `WaitingBroadcast`.
+- `Utxo` gains `exists` and `derivation_index`; `Unspent` gains `pending_blinded`.
+
+### Breaking Changes
+
+- **`RgbInvoiceRequest` now requires `expiration_timestamp` and `transport_endpoints`** (previously optional/absent in RLN 0.7.1). Callers of `create_rgb_invoice`/`createRgbInvoice` must supply both.
+- **`SendRgbRequest` now requires `expiration_timestamp`.**
+- `TransferTransportEndpoint.proxy_endpoint` was removed.
+
 ## [0.1.13] - 2026-07-09
 
 ### Fixed

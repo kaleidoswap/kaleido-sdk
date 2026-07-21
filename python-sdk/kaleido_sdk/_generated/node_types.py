@@ -263,6 +263,19 @@ class GetChannelIdResponse(BaseModel):
     ]
 
 
+class GetConsignmentRequest(BaseModel):
+    asset_id: Annotated[
+        str, Field(examples=["rgb:2dkSTbr-jFhznbPmo-TQafzswCN-av4gTsJjX-ttx6CNou5-M98k8Zt"])
+    ]
+    txid: Annotated[
+        str, Field(examples=["33cf3e42fb1c6faa0d47e6a498a9d4e5c56e8a06ea0d295c6d90e2b6c85f7a1e"])
+    ]
+
+
+class GetConsignmentResponse(BaseModel):
+    bytes_hex: Annotated[str, Field(examples=[52474200])]
+
+
 class GetPaymentRequest(BaseModel):
     payment_hash: Annotated[
         str, Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"])
@@ -585,6 +598,14 @@ class OpenChannelResponse(BaseModel):
     ]
 
 
+class OperationResult(BaseModel):
+    txid: Annotated[
+        str, Field(examples=["33cf3e42fb1c6faa0d47e6a498a9d4e5c56e8a06ea0d295c6d90e2b6c85f7a1e"])
+    ]
+    batch_transfer_idx: Annotated[int, Field(examples=[3])]
+    entropy: Annotated[int, Field(examples=[12345678901234567890])]
+
+
 class Payment(BaseModel):
     amt_msat: Annotated[int | None, Field(examples=[3000000])] = None
     asset_amount: Annotated[int | None, Field(examples=[42])] = None
@@ -630,9 +651,39 @@ class ProofOfReserves(BaseModel):
     proof: Annotated[list[int], Field(examples=[[6, 36, 87, 13, 5, 17]])]
 
 
+class ProvideOutOfBandAckRequest(BaseModel):
+    recipient_id: Annotated[
+        str, Field(examples=["utxob:2Bwv2Vx-t7VD8XjTh-9EMbpBFKh-J5HDFY4pj-eywu4tKKk-hjTvzJa"])
+    ]
+
+
+class ProvideOutOfBandAckResponse(BaseModel):
+    operation: OperationResult | None = None
+
+
+class ProvideOutOfBandConsignmentRequest(BaseModel):
+    file: bytes
+    media: list[bytes] | None = None
+
+
 class RecipientType(StrEnum):
     BLIND = "Blind"
     WITNESS = "Witness"
+
+
+class UpdatedStatus(StrEnum):
+    INITIATED = "Initiated"
+    WAITING_COUNTERPARTY = "WaitingCounterparty"
+    WAITING_SAFE_HEIGHT = "WaitingSafeHeight"
+    WAITING_CONFIRMATIONS = "WaitingConfirmations"
+    WAITING_BROADCAST = "WaitingBroadcast"
+    SETTLED = "Settled"
+    FAILED = "Failed"
+
+
+class RefreshFailure(BaseModel):
+    name: Annotated[str, Field(examples=["InvalidConsignment"])]
+    message: Annotated[str, Field(examples=["Invalid consignment"])]
 
 
 class RefreshTransferStatus(StrEnum):
@@ -668,7 +719,7 @@ class RgbInvoiceResponse(BaseModel):
             ]
         ),
     ]
-    expiration_timestamp: Annotated[int | None, Field(examples=[1695811760])] = None
+    expiration_timestamp: Annotated[int, Field(examples=[1695811760])]
     batch_transfer_idx: Annotated[int, Field(examples=[1])]
 
 
@@ -849,6 +900,7 @@ class TransferStatus(StrEnum):
     WAITING_COUNTERPARTY = "WaitingCounterparty"
     WAITING_SAFE_HEIGHT = "WaitingSafeHeight"
     WAITING_CONFIRMATIONS = "WaitingConfirmations"
+    WAITING_BROADCAST = "WaitingBroadcast"
     SETTLED = "Settled"
     FAILED = "Failed"
 
@@ -860,7 +912,6 @@ class UnlockRequest(BaseModel):
     bitcoind_rpc_host: Annotated[str, Field(examples=["localhost"])]
     bitcoind_rpc_port: Annotated[int, Field(examples=[18443])]
     indexer_url: Annotated[str | None, Field(examples=["127.0.0.1:50001"])] = None
-    proxy_endpoint: Annotated[str | None, Field(examples=["rpc://127.0.0.1:3000/json-rpc"])] = None
     announce_addresses: list[str]
     announce_alias: Annotated[str | None, Field(examples=["nodeAlias"])] = None
 
@@ -871,6 +922,8 @@ class Utxo(BaseModel):
     ]
     btc_amount: Annotated[int, Field(examples=[1000])]
     colorable: Annotated[bool, Field(examples=[True])]
+    exists: Annotated[bool, Field(examples=[True])]
+    derivation_index: Annotated[int | None, Field(examples=[42])]
 
 
 class WitnessData(BaseModel):
@@ -1004,6 +1057,7 @@ class DecodeRGBInvoiceResponse(BaseModel):
     network: BitcoinNetwork
     expiration_timestamp: Annotated[int | None, Field(examples=[1698325849])] = None
     transport_endpoints: list[str]
+    unknown_query_params: Annotated[dict[str, str], Field(examples=[{}])]
 
 
 class GetPaymentResponse(BaseModel):
@@ -1057,6 +1111,11 @@ class Recipient(BaseModel):
     transport_endpoints: list[str]
 
 
+class RefreshedTransfer(BaseModel):
+    updated_status: Annotated[UpdatedStatus | None, Field(examples=["WaitingBroadcast"])] = None
+    failure: RefreshFailure | None = None
+
+
 class RefreshFilter(BaseModel):
     status: RefreshTransferStatus
     incoming: bool
@@ -1068,6 +1127,10 @@ class RefreshRequest(BaseModel):
     ] = None
     filter: Annotated[list[RefreshFilter], Field(examples=[[]])]
     skip_sync: Annotated[bool, Field(examples=[False])]
+
+
+class RefreshResponse(BaseModel):
+    transfers: dict[str, RefreshedTransfer]
 
 
 class RgbAllocation(BaseModel):
@@ -1094,15 +1157,16 @@ class RgbInvoiceRequest(BaseModel):
         | None,
         Field(examples=[None]),
     ] = None
-    expiration_timestamp: Annotated[int | None, Field(examples=[None])] = None
+    expiration_timestamp: Annotated[int, Field(examples=[1695811760])]
     witness: Annotated[bool, Field(examples=[False])]
+    transport_endpoints: Annotated[list[str], Field(examples=[["rpc://127.0.0.1:3000/json-rpc"]])]
 
 
 class SendRgbRequest(BaseModel):
     donation: Annotated[bool, Field(examples=[False])]
     fee_rate: Annotated[int, Field(examples=[5])]
     min_confirmations: Annotated[int, Field(examples=[1])]
-    expiration_timestamp: Annotated[int | None, Field(examples=[None])] = None
+    expiration_timestamp: Annotated[int, Field(examples=[1695811760])]
     recipient_map: Annotated[
         dict[str, list[Recipient]],
         Field(
@@ -1183,6 +1247,7 @@ class TransferTransportEndpoint(BaseModel):
 class Unspent(BaseModel):
     utxo: Utxo
     rgb_allocations: list[RgbAllocation]
+    pending_blinded: Annotated[int, Field(examples=[0])]
 
 
 class GetSwapResponse(BaseModel):
@@ -1200,6 +1265,10 @@ class ListTransactionsResponse(BaseModel):
 
 class ListUnspentsResponse(BaseModel):
     unspents: list[Unspent]
+
+
+class ProvideOutOfBandConsignmentResponse(BaseModel):
+    transfers: dict[str, RefreshedTransfer]
 
 
 class Transfer(BaseModel):
