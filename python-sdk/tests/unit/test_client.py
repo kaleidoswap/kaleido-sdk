@@ -188,6 +188,7 @@ class TestDecodeRgbInvoiceType:
             "network": "Regtest",
             "expiration_timestamp": 1700000000,
             "transport_endpoints": ["rpc://proxy.example.com/json-rpc"],
+            "unknown_query_params": {},
         }
         with patch.object(rln._http, "node_post", new_callable=AsyncMock) as mock:
             mock.return_value = fake

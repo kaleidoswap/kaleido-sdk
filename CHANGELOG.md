@@ -15,7 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
-## [0.1.14] - 2026-07-21
+## [0.1.15] - 2026-07-21
+
+### Fixed
+
+- Completes the 0.1.14 release, which published to **npm only** (the PyPI job was skipped after a stale decode-invoice unit test failed — its mocked `/decodergbinvoice` response predated the new required `unknown_query_params` field). Fixed the test; no functional change versus 0.1.14.
 
 ### Changed
 
