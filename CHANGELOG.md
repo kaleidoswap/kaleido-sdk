@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.17] - 2026-08-04
+
+### Fixed
+- TypeScript: `listSwaps()` no longer loses precision on RGB swap quantities above `Number.MAX_SAFE_INTEGER` — `qty_from`/`qty_to` are preserved verbatim (typed `string | number`; read them with `BigInt(...)`). `JSON.parse` silently rounded them before, misreporting large swaps.
+
 ## [0.1.16] - 2026-08-04
 
 ### Added

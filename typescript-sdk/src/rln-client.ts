@@ -114,6 +114,25 @@ export interface RlnNodeClient {
     POST(path: string, init?: any): Promise<{ data?: any; error?: unknown; response?: Response }>;
 }
 
+const SWAP_INTEGER_QUANTITY_PATTERN =
+    /("(?:qty_from|qty_to)"\s*:\s*)(-?(?:0|[1-9]\d*))(?=\s*[,}])/g;
+
+/**
+ * Quotes `qty_from`/`qty_to` before `JSON.parse` so exact integer swap
+ * quantities survive. RGB asset amounts can exceed `Number.MAX_SAFE_INTEGER`,
+ * where `JSON.parse` silently rounds — e.g. 9007199254740993 becomes
+ * ...992, misreporting a swap. Deliberately scoped to those two fields:
+ * timestamps and other numeric fields stay numbers.
+ */
+function _parseListSwapsResponse(raw: string): unknown {
+    return JSON.parse(
+        raw.replace(
+            SWAP_INTEGER_QUANTITY_PATTERN,
+            (_match, prefix: string, quantity: string) => `${prefix}"${quantity}"`,
+        ),
+    );
+}
+
 export class RlnClient {
     private http: HttpClient;
     private readonly _log: ComponentLogger;
@@ -532,7 +551,14 @@ export class RlnClient {
 
     async listSwaps(): Promise<ListSwapsResponse> {
         this._log.debug('listSwaps()');
-        return assertResponse(await this.node.GET('/listswaps'));
+        const data = assertResponse(
+            await this.node.GET('/listswaps', { parseAs: 'text' }),
+        ) as unknown;
+        // An injected transport (e.g. NWC) may already hand back a decoded
+        // object; only the HTTP path returns text for us to reparse.
+        return typeof data === 'string'
+            ? (_parseListSwapsResponse(data) as ListSwapsResponse)
+            : (data as ListSwapsResponse);
     }
 
     async getSwap(body: GetSwapRequest): Promise<GetSwapResponse> {
