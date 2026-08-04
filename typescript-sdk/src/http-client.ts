@@ -14,7 +14,11 @@ import { createLogger, LogState } from './logging.js';
 export interface HttpClientConfig {
     baseUrl?: string;
     nodeUrl?: string;
+    /** Bearer token for the maker API (baseUrl). */
     apiKey?: string;
+    /** Bearer token for the RLN node API (nodeUrl). Kept separate from
+     * `apiKey` so the node credential is never sent to the maker or vice versa. */
+    nodeApiKey?: string;
     timeout?: number;
 }
 
@@ -105,6 +109,9 @@ export class HttpClient {
         if (config.nodeUrl) {
             this.nodeClient = createClient<nodePaths>({
                 baseUrl: config.nodeUrl,
+                headers: config.nodeApiKey
+                    ? { Authorization: `Bearer ${config.nodeApiKey}` }
+                    : undefined,
                 fetch: fetchWithTimeout,
             });
             this.nodeClient.use(_createLoggingMiddleware(logState));
@@ -134,6 +141,9 @@ export class HttpClient {
     enableNodeClient(nodeUrl: string): void {
         this.nodeClient = createClient<nodePaths>({
             baseUrl: nodeUrl,
+            headers: this.config.nodeApiKey
+                ? { Authorization: `Bearer ${this.config.nodeApiKey}` }
+                : undefined,
             fetch: _createFetchWithTimeout(this.config.timeout),
         });
         this.nodeClient.use(_createLoggingMiddleware(this._logState));

@@ -62,6 +62,68 @@ describe('HttpClient', () => {
             expect(client.node).toBeDefined();
         });
 
+        it('should send nodeApiKey as Authorization bearer on node requests', async () => {
+            const originalFetch = globalThis.fetch;
+            let capturedAuth: string | null = null;
+            globalThis.fetch = async (input) => {
+                capturedAuth = (input as Request).headers.get('authorization');
+                return new Response('{}', { status: 200 });
+            };
+
+            try {
+                const client = new HttpClient({
+                    nodeUrl: 'https://node.example.com',
+                    nodeApiKey: 'node-jwt',
+                });
+                await client.node.GET('/nodeinfo');
+                expect(capturedAuth).toBe('Bearer node-jwt');
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+        });
+
+        it('should keep the maker apiKey off node requests', async () => {
+            const originalFetch = globalThis.fetch;
+            let capturedAuth: string | null = null;
+            globalThis.fetch = async (input) => {
+                capturedAuth = (input as Request).headers.get('authorization');
+                return new Response('{}', { status: 200 });
+            };
+
+            try {
+                const client = new HttpClient({
+                    baseUrl: 'https://api.example.com',
+                    nodeUrl: 'https://node.example.com',
+                    apiKey: 'maker-key',
+                });
+                await client.node.GET('/nodeinfo');
+                expect(capturedAuth).toBeNull();
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+        });
+
+        it('should apply nodeApiKey when the node client is enabled later', async () => {
+            const originalFetch = globalThis.fetch;
+            let capturedAuth: string | null = null;
+            globalThis.fetch = async (input) => {
+                capturedAuth = (input as Request).headers.get('authorization');
+                return new Response('{}', { status: 200 });
+            };
+
+            try {
+                const client = new HttpClient({
+                    baseUrl: 'https://api.example.com',
+                    nodeApiKey: 'node-jwt-2',
+                });
+                client.enableNodeClient('https://node.example.com');
+                await client.node.GET('/nodeinfo');
+                expect(capturedAuth).toBe('Bearer node-jwt-2');
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+        });
+
         it('should raise TimeoutError when fetch exceeds the configured timeout', async () => {
             const originalFetch = globalThis.fetch;
             globalThis.fetch = async (_input, init) =>

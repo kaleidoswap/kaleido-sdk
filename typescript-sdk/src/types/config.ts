@@ -5,8 +5,10 @@ export interface KaleidoConfig {
     baseUrl?: string;
     /** URL for the RGB Lightning Node (e.g. http://localhost:3001) */
     nodeUrl?: string;
-    /** Optional API key for authenticated requests */
+    /** Optional API key for authenticated maker API requests */
     apiKey?: string;
+    /** Optional bearer token for authenticated RLN node requests */
+    nodeApiKey?: string;
     /** Request timeout in seconds (default: 30) */
     timeout?: number;
     /** Log level. Defaults to `LogLevel.SILENT`. */
