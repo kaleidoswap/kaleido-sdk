@@ -181,7 +181,20 @@ export type MakerInitRequest = RequestBody<'/makerinit', 'post'>;
 export type MakerInitResponse = ResponseSuccess<'/makerinit', 'post'>;
 export type MakerExecuteRequest = RequestBody<'/makerexecute', 'post'>;
 export type MakerExecuteResponse = ResponseSuccess<'/makerexecute', 'post'>;
-export type ListSwapsResponse = ResponseSuccess<'/listswaps', 'get'>;
+/**
+ * A swap whose quantities may arrive as strings. RGB asset amounts can exceed
+ * `Number.MAX_SAFE_INTEGER`, and `JSON.parse` would silently round them, so
+ * `listSwaps()` preserves `qty_from`/`qty_to` verbatim — callers should read
+ * them with `BigInt(...)` rather than assuming `number`.
+ */
+type SwapWithWireQuantities = Omit<components['schemas']['Swap'], 'qty_from' | 'qty_to'> & {
+    qty_from: string | number;
+    qty_to: string | number;
+};
+export type ListSwapsResponse = Omit<ResponseSuccess<'/listswaps', 'get'>, 'maker' | 'taker'> & {
+    maker: SwapWithWireQuantities[];
+    taker: SwapWithWireQuantities[];
+};
 export type GetSwapRequest = RequestBody<'/getswap', 'post'>;
 export type GetSwapResponse = ResponseSuccess<'/getswap', 'post'>;
 

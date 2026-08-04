@@ -122,3 +122,50 @@ describe('RlnClient', () => {
         expect(result).toEqual(response);
     });
 });
+
+describe('RlnClient.listSwaps integer precision', () => {
+    const RAW = (qty: string) =>
+        JSON.stringify({ maker: [], taker: [] }).replace(
+            '"taker":[]',
+            `"taker":[{"qty_from":${qty},"qty_to":1,"payment_hash":"ph","status":"Succeeded","requested_at":1700000000}]`,
+        );
+
+    it('preserves quantities above Number.MAX_SAFE_INTEGER', async () => {
+        // JSON.parse would round this to ...992.
+        const exact = '9007199254740993';
+        const client = new RlnClient({
+            node: {
+                GET: vi.fn().mockResolvedValue({ data: RAW(exact) }),
+                POST: vi.fn(),
+            },
+        } as never);
+
+        const result = await client.listSwaps();
+        expect(String(result.taker[0].qty_from)).toBe(exact);
+        expect(BigInt(result.taker[0].qty_from)).toBe(BigInt(exact));
+    });
+
+    it('requests the response as text so quantities can be reparsed', async () => {
+        const get = vi.fn().mockResolvedValue({ data: RAW('1') });
+        const client = new RlnClient({ node: { GET: get, POST: vi.fn() } } as never);
+        await client.listSwaps();
+        expect(get).toHaveBeenCalledWith('/listswaps', { parseAs: 'text' });
+    });
+
+    it('passes through an already-decoded object from an injected transport', async () => {
+        const decoded = { maker: [], taker: [{ qty_from: 5, qty_to: 6 }] };
+        const client = new RlnClient({
+            node: { GET: vi.fn().mockResolvedValue({ data: decoded }), POST: vi.fn() },
+        } as never);
+        const result = await client.listSwaps();
+        expect(result.taker[0].qty_from).toBe(5);
+    });
+
+    it('leaves non-quantity numeric fields as numbers', async () => {
+        const client = new RlnClient({
+            node: { GET: vi.fn().mockResolvedValue({ data: RAW('1') }), POST: vi.fn() },
+        } as never);
+        const result = await client.listSwaps();
+        expect(typeof (result.taker[0] as { requested_at: number }).requested_at).toBe('number');
+    });
+});
