@@ -57,6 +57,7 @@ export class KaleidoClient {
                 baseUrl: config.baseUrl,
                 nodeUrl: config.nodeUrl,
                 apiKey: config.apiKey,
+                nodeApiKey: config.nodeApiKey,
                 timeout: (config.timeout ?? 30) * 1000,
             },
             this.logState,

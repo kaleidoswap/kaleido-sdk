@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.16] - 2026-08-04
+
+### Added
+- TypeScript: `nodeApiKey` on `KaleidoConfig`/`HttpClientConfig` — bearer token applied to RLN node requests (including `enableNodeClient()`), kept separate from the maker `apiKey` so credentials are never sent cross-service.
+
+### Fixed
+- TypeScript: a credential intended for an authenticated RLN node was silently dropped — `apiKey` was only ever attached to the maker client, so all node calls went out unauthenticated.
+
 ## [0.1.15] - 2026-07-21
 
 ### Fixed
