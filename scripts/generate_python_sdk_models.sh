@@ -12,13 +12,16 @@ for spec in "$SPECS_DIR/kaleidoswap.json" "$SPECS_DIR/rgb-lightning-node.yaml"; 
     [ -f "$spec" ] || { echo "❌ Missing spec file: $spec"; exit 1; }
 done
 
-# Run datamodel-codegen via uvx (isolated ephemeral env, no manual install needed)
+# Run datamodel-codegen via uvx (isolated ephemeral env, no manual install needed).
+# PINNED: unpinned, uvx installs whatever is newest, so the committed models drift
+# under CI without a single source change and check-generated-models fails.
 if ! command -v uvx &> /dev/null; then
     echo "❌ uvx (uv) not found."
     echo "   Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
     exit 1
 fi
-CODEGEN_CMD=(uvx --from "datamodel-code-generator[ruff]" datamodel-codegen)
+CODEGEN_VERSION="0.72.2"
+CODEGEN_CMD=(uvx --from "datamodel-code-generator[ruff]==$CODEGEN_VERSION" datamodel-codegen)
 
 mkdir -p "$OUTPUT_DIR"
 

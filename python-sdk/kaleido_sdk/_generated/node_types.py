@@ -1081,10 +1081,10 @@ class IssueAssetUDAResponse(BaseModel):
 
 
 class ListAssetsResponse(BaseModel):
-    nia: list[AssetNIA]
-    uda: list[AssetUDA]
-    cfa: list[AssetCFA]
-    ifa: list[AssetIFA]
+    nia: list[AssetNIA] | None
+    uda: list[AssetUDA] | None
+    cfa: list[AssetCFA] | None
+    ifa: list[AssetIFA] | None
 
 
 class ListChannelsResponse(BaseModel):
