@@ -22,7 +22,7 @@ The SDK exposes two sub-clients depending on what you need:
 ```python
 from kaleido_sdk import KaleidoClient
 
-# Zero-config — defaults to regtest
+# Zero-config — defaults to signet
 client = KaleidoClient.create()
 assets = await client.maker.list_assets()
 
@@ -30,7 +30,7 @@ assets = await client.maker.list_assets()
 client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
 assets = await client.maker.list_assets()
 
-# Node only (base_url still defaults to regtest)
+# Node only (base_url still defaults to signet)
 client = KaleidoClient.create(node_url="http://localhost:3001")
 info = await client.rln.get_node_info()
 

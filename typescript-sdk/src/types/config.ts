@@ -1,7 +1,7 @@
 import type { LogLevel, LogLevelName, SdkLogger } from '../logging.js';
 
 export interface KaleidoConfig {
-    /** Base URL for the Kaleidoswap Maker API. Defaults to https://api.regtest.kaleidoswap.com */
+    /** Base URL for the Kaleidoswap Maker API. Defaults to https://api.signet.kaleidoswap.com */
     baseUrl?: string;
     /** URL for the RGB Lightning Node (e.g. http://localhost:3001) */
     nodeUrl?: string;

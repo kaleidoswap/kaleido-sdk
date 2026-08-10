@@ -23,7 +23,7 @@ The SDK exposes two sub-clients depending on what you need:
 ```typescript
 import { KaleidoClient } from 'kaleido-sdk';
 
-// Zero-config — defaults to regtest
+// Zero-config — defaults to signet
 const client = KaleidoClient.create();
 const assets = await client.maker.listAssets();
 
@@ -33,7 +33,7 @@ const client = KaleidoClient.create({
 });
 const assets = await client.maker.listAssets();
 
-// Node only (baseUrl still defaults to regtest)
+// Node only (baseUrl still defaults to signet)
 const client = KaleidoClient.create({
   nodeUrl: 'http://localhost:3001',
 });

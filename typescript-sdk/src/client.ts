@@ -16,7 +16,7 @@ import type { KaleidoConfig } from './types/config.js';
  *
  * Provides a typed interface for interacting with the Kaleidoswap protocol.
  * Both `baseUrl` and `nodeUrl` are optional. When `baseUrl` is omitted it
- * defaults to the regtest environment (https://api.regtest.kaleidoswap.com).
+ * defaults to the signet environment (https://api.signet.kaleidoswap.com).
  *
  * @example
  * ```typescript
@@ -24,7 +24,7 @@ import type { KaleidoConfig } from './types/config.js';
  *
  * // Market API only
  * const client = KaleidoClient.create({
- *     baseUrl: 'https://api.regtest.kaleidoswap.com',
+ *     baseUrl: 'https://api.signet.kaleidoswap.com',
  * });
  *
  * // RGB Node only
@@ -34,7 +34,7 @@ import type { KaleidoConfig } from './types/config.js';
  *
  * // Both APIs
  * const client = KaleidoClient.create({
- *     baseUrl: 'https://api.regtest.kaleidoswap.com',
+ *     baseUrl: 'https://api.signet.kaleidoswap.com',
  *     nodeUrl: 'http://localhost:3001',
  * });
  *
@@ -70,19 +70,19 @@ export class KaleidoClient {
      * Create a new KaleidoClient instance.
      *
      * Both `baseUrl` and `nodeUrl` are optional.
-     * When `baseUrl` is not provided it defaults to the regtest environment.
+     * When `baseUrl` is not provided it defaults to the signet environment.
      *
      * @param config - Client configuration (all fields optional)
      * @returns Initialized client
      *
      * @example
-     * // Zero-config — connects to regtest
+     * // Zero-config — connects to signet
      * const client = KaleidoClient.create();
      *
      * // Production Maker API
      * const client = KaleidoClient.create({ baseUrl: 'https://api.kaleidoswap.com' });
      *
-     * // RGB Node only (still defaults baseUrl to regtest)
+     * // RGB Node only (still defaults baseUrl to signet)
      * const client = KaleidoClient.create({ nodeUrl: 'http://localhost:3001' });
      *
      * // Both APIs
@@ -93,7 +93,7 @@ export class KaleidoClient {
      */
     static create(config: KaleidoConfig = {}): KaleidoClient {
         return new KaleidoClient({
-            baseUrl: 'https://api.regtest.kaleidoswap.com',
+            baseUrl: 'https://api.signet.kaleidoswap.com',
             ...config,
         });
     }

@@ -10,7 +10,7 @@
  * import type { PairQuoteResponse, AssetResponseModel } from 'kaleido-sdk';
  *
  * const client = KaleidoClient.create({
- *   baseUrl: 'https://api.regtest.kaleidoswap.com',
+ *   baseUrl: 'https://api.signet.kaleidoswap.com',
  * });
  *
  * const assets = await client.maker.listAssets();
