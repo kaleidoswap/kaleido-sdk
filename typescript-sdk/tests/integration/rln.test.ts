@@ -1,5 +1,6 @@
 import { KaleidoClient } from '../../src/index.js';
-import type { ListAssetsResponse, UnlockRequest } from '../../src/node-types-ext.js';
+import { LdkChainSyncBlockSyncMode, LdkChainSyncTransactionSyncMode } from '../../src/rln.js';
+import type { LdkChainSync, ListAssetsResponse, UnlockRequest } from '../../src/node-types-ext.js';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 const TEST_API_URL = process.env.TEST_API_URL || 'http://localhost:8000';
@@ -9,14 +10,32 @@ const TEST_BITCOIND_RPC_PASSWORD = process.env.TEST_BITCOIND_RPC_PASSWORD || 'pa
 const TEST_BITCOIND_RPC_HOST = process.env.TEST_BITCOIND_RPC_HOST || 'localhost';
 const TEST_BITCOIND_RPC_PORT = Number(process.env.TEST_BITCOIND_RPC_PORT || '18443');
 const TEST_ANNOUNCE_ADDRESS = process.env.TEST_ANNOUNCE_ADDRESS || '127.0.0.1:9735';
+const TEST_INDEXER_URL = process.env.TEST_INDEXER_URL || '127.0.0.1:50001';
+const TEST_CHAIN_SYNC_MODE = process.env.TEST_CHAIN_SYNC_MODE || 'BlockSync';
+
+function buildChainSync(): LdkChainSync {
+    if (TEST_CHAIN_SYNC_MODE === 'TransactionSync') {
+        return {
+            mode: LdkChainSyncTransactionSyncMode.TransactionSync,
+            config: { indexer_url: TEST_INDEXER_URL },
+        };
+    }
+    return {
+        mode: LdkChainSyncBlockSyncMode.BlockSync,
+        config: {
+            bitcoind_rpc_username: TEST_BITCOIND_RPC_USERNAME,
+            bitcoind_rpc_password: TEST_BITCOIND_RPC_PASSWORD,
+            bitcoind_rpc_host: TEST_BITCOIND_RPC_HOST,
+            bitcoind_rpc_port: TEST_BITCOIND_RPC_PORT,
+        },
+    };
+}
 
 function buildUnlockRequest(password: string): UnlockRequest {
     return {
         password,
-        bitcoind_rpc_username: TEST_BITCOIND_RPC_USERNAME,
-        bitcoind_rpc_password: TEST_BITCOIND_RPC_PASSWORD,
-        bitcoind_rpc_host: TEST_BITCOIND_RPC_HOST,
-        bitcoind_rpc_port: TEST_BITCOIND_RPC_PORT,
+        ldk_chain_sync: buildChainSync(),
+        indexer_url: TEST_INDEXER_URL,
         announce_addresses: [TEST_ANNOUNCE_ADDRESS],
     };
 }

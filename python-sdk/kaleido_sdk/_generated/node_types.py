@@ -429,6 +429,27 @@ class KeysendResponse(BaseModel):
     status: HTLCStatus
 
 
+class Config(BaseModel):
+    bitcoind_rpc_username: Annotated[str, Field(examples=["user"])]
+    bitcoind_rpc_password: Annotated[str, Field(examples=["password"])]
+    bitcoind_rpc_host: Annotated[str, Field(examples=["localhost"])]
+    bitcoind_rpc_port: Annotated[int, Field(examples=[18443])]
+
+
+class LdkChainSyncBlockSync(BaseModel):
+    mode: Literal["BlockSync"]
+    config: Config
+
+
+class Config1(BaseModel):
+    indexer_url: Annotated[str, Field(examples=["127.0.0.1:50001"])]
+
+
+class LdkChainSyncTransactionSync(BaseModel):
+    mode: Literal["TransactionSync"]
+    config: Config1
+
+
 class ListAssetsRequest(BaseModel):
     filter_asset_schemas: Annotated[
         list[AssetSchema], Field(examples=[["Nia", "Uda", "Cfa", "Ifa"]])
@@ -905,17 +926,6 @@ class TransferStatus(StrEnum):
     FAILED = "Failed"
 
 
-class UnlockRequest(BaseModel):
-    password: Annotated[str, Field(examples=["nodepassword"])]
-    bitcoind_rpc_username: Annotated[str, Field(examples=["user"])]
-    bitcoind_rpc_password: Annotated[str, Field(examples=["password"])]
-    bitcoind_rpc_host: Annotated[str, Field(examples=["localhost"])]
-    bitcoind_rpc_port: Annotated[int, Field(examples=[18443])]
-    indexer_url: Annotated[str | None, Field(examples=["127.0.0.1:50001"])] = None
-    announce_addresses: list[str]
-    announce_alias: Annotated[str | None, Field(examples=["nodeAlias"])] = None
-
-
 class Utxo(BaseModel):
     outpoint: Annotated[
         str, Field(examples=["efed66f5309396ff43c8a09941c8103d9d5bbffd473ad9f13013ac89fb6b4671:0"])
@@ -1242,6 +1252,16 @@ class TransferTransportEndpoint(BaseModel):
     endpoint: Annotated[str, Field(examples=["http://127.0.0.1:3000/json-rpc"])]
     transport_type: Literal["JsonRpc"]
     used: Annotated[bool, Field(examples=[False])]
+
+
+class UnlockRequest(BaseModel):
+    password: Annotated[str, Field(examples=["nodepassword"])]
+    ldk_chain_sync: Annotated[
+        LdkChainSyncBlockSync | LdkChainSyncTransactionSync, Field(discriminator="mode")
+    ]
+    indexer_url: Annotated[str, Field(examples=["127.0.0.1:50001"])]
+    announce_addresses: list[str]
+    announce_alias: Annotated[str | None, Field(examples=["nodeAlias"])] = None
 
 
 class Unspent(BaseModel):

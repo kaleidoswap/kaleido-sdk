@@ -15,6 +15,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.18] - 2026-08-10
+
+### Changed
+
+- Synced the vendored RGB Lightning Node OpenAPI spec (`specs/rgb-lightning-node.yaml`) to RLN **v0.9.0** and regenerated the node models (Python + TypeScript).
+
+### Added
+
+- `ldk_chain_sync` on `UnlockRequest` selects how LDK follows the chain: `BlockSync` (bitcoind RPC, the pre-0.9.0 behaviour) or `TransactionSync` (indexer only, no bitcoind).
+- New node types: `LdkChainSyncBlockSync`, `LdkChainSyncTransactionSync` (TypeScript also exports the `LdkChainSync` union and the `LdkChainSyncBlockSyncMode`/`LdkChainSyncTransactionSyncMode` enums; Python exports the nested configs as `LdkBlockSyncConfig`/`LdkTransactionSyncConfig`).
+
+### Breaking Changes
+
+- **`UnlockRequest` no longer takes `bitcoind_rpc_username`/`bitcoind_rpc_password`/`bitcoind_rpc_host`/`bitcoind_rpc_port`.** Move them into `ldk_chain_sync.config` with `mode: "BlockSync"`, or drop them entirely and pass `mode: "TransactionSync"` with `config.indexer_url`.
+- **`UnlockRequest.indexer_url` is now required** (previously optional and nullable) — RGB transfers use it regardless of the chosen chain-sync mode.
+- Requires an RLN node at **v0.9.0 or later**: sending the new `/unlock` body to a 0.7.x/0.8.0 node fails, and those nodes' body shape is no longer expressible.
+
 ## [0.1.17] - 2026-08-04
 
 ### Fixed
