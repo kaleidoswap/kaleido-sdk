@@ -56,7 +56,7 @@ class KaleidoClient:
     @classmethod
     def create(
         cls,
-        base_url: str = "https://api.regtest.kaleidoswap.com",
+        base_url: str = "https://api.signet.kaleidoswap.com",
         node_url: str | None = None,
         api_key: str | None = None,
         timeout: float = 30.0,
@@ -69,7 +69,7 @@ class KaleidoClient:
 
         Args:
             base_url: Base URL for the Kaleidoswap Maker API.
-                Defaults to the regtest environment (https://api.regtest.kaleidoswap.com).
+                Defaults to the signet environment (https://api.signet.kaleidoswap.com).
             node_url: Optional URL for RGB Lightning Node
             api_key: Optional API key for authenticated requests
             timeout: Request timeout in seconds (default: 30)
@@ -84,7 +84,7 @@ class KaleidoClient:
 
         Example:
             ```python
-            # Zero-config — connects to regtest
+            # Zero-config — connects to signet
             client = KaleidoClient.create()
 
             # Production Maker API
