@@ -19,6 +19,8 @@ export {
     HTLCStatus,
     IndexerProtocol,
     InvoiceStatus,
+    LdkChainSyncBlockSyncMode,
+    LdkChainSyncTransactionSyncMode,
     RecipientType,
     SwapStatus,
     SyncKeychainOneOf0,
@@ -60,6 +62,9 @@ export type InitRequest = RequestBody<'/init', 'post'>;
 export type InitResponse = ResponseSuccess<'/init', 'post'>;
 export type UnlockRequest = RequestBody<'/unlock', 'post'>;
 export type UnlockResponse = ResponseSuccess<'/unlock', 'post'>;
+export type LdkChainSync = components['schemas']['LdkChainSync'];
+export type LdkChainSyncBlockSync = components['schemas']['LdkChainSyncBlockSync'];
+export type LdkChainSyncTransactionSync = components['schemas']['LdkChainSyncTransactionSync'];
 export type ChangePasswordRequest = RequestBody<'/changepassword', 'post'>;
 export type ChangePasswordResponse = ResponseSuccess<'/changepassword', 'post'>;
 export type RestoreRequest = RequestBody<'/restore', 'post'>;

@@ -3174,6 +3174,37 @@ export type components = {
             payment_preimage: string;
             status: components['schemas']['HTLCStatus'];
         };
+        LdkChainSync:
+            | components['schemas']['LdkChainSyncBlockSync']
+            | components['schemas']['LdkChainSyncTransactionSync'];
+        LdkChainSyncBlockSync: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: LdkChainSyncBlockSyncMode;
+            config: {
+                /** @example user */
+                bitcoind_rpc_username: string;
+                /** @example password */
+                bitcoind_rpc_password: string;
+                /** @example localhost */
+                bitcoind_rpc_host: string;
+                /** @example 18443 */
+                bitcoind_rpc_port: number;
+            };
+        };
+        LdkChainSyncTransactionSync: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: LdkChainSyncTransactionSyncMode;
+            config: {
+                /** @example 127.0.0.1:50001 */
+                indexer_url: string;
+            };
+        };
         ListAssetsRequest: {
             /**
              * @example [
@@ -3783,16 +3814,9 @@ export type components = {
         UnlockRequest: {
             /** @example nodepassword */
             password: string;
-            /** @example user */
-            bitcoind_rpc_username: string;
-            /** @example password */
-            bitcoind_rpc_password: string;
-            /** @example localhost */
-            bitcoind_rpc_host: string;
-            /** @example 18443 */
-            bitcoind_rpc_port: number;
+            ldk_chain_sync: components['schemas']['LdkChainSync'];
             /** @example 127.0.0.1:50001 */
-            indexer_url?: string | null;
+            indexer_url: string;
             announce_addresses: string[];
             /** @example nodeAlias */
             announce_alias?: string | null;
@@ -3874,6 +3898,12 @@ export enum InvoiceStatus {
     Succeeded = 'Succeeded',
     Failed = 'Failed',
     Expired = 'Expired',
+}
+export enum LdkChainSyncBlockSyncMode {
+    BlockSync = 'BlockSync',
+}
+export enum LdkChainSyncTransactionSyncMode {
+    TransactionSync = 'TransactionSync',
 }
 export enum RecipientType {
     Blind = 'Blind',

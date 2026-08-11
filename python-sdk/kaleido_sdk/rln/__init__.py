@@ -31,6 +31,8 @@ from .._generated.node_types import (
     CheckIndexerUrlResponse,
     CheckProxyEndpointRequest,
     CloseChannelRequest,
+    Config,
+    Config1,
     ConnectPeerRequest,
     CreateUtxosRequest,
     DecodeLNInvoiceRequest,
@@ -73,6 +75,8 @@ from .._generated.node_types import (
     IssueAssetUDAResponse,
     KeysendRequest,
     KeysendResponse,
+    LdkChainSyncBlockSync,
+    LdkChainSyncTransactionSync,
     ListAssetsRequest,
     ListAssetsResponse,
     ListChannelsResponse,
@@ -138,6 +142,11 @@ from .._generated.node_types import (
     WitnessData,
 )
 
+# RLN 0.9.0: the `ldk_chain_sync` variants nest an inline `config` object, which
+# datamodel-code-generator names positionally. Alias them to stable public names.
+LdkBlockSyncConfig = Config
+LdkTransactionSyncConfig = Config1
+
 __all__ = [
     "AddressResponse",
     "AssetBalanceRequest",
@@ -194,6 +203,10 @@ __all__ = [
     "IssueAssetUDARequest",
     "KeysendRequest",
     "KeysendResponse",
+    "LdkBlockSyncConfig",
+    "LdkChainSyncBlockSync",
+    "LdkChainSyncTransactionSync",
+    "LdkTransactionSyncConfig",
     "ListAssetsRequest",
     "ListTransactionsRequest",
     "ListTransfersRequest",
