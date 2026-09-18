@@ -132,6 +132,24 @@ describe('RlnClient', () => {
         });
     });
 
+    // `body` reaches this method from untyped JS callers too, so an explicitly
+    // present `undefined` must not be able to blank out a required field — which
+    // a plain `{ ...defaults, ...body }` merge would allow.
+    it('keeps the required fields when a caller passes explicit undefined', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.refreshTransfers({ filter: undefined, skip_sync: undefined } as never);
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: false, filter: [] },
+        });
+    });
+
     it('keeps an explicit filter and asset_id', async () => {
         const post = vi.fn().mockResolvedValue({ data: {} });
         const client = new RlnClient({
