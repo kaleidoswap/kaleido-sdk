@@ -363,7 +363,7 @@ export class RlnClient {
         this._log.debug('refreshTransfers()');
         assertResponse(
             await this.node.POST('/refreshtransfers', {
-                body: body || { skip_sync: false, filter: [] },
+                body: { ...body, filter: body?.filter ?? [], skip_sync: body?.skip_sync ?? false },
             }),
         );
     }

@@ -98,6 +98,74 @@ describe('RlnClient', () => {
         expect(post).toHaveBeenCalledWith('/sync', { body: request });
     });
 
+    // RLN >=0.7.1 made `filter` mandatory on /refreshtransfers and rejects a body
+    // without it with a 400, before the node syncs anything. Callers routinely pass
+    // only `skip_sync`, which the previous `body || {...}` default never covered
+    // because a partial body is truthy.
+    it('sends the required refresh defaults when no body is given', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.refreshTransfers();
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: false, filter: [] },
+        });
+    });
+
+    it('fills in the mandatory filter for a partial refresh body', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.refreshTransfers({ skip_sync: true } as never);
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: true, filter: [] },
+        });
+    });
+
+    // `body` reaches this method from untyped JS callers too, so an explicitly
+    // present `undefined` must not be able to blank out a required field — which
+    // a plain `{ ...defaults, ...body }` merge would allow.
+    it('keeps the required fields when a caller passes explicit undefined', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.refreshTransfers({ filter: undefined, skip_sync: undefined } as never);
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: false, filter: [] },
+        });
+    });
+
+    it('keeps an explicit filter and asset_id', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+        const filter = [{ status: 'WaitingCounterparty', incoming: true }];
+
+        await client.refreshTransfers({ asset_id: 'rgb:abc', filter, skip_sync: false } as never);
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: false, filter, asset_id: 'rgb:abc' },
+        });
+    });
+
     it('decodes a swapstring and returns the generated response shape', async () => {
         const response = {
             qty_from: 30,
