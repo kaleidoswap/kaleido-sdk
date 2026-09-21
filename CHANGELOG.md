@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.19] - 2026-09-21
+
+### Fixed
+
+- `RlnClient.refreshTransfers()` (TypeScript) now always sends the `filter` and `skip_sync` fields that RGB Lightning Node **0.7.1+** requires. The previous default, `body || { skip_sync: false, filter: [] }`, only applied when the body was omitted entirely — but callers pass a *partial* body, which is truthy, so the default never fired. Both `@kaleidorg/wallet-engine` and `@kaleidorg/wdk-wallet-rln` send `{ skip_sync }` alone, so every refresh was rejected with `400 Invalid request: Failed to deserialize the JSON body into the target type`, leaving incoming RGB transfers stuck in `WaitingCounterparty` and never crediting the balance. The required fields are now merged under the caller's body with `??`, so a partial, empty, or explicitly-`undefined`/`null` argument still produces a valid request while explicit caller values win.
+
+### Changed
+
+- Python SDK version bumped in lockstep only; it was never affected, because its generated `RefreshRequest` model marks `filter` and `skip_sync` as required and pydantic rejects a partial body at construction.
+
 ## [0.1.18] - 2026-08-10
 
 ### Changed
