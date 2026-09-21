@@ -150,6 +150,36 @@ describe('RlnClient', () => {
         });
     });
 
+    it('supplies both required fields for an empty body', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.refreshTransfers({} as never);
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: false, filter: [] },
+        });
+    });
+
+    it('keeps the required fields when a caller passes explicit null', async () => {
+        const post = vi.fn().mockResolvedValue({ data: {} });
+        const client = new RlnClient({
+            node: {
+                POST: post,
+            },
+        } as never);
+
+        await client.refreshTransfers({ filter: null, skip_sync: null } as never);
+
+        expect(post).toHaveBeenCalledWith('/refreshtransfers', {
+            body: { skip_sync: false, filter: [] },
+        });
+    });
+
     it('keeps an explicit filter and asset_id', async () => {
         const post = vi.fn().mockResolvedValue({ data: {} });
         const client = new RlnClient({
