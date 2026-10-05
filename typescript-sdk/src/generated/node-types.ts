@@ -1676,7 +1676,7 @@ export type paths = {
         put?: never;
         /**
          * Get a LN invoice
-         * @description Get a LN invoice to receive a payment
+         * @description Get a LN invoice to receive a payment. The description and description_hash fields are mutually exclusive.
          */
         post: {
             parameters: {
@@ -2641,6 +2641,39 @@ export type components = {
             balance: components['schemas']['AssetBalanceResponse'];
             media?: components['schemas']['Media'] | null;
         };
+        AssetFilter:
+            | components['schemas']['AssetFilterAnyOrNone']
+            | components['schemas']['AssetFilterNone']
+            | components['schemas']['AssetFilterId'];
+        AssetFilterAnyOrNone: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: AssetFilterAnyOrNoneType;
+        };
+        /**
+         * @example {
+         *       "type": "Id",
+         *       "value": "rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"
+         *     }
+         */
+        AssetFilterId: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: AssetFilterIdType;
+            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
+            value: string;
+        };
+        AssetFilterNone: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: AssetFilterNoneType;
+        };
         AssetIFA: {
             /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
             asset_id: string;
@@ -2902,6 +2935,10 @@ export type components = {
             asset_id?: string | null;
             /** @example 42 */
             asset_amount?: number | null;
+            /** @example 1 cup of coffee */
+            description?: string | null;
+            /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
+            description_hash?: string | null;
             /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
             payment_hash: string;
             /** @example f9fa239a283a72fa351ec6d0d6fdb16f5e59a64cb10e64add0b57123855ff592 */
@@ -3243,8 +3280,9 @@ export type components = {
             transactions: components['schemas']['Transaction'][];
         };
         ListTransfersRequest: {
-            /** @example rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8 */
-            asset_id: string;
+            asset_filter: components['schemas']['AssetFilter'];
+            /** @example 47ee0f5b7bd5b0dd7f10ce54a94fee1b5cd54e5241b0f70f9f373d10e7a3c3e2 */
+            txid?: string | null;
         };
         ListTransfersResponse: {
             transfers: components['schemas']['Transfer'][];
@@ -3267,6 +3305,10 @@ export type components = {
             asset_id?: string | null;
             /** @example 42 */
             asset_amount?: number | null;
+            /** @example 1 cup of coffee */
+            description?: string | null;
+            /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
+            description_hash?: string | null;
         };
         LNInvoiceResponse: {
             /** @example lnbcrt30u1pjv6yzndqud3jxktt5w46x7unfv9kz6mn0v3jsnp4qdpc280eur52luxppv6f3nnj8l6vnd9g2hnv3qv6mjhmhvlzf6327pp5tjjasx6g9dqptea3fhm6yllq5wxzycnnvp8l6wcq3d6j2uvpryuqsp5l8az8x3g8fe05dg7cmgddld3da09nfjvky8xftwsk4cj8p2l7kfq9qyysgqcqpcxqzdylzlwfnkyw3jv344x4rzwgkk53ng0fhxy5rdduk4g5tpvea8xa6rfckkza35va28xjn2tqkhgarcxep5umm4x5k56wfcdvu95eq7qzp20vrl4xz76syapsa3c09j7lg5gerkaj63llj0ark7ph8hfketn6fkqzm8laf66dhsncm23wkwm5l5377we9e8lnlknnkwje5eefkccusqm6rqt8 */
@@ -3410,6 +3452,10 @@ export type components = {
             payee_pubkey: string;
             /** @example 89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578 */
             preimage?: string;
+            /** @example 1 cup of coffee */
+            description?: string | null;
+            /** @example 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938 */
+            description_hash?: string | null;
         };
         Peer: {
             /** @example 03b79a4bc1ec365524b4fab9a39eb133753646babb5a1da5c4bc94c53110b7795d */
@@ -3853,6 +3899,15 @@ export type components = {
     pathItems: never;
 };
 export type $defs = Record<string, never>;
+export enum AssetFilterAnyOrNoneType {
+    AnyOrNone = 'AnyOrNone',
+}
+export enum AssetFilterIdType {
+    Id = 'Id',
+}
+export enum AssetFilterNoneType {
+    None = 'None',
+}
 export enum AssetSchema {
     Nia = 'Nia',
     Uda = 'Uda',

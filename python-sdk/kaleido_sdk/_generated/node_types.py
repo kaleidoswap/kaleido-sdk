@@ -26,6 +26,19 @@ class AssetBalanceResponse(BaseModel):
     offchain_inbound: Annotated[int, Field(examples=[0])]
 
 
+class AssetFilterAnyOrNone(BaseModel):
+    type: Literal["AnyOrNone"]
+
+
+class AssetFilterId(BaseModel):
+    type: Literal["Id"]
+    value: Annotated[str, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])]
+
+
+class AssetFilterNone(BaseModel):
+    type: Literal["None"]
+
+
 class AssetMetadataRequest(BaseModel):
     asset_id: Annotated[
         str, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
@@ -158,6 +171,11 @@ class DecodeLNInvoiceResponse(BaseModel):
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
     ] = None
     asset_amount: Annotated[int | None, Field(examples=[42])] = None
+    description: Annotated[str | None, Field(examples=["1 cup of coffee"])] = None
+    description_hash: Annotated[
+        str | None,
+        Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"]),
+    ] = None
     payment_hash: Annotated[
         str, Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"])
     ]
@@ -460,12 +478,6 @@ class ListTransactionsRequest(BaseModel):
     skip_sync: Annotated[bool, Field(examples=[False])]
 
 
-class ListTransfersRequest(BaseModel):
-    asset_id: Annotated[
-        str, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
-    ]
-
-
 class ListUnspentsRequest(BaseModel):
     settled_only: Annotated[bool, Field(examples=[False])]
     skip_sync: Annotated[bool, Field(examples=[False])]
@@ -478,6 +490,11 @@ class LNInvoiceRequest(BaseModel):
         str | None, Field(examples=["rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8"])
     ] = None
     asset_amount: Annotated[int | None, Field(examples=[42])] = None
+    description: Annotated[str | None, Field(examples=["1 cup of coffee"])] = None
+    description_hash: Annotated[
+        str | None,
+        Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"]),
+    ] = None
 
 
 class LNInvoiceResponse(BaseModel):
@@ -646,6 +663,11 @@ class Payment(BaseModel):
     preimage: Annotated[
         str | None,
         Field(examples=["89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578"]),
+    ] = None
+    description: Annotated[str | None, Field(examples=["1 cup of coffee"])] = None
+    description_hash: Annotated[
+        str | None,
+        Field(examples=["5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938"]),
     ] = None
 
 
@@ -1107,6 +1129,16 @@ class ListPaymentsResponse(BaseModel):
 
 class ListPeersResponse(BaseModel):
     peers: list[Peer]
+
+
+class ListTransfersRequest(BaseModel):
+    asset_filter: Annotated[
+        AssetFilterAnyOrNone | AssetFilterNone | AssetFilterId, Field(discriminator="type")
+    ]
+    txid: Annotated[
+        str | None,
+        Field(examples=["47ee0f5b7bd5b0dd7f10ce54a94fee1b5cd54e5241b0f70f9f373d10e7a3c3e2"]),
+    ] = None
 
 
 class Recipient(BaseModel):

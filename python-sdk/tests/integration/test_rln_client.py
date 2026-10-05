@@ -11,6 +11,7 @@ from kaleido_sdk import (
 )
 from kaleido_sdk.rln import (
     AssetBalanceRequest,
+    AssetFilterId,
     AssetMetadataRequest,
     AssetSchema,
     ChangePasswordRequest,
@@ -197,7 +198,7 @@ class TestRlnClientIntegration:
         # First we need to extract an asset_id from the list of assets
         assets = await client_with_node.rln.list_assets()
         asset_id = assets.nia[0].asset_id
-        body = ListTransfersRequest(asset_id=asset_id)
+        body = ListTransfersRequest(asset_filter=AssetFilterId(type="Id", value=asset_id))
         resp = await client_with_node.rln.list_transfers(body)
         assert resp is not None
         assert hasattr(resp, "transfers")

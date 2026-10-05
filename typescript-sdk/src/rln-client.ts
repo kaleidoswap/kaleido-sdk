@@ -355,7 +355,7 @@ export class RlnClient {
     }
 
     async listTransfers(body: ListTransfersRequest): Promise<ListTransfersResponse> {
-        this._log.debug('listTransfers(): asset_id=%s', body.asset_id);
+        this._log.debug('listTransfers(): asset_filter=%s', body.asset_filter.type);
         return assertResponse(await this.node.POST('/listtransfers', { body }));
     }
 

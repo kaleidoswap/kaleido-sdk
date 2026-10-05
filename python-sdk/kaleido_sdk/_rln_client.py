@@ -475,7 +475,7 @@ class RlnClient:
         List RGB transfers.
 
         Args:
-            body: Request with optional asset_id filter
+            body: Request with an `asset_filter` (any/none/one asset) and an optional `txid`
         """
         data = await self._http.node_post("/listtransfers", body)
         return ListTransfersResponse.model_validate(data)
