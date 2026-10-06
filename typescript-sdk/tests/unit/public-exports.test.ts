@@ -63,3 +63,17 @@ describe('public utility exports', () => {
         expect(pairAsset.name).toBe('Bitcoin');
     });
 });
+
+describe('rln enum exports', () => {
+    it('exports the AssetFilter discriminators as runtime values', async () => {
+        const rln = await import('../../src/rln.js');
+        const filter: import('../../src/rln.js').AssetFilter = {
+            type: rln.AssetFilterIdType.Id,
+            value: 'rgb:asset',
+        };
+
+        expect(filter.type).toBe('Id');
+        expect(rln.AssetFilterAnyOrNoneType.AnyOrNone).toBe('AnyOrNone');
+        expect(rln.AssetFilterNoneType.None).toBe('None');
+    });
+});

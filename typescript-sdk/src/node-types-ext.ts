@@ -13,6 +13,9 @@ import type { paths, components } from './generated/node-types.js';
 
 // Re-export enums as values (type + runtime) — mirrors Python StrEnum exports
 export {
+    AssetFilterAnyOrNoneType,
+    AssetFilterIdType,
+    AssetFilterNoneType,
     AssetSchema,
     BitcoinNetwork,
     ChannelStatus,
