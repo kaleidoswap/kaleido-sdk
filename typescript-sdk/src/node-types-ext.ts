@@ -126,6 +126,7 @@ export type IssueAssetUDAResponse = ResponseSuccess<'/issueassetuda', 'post'>;
 // ============================================================================
 
 export type ListTransfersRequest = RequestBody<'/listtransfers', 'post'>;
+export type AssetFilter = components['schemas']['AssetFilter'];
 export type ListTransfersResponse = ResponseSuccess<'/listtransfers', 'post'>;
 export type FailTransfersRequest = RequestBody<'/failtransfers', 'post'>;
 export type FailTransfersResponse = ResponseSuccess<'/failtransfers', 'post'>;

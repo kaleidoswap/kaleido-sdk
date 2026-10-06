@@ -3,7 +3,7 @@ info:
   title: RGB Lightning Node
   description: |-
     This is the OpenAPI specification for the
-    [RGB Lightning Node](https://github.com/kaleidoswap/rgb-lightning-node) APIs.
+    [RGB Lightning Node](https://github.com/RGB-Tools/rgb-lightning-node) APIs.
   license:
     name: MIT
     url: https://mit-license.org/
@@ -713,7 +713,9 @@ paths:
       tags:
         - Invoices
       summary: Get a LN invoice
-      description: Get a LN invoice to receive a payment
+      description: >-
+        Get a LN invoice to receive a payment. The description and
+        description_hash fields are mutually exclusive.
       requestBody:
         content:
           application/json:
@@ -1174,6 +1176,48 @@ components:
           oneOf:
             - $ref: '#/components/schemas/Media'
             - type: 'null'
+    AssetFilter:
+      oneOf:
+        - $ref: '#/components/schemas/AssetFilterAnyOrNone'
+        - $ref: '#/components/schemas/AssetFilterNone'
+        - $ref: '#/components/schemas/AssetFilterId'
+      discriminator:
+        propertyName: type
+        mapping:
+          AnyOrNone: '#/components/schemas/AssetFilterAnyOrNone'
+          None: '#/components/schemas/AssetFilterNone'
+          Id: '#/components/schemas/AssetFilterId'
+    AssetFilterAnyOrNone:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [AnyOrNone]
+    AssetFilterId:
+      type: object
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          enum: [Id]
+        value:
+          type: string
+          example: rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8
+      example:
+        type: Id
+        value: rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8
+    AssetFilterNone:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [None]
     AssetIFA:
       type: object
       required:
@@ -1709,6 +1753,16 @@ components:
             - integer
             - 'null'
           example: 42
+        description:
+          type:
+            - string
+            - 'null'
+          example: 1 cup of coffee
+        description_hash:
+          type:
+            - string
+            - 'null'
+          example: 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938
         payment_hash:
           type: string
           example: 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938
@@ -2386,11 +2440,15 @@ components:
     ListTransfersRequest:
       type: object
       required:
-        - asset_id
+        - asset_filter
       properties:
-        asset_id:
-          type: string
-          example: rgb:CJkb4YZw-jRiz2sk-~PARPio-wtVYI1c-XAEYCqO-wTfvRZ8
+        asset_filter:
+          $ref: '#/components/schemas/AssetFilter'
+        txid:
+          type:
+            - string
+            - 'null'
+          example: 47ee0f5b7bd5b0dd7f10ce54a94fee1b5cd54e5241b0f70f9f373d10e7a3c3e2
     ListTransfersResponse:
       type: object
       required:
@@ -2444,6 +2502,16 @@ components:
             - integer
             - 'null'
           example: 42
+        description:
+          type:
+            - string
+            - 'null'
+          example: 1 cup of coffee
+        description_hash:
+          type:
+            - string
+            - 'null'
+          example: 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938
     LNInvoiceResponse:
       type: object
       required:
@@ -2735,6 +2803,16 @@ components:
         preimage:
           type: string
           example: 89d28bd306aa9bb906fd0ac31092d04c37c919a171b343083167e2a3cdc60578
+        description:
+          type:
+            - string
+            - 'null'
+          example: 1 cup of coffee
+        description_hash:
+          type:
+            - string
+            - 'null'
+          example: 5ca5d81b482b4015e7b14df7a27fe0a38c226273604ffd3b008b752571811938
     Peer:
       type: object
       required:

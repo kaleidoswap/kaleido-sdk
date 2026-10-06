@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
+## [0.1.20] - 2026-10-05
+
+Targets RGB Lightning Node **0.10.0**.
+
+### Breaking Changes
+
+- `ListTransfersRequest` replaces `asset_id` with `asset_filter`, a tagged union: `{ type: "AnyOrNone" }`, `{ type: "None" }` or `{ type: "Id", value: "<asset id>" }`. Migrate `{ asset_id }` to `{ asset_filter: { type: "Id", value: asset_id } }`. RLN 0.10.0 rejects the old body.
+
+### Added
+
+- `ListTransfersRequest.txid`: an optional filter for one transfer.
+- BOLT11 `description` / `description_hash` on `LNInvoiceRequest`, `DecodeLNInvoiceResponse` and payments.
+- Python: `AssetFilterAnyOrNone`, `AssetFilterId` and `AssetFilterNone` exported from `kaleido_sdk.rln`. TypeScript: `AssetFilter` type.
+
 ## [0.1.19] - 2026-09-21
 
 ### Fixed
