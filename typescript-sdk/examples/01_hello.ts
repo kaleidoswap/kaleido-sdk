@@ -25,7 +25,7 @@ import {
     setLogger,
 } from 'kaleido-sdk';
 
-const API_URL = process.env.KALEIDO_API_URL || 'https://api.staging.kaleidoswap.com';
+const API_URL = process.env.KALEIDO_API_URL || 'https://api.signet.kaleidoswap.com';
 
 // ---------------------------------------------------------------------------
 // Logging setup  (application's responsibility — the SDK never does this)

@@ -14,7 +14,7 @@ import os
 
 from kaleido_sdk import KaleidoClient, Layer, PairQuoteRequest, SwapLegInput, SwapRequest
 
-API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
+API_URL = os.getenv("KALEIDO_API_URL", "https://api.signet.kaleidoswap.com")
 
 # ---------------------------------------------------------------------------
 # Logging setup (application's responsibility — the SDK never does this)

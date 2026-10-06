@@ -30,7 +30,7 @@ class KaleidoClient:
         from kaleido_sdk import KaleidoClient
 
         client = KaleidoClient.create(
-            base_url="https://api.kaleidoswap.com"
+            base_url="https://api.signet.kaleidoswap.com"
         )
 
         assets = await client.maker.list_assets()
@@ -87,15 +87,15 @@ class KaleidoClient:
             # Zero-config — connects to signet
             client = KaleidoClient.create()
 
-            # Production Maker API
-            client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
+            # Your own maker endpoint (there is no public mainnet API)
+            client = KaleidoClient.create(base_url="https://maker.example.com")
 
             # With RGB Node only
             client = KaleidoClient.create(node_url="http://localhost:3000")
 
             # Both
             client = KaleidoClient.create(
-                base_url="https://api.kaleidoswap.com",
+                base_url="https://api.signet.kaleidoswap.com",
                 node_url="http://localhost:3000",
             )
             ```

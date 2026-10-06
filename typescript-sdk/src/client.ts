@@ -79,15 +79,15 @@ export class KaleidoClient {
      * // Zero-config — connects to signet
      * const client = KaleidoClient.create();
      *
-     * // Production Maker API
-     * const client = KaleidoClient.create({ baseUrl: 'https://api.kaleidoswap.com' });
+     * // Your own maker endpoint (there is no public mainnet API)
+     * const client = KaleidoClient.create({ baseUrl: 'https://maker.example.com' });
      *
      * // RGB Node only (still defaults baseUrl to signet)
      * const client = KaleidoClient.create({ nodeUrl: 'http://localhost:3001' });
      *
      * // Both APIs
      * const client = KaleidoClient.create({
-     *     baseUrl: 'https://api.kaleidoswap.com',
+     *     baseUrl: 'https://api.signet.kaleidoswap.com',
      *     nodeUrl: 'http://localhost:3001',
      * });
      */

@@ -23,13 +23,13 @@
  *
  * // Built-in stderr output at DEBUG level:
  * const client = KaleidoClient.create({
- *   baseUrl: 'https://api.kaleidoswap.com',
+ *   baseUrl: 'https://api.signet.kaleidoswap.com',
  *   logLevel: LogLevel.DEBUG,
  * });
  *
  * // Plug in your own logger (Winston, Pino, etc.):
  * const client = KaleidoClient.create({
- *   baseUrl: 'https://api.kaleidoswap.com',
+ *   baseUrl: 'https://api.signet.kaleidoswap.com',
  *   logLevel: LogLevel.INFO,
  *   logger: myWinstonLogger,   // must have debug/info/warn/error methods
  * });

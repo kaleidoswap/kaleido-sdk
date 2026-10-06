@@ -26,8 +26,8 @@ from kaleido_sdk import KaleidoClient
 client = KaleidoClient.create()
 assets = await client.maker.list_assets()
 
-# Maker API only
-client = KaleidoClient.create(base_url="https://api.kaleidoswap.com")
+# Maker API only (signet; pass your own maker endpoint for mainnet)
+client = KaleidoClient.create(base_url="https://api.signet.kaleidoswap.com")
 assets = await client.maker.list_assets()
 
 # Node only (base_url still defaults to signet)
@@ -36,7 +36,7 @@ info = await client.rln.get_node_info()
 
 # Both together
 client = KaleidoClient.create(
-    base_url="https://api.kaleidoswap.com",
+    base_url="https://api.signet.kaleidoswap.com",
     node_url="http://localhost:3001",
 )
 pairs    = await client.maker.list_pairs()

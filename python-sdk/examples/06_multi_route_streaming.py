@@ -11,8 +11,8 @@ import os
 
 from kaleido_sdk import KaleidoClient, Layer
 
-API_URL = os.getenv("KALEIDO_API_URL", "https://api.staging.kaleidoswap.com")
-WS_URL = os.getenv("KALEIDO_WS_URL", "wss://api.staging.kaleidoswap.com/api/v1/market/ws")
+API_URL = os.getenv("KALEIDO_API_URL", "https://api.signet.kaleidoswap.com")
+WS_URL = os.getenv("KALEIDO_WS_URL", "wss://api.signet.kaleidoswap.com/api/v1/market/ws")
 
 logging.basicConfig(
     level=logging.DEBUG,

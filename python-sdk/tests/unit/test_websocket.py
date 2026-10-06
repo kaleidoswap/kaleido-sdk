@@ -13,7 +13,7 @@ class TestWSClient:
 
     def test_create_client(self) -> None:
         """Test creating WebSocket client."""
-        client = WSClient(url="wss://api.kaleidoswap.com/ws")
+        client = WSClient(url="wss://api.signet.kaleidoswap.com/ws")
         assert client is not None
         assert not client.is_connected()
 
