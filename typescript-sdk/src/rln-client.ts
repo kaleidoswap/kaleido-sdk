@@ -19,6 +19,7 @@ import type {
     AddressResponse,
     BtcBalanceResponse,
     SendBtcRequest,
+    SendBtcResponse,
     ListTransactionsRequest,
     ListTransactionsResponse,
     ListUnspentsResponse,
@@ -235,10 +236,11 @@ export class RlnClient {
         );
     }
 
-    async sendBtc(body: SendBtcRequest): Promise<void> {
+    async sendBtc(body: SendBtcRequest): Promise<SendBtcResponse> {
         this._log.info('sendBtc(): amount=%s address=%s', body.amount, body.address);
-        assertResponse(await this.node.POST('/sendbtc', { body }));
-        this._log.info('sendBtc() -> ok');
+        const result = assertResponse(await this.node.POST('/sendbtc', { body }));
+        this._log.info('sendBtc() -> txid=%s', result.txid);
+        return result;
     }
 
     async listTransactions(request?: ListTransactionsRequest): Promise<ListTransactionsResponse> {

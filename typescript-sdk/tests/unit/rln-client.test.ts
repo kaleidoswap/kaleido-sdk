@@ -196,6 +196,23 @@ describe('RlnClient', () => {
         });
     });
 
+    it('returns the txid of a BTC send', async () => {
+        const POST = vi.fn().mockResolvedValue({ data: { txid: 'ab'.repeat(32) } });
+        const client = new RlnClient({ node: { POST } } as never);
+
+        const result = await client.sendBtc({
+            address: 'tb1qexample',
+            amount: 1000,
+            fee_rate: 2,
+            skip_sync: false,
+        });
+
+        expect(result.txid).toBe('ab'.repeat(32));
+        expect(POST).toHaveBeenCalledWith('/sendbtc', {
+            body: expect.objectContaining({ address: 'tb1qexample', amount: 1000 }),
+        });
+    });
+
     it('decodes a swapstring and returns the generated response shape', async () => {
         const response = {
             qty_from: 30,
