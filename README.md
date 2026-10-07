@@ -95,7 +95,7 @@ Each SDK is implemented natively in its language and consumes generated types/mo
 
 ### Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - Node.js 18+
 - pnpm
 - uv
