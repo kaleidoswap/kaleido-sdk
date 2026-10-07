@@ -13,9 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- TypeScript: `RlnClient.sendBtc` returns the node's `SendBtcResponse` (with `txid`) instead of `void`, matching the Python SDK.
-
 ### Breaking Changes
+
+## [0.1.22] - 2026-10-07
+
+Targets RGB Lightning Node **0.10.0**.
+
+### Fixed
+
+- TypeScript: `RlnClient.sendBtc` returns the node's `SendBtcResponse` (with `txid`) instead of `void`, matching the Python SDK.
 
 ## [0.1.20] - 2026-10-05
 
