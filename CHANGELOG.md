@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Python SDK: `requires-python` is now `>=3.11`. The generated types use `enum.StrEnum`, so `import kaleido_sdk` already failed on 3.10 while resolvers still picked it (#50).
+
 ### Fixed
 
 ### Breaking Changes
